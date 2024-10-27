@@ -34,7 +34,7 @@
     "MC_DISABLE_PAGER": "1",
     "MC_INSECURE": "1",
     "KUBECONFIG": "/workspaces/homelab/.dev/kube-config.yaml",
-    "PATH": "/workspaces/homelab/.dev:${containerEnv:PATH}",
+    "PATH": "/workspaces/homelab/.dev:/workspace/homelab/node_modules/.bin:${containerEnv:PATH}",
     "TALOSCONFIG": "/workspaces/homelab/talos/config"
   }
 }

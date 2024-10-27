@@ -1978,6 +1978,8 @@ __metadata:
     tsx: "npm:^4.7.2"
     typescript: "npm:^5.4.4"
     zod: "npm:^3.23.8"
+  bin:
+    homelab: ./cli.ts
   languageName: unknown
   linkType: soft
 

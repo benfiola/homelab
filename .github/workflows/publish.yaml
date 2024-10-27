@@ -47,12 +47,13 @@ jobs:
       - name: install project dependencies
         run: |
           yarn install
+          echo "$(pwd)/node_modules/.bin" >> "${GITHUB_PATH}"
       - name: generate manifests
         run: |
           rm -rf manifests/*
           echo "${{secrets.ENV_FILE}}" > .env
           echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
-          yarn run cli manifests all generate
+          homelab manifests all generate
         env:
           SEALED_SECRETS_CERT_PATH: /tmp/sealed-secrets.crt
       - name: commit manifests

@@ -15,8 +15,8 @@
     "typescript": "^5.4.4",
     "zod": "^3.23.8"
   },
-  "scripts": {
-    "cli": "tsx ./cli.ts"
+  "bin": {
+    "homelab": "./cli.ts"
   },
   "packageManager": "yarn@4.5.1",
   "devDependencies": {

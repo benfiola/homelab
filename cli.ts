@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 import { ApiObject, Chart, Include, YamlOutputType } from "cdk8s";
 import { Command, program } from "commander";
 import { configDotenv } from "dotenv";
