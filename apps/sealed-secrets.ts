@@ -107,7 +107,7 @@ const getCertificate = async () => {
 export default async function (context: CliContext) {
   context.bootstrap(bootstrap);
   context.command((program: Command) => {
-    program.command("get-cert").action(getCertificate);
+    program.command("get-certificate").action(getCertificate);
   });
   context.manifests(manifests);
   context.resources(resources);

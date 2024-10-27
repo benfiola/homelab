@@ -2,7 +2,20 @@
 
 This repository holds the code used to provision and administrate my homelab.
 
-## Node setup
+## Prerequisites
+
+This repository depends on the following sensitive files that are not stored in the repo:
+
+- `.env`
+- `talos/config`
+- `talos/controlplane.yaml`
+- `talos/worker.yaml`
+
+Fetch these files and install them in the correct locations.
+
+Optionally, open this project as a devcontainer within VSCode (as this project was designed with VSCode and devcontainers).
+
+## Setup Nodes
 
 Currently, each node is running a version of [Talos Linux](https://www.talos.dev/).
 
@@ -13,17 +26,72 @@ Raspberry Pi 4 nodes have their EEPROM updated to the latest version, and are co
 
 For convenience, a flash drive imaged with [Ventoy](https://www.ventoy.net/en/index.html) is recommended - particularly if you're running a mixed-architecture cluster.
 
-Once all nodes are set up, boot each node from the USB drive. Then, run the following command to install Talos Linux:
+Once all nodes are set up, boot each node from the USB drive. Then, run the following command to install Talos Linux on each node:
 
 ```shell
 NODE="a" ROLE="controlplane" && talosctl apply-config -n "${NODE}.cluster.bulia" --file "./talos/${ROLE}.yaml" --config-patch @"./talos/${NODE}.cluster.bulia.yaml"
 ```
 
-## Updating Talos Linux
+Here's a table mapping nodes to roles:
+
+| Node            | Role         |
+| --------------- | ------------ |
+| a.cluster.bulia | controlplane |
+| b.cluster.bulia | controlplane |
+| c.cluster.bulia | controlplane |
+| d.cluster.bulia | worker       |
+| e.cluster.bulia | worker       |
+| f.cluster.bulia | worker       |
+
+Finally, once all nodes are set up - bootstrap the cluster:
+
+```shell
+talosctl bootstrap --nodes a.cluster.bulia --endpoints cluster.bulia --talosconfig=./talos/config
+```
+
+NOTE: Only a single controlplane node needs to be supplied to the bootstrap command.
+
+Finally, update your local kubeconfig to access the cluster:
+
+```shell
+talosctl --nodes a.cluster.bulia kubeconfig
+```
+
+## Update Talos Linux
+
+To update the Talos Linux version on all nodes, navigate to Talos' [image factory](https://www.talos.dev/v1.8/learn-more/image-factory/) and generate an image for the desired Talos Linux version and additionally contains the following extensions:
+
+- iscsi-tools
+- util-linux-tools
+
+Once an image is produced, you should have an image tag that looks like `factory.talos.dev/installer/613e1592b2da41ae5e265e8789429f22e121aab91cb4deb6bc3c0b6262961245:v1.8.1`.
+
+Ensure that the [controlplane](./talos/controlplane.yaml) and [worker](./talos/worker.yaml) configurations refer to this new image via the `.install.image` key.
+
+Then, run the following command to upgrade the nodes:
+
+```shell
+talosctl upgrade --image <image>
+```
 
 ## Updating Kubernetes
 
-## Bootstrapping
+To upgrade the Kubernetes version on all nodes, ensure that the [control](./talos/controlplane.yaml) and [worker](./talos/worker.yaml) configurations reference the new kubernetes version. This requires systematically updating the `kubelet`, `kube-apiserver`, `kube-controller-manager` and `kube-scheduler` images such that their tags all reflect the new Kubernetes version. For example, updating Kubernetes from version `1.29.1` to `1.30.5` would require changing the following images
+
+- `ghcr.io/siderolabs/kubelet:v1.29.1` -> `ghcr.io/siderolabs/kubelet:v1.30.5`
+- `registry.k8s.io/kube-apiserver:v1.29.1` -> `registry.k8s.io/kube-apiserver:v1.30.5`
+- `registry.k8s.io/kube-controller-manager:v1.29.1` -> `registry.k8s.io/kube-controller-manager:v1.30.5`
+- `registry.k8s.io/kube-scheduler:v1.29.1` -> `registry.k8s.io/kube-scheduler:v1.30.5`
+
+Then, run the following command to upgrade the nodes:
+
+```shell
+talosctl --nodes <controlplane node> upgrade-k8s --to <version>
+```
+
+NOTE: Only a single controlplane node needs to be provided above. The update will propagate to all other controlplane and worker nodes.
+
+## Bootstrapping applications
 
 The end-goal is to deploy ArgoCD and have _that_ manage long-term deployments of cluster applications. However,
 an initial set of resources need to be deployed to the cluster so that ArgoCD can be deployed. This general process is called _bootstrapping_.
@@ -71,3 +139,4 @@ yarn run cli argocd set-admin-password
 ## TODO
 
 - Revisit utilizing Mayastor once Talos 1.8 is released. (This [feature](https://github.com/siderolabs/talos/issues/8367) might enable allocating a system partition that can be given to Mayastor without fear of Talos erasing it during administrative operations)
+- Continue to update README to reflect current deployment practice
