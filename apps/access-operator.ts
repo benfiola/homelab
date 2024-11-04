@@ -38,6 +38,11 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, [
     {
       from: { pod: "access-operator-operator" },
+      to: { dns: "whatismyip.akamai.com", ports: [[80, "tcp"]] },
+    },
+
+    {
+      from: { pod: "access-operator-operator" },
       to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
     },
     {
