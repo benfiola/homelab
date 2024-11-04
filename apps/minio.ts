@@ -177,7 +177,10 @@ const manifests: ManifestsCallback = async (app) => {
   new Helm(chart, "minio-operator-ext", {
     ...appData.operatorExt,
     namespace: chart.namespace,
-    values: {},
+    values: {
+      // give all resources a static prefix
+      fullnameOverride: "minio-operator-ext",
+    },
   });
 
   return chart;
