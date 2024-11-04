@@ -16,12 +16,12 @@ const chartData = {
   crds: {
     chart: "crds",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.9",
+    version: "0.1.0-rc.11",
   },
   operator: {
     chart: "operator",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.9",
+    version: "0.1.0-rc.11",
   },
 };
 
@@ -71,13 +71,20 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const operatorSecret = await createSealedSecret(chart, "operator-secret", {
-    metadata: { namespace: chart.namespace, name: "access-operator" },
+    metadata: { namespace: chart.namespace, name: "operator" },
     stringData: {
       ACCESS_OPERATOR_CLOUDFLARE_TOKEN: env.ACCESS_OPERATOR_CLOUDFLARE_TOKEN,
       ACCESS_OPERATOR_LOG_LEVEL: "debug",
       ACCESS_OPERATOR_ROUTEROS_ADDRESS: "router.bulia:8728",
       ACCESS_OPERATOR_ROUTEROS_PASSWORD: env.ACCESS_OPERATOR_ROUTEROS_PASSWORD,
       ACCESS_OPERATOR_ROUTEROS_USERNAME: "access-operator",
+    },
+  });
+
+  const serverSecret = await createSealedSecret(chart, "server-secret", {
+    metadata: { namespace: chart.namespace, name: "server" },
+    stringData: {
+      ACCESS_OPERATOR_LOG_LEVEL: "debug",
     },
   });
 
@@ -90,6 +97,10 @@ const manifests: ManifestsCallback = async (app) => {
       operator: {
         // use external secret for configuration
         externalSecret: operatorSecret.name,
+      },
+      server: {
+        // use external secret for configuration
+        externalSecret: serverSecret.name,
       },
     },
   });
