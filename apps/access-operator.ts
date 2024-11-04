@@ -61,6 +61,7 @@ const manifests: ManifestsCallback = async (app) => {
     metadata: { namespace: chart.namespace, name: "access-operator" },
     stringData: {
       ACCESS_OPERATOR_CLOUDFLARE_TOKEN: env.ACCESS_OPERATOR_CLOUDFLARE_TOKEN,
+      ACCESS_OPERATOR_LOG_LEVEL: "debug",
       ACCESS_OPERATOR_ROUTEROS_ADDRESS: "router.bulia:8728",
       ACCESS_OPERATOR_ROUTEROS_PASSWORD: env.ACCESS_OPERATOR_ROUTEROS_PASSWORD,
       ACCESS_OPERATOR_ROUTEROS_USERNAME: "access-operator",
