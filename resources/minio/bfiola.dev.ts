@@ -4,7 +4,7 @@ import { Construct } from 'constructs';
 
 
 /**
- *
+ * MinioBucket defines a MinIO tenant bucket.
  *
  * @schema MinioBucket
  */
@@ -24,7 +24,7 @@ export class MinioBucket extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: MinioBucketProps = {}): any {
+  public static manifest(props: MinioBucketProps): any {
     return {
       ...MinioBucket.GVK,
       ...toJson_MinioBucketProps(props),
@@ -37,7 +37,7 @@ export class MinioBucket extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: MinioBucketProps = {}) {
+  public constructor(scope: Construct, id: string, props: MinioBucketProps) {
     super(scope, id, {
       ...MinioBucket.GVK,
       ...props,
@@ -58,6 +58,8 @@ export class MinioBucket extends ApiObject {
 }
 
 /**
+ * MinioBucket defines a MinIO tenant bucket.
+ *
  * @schema MinioBucket
  */
 export interface MinioBucketProps {
@@ -67,9 +69,11 @@ export interface MinioBucketProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
+   * MinioBucketSpec defines the desired state of MinioBucket
+   *
    * @schema MinioBucket#spec
    */
-  readonly spec?: MinioBucketSpec;
+  readonly spec: MinioBucketSpec;
 
 }
 
@@ -89,18 +93,27 @@ export function toJson_MinioBucketProps(obj: MinioBucketProps | undefined): Reco
 /* eslint-enable max-len, quote-props */
 
 /**
+ * MinioBucketSpec defines the desired state of MinioBucket
+ *
  * @schema MinioBucketSpec
  */
 export interface MinioBucketSpec {
   /**
-   * @schema MinioBucketSpec#name
+   * @schema MinioBucketSpec#deletionPolicy
    */
-  readonly name?: string;
+  readonly deletionPolicy: string;
 
   /**
+   * @schema MinioBucketSpec#name
+   */
+  readonly name: string;
+
+  /**
+   * ResourceRef defines a reference to another kubernetes resource
+   *
    * @schema MinioBucketSpec#tenantRef
    */
-  readonly tenantRef?: MinioBucketSpecTenantRef;
+  readonly tenantRef: MinioBucketSpecTenantRef;
 
 }
 
@@ -111,6 +124,7 @@ export interface MinioBucketSpec {
 export function toJson_MinioBucketSpec(obj: MinioBucketSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'deletionPolicy': obj.deletionPolicy,
     'name': obj.name,
     'tenantRef': toJson_MinioBucketSpecTenantRef(obj.tenantRef),
   };
@@ -120,18 +134,20 @@ export function toJson_MinioBucketSpec(obj: MinioBucketSpec | undefined): Record
 /* eslint-enable max-len, quote-props */
 
 /**
+ * ResourceRef defines a reference to another kubernetes resource
+ *
  * @schema MinioBucketSpecTenantRef
  */
 export interface MinioBucketSpecTenantRef {
   /**
+   * @schema MinioBucketSpecTenantRef#name
+   */
+  readonly name: string;
+
+  /**
    * @schema MinioBucketSpecTenantRef#namespace
    */
   readonly namespace?: string;
-
-  /**
-   * @schema MinioBucketSpecTenantRef#name
-   */
-  readonly name?: string;
 
 }
 
@@ -142,8 +158,8 @@ export interface MinioBucketSpecTenantRef {
 export function toJson_MinioBucketSpecTenantRef(obj: MinioBucketSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'namespace': obj.namespace,
     'name': obj.name,
+    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -152,7 +168,7 @@ export function toJson_MinioBucketSpecTenantRef(obj: MinioBucketSpecTenantRef | 
 
 
 /**
- *
+ * MinioGroup defines a MinIO builtin group identity.
  *
  * @schema MinioGroup
  */
@@ -172,7 +188,7 @@ export class MinioGroup extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: MinioGroupProps = {}): any {
+  public static manifest(props: MinioGroupProps): any {
     return {
       ...MinioGroup.GVK,
       ...toJson_MinioGroupProps(props),
@@ -185,7 +201,7 @@ export class MinioGroup extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: MinioGroupProps = {}) {
+  public constructor(scope: Construct, id: string, props: MinioGroupProps) {
     super(scope, id, {
       ...MinioGroup.GVK,
       ...props,
@@ -206,6 +222,8 @@ export class MinioGroup extends ApiObject {
 }
 
 /**
+ * MinioGroup defines a MinIO builtin group identity.
+ *
  * @schema MinioGroup
  */
 export interface MinioGroupProps {
@@ -215,9 +233,11 @@ export interface MinioGroupProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
+   * MinioGroupSpec defines the desired state of MinioGroup
+   *
    * @schema MinioGroup#spec
    */
-  readonly spec?: MinioGroupSpec;
+  readonly spec: MinioGroupSpec;
 
 }
 
@@ -237,18 +257,22 @@ export function toJson_MinioGroupProps(obj: MinioGroupProps | undefined): Record
 /* eslint-enable max-len, quote-props */
 
 /**
+ * MinioGroupSpec defines the desired state of MinioGroup
+ *
  * @schema MinioGroupSpec
  */
 export interface MinioGroupSpec {
   /**
    * @schema MinioGroupSpec#name
    */
-  readonly name?: string;
+  readonly name: string;
 
   /**
+   * ResourceRef defines a reference to another kubernetes resource
+   *
    * @schema MinioGroupSpec#tenantRef
    */
-  readonly tenantRef?: MinioGroupSpecTenantRef;
+  readonly tenantRef: MinioGroupSpecTenantRef;
 
 }
 
@@ -268,18 +292,20 @@ export function toJson_MinioGroupSpec(obj: MinioGroupSpec | undefined): Record<s
 /* eslint-enable max-len, quote-props */
 
 /**
+ * ResourceRef defines a reference to another kubernetes resource
+ *
  * @schema MinioGroupSpecTenantRef
  */
 export interface MinioGroupSpecTenantRef {
   /**
+   * @schema MinioGroupSpecTenantRef#name
+   */
+  readonly name: string;
+
+  /**
    * @schema MinioGroupSpecTenantRef#namespace
    */
   readonly namespace?: string;
-
-  /**
-   * @schema MinioGroupSpecTenantRef#name
-   */
-  readonly name?: string;
 
 }
 
@@ -290,8 +316,8 @@ export interface MinioGroupSpecTenantRef {
 export function toJson_MinioGroupSpecTenantRef(obj: MinioGroupSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'namespace': obj.namespace,
     'name': obj.name,
+    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -300,7 +326,7 @@ export function toJson_MinioGroupSpecTenantRef(obj: MinioGroupSpecTenantRef | un
 
 
 /**
- *
+ * MinioGroupBinding attaches a MinIO builtin user identity to a MinIO builtin group identity
  *
  * @schema MinioGroupBinding
  */
@@ -320,7 +346,7 @@ export class MinioGroupBinding extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: MinioGroupBindingProps = {}): any {
+  public static manifest(props: MinioGroupBindingProps): any {
     return {
       ...MinioGroupBinding.GVK,
       ...toJson_MinioGroupBindingProps(props),
@@ -333,7 +359,7 @@ export class MinioGroupBinding extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: MinioGroupBindingProps = {}) {
+  public constructor(scope: Construct, id: string, props: MinioGroupBindingProps) {
     super(scope, id, {
       ...MinioGroupBinding.GVK,
       ...props,
@@ -354,6 +380,8 @@ export class MinioGroupBinding extends ApiObject {
 }
 
 /**
+ * MinioGroupBinding attaches a MinIO builtin user identity to a MinIO builtin group identity
+ *
  * @schema MinioGroupBinding
  */
 export interface MinioGroupBindingProps {
@@ -363,9 +391,11 @@ export interface MinioGroupBindingProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
+   * MinioGroupBindingSpec defines the desired state of MinioGroupBinding
+   *
    * @schema MinioGroupBinding#spec
    */
-  readonly spec?: MinioGroupBindingSpec;
+  readonly spec: MinioGroupBindingSpec;
 
 }
 
@@ -385,23 +415,27 @@ export function toJson_MinioGroupBindingProps(obj: MinioGroupBindingProps | unde
 /* eslint-enable max-len, quote-props */
 
 /**
+ * MinioGroupBindingSpec defines the desired state of MinioGroupBinding
+ *
  * @schema MinioGroupBindingSpec
  */
 export interface MinioGroupBindingSpec {
   /**
-   * @schema MinioGroupBindingSpec#user
-   */
-  readonly user?: string;
-
-  /**
    * @schema MinioGroupBindingSpec#group
    */
-  readonly group?: string;
+  readonly group: string;
 
   /**
+   * ResourceRef defines a reference to another kubernetes resource
+   *
    * @schema MinioGroupBindingSpec#tenantRef
    */
   readonly tenantRef?: MinioGroupBindingSpecTenantRef;
+
+  /**
+   * @schema MinioGroupBindingSpec#user
+   */
+  readonly user: string;
 
 }
 
@@ -412,9 +446,9 @@ export interface MinioGroupBindingSpec {
 export function toJson_MinioGroupBindingSpec(obj: MinioGroupBindingSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'user': obj.user,
     'group': obj.group,
     'tenantRef': toJson_MinioGroupBindingSpecTenantRef(obj.tenantRef),
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -422,18 +456,20 @@ export function toJson_MinioGroupBindingSpec(obj: MinioGroupBindingSpec | undefi
 /* eslint-enable max-len, quote-props */
 
 /**
+ * ResourceRef defines a reference to another kubernetes resource
+ *
  * @schema MinioGroupBindingSpecTenantRef
  */
 export interface MinioGroupBindingSpecTenantRef {
   /**
+   * @schema MinioGroupBindingSpecTenantRef#name
+   */
+  readonly name: string;
+
+  /**
    * @schema MinioGroupBindingSpecTenantRef#namespace
    */
   readonly namespace?: string;
-
-  /**
-   * @schema MinioGroupBindingSpecTenantRef#name
-   */
-  readonly name?: string;
 
 }
 
@@ -444,8 +480,8 @@ export interface MinioGroupBindingSpecTenantRef {
 export function toJson_MinioGroupBindingSpecTenantRef(obj: MinioGroupBindingSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'namespace': obj.namespace,
     'name': obj.name,
+    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -454,7 +490,7 @@ export function toJson_MinioGroupBindingSpecTenantRef(obj: MinioGroupBindingSpec
 
 
 /**
- *
+ * MinioPolicy defines a MinIO tenant policy
  *
  * @schema MinioPolicy
  */
@@ -474,7 +510,7 @@ export class MinioPolicy extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: MinioPolicyProps = {}): any {
+  public static manifest(props: MinioPolicyProps): any {
     return {
       ...MinioPolicy.GVK,
       ...toJson_MinioPolicyProps(props),
@@ -487,7 +523,7 @@ export class MinioPolicy extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: MinioPolicyProps = {}) {
+  public constructor(scope: Construct, id: string, props: MinioPolicyProps) {
     super(scope, id, {
       ...MinioPolicy.GVK,
       ...props,
@@ -508,6 +544,8 @@ export class MinioPolicy extends ApiObject {
 }
 
 /**
+ * MinioPolicy defines a MinIO tenant policy
+ *
  * @schema MinioPolicy
  */
 export interface MinioPolicyProps {
@@ -517,9 +555,11 @@ export interface MinioPolicyProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
+   * MinioPolicySpec defines the desired state of MinioPolicy
+   *
    * @schema MinioPolicy#spec
    */
-  readonly spec?: MinioPolicySpec;
+  readonly spec: MinioPolicySpec;
 
 }
 
@@ -539,28 +579,32 @@ export function toJson_MinioPolicyProps(obj: MinioPolicyProps | undefined): Reco
 /* eslint-enable max-len, quote-props */
 
 /**
+ * MinioPolicySpec defines the desired state of MinioPolicy
+ *
  * @schema MinioPolicySpec
  */
 export interface MinioPolicySpec {
   /**
    * @schema MinioPolicySpec#name
    */
-  readonly name?: string;
-
-  /**
-   * @schema MinioPolicySpec#tenantRef
-   */
-  readonly tenantRef?: MinioPolicySpecTenantRef;
-
-  /**
-   * @schema MinioPolicySpec#version
-   */
-  readonly version?: string;
+  readonly name: string;
 
   /**
    * @schema MinioPolicySpec#statement
    */
-  readonly statement?: MinioPolicySpecStatement[];
+  readonly statement: MinioPolicySpecStatement[];
+
+  /**
+   * ResourceRef defines a reference to another kubernetes resource
+   *
+   * @schema MinioPolicySpec#tenantRef
+   */
+  readonly tenantRef: MinioPolicySpecTenantRef;
+
+  /**
+   * @schema MinioPolicySpec#version
+   */
+  readonly version: string;
 
 }
 
@@ -572,9 +616,9 @@ export function toJson_MinioPolicySpec(obj: MinioPolicySpec | undefined): Record
   if (obj === undefined) { return undefined; }
   const result = {
     'name': obj.name,
+    'statement': obj.statement?.map(y => toJson_MinioPolicySpecStatement(y)),
     'tenantRef': toJson_MinioPolicySpecTenantRef(obj.tenantRef),
     'version': obj.version,
-    'statement': obj.statement?.map(y => toJson_MinioPolicySpecStatement(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -582,54 +626,25 @@ export function toJson_MinioPolicySpec(obj: MinioPolicySpec | undefined): Record
 /* eslint-enable max-len, quote-props */
 
 /**
- * @schema MinioPolicySpecTenantRef
- */
-export interface MinioPolicySpecTenantRef {
-  /**
-   * @schema MinioPolicySpecTenantRef#namespace
-   */
-  readonly namespace?: string;
-
-  /**
-   * @schema MinioPolicySpecTenantRef#name
-   */
-  readonly name?: string;
-
-}
-
-/**
- * Converts an object of type 'MinioPolicySpecTenantRef' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_MinioPolicySpecTenantRef(obj: MinioPolicySpecTenantRef | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'namespace': obj.namespace,
-    'name': obj.name,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
+ * MinioPolicyStatement defines a single statement within a MinioPolicy
+ *
  * @schema MinioPolicySpecStatement
  */
 export interface MinioPolicySpecStatement {
   /**
    * @schema MinioPolicySpecStatement#action
    */
-  readonly action?: string[];
-
-  /**
-   * @schema MinioPolicySpecStatement#resource
-   */
-  readonly resource?: string[];
+  readonly action: string[];
 
   /**
    * @schema MinioPolicySpecStatement#effect
    */
-  readonly effect?: string;
+  readonly effect: string;
+
+  /**
+   * @schema MinioPolicySpecStatement#resource
+   */
+  readonly resource: string[];
 
 }
 
@@ -641,8 +656,41 @@ export function toJson_MinioPolicySpecStatement(obj: MinioPolicySpecStatement | 
   if (obj === undefined) { return undefined; }
   const result = {
     'action': obj.action?.map(y => y),
-    'resource': obj.resource?.map(y => y),
     'effect': obj.effect,
+    'resource': obj.resource?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * ResourceRef defines a reference to another kubernetes resource
+ *
+ * @schema MinioPolicySpecTenantRef
+ */
+export interface MinioPolicySpecTenantRef {
+  /**
+   * @schema MinioPolicySpecTenantRef#name
+   */
+  readonly name: string;
+
+  /**
+   * @schema MinioPolicySpecTenantRef#namespace
+   */
+  readonly namespace?: string;
+
+}
+
+/**
+ * Converts an object of type 'MinioPolicySpecTenantRef' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_MinioPolicySpecTenantRef(obj: MinioPolicySpecTenantRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -651,7 +699,7 @@ export function toJson_MinioPolicySpecStatement(obj: MinioPolicySpecStatement | 
 
 
 /**
- *
+ * MinioPolicyBinding attaches a MinIO identity to a MinIO policy
  *
  * @schema MinioPolicyBinding
  */
@@ -671,7 +719,7 @@ export class MinioPolicyBinding extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: MinioPolicyBindingProps = {}): any {
+  public static manifest(props: MinioPolicyBindingProps): any {
     return {
       ...MinioPolicyBinding.GVK,
       ...toJson_MinioPolicyBindingProps(props),
@@ -684,7 +732,7 @@ export class MinioPolicyBinding extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: MinioPolicyBindingProps = {}) {
+  public constructor(scope: Construct, id: string, props: MinioPolicyBindingProps) {
     super(scope, id, {
       ...MinioPolicyBinding.GVK,
       ...props,
@@ -705,6 +753,8 @@ export class MinioPolicyBinding extends ApiObject {
 }
 
 /**
+ * MinioPolicyBinding attaches a MinIO identity to a MinIO policy
+ *
  * @schema MinioPolicyBinding
  */
 export interface MinioPolicyBindingProps {
@@ -714,9 +764,11 @@ export interface MinioPolicyBindingProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
+   * MinioPolicyBindingSpec defines the desired state of MinioPolicyBinding
+   *
    * @schema MinioPolicyBinding#spec
    */
-  readonly spec?: MinioPolicyBindingSpec;
+  readonly spec: MinioPolicyBindingSpec;
 
 }
 
@@ -736,28 +788,32 @@ export function toJson_MinioPolicyBindingProps(obj: MinioPolicyBindingProps | un
 /* eslint-enable max-len, quote-props */
 
 /**
+ * MinioPolicyBindingSpec defines the desired state of MinioPolicyBinding
+ *
  * @schema MinioPolicyBindingSpec
  */
 export interface MinioPolicyBindingSpec {
   /**
-   * @schema MinioPolicyBindingSpec#tenantRef
+   * @schema MinioPolicyBindingSpec#group
    */
-  readonly tenantRef?: MinioPolicyBindingSpecTenantRef;
+  readonly group?: MinioPolicyBindingSpecGroup;
 
   /**
    * @schema MinioPolicyBindingSpec#policy
    */
-  readonly policy?: string;
+  readonly policy: string;
+
+  /**
+   * ResourceRef defines a reference to another kubernetes resource
+   *
+   * @schema MinioPolicyBindingSpec#tenantRef
+   */
+  readonly tenantRef: MinioPolicyBindingSpecTenantRef;
 
   /**
    * @schema MinioPolicyBindingSpec#user
    */
   readonly user?: MinioPolicyBindingSpecUser;
-
-  /**
-   * @schema MinioPolicyBindingSpec#group
-   */
-  readonly group?: MinioPolicyBindingSpecGroup;
 
 }
 
@@ -768,72 +824,10 @@ export interface MinioPolicyBindingSpec {
 export function toJson_MinioPolicyBindingSpec(obj: MinioPolicyBindingSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'tenantRef': toJson_MinioPolicyBindingSpecTenantRef(obj.tenantRef),
-    'policy': obj.policy,
-    'user': toJson_MinioPolicyBindingSpecUser(obj.user),
     'group': toJson_MinioPolicyBindingSpecGroup(obj.group),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * @schema MinioPolicyBindingSpecTenantRef
- */
-export interface MinioPolicyBindingSpecTenantRef {
-  /**
-   * @schema MinioPolicyBindingSpecTenantRef#namespace
-   */
-  readonly namespace?: string;
-
-  /**
-   * @schema MinioPolicyBindingSpecTenantRef#name
-   */
-  readonly name?: string;
-
-}
-
-/**
- * Converts an object of type 'MinioPolicyBindingSpecTenantRef' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_MinioPolicyBindingSpecTenantRef(obj: MinioPolicyBindingSpecTenantRef | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'namespace': obj.namespace,
-    'name': obj.name,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * @schema MinioPolicyBindingSpecUser
- */
-export interface MinioPolicyBindingSpecUser {
-  /**
-   * @schema MinioPolicyBindingSpecUser#builtin
-   */
-  readonly builtin?: string;
-
-  /**
-   * @schema MinioPolicyBindingSpecUser#ldap
-   */
-  readonly ldap?: string;
-
-}
-
-/**
- * Converts an object of type 'MinioPolicyBindingSpecUser' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_MinioPolicyBindingSpecUser(obj: MinioPolicyBindingSpecUser | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'builtin': obj.builtin,
-    'ldap': obj.ldap,
+    'policy': obj.policy,
+    'tenantRef': toJson_MinioPolicyBindingSpecTenantRef(obj.tenantRef),
+    'user': toJson_MinioPolicyBindingSpecUser(obj.user),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -871,9 +865,73 @@ export function toJson_MinioPolicyBindingSpecGroup(obj: MinioPolicyBindingSpecGr
 }
 /* eslint-enable max-len, quote-props */
 
+/**
+ * ResourceRef defines a reference to another kubernetes resource
+ *
+ * @schema MinioPolicyBindingSpecTenantRef
+ */
+export interface MinioPolicyBindingSpecTenantRef {
+  /**
+   * @schema MinioPolicyBindingSpecTenantRef#name
+   */
+  readonly name: string;
+
+  /**
+   * @schema MinioPolicyBindingSpecTenantRef#namespace
+   */
+  readonly namespace?: string;
+
+}
 
 /**
- *
+ * Converts an object of type 'MinioPolicyBindingSpecTenantRef' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_MinioPolicyBindingSpecTenantRef(obj: MinioPolicyBindingSpecTenantRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * @schema MinioPolicyBindingSpecUser
+ */
+export interface MinioPolicyBindingSpecUser {
+  /**
+   * @schema MinioPolicyBindingSpecUser#builtin
+   */
+  readonly builtin?: string;
+
+  /**
+   * @schema MinioPolicyBindingSpecUser#ldap
+   */
+  readonly ldap?: string;
+
+}
+
+/**
+ * Converts an object of type 'MinioPolicyBindingSpecUser' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_MinioPolicyBindingSpecUser(obj: MinioPolicyBindingSpecUser | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'builtin': obj.builtin,
+    'ldap': obj.ldap,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+
+/**
+ * MinioUser defines a MinIO builtin user identity.
  *
  * @schema MinioUser
  */
@@ -893,7 +951,7 @@ export class MinioUser extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: MinioUserProps = {}): any {
+  public static manifest(props: MinioUserProps): any {
     return {
       ...MinioUser.GVK,
       ...toJson_MinioUserProps(props),
@@ -906,7 +964,7 @@ export class MinioUser extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: MinioUserProps = {}) {
+  public constructor(scope: Construct, id: string, props: MinioUserProps) {
     super(scope, id, {
       ...MinioUser.GVK,
       ...props,
@@ -927,6 +985,8 @@ export class MinioUser extends ApiObject {
 }
 
 /**
+ * MinioUser defines a MinIO builtin user identity.
+ *
  * @schema MinioUser
  */
 export interface MinioUserProps {
@@ -936,9 +996,11 @@ export interface MinioUserProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
+   * MinioUserSpec defines the desired state of MinioUser
+   *
    * @schema MinioUser#spec
    */
-  readonly spec?: MinioUserSpec;
+  readonly spec: MinioUserSpec;
 
 }
 
@@ -958,23 +1020,29 @@ export function toJson_MinioUserProps(obj: MinioUserProps | undefined): Record<s
 /* eslint-enable max-len, quote-props */
 
 /**
+ * MinioUserSpec defines the desired state of MinioUser
+ *
  * @schema MinioUserSpec
  */
 export interface MinioUserSpec {
   /**
    * @schema MinioUserSpec#accessKey
    */
-  readonly accessKey?: string;
+  readonly accessKey: string;
 
   /**
+   * ResourceKeyRef defines a reference to a key of another kubernetes resource
+   *
    * @schema MinioUserSpec#secretKeyRef
    */
-  readonly secretKeyRef?: MinioUserSpecSecretKeyRef;
+  readonly secretKeyRef: MinioUserSpecSecretKeyRef;
 
   /**
+   * ResourceRef defines a reference to another kubernetes resource
+   *
    * @schema MinioUserSpec#tenantRef
    */
-  readonly tenantRef?: MinioUserSpecTenantRef;
+  readonly tenantRef: MinioUserSpecTenantRef;
 
 }
 
@@ -995,23 +1063,25 @@ export function toJson_MinioUserSpec(obj: MinioUserSpec | undefined): Record<str
 /* eslint-enable max-len, quote-props */
 
 /**
+ * ResourceKeyRef defines a reference to a key of another kubernetes resource
+ *
  * @schema MinioUserSpecSecretKeyRef
  */
 export interface MinioUserSpecSecretKeyRef {
   /**
-   * @schema MinioUserSpecSecretKeyRef#namespace
+   * @schema MinioUserSpecSecretKeyRef#key
    */
-  readonly namespace?: string;
+  readonly key: string;
 
   /**
    * @schema MinioUserSpecSecretKeyRef#name
    */
-  readonly name?: string;
+  readonly name: string;
 
   /**
-   * @schema MinioUserSpecSecretKeyRef#key
+   * @schema MinioUserSpecSecretKeyRef#namespace
    */
-  readonly key?: string;
+  readonly namespace?: string;
 
 }
 
@@ -1022,9 +1092,9 @@ export interface MinioUserSpecSecretKeyRef {
 export function toJson_MinioUserSpecSecretKeyRef(obj: MinioUserSpecSecretKeyRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'namespace': obj.namespace,
-    'name': obj.name,
     'key': obj.key,
+    'name': obj.name,
+    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1032,18 +1102,20 @@ export function toJson_MinioUserSpecSecretKeyRef(obj: MinioUserSpecSecretKeyRef 
 /* eslint-enable max-len, quote-props */
 
 /**
+ * ResourceRef defines a reference to another kubernetes resource
+ *
  * @schema MinioUserSpecTenantRef
  */
 export interface MinioUserSpecTenantRef {
   /**
+   * @schema MinioUserSpecTenantRef#name
+   */
+  readonly name: string;
+
+  /**
    * @schema MinioUserSpecTenantRef#namespace
    */
   readonly namespace?: string;
-
-  /**
-   * @schema MinioUserSpecTenantRef#name
-   */
-  readonly name?: string;
 
 }
 
@@ -1054,8 +1126,8 @@ export interface MinioUserSpecTenantRef {
 export function toJson_MinioUserSpecTenantRef(obj: MinioUserSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'namespace': obj.namespace,
     'name': obj.name,
+    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});

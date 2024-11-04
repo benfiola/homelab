@@ -1,4 +1,4 @@
-import { Chart, Helm, Include } from "cdk8s";
+import { Chart, Helm } from "cdk8s";
 import { writeFile } from "fs/promises";
 import { Namespace } from "../resources/k8s/k8s";
 import {
@@ -6,10 +6,8 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
-import { createServiceAccount } from "../utils/createServiceAccount";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
@@ -28,8 +26,15 @@ const appData = {
     repo: "https://operator.min.io",
     version: "5.0.15",
   },
+  operatorExtCrds: {
+    chart: "crds",
+    repo: "http://benfiola.github.io/minio-operator-ext/charts",
+    version: "2.2.0",
+  },
   operatorExt: {
-    version: "2.1.0-rc.1",
+    chart: "operator",
+    repo: "http://benfiola.github.io/minio-operator-ext/charts",
+    version: "2.2.2",
   },
 };
 
@@ -163,49 +168,25 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new Include(chart, "include-operator-ext", {
-    url: `https://raw.githubusercontent.com/benfiola/minio-operator-ext/v${appData.operatorExt.version}/manifests/crds.yaml`,
+  new Helm(chart, "minio-operator-ext-crds", {
+    ...appData.operatorExtCrds,
+    namespace: chart.namespace,
+    values: {},
   });
 
-  const operatorExtServiceAccount = createServiceAccount(chart, {
+  new Helm(chart, "minio-operator-ext", {
+    ...appData.operatorExt,
     namespace: chart.namespace,
-    name: "minio-operator-ext",
-    access: {
-      "minio.min.io/tenants": ["get", "watch", "list", "patch"],
-      configmaps: ["get"],
-      secrets: ["get"],
-      services: ["get"],
-      "bfiola.dev/miniousers": ["get", "watch", "list", "update"],
-      "bfiola.dev/miniobuckets": ["get", "watch", "list", "update"],
-      "bfiola.dev/miniogroups": ["get", "watch", "list", "update"],
-      "bfiola.dev/miniogroupbindings": ["get", "watch", "list", "update"],
-      "bfiola.dev/miniopolicies": ["get", "watch", "list", "update"],
-      "bfiola.dev/miniopolicybindings": ["get", "watch", "list", "update"],
-    },
+    values: {},
   });
 
-  createDeployment(chart, {
-    namespace: chart.namespace,
-    name: "minio-operator-ext",
-    containers: [
-      {
-        name: "operator",
-        image: `docker.io/benfiola/minio-operator-ext:${appData.operatorExt.version}`,
-        probe: ["/healthz", 8888],
-        resources: { mem: 200 },
-        env: { USER: "1001" },
-      },
-    ],
-    serviceAccount: operatorExtServiceAccount.name,
-  });
   return chart;
 };
 
 const resources: ResourcesCallback = async (manifestsFile) => {
-  const crdsUrl = `https://raw.githubusercontent.com/benfiola/minio-operator-ext/v${appData.operatorExt.version}/manifests/crds.yaml`;
   const manifest = [
     await exec(getHelmTemplateCommand(appData.operator)),
-    await fetch(crdsUrl).then((r) => r.text()),
+    await exec(getHelmTemplateCommand(appData.operatorExtCrds)),
   ].join("\n");
   await writeFile(manifestsFile, manifest);
 };

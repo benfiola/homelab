@@ -63,6 +63,7 @@ export const createMinioBucket = async (
       name,
     },
     spec: {
+      deletionPolicy: "IfEmpty",
       name,
       tenantRef,
     },
