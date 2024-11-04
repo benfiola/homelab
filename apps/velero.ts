@@ -75,7 +75,7 @@ const manifests: ManifestsCallback = async (app) => {
     name: "velero",
     secretKey: env.VELERO_MINIO_SECRET_KEY,
     tenantRef: {
-      name: "minio",
+      name: "minio-tenant",
       namespace: "minio",
     },
   });
