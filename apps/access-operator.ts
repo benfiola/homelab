@@ -38,7 +38,15 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, [
     {
       from: { pod: "access-operator-operator" },
+      to: { dns: "api.cloudflare.com", ports: [[443, "tcp"]] },
+    },
+    {
+      from: { pod: "access-operator-operator" },
       to: { dns: "whatismyip.akamai.com", ports: [[80, "tcp"]] },
+    },
+    {
+      from: { pod: "access-operator-operator" },
+      to: { dns: "router.bulia", ports: [[8728, "tcp"]] },
     },
 
     {
