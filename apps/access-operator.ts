@@ -21,7 +21,7 @@ const chartData = {
   operator: {
     chart: "operator",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.7",
+    version: "0.1.0-rc.8",
   },
 };
 
