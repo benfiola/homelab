@@ -94,6 +94,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const apps = [
+    "access-operator",
     "argocd",
     "cert-manager",
     "cilium",
