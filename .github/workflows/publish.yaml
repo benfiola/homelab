@@ -51,7 +51,7 @@ jobs:
       - name: generate manifests
         run: |
           rm -rf manifests/*
-          echo "${{secrets.ENV_FILE}}" > .env
+          echo '${{secrets.ENV_FILE}}' > .env
           echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
           homelab manifests all generate
         env:
