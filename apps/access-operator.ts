@@ -17,12 +17,12 @@ const chartData = {
   crds: {
     chart: "crds",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.12",
+    version: "0.1.0-rc.14",
   },
   operator: {
     chart: "operator",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.12",
+    version: "0.1.0-rc.14",
   },
 };
 
