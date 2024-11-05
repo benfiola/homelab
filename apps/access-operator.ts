@@ -1,6 +1,6 @@
 import { Chart, Helm } from "cdk8s";
 import { writeFile } from "fs/promises";
-import { Namespace } from "../resources/k8s/k8s";
+import { Ingress, Namespace } from "../resources/k8s/k8s";
 import {
   CliContext,
   ManifestsCallback,
@@ -10,18 +10,19 @@ import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
+import { getIngressClassName } from "../utils/getIngressClassName";
 import { parseEnv } from "../utils/parseEnv";
 
 const chartData = {
   crds: {
     chart: "crds",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.11",
+    version: "0.1.0-rc.12",
   },
   operator: {
     chart: "operator",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.11",
+    version: "0.1.0-rc.12",
   },
 };
 
@@ -101,10 +102,17 @@ const manifests: ManifestsCallback = async (app) => {
       server: {
         // use external secret for configuration
         externalSecret: serverSecret.name,
+        // enable ingress for server
+        ingress: {
+          enabled: true,
+          hostname: "access.bulia",
+          ingressClassName: getIngressClassName(),
+        },
       },
     },
   });
 
+  new Ingress(chart, "operator-server", {});
   return chart;
 };
 
