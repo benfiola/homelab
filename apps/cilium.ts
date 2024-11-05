@@ -160,6 +160,7 @@ const manifests: ManifestsCallback = async (app) => {
         monitorAggregation: "none",
       },
       dnsProxy: {
+        // transparent mode seems to intermittently fail
         enableTransparentMode: false,
       },
       endpointStatus: {
@@ -186,10 +187,6 @@ const manifests: ManifestsCallback = async (app) => {
             "icmp",
             "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction",
           ],
-        },
-        l2announcements: {
-          // enables advertising of load balancer ips assigned by cilium
-          enabled: true,
         },
         relay: {
           // enables the hubble relay
@@ -225,6 +222,10 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: true,
         // share the same ip per ingress resource
         loadbalancerMode: "shared",
+      },
+      l2announcements: {
+        // enables advertising of load balancer ips assigned by cilium
+        enabled: true,
       },
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
