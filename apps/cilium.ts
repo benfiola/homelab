@@ -240,7 +240,7 @@ const manifests: ManifestsCallback = async (app) => {
             fromEndpoints: [{}],
             toPorts: [
               {
-                ports: [{ port: "53", protocol: "ANY" as any }],
+                ports: [{ port: "53", protocol: "UDP" as any }],
               },
             ],
           },
@@ -265,7 +265,7 @@ const manifests: ManifestsCallback = async (app) => {
             toEntities: ["world" as any],
             toPorts: [
               {
-                ports: [{ port: "53", protocol: "ANY" as any }],
+                ports: [{ port: "53", protocol: "UDP" as any }],
               },
             ],
           },
@@ -294,7 +294,7 @@ const manifests: ManifestsCallback = async (app) => {
             ],
             toPorts: [
               {
-                ports: [{ port: "53", protocol: "ANY" as any }],
+                ports: [{ port: "53", protocol: "UDP" as any }],
                 rules: { dns: [{ matchPattern: "*" }] },
               },
             ],
