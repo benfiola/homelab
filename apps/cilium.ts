@@ -165,6 +165,10 @@ const manifests: ManifestsCallback = async (app) => {
         // allow viewing of endpoint policy enablement in kubectl/k9s
         status: "policy",
       },
+      externalIPs: {
+        // allows load balancing of external ipsç
+        enabled: true,
+      },
       gatewayAPI: {
         // enable gateway api support
         enabled: true,
