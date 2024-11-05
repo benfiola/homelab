@@ -93,9 +93,8 @@ const bootstrap: BootstrapCallback = async (app) => {
 };
 
 const manifests: ManifestsCallback = async (app) => {
-  const { CiliumClusterwideNetworkPolicy } = await import(
-    "../resources/cilium/cilium.io"
-  );
+  const { CiliumClusterwideNetworkPolicy, CiliumLoadBalancerIpPool } =
+    await import("../resources/cilium/cilium.io");
   const { createNetworkPolicy } = await import("../utils/createNetworkPolicy");
 
   const chart = new Chart(app, "cilium", {
@@ -222,6 +221,18 @@ const manifests: ManifestsCallback = async (app) => {
       },
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
+    },
+  });
+
+  new CiliumLoadBalancerIpPool(chart, "ip-pool", {
+    metadata: { namespace: chart.namespace, name: "default" },
+    spec: {
+      blocks: [
+        {
+          start: "192.168.33.10",
+          stop: "192.168.33.254",
+        },
+      ],
     },
   });
 
@@ -371,6 +382,7 @@ const manifests: ManifestsCallback = async (app) => {
       to: { pod: "hubble-ui", ports: [[8081, "tcp"]] },
     },
   ]);
+
   return chart;
 };
 
