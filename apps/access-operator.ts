@@ -58,6 +58,11 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "access-operator-server" },
       to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
     },
+
+    {
+      from: { entity: "ingress" },
+      to: { pod: "access-operator-server", ports: [[8080, "tcp"]] },
+    },
   ]);
 
   new Namespace(chart, "namespace", {
