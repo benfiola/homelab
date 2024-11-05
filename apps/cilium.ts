@@ -153,6 +153,9 @@ const manifests: ManifestsCallback = async (app) => {
     helmFlags: ["--include-crds"],
     values: {
       ...baseChartValues,
+      dnsProxy: {
+        enableTransparentMode: false,
+      },
       endpointStatus: {
         // allow viewing of endpoint policy enablement in kubectl/k9s
         enabled: true,
