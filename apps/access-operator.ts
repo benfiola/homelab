@@ -17,12 +17,12 @@ const chartData = {
   crds: {
     chart: "crds",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.14",
+    version: "0.1.0-rc.15",
   },
   operator: {
     chart: "operator",
     repo: "https://benfiola.github.io/access-operator/charts",
-    version: "0.1.0-rc.14",
+    version: "0.1.0-rc.15",
   },
 };
 
@@ -69,6 +69,7 @@ const manifests: ManifestsCallback = async (app) => {
   new Helm(chart, "helm-crds", {
     ...chartData.crds,
     namespace: chart.namespace,
+    releaseName: "access-operator-crds",
   });
 
   const operatorSecret = await createSealedSecret(chart, "operator-secret", {
@@ -92,9 +93,8 @@ const manifests: ManifestsCallback = async (app) => {
   new Helm(chart, "helm-operator", {
     ...chartData.operator,
     namespace: chart.namespace,
+    releaseName: "access-operator",
     values: {
-      // give all resources a static prefix
-      fullnameOverride: "access-operator",
       operator: {
         // use external secret for configuration
         externalSecret: operatorSecret.name,
