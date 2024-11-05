@@ -152,6 +152,10 @@ const manifests: ManifestsCallback = async (app) => {
     helmFlags: ["--include-crds"],
     values: {
       ...baseChartValues,
+      bpf: {
+        // do not aggregate flow traces
+        monitorAggregation: "none",
+      },
       dnsProxy: {
         enableTransparentMode: false,
       },
@@ -160,10 +164,6 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: true,
         // allow viewing of endpoint policy enablement in kubectl/k9s
         status: "policy",
-      },
-      bpf: {
-        // do not aggregate flow traces
-        monitorAggregation: "none",
       },
       gatewayAPI: {
         // enable gateway api support
@@ -183,6 +183,10 @@ const manifests: ManifestsCallback = async (app) => {
             "icmp",
             "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction",
           ],
+        },
+        l2announcements: {
+          // enables advertising of load balancer ips assigned by cilium
+          enabled: true,
         },
         relay: {
           // enables the hubble relay
