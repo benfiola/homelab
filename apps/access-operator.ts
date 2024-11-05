@@ -1,6 +1,6 @@
 import { Chart, Helm } from "cdk8s";
 import { writeFile } from "fs/promises";
-import { Ingress, Namespace } from "../resources/k8s/k8s";
+import { Namespace } from "../resources/k8s/k8s";
 import {
   CliContext,
   ManifestsCallback,
@@ -112,7 +112,6 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new Ingress(chart, "operator-server", {});
   return chart;
 };
 
