@@ -39,6 +39,7 @@ export const createCloudflareTunnel = async (
         name: opts.name,
         envFrom: [secret],
         args: [
+          "tunnel",
           "--no-autoupdate",
           "run",
           `--url=${opts.target}`,
