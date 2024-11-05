@@ -93,8 +93,11 @@ const bootstrap: BootstrapCallback = async (app) => {
 };
 
 const manifests: ManifestsCallback = async (app) => {
-  const { CiliumClusterwideNetworkPolicy, CiliumLoadBalancerIpPool } =
-    await import("../resources/cilium/cilium.io");
+  const {
+    CiliumClusterwideNetworkPolicy,
+    CiliumLoadBalancerIpPool,
+    CiliumL2AnnouncementPolicy,
+  } = await import("../resources/cilium/cilium.io");
   const { createNetworkPolicy } = await import("../utils/createNetworkPolicy");
 
   const chart = new Chart(app, "cilium", {
@@ -164,10 +167,6 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: true,
         // allow viewing of endpoint policy enablement in kubectl/k9s
         status: "policy",
-      },
-      externalIPs: {
-        // allows load balancing of external ipsç
-        enabled: true,
       },
       gatewayAPI: {
         // enable gateway api support
@@ -241,6 +240,13 @@ const manifests: ManifestsCallback = async (app) => {
           stop: "192.168.33.254",
         },
       ],
+    },
+  });
+
+  new CiliumL2AnnouncementPolicy(chart, "announcement-policy", {
+    metadata: { namespace: chart.namespace, name: "default" },
+    spec: {
+      loadBalancerIPs: true,
     },
   });
 
