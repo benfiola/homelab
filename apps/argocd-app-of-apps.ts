@@ -20,6 +20,7 @@ const createApp = (chart: Construct, name: string) => {
   return new Application(chart, name, {
     metadata: {
       name: name,
+      finalizers: ["resources-finalizer.argocd.argoproj.io"],
     },
     spec: {
       destination: {
