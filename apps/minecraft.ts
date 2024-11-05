@@ -19,7 +19,7 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, [
     {
       from: { pod: "minecraft" },
-      to: { dns: "launchermeta.mojang.com", ports: [[443, "tcp"]] },
+      to: { dns: "*.mojang.com", ports: [[443, "tcp"]] },
     },
 
     {

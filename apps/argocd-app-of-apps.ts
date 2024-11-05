@@ -102,7 +102,6 @@ const manifests: ManifestsCallback = async (app) => {
     "external-dns",
     "kube-prometheus",
     "longhorn",
-    "metallb",
     "minio",
     "sealed-secrets",
     "trust-manager",
