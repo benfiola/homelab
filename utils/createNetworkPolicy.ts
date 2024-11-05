@@ -239,8 +239,14 @@ export const createNetworkPolicy = (
     if (isLocalEndpoint(ruleFrom, chart.namespace)) {
       let egress: CiliumClusterwideNetworkPolicySpecsEgress[] = [];
       if (isDns(ruleTo)) {
+        let rule;
+        if (ruleTo.dns.indexOf("*") === -1) {
+          rule = { matchName: ruleTo.dns };
+        } else {
+          rule = { matchPattern: ruleTo.dns };
+        }
         egress.push({
-          toFqdNs: [{ matchName: ruleTo.dns }],
+          toFqdNs: [rule],
         });
       } else if (isEndpoint(ruleTo)) {
         egress.push({

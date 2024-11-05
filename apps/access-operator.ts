@@ -6,6 +6,7 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
+import { createCloudflareTunnel } from "../utils/createCloudflareTunnel";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
@@ -28,7 +29,8 @@ const chartData = {
 
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
-    ACCESS_OPERATOR_CLOUDFLARE_TOKEN: zod.string(),
+    ACCESS_OPERATOR_CLOUDFLARE_API_TOKEN: zod.string(),
+    ACCESS_OPERATOR_CLOUDFLARE_TUNNEL_TOKEN: zod.string(),
     ACCESS_OPERATOR_ROUTEROS_PASSWORD: zod.string(),
   }));
 
@@ -37,6 +39,10 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, [
+    {
+      from: { pod: "access-operator-cloudflare-tunnel" },
+      to: { dns: "*.*.argotunnel.com", ports: [[7844, "udp"]] },
+    },
     {
       from: { pod: "access-operator-operator" },
       to: { dns: "api.cloudflare.com", ports: [[443, "tcp"]] },
@@ -63,6 +69,10 @@ const manifests: ManifestsCallback = async (app) => {
       from: { entity: "ingress" },
       to: { pod: "access-operator-server", ports: [[8080, "tcp"]] },
     },
+    {
+      from: { pod: "access-operator-cloudflare-tunnel" },
+      to: { pod: "access-operator-server", ports: [[8080, "tcp"]] },
+    },
   ]);
 
   new Namespace(chart, "namespace", {
@@ -80,7 +90,8 @@ const manifests: ManifestsCallback = async (app) => {
   const operatorSecret = await createSealedSecret(chart, "operator-secret", {
     metadata: { namespace: chart.namespace, name: "operator" },
     stringData: {
-      ACCESS_OPERATOR_CLOUDFLARE_TOKEN: env.ACCESS_OPERATOR_CLOUDFLARE_TOKEN,
+      ACCESS_OPERATOR_CLOUDFLARE_TOKEN:
+        env.ACCESS_OPERATOR_CLOUDFLARE_API_TOKEN,
       ACCESS_OPERATOR_LOG_LEVEL: "debug",
       ACCESS_OPERATOR_ROUTEROS_ADDRESS: "router.bulia:8728",
       ACCESS_OPERATOR_ROUTEROS_PASSWORD: env.ACCESS_OPERATOR_ROUTEROS_PASSWORD,
@@ -115,6 +126,13 @@ const manifests: ManifestsCallback = async (app) => {
         },
       },
     },
+  });
+
+  await createCloudflareTunnel(chart, {
+    name: "access-operator-cloudflare-tunnel",
+    target: `http://access-operator-server.${chart.namespace}.svc:80`,
+    tunnelToken: env.ACCESS_OPERATOR_CLOUDFLARE_TUNNEL_TOKEN,
+    tunnelUuid: "6e2a4de3-4af0-45ea-825e-f7074b4a2148",
   });
 
   return chart;
