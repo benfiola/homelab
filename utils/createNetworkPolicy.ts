@@ -13,6 +13,19 @@ interface WithPorts {
   ports: Port[];
 }
 
+interface Cidr {
+  cidr: string;
+}
+
+/**
+ * Typeguard ensuring an object is a Cidr
+ * @param v the object to check
+ * @returns true if v is a Cidr
+ */
+const isCidr = (v: any): v is Cidr => {
+  return v["cidr"] !== undefined;
+};
+
 interface Dns {
   dns: string;
 }
@@ -73,6 +86,19 @@ const isExternalPod = (v: any): v is ExternalPod => {
   return v["externalPod"] !== undefined;
 };
 
+interface HomeNetwork {
+  homeNetwork: null;
+}
+
+/**
+ * Typeguard ensuring an object is a HomeNetwork
+ * @param v the object to check
+ * @returns true if v is a HomeNetwork
+ */
+const isHomeNetwork = (v: any): v is HomeNetwork => {
+  return v["homeNetwork"] !== undefined;
+};
+
 interface KubeDns {
   kubeDns: null;
 }
@@ -113,8 +139,6 @@ const isPod = (v: any): v is Pod => {
   return v["pod"] !== undefined;
 };
 
-type EndpointLike = ExternalPod | KubeDns | Longhorn | Pod;
-
 /**
  * Processes a Resource - translating EndpointLike resources into actual Endpoint resources
  *
@@ -139,6 +163,9 @@ const processResource = <T extends Resource | (Resource & WithPorts)>(
       "k8s-app": "kube-dns",
     };
     delete v["kubeDns"];
+  } else if (isHomeNetwork(r)) {
+    v["cidr"] = "192.168.0.0/16";
+    delete v["homeNetwork"];
   } else if (isLonghorn(r)) {
     v["endpoint"] = {
       "io.kubernetes.pod.namespace": namespace,
@@ -160,7 +187,9 @@ const processResource = <T extends Resource | (Resource & WithPorts)>(
   return v;
 };
 
-type Resource = Dns | Endpoint | Entity | EndpointLike;
+type CidrLike = HomeNetwork;
+type EndpointLike = ExternalPod | KubeDns | Longhorn | Pod;
+type Resource = Cidr | CidrLike | Dns | Endpoint | EndpointLike | Entity;
 
 /**
  * Typeguard ensuring an object is not only an Endpoint *but* that its namespace points to the current namespace.
@@ -214,7 +243,11 @@ export const createNetworkPolicy = (
 
     if (isLocalEndpoint(ruleTo, chart.namespace)) {
       let ingress: CiliumClusterwideNetworkPolicySpecsIngress[] = [];
-      if (isEndpoint(ruleFrom)) {
+      if (isCidr(ruleFrom)) {
+        ingress.push({
+          fromCidr: [ruleFrom.cidr],
+        });
+      } else if (isEndpoint(ruleFrom)) {
         ingress.push({
           fromEndpoints: [{ matchLabels: ruleFrom.endpoint }],
         });
@@ -238,7 +271,11 @@ export const createNetworkPolicy = (
 
     if (isLocalEndpoint(ruleFrom, chart.namespace)) {
       let egress: CiliumClusterwideNetworkPolicySpecsEgress[] = [];
-      if (isDns(ruleTo)) {
+      if (isCidr(ruleTo)) {
+        egress.push({
+          toCidr: [ruleTo.cidr],
+        });
+      } else if (isDns(ruleTo)) {
         let rule;
         if (ruleTo.dns.indexOf("*") === -1) {
           rule = { matchName: ruleTo.dns };

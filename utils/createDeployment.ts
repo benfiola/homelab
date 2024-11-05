@@ -115,6 +115,7 @@ interface Container {
     cpu?: number;
     mem?: number;
   };
+  user?: number;
 }
 
 /**
@@ -143,6 +144,7 @@ const convertContainer = (container: Container): ActualContainer => {
   const envFrom = container.envFrom?.map(convertEnvFrom);
   const ports = container.ports ? convertPortMap(container.ports) : undefined;
   const probe = container.probe ? convertProbe(container.probe) : undefined;
+  const user = container.user ? container.user : 1001;
 
   return {
     args: container.args,
@@ -159,7 +161,7 @@ const convertContainer = (container: Container): ActualContainer => {
       allowPrivilegeEscalation: false,
       capabilities: { drop: ["ALL"] },
       runAsNonRoot: true,
-      runAsUser: 1001,
+      runAsUser: user,
       seccompProfile: { type: "RuntimeDefault" },
     },
   };
