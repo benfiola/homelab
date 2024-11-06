@@ -227,6 +227,10 @@ const manifests: ManifestsCallback = async (app) => {
         // enables advertising of load balancer ips assigned by cilium
         enabled: true,
       },
+      loadBalancer: {
+        // use direct server return mode to preserve client ip when connecting to loadbalancer services
+        mode: "dsr",
+      },
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
     },
