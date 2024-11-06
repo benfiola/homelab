@@ -158,6 +158,7 @@ const manifests: ManifestsCallback = async (app) => {
       bpf: {
         // do not aggregate flow traces
         monitorAggregation: "none",
+        masquerade: true,
       },
       dnsProxy: {
         // transparent mode seems to intermittently fail
@@ -237,6 +238,8 @@ const manifests: ManifestsCallback = async (app) => {
       rollOutCiliumPods: true,
       // use native routing (with loadbalancing dsr mode)
       routingMode: "native",
+      ipv4NativeRoutingCIDR: "10.244.0.0/16",
+      autoDirectNodeRoutes: true,
     },
   });
 
