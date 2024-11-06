@@ -233,6 +233,10 @@ const manifests: ManifestsCallback = async (app) => {
       },
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
+      // restart cilium pods on config map change
+      rollOutCiliumPods: true,
+      // use native routing (with loadbalancing dsr mode)
+      routingMode: "native",
     },
   });
 
