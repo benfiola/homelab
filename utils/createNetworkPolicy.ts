@@ -6,7 +6,7 @@ import {
   CiliumClusterwideNetworkPolicySpecsIngress,
 } from "../resources/cilium/cilium.io";
 
-type Protocol = "tcp" | "udp";
+type Protocol = "tcp" | "udp" | "any";
 type Port = [number, Protocol];
 
 interface WithPorts {

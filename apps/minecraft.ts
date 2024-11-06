@@ -1,9 +1,12 @@
 import { Chart } from "cdk8s";
+import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
+import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
 
@@ -24,7 +27,7 @@ const manifests: ManifestsCallback = async (app) => {
 
     {
       from: { homeNetwork: null },
-      to: { pod: "minecraft", ports: [[25565, "tcp"]] },
+      to: { pod: "minecraft", ports: [[25565, "any"]] },
     },
   ]);
 
@@ -49,8 +52,9 @@ const manifests: ManifestsCallback = async (app) => {
           EULA: "TRUE",
           MAX_MEMORY: "6G",
           USE_AIKAR_FLAGS: "true",
+          USE_NATIVE_TRANSPORT: "false",
         },
-        ports: { udp: [25565, "udp"] },
+        ports: { tcp: [25565, "tcp"] },
         resources: {
           mem: 6000,
         },
@@ -66,9 +70,7 @@ const manifests: ManifestsCallback = async (app) => {
     metadata: {
       namespace: chart.namespace,
       name: "minecraft",
-      annotations: {
-        "external-dns.alpha.kubernetes.io/hostname": "minecraft.bulia",
-      },
+      annotations: getDnsAnnotation("minecraft.bulia"),
     },
     spec: {
       type: "LoadBalancer",
@@ -77,32 +79,34 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  //   const accessSecret = await createSealedSecret(chart, "access-secret", {
-  //     metadata: { namespace: chart.namespace, name: "minecraft" },
-  //     stringData: {
-  //       password: env.MINECRAFT_ACCESS_PASSWORD,
-  //     },
-  //   });
+  const accessSecret = await createSealedSecret(chart, "access-secret", {
+    metadata: { namespace: chart.namespace, name: "minecraft" },
+    stringData: {
+      password: env.MINECRAFT_ACCESS_PASSWORD,
+    },
+  });
 
-  //   new AccessClaim(chart, "access", {
-  //     metadata: {
-  //       namespace: chart.namespace,
-  //       name: "minecraft",
-  //     },
-  //     spec: {
-  //       dns: "minecraft.bfiola.dev",
-  //       passwordRef: {
-  //         key: "password",
-  //         name: accessSecret.name,
-  //       },
-  //       serviceTemplates: [
-  //         {
-  //           ports: [{ port: 25565 }],
-  //         },
-  //       ],
-  //       ttl: "168h",
-  //     },
-  //   });
+  new AccessClaim(chart, "access", {
+    metadata: {
+      namespace: chart.namespace,
+      name: "minecraft",
+    },
+    spec: {
+      dns: "minecraft.bfiola.dev",
+      passwordRef: {
+        key: "password",
+        name: accessSecret.name,
+      },
+      serviceTemplates: [
+        {
+          type: "LoadBalancer",
+          ports: [{ port: 25565 }],
+          selector: getPodLabels(deployment.name),
+        },
+      ],
+      ttl: "168h",
+    },
+  });
 
   return chart;
 };
