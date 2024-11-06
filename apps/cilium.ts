@@ -231,14 +231,17 @@ const manifests: ManifestsCallback = async (app) => {
         // use direct server return mode to preserve client ip when connecting to loadbalancer services
         mode: "dsr",
         // use geneve for the load balancer (NOTE: requires tunnelProtocol to be set)
-        dsrDispatch: "geneve",
+        // dsrDispatch: "geneve",
       },
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
       // restart cilium pods on config map change
       rollOutCiliumPods: true,
-      // use geneve as a tunnel protocol
-      tunnelProtocol: "geneve",
+      // use geneve as a tunnel protocol (required for load balancer dsr)
+      // tunnelProtocol: "geneve",
+      routingMode: "native",
+      autoDirectNodeRoutes: true,
+      ipv4NativeRoutingCIDR: "10.0.0.0/8",
     },
   });
 
