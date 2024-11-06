@@ -158,7 +158,6 @@ const manifests: ManifestsCallback = async (app) => {
       bpf: {
         // do not aggregate flow traces
         monitorAggregation: "none",
-        masquerade: true,
       },
       dnsProxy: {
         // transparent mode seems to intermittently fail
@@ -231,15 +230,15 @@ const manifests: ManifestsCallback = async (app) => {
       loadBalancer: {
         // use direct server return mode to preserve client ip when connecting to loadbalancer services
         mode: "dsr",
+        // use geneve for the load balancer (NOTE: requires tunnelProtocol to be set)
+        dsrDispatch: "geneve",
       },
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
       // restart cilium pods on config map change
       rollOutCiliumPods: true,
-      // use native routing (with loadbalancing dsr mode)
-      routingMode: "native",
-      ipv4NativeRoutingCIDR: "10.244.0.0/16",
-      autoDirectNodeRoutes: true,
+      // use geneve as a tunnel protocol
+      tunnelProtocol: "geneve",
     },
   });
 
