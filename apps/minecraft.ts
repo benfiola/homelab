@@ -8,6 +8,7 @@ import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getPodLabels } from "../utils/getPodLabels";
+import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
 
 const manifests: ManifestsCallback = async (app) => {
@@ -54,6 +55,9 @@ const manifests: ManifestsCallback = async (app) => {
           USE_AIKAR_FLAGS: "true",
           USE_NATIVE_TRANSPORT: "false",
         },
+        mounts: {
+          data: "/data",
+        },
         ports: { tcp: [25565, "tcp"] },
         resources: {
           mem: 6000,
@@ -64,6 +68,9 @@ const manifests: ManifestsCallback = async (app) => {
     name: "minecraft",
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
+    volumes: {
+      data: [getStorageClassName(true), "10Gi"],
+    },
   });
 
   new Service(chart, "minecraft-service", {

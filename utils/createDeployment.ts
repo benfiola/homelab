@@ -4,8 +4,10 @@ import {
   ConfigMap,
   Deployment,
   IntOrString,
+  PersistentVolumeClaim,
   Quantity,
   Secret,
+  Volume,
 } from "../resources/k8s/k8s";
 import { SealedSecret } from "../resources/sealed-secrets/bitnami.com";
 import { getPodLabels } from "./getPodLabels";
@@ -102,12 +104,27 @@ const convertProbe = (probe: [string, number]) => {
   };
 };
 
+type MountMap = { [k: string]: string };
+
+/**
+ * Converts a simple 'mount map' into a container volume mount.
+ *
+ * @param mountMap a map of mount name -> path mappings
+ * @returns a list of container volume mounts
+ */
+const convertMountMap = (mountMap: MountMap) => {
+  return Object.entries(mountMap).map(([name, mountPath]) => ({
+    name,
+    mountPath,
+  }));
+};
 interface Container {
   args?: string[];
   command?: string[];
   env?: EnvMap;
   envFrom?: EnvFrom[];
   image: string;
+  mounts?: MountMap;
   name: string;
   ports?: PortMap;
   probe?: [string, number];
@@ -145,6 +162,9 @@ const convertContainer = (container: Container): ActualContainer => {
   const ports = container.ports ? convertPortMap(container.ports) : undefined;
   const probe = container.probe ? convertProbe(container.probe) : undefined;
   const user = container.user ? container.user : 1001;
+  const volumeMounts = container.mounts
+    ? convertMountMap(container.mounts)
+    : undefined;
 
   return {
     args: container.args,
@@ -164,7 +184,47 @@ const convertContainer = (container: Container): ActualContainer => {
       runAsUser: user,
       seccompProfile: { type: "RuntimeDefault" },
     },
+    volumeMounts,
   };
+};
+
+type VolumeMap = { [k: string]: [string, string] };
+
+/**
+ * Converts a volume map to a set of persistent volume claims - which are in turn converted into pod volume resources.
+ *
+ * @param volumeMap the volume map
+ */
+const createVolumes = (
+  construct: Construct,
+  deploymentName: string,
+  volumeMap: VolumeMap
+) => {
+  const toReturn: Volume[] = [];
+  Object.entries(volumeMap).map(([volumeName, [storageClassName, storage]]) => {
+    const name = `${deploymentName}-${volumeName}`;
+    new PersistentVolumeClaim(construct, name, {
+      metadata: { name },
+      spec: {
+        accessModes: ["ReadWriteOnce"],
+        storageClassName,
+        resources: {
+          requests: {
+            storage: Quantity.fromString(storage),
+          },
+        },
+      },
+    });
+
+    toReturn.push({
+      name: volumeName,
+      persistentVolumeClaim: {
+        claimName: name,
+      },
+    });
+  });
+
+  return toReturn;
 };
 
 interface CreateDeploymentOpts {
@@ -172,6 +232,7 @@ interface CreateDeploymentOpts {
   namespace?: string;
   name: string;
   serviceAccount: string;
+  volumes?: VolumeMap;
 }
 
 /**
@@ -182,9 +243,13 @@ export const createDeployment = async (
   opts: CreateDeploymentOpts
 ) => {
   const containers = opts.containers.map(convertContainer);
+  let volumes;
+  if (opts.volumes) {
+    volumes = createVolumes(construct, opts.name, opts.volumes);
+  }
 
   const deployment = new Deployment(construct, `${opts.name}-deployment`, {
-    metadata: { name: opts.name, namespace: opts.namespace },
+    metadata: { name: opts.name },
     spec: {
       selector: {
         matchLabels: {
@@ -200,6 +265,7 @@ export const createDeployment = async (
         spec: {
           containers,
           serviceAccountName: opts.serviceAccount,
+          volumes,
         },
       },
     },
