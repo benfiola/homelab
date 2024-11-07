@@ -232,6 +232,7 @@ interface CreateDeploymentOpts {
   namespace?: string;
   name: string;
   serviceAccount: string;
+  updateStrategy?: "Recreate";
   volumes?: VolumeMap;
 }
 
@@ -243,10 +244,12 @@ export const createDeployment = async (
   opts: CreateDeploymentOpts
 ) => {
   const containers = opts.containers.map(convertContainer);
-  let volumes;
-  if (opts.volumes) {
-    volumes = createVolumes(construct, opts.name, opts.volumes);
-  }
+  const strategy = opts.updateStrategy
+    ? { type: opts.updateStrategy }
+    : undefined;
+  const volumes = opts.volumes
+    ? createVolumes(construct, opts.name, opts.volumes)
+    : undefined;
 
   const deployment = new Deployment(construct, `${opts.name}-deployment`, {
     metadata: { name: opts.name },
@@ -256,6 +259,7 @@ export const createDeployment = async (
           ...getPodLabels(opts.name),
         },
       },
+      strategy,
       template: {
         metadata: {
           labels: {

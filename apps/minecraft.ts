@@ -68,6 +68,7 @@ const manifests: ManifestsCallback = async (app) => {
     name: "minecraft",
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
+    updateStrategy: "Recreate",
     volumes: {
       data: [getStorageClassName(false), "10Gi"],
     },
