@@ -69,7 +69,7 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
     volumes: {
-      data: [getStorageClassName(true), "10Gi"],
+      data: [getStorageClassName(false), "10Gi"],
     },
   });
 
