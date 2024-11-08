@@ -274,6 +274,16 @@ const manifests: ManifestsCallback = async (app) => {
               peerAsn: 64512,
             },
           ],
+          serviceSelector: {
+            matchExpressions: [
+              {
+                // this is required to select all services
+                key: "bfiola.dev/not-set",
+                operator: "NotIn" as any,
+                values: ["not-set"],
+              },
+            ],
+          },
         },
       ],
     },
