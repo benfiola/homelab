@@ -270,7 +270,7 @@ const manifests: ManifestsCallback = async (app) => {
           localAsn: 64512,
           neighbors: [
             {
-              peerAddress: "192.168.88.1/32",
+              peerAddress: "192.168.32.1/32",
               peerAsn: 64512,
             },
           ],
