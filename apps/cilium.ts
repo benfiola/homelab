@@ -157,12 +157,10 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: true,
       },
       bpf: {
+        // masquerade via bpf (better performance)
+        masquerade: true,
         // do not aggregate flow traces
         monitorAggregation: "none",
-      },
-      dnsProxy: {
-        // transparent mode seems to intermittently fail
-        enableTransparentMode: false,
       },
       hubble: {
         // enables hubble metrics
@@ -215,6 +213,8 @@ const manifests: ManifestsCallback = async (app) => {
         loadbalancerMode: "shared",
       },
       loadBalancer: {
+        // enable native load balancer acceleration (performance)
+        acceleration: "native",
         // use direct server return mode to preserve client ip when connecting to loadbalancer services
         mode: "dsr",
         // use geneve for the load balancer (NOTE: requires tunnelProtocol to be set)
