@@ -230,6 +230,7 @@ const manifests: ManifestsCallback = async (app) => {
         // use geneve for the load balancer (NOTE: requires tunnelProtocol to be set)
         dsrDispatch: "geneve",
       },
+      MTU: "1500",
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
       // restart cilium pods on config map change
