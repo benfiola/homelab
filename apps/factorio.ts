@@ -56,6 +56,9 @@ const manifests: ManifestsCallback = async (app) => {
   const deployment = await createDeployment(chart, {
     containers: [
       {
+        env: {
+          DLC_SPACE_AGE: "false",
+        },
         image: "factoriotools/factorio:2.0.15",
         mounts: {
           data: "/factorio",
