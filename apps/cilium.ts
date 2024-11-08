@@ -1,4 +1,4 @@
-import { Chart, Helm, Include } from "cdk8s";
+import { Chart, Helm } from "cdk8s";
 import { writeFile } from "fs/promises";
 import {
   Certificate,
@@ -146,10 +146,6 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new Include(chart, "gateway-crds", {
-    url: "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/experimental-install.yaml",
-  });
-
   new Helm(chart, "helm", {
     ...chartData,
     namespace: chart.namespace,
@@ -167,12 +163,6 @@ const manifests: ManifestsCallback = async (app) => {
       dnsProxy: {
         // transparent mode seems to intermittently fail
         enableTransparentMode: false,
-      },
-      endpointStatus: {
-        // allow viewing of endpoint policy enablement in kubectl/k9s
-        enabled: true,
-        // allow viewing of endpoint policy enablement in kubectl/k9s
-        status: "policy",
       },
       hubble: {
         // enables hubble metrics
