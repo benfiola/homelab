@@ -229,7 +229,9 @@ const manifests: ManifestsCallback = async (app) => {
       // use native routing mode (BGP advertises pod routes directly)
       routingMode: "native",
       // specify broad subnet for native routing (BGD advertises pod routes)
-      ipv4NativeRoutingCIDR: "10.0.0.0/12",
+      ipv4NativeRoutingCIDR: "10.0.0.0/8",
+      // auto-detect routes to other nodes on same l2 network
+      autoDirectNodeRoutes: true,
     },
   });
 
