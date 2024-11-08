@@ -4,6 +4,2652 @@ import { Construct } from 'constructs';
 
 
 /**
+ * CiliumBGPAdvertisement is the Schema for the ciliumbgpadvertisements API
+ *
+ * @schema CiliumBGPAdvertisement
+ */
+export class CiliumBgpAdvertisement extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumBGPAdvertisement"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumBGPAdvertisement',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumBGPAdvertisement".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumBgpAdvertisementProps): any {
+    return {
+      ...CiliumBgpAdvertisement.GVK,
+      ...toJson_CiliumBgpAdvertisementProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumBGPAdvertisement" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumBgpAdvertisementProps) {
+    super(scope, id, {
+      ...CiliumBgpAdvertisement.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumBgpAdvertisement.GVK,
+      ...toJson_CiliumBgpAdvertisementProps(resolved),
+    };
+  }
+}
+
+/**
+ * CiliumBGPAdvertisement is the Schema for the ciliumbgpadvertisements API
+ *
+ * @schema CiliumBGPAdvertisement
+ */
+export interface CiliumBgpAdvertisementProps {
+  /**
+   * @schema CiliumBGPAdvertisement#metadata
+   */
+  readonly metadata: ApiObjectMetadata;
+
+  /**
+   * @schema CiliumBGPAdvertisement#spec
+   */
+  readonly spec: CiliumBgpAdvertisementSpec;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementProps' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementProps(obj: CiliumBgpAdvertisementProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumBgpAdvertisementSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * @schema CiliumBgpAdvertisementSpec
+ */
+export interface CiliumBgpAdvertisementSpec {
+  /**
+   * Advertisements is a list of BGP advertisements.
+   *
+   * @schema CiliumBgpAdvertisementSpec#advertisements
+   */
+  readonly advertisements: CiliumBgpAdvertisementSpecAdvertisements[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpec' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementSpec(obj: CiliumBgpAdvertisementSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'advertisements': obj.advertisements?.map(y => toJson_CiliumBgpAdvertisementSpecAdvertisements(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Advertisement defines which routes Cilium should advertise to BGP peers. Optionally, additional attributes can be set to the advertised routes.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisements
+ */
+export interface CiliumBgpAdvertisementSpecAdvertisements {
+  /**
+   * AdvertisementType defines type of advertisement which has to be advertised.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisements#advertisementType
+   */
+  readonly advertisementType: CiliumBgpAdvertisementSpecAdvertisementsAdvertisementType;
+
+  /**
+   * Attributes defines additional attributes to set to the advertised routes. If not specified, no additional attributes are set.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisements#attributes
+   */
+  readonly attributes?: CiliumBgpAdvertisementSpecAdvertisementsAttributes;
+
+  /**
+   * Selector is a label selector to select objects of the type specified by AdvertisementType. If not specified, all objects of the type specified by AdvertisementType are selected for advertisement.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisements#selector
+   */
+  readonly selector?: CiliumBgpAdvertisementSpecAdvertisementsSelector;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpecAdvertisements' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementSpecAdvertisements(obj: CiliumBgpAdvertisementSpecAdvertisements | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'advertisementType': obj.advertisementType,
+    'attributes': toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributes(obj.attributes),
+    'selector': toJson_CiliumBgpAdvertisementSpecAdvertisementsSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * AdvertisementType defines type of advertisement which has to be advertised.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsAdvertisementType
+ */
+export enum CiliumBgpAdvertisementSpecAdvertisementsAdvertisementType {
+  /** PodCIDR */
+  POD_CIDR = "PodCIDR",
+  /** CiliumPodIPPool */
+  CILIUM_POD_IP_POOL = "CiliumPodIPPool",
+  /** CiliumLoadBalancerIP */
+  CILIUM_LOAD_BALANCER_IP = "CiliumLoadBalancerIP",
+}
+
+/**
+ * Attributes defines additional attributes to set to the advertised routes. If not specified, no additional attributes are set.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsAttributes
+ */
+export interface CiliumBgpAdvertisementSpecAdvertisementsAttributes {
+  /**
+   * Community sets the community attribute in the route. If not specified, no community attribute is set.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsAttributes#community
+   */
+  readonly community?: CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity;
+
+  /**
+   * LocalPreference sets the local preference attribute in the route. If not specified, no local preference attribute is set.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsAttributes#localPreference
+   */
+  readonly localPreference?: number;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpecAdvertisementsAttributes' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributes(obj: CiliumBgpAdvertisementSpecAdvertisementsAttributes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'community': toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity(obj.community),
+    'localPreference': obj.localPreference,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Selector is a label selector to select objects of the type specified by AdvertisementType. If not specified, all objects of the type specified by AdvertisementType are selected for advertisement.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsSelector
+ */
+export interface CiliumBgpAdvertisementSpecAdvertisementsSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpecAdvertisementsSelector' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementSpecAdvertisementsSelector(obj: CiliumBgpAdvertisementSpecAdvertisementsSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Community sets the community attribute in the route. If not specified, no community attribute is set.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity
+ */
+export interface CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity {
+  /**
+   * Large holds a list of the BGP Large Communities Attribute (RFC 8092) values.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity#large
+   */
+  readonly large?: string[];
+
+  /**
+   * Standard holds a list of "standard" 32-bit BGP Communities Attribute (RFC 1997) values.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity#standard
+   */
+  readonly standard?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity(obj: CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'large': obj.large?.map(y => y),
+    'standard': obj.standard?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions
+ */
+export interface CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions(obj: CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressionsOperator
+ */
+export enum CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+
+/**
+ * CiliumBGPClusterConfig is the Schema for the CiliumBGPClusterConfig API
+ *
+ * @schema CiliumBGPClusterConfig
+ */
+export class CiliumBgpClusterConfig extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumBGPClusterConfig"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumBGPClusterConfig',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumBGPClusterConfig".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumBgpClusterConfigProps): any {
+    return {
+      ...CiliumBgpClusterConfig.GVK,
+      ...toJson_CiliumBgpClusterConfigProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumBGPClusterConfig" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumBgpClusterConfigProps) {
+    super(scope, id, {
+      ...CiliumBgpClusterConfig.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumBgpClusterConfig.GVK,
+      ...toJson_CiliumBgpClusterConfigProps(resolved),
+    };
+  }
+}
+
+/**
+ * CiliumBGPClusterConfig is the Schema for the CiliumBGPClusterConfig API
+ *
+ * @schema CiliumBGPClusterConfig
+ */
+export interface CiliumBgpClusterConfigProps {
+  /**
+   * @schema CiliumBGPClusterConfig#metadata
+   */
+  readonly metadata: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired cluster configuration of the BGP control plane.
+   *
+   * @schema CiliumBGPClusterConfig#spec
+   */
+  readonly spec: CiliumBgpClusterConfigSpec;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigProps' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigProps(obj: CiliumBgpClusterConfigProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumBgpClusterConfigSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Spec defines the desired cluster configuration of the BGP control plane.
+ *
+ * @schema CiliumBgpClusterConfigSpec
+ */
+export interface CiliumBgpClusterConfigSpec {
+  /**
+   * A list of CiliumBGPInstance(s) which instructs the BGP control plane how to instantiate virtual BGP routers.
+   *
+   * @schema CiliumBgpClusterConfigSpec#bgpInstances
+   */
+  readonly bgpInstances: CiliumBgpClusterConfigSpecBgpInstances[];
+
+  /**
+   * NodeSelector selects a group of nodes where this BGP Cluster config applies. If empty / nil this config applies to all nodes.
+   *
+   * @schema CiliumBgpClusterConfigSpec#nodeSelector
+   */
+  readonly nodeSelector?: CiliumBgpClusterConfigSpecNodeSelector;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigSpec' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigSpec(obj: CiliumBgpClusterConfigSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'bgpInstances': obj.bgpInstances?.map(y => toJson_CiliumBgpClusterConfigSpecBgpInstances(y)),
+    'nodeSelector': toJson_CiliumBgpClusterConfigSpecNodeSelector(obj.nodeSelector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * @schema CiliumBgpClusterConfigSpecBgpInstances
+ */
+export interface CiliumBgpClusterConfigSpecBgpInstances {
+  /**
+   * LocalASN is the ASN of this BGP instance. Supports extended 32bit ASNs.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstances#localASN
+   */
+  readonly localAsn?: number;
+
+  /**
+   * Name is the name of the BGP instance. It is a unique identifier for the BGP instance within the cluster configuration.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstances#name
+   */
+  readonly name: string;
+
+  /**
+   * Peers is a list of neighboring BGP peers for this virtual router
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstances#peers
+   */
+  readonly peers?: CiliumBgpClusterConfigSpecBgpInstancesPeers[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigSpecBgpInstances' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigSpecBgpInstances(obj: CiliumBgpClusterConfigSpecBgpInstances | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localASN': obj.localAsn,
+    'name': obj.name,
+    'peers': obj.peers?.map(y => toJson_CiliumBgpClusterConfigSpecBgpInstancesPeers(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * NodeSelector selects a group of nodes where this BGP Cluster config applies. If empty / nil this config applies to all nodes.
+ *
+ * @schema CiliumBgpClusterConfigSpecNodeSelector
+ */
+export interface CiliumBgpClusterConfigSpecNodeSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpClusterConfigSpecNodeSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpClusterConfigSpecNodeSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigSpecNodeSelector' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigSpecNodeSelector(obj: CiliumBgpClusterConfigSpecNodeSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * @schema CiliumBgpClusterConfigSpecBgpInstancesPeers
+ */
+export interface CiliumBgpClusterConfigSpecBgpInstancesPeers {
+  /**
+   * Name is the name of the BGP peer. It is a unique identifier for the peer within the BGP instance.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeers#name
+   */
+  readonly name: string;
+
+  /**
+   * PeerASN is the ASN of the peer BGP router. Supports extended 32bit ASNs.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeers#peerASN
+   */
+  readonly peerAsn?: number;
+
+  /**
+   * PeerAddress is the IP address of the neighbor. Supports IPv4 and IPv6 addresses.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeers#peerAddress
+   */
+  readonly peerAddress?: string;
+
+  /**
+   * PeerConfigRef is a reference to a peer configuration resource. If not specified, the default BGP configuration is used for this peer.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeers#peerConfigRef
+   */
+  readonly peerConfigRef?: CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigSpecBgpInstancesPeers' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigSpecBgpInstancesPeers(obj: CiliumBgpClusterConfigSpecBgpInstancesPeers | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'peerASN': obj.peerAsn,
+    'peerAddress': obj.peerAddress,
+    'peerConfigRef': toJson_CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef(obj.peerConfigRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions
+ */
+export interface CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpClusterConfigSpecNodeSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions(obj: CiliumBgpClusterConfigSpecNodeSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * PeerConfigRef is a reference to a peer configuration resource. If not specified, the default BGP configuration is used for this peer.
+ *
+ * @schema CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef
+ */
+export interface CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef {
+  /**
+   * Group is the group of the peer config resource. If not specified, the default of "cilium.io" is used.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the kind of the peer config resource. If not specified, the default of "CiliumBGPPeerConfig" is used.
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the peer config resource. Name refers to the name of a Kubernetes object (typically a CiliumBGPPeerConfig).
+   *
+   * @schema CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef(obj: CiliumBgpClusterConfigSpecBgpInstancesPeersPeerConfigRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpClusterConfigSpecNodeSelectorMatchExpressionsOperator
+ */
+export enum CiliumBgpClusterConfigSpecNodeSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+
+/**
+ * CiliumBGPNodeConfig is node local configuration for BGP agent. Name of the object should be node name. This resource will be created by Cilium operator and is read-only for the users.
+ *
+ * @schema CiliumBGPNodeConfig
+ */
+export class CiliumBgpNodeConfig extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumBGPNodeConfig"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumBGPNodeConfig',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumBGPNodeConfig".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumBgpNodeConfigProps): any {
+    return {
+      ...CiliumBgpNodeConfig.GVK,
+      ...toJson_CiliumBgpNodeConfigProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumBGPNodeConfig" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumBgpNodeConfigProps) {
+    super(scope, id, {
+      ...CiliumBgpNodeConfig.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumBgpNodeConfig.GVK,
+      ...toJson_CiliumBgpNodeConfigProps(resolved),
+    };
+  }
+}
+
+/**
+ * CiliumBGPNodeConfig is node local configuration for BGP agent. Name of the object should be node name. This resource will be created by Cilium operator and is read-only for the users.
+ *
+ * @schema CiliumBGPNodeConfig
+ */
+export interface CiliumBgpNodeConfigProps {
+  /**
+   * @schema CiliumBGPNodeConfig#metadata
+   */
+  readonly metadata: ApiObjectMetadata;
+
+  /**
+   * Spec is the specification of the desired behavior of the CiliumBGPNodeConfig.
+   *
+   * @schema CiliumBGPNodeConfig#spec
+   */
+  readonly spec: CiliumBgpNodeConfigSpec;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigProps' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigProps(obj: CiliumBgpNodeConfigProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumBgpNodeConfigSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Spec is the specification of the desired behavior of the CiliumBGPNodeConfig.
+ *
+ * @schema CiliumBgpNodeConfigSpec
+ */
+export interface CiliumBgpNodeConfigSpec {
+  /**
+   * BGPInstances is a list of BGP router instances on the node.
+   *
+   * @schema CiliumBgpNodeConfigSpec#bgpInstances
+   */
+  readonly bgpInstances: CiliumBgpNodeConfigSpecBgpInstances[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigSpec' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigSpec(obj: CiliumBgpNodeConfigSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'bgpInstances': obj.bgpInstances?.map(y => toJson_CiliumBgpNodeConfigSpecBgpInstances(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPNodeInstance is a single BGP router instance configuration on the node.
+ *
+ * @schema CiliumBgpNodeConfigSpecBgpInstances
+ */
+export interface CiliumBgpNodeConfigSpecBgpInstances {
+  /**
+   * LocalASN is the ASN of this virtual router. Supports extended 32bit ASNs.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstances#localASN
+   */
+  readonly localAsn?: number;
+
+  /**
+   * LocalPort is the port on which the BGP daemon listens for incoming connections.
+   * If not specified, BGP instance will not listen for incoming connections.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstances#localPort
+   */
+  readonly localPort?: number;
+
+  /**
+   * Name is the name of the BGP instance. This name is used to identify the BGP instance on the node.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstances#name
+   */
+  readonly name: string;
+
+  /**
+   * Peers is a list of neighboring BGP peers for this virtual router
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstances#peers
+   */
+  readonly peers?: CiliumBgpNodeConfigSpecBgpInstancesPeers[];
+
+  /**
+   * RouterID is the BGP router ID of this virtual router. This configuration is derived from CiliumBGPNodeConfigOverride resource.
+   * If not specified, the router ID will be derived from the node local address.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstances#routerID
+   */
+  readonly routerId?: string;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigSpecBgpInstances' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigSpecBgpInstances(obj: CiliumBgpNodeConfigSpecBgpInstances | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localASN': obj.localAsn,
+    'localPort': obj.localPort,
+    'name': obj.name,
+    'peers': obj.peers?.map(y => toJson_CiliumBgpNodeConfigSpecBgpInstancesPeers(y)),
+    'routerID': obj.routerId,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * @schema CiliumBgpNodeConfigSpecBgpInstancesPeers
+ */
+export interface CiliumBgpNodeConfigSpecBgpInstancesPeers {
+  /**
+   * LocalAddress is the IP address of the local interface to use for the peering session. This configuration is derived from CiliumBGPNodeConfigOverride resource. If not specified, the local address will be used for setting up peering.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeers#localAddress
+   */
+  readonly localAddress?: string;
+
+  /**
+   * Name is the name of the BGP peer. This name is used to identify the BGP peer for the BGP instance.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeers#name
+   */
+  readonly name: string;
+
+  /**
+   * PeerASN is the ASN of the peer BGP router. Supports extended 32bit ASNs
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeers#peerASN
+   */
+  readonly peerAsn?: number;
+
+  /**
+   * PeerAddress is the IP address of the neighbor. Supports IPv4 and IPv6 addresses.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeers#peerAddress
+   */
+  readonly peerAddress?: string;
+
+  /**
+   * PeerConfigRef is a reference to a peer configuration resource. If not specified, the default BGP configuration is used for this peer.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeers#peerConfigRef
+   */
+  readonly peerConfigRef?: CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigSpecBgpInstancesPeers' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigSpecBgpInstancesPeers(obj: CiliumBgpNodeConfigSpecBgpInstancesPeers | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localAddress': obj.localAddress,
+    'name': obj.name,
+    'peerASN': obj.peerAsn,
+    'peerAddress': obj.peerAddress,
+    'peerConfigRef': toJson_CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef(obj.peerConfigRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * PeerConfigRef is a reference to a peer configuration resource. If not specified, the default BGP configuration is used for this peer.
+ *
+ * @schema CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef
+ */
+export interface CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef {
+  /**
+   * Group is the group of the peer config resource. If not specified, the default of "cilium.io" is used.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the kind of the peer config resource. If not specified, the default of "CiliumBGPPeerConfig" is used.
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the peer config resource. Name refers to the name of a Kubernetes object (typically a CiliumBGPPeerConfig).
+   *
+   * @schema CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef(obj: CiliumBgpNodeConfigSpecBgpInstancesPeersPeerConfigRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+
+/**
+ * CiliumBGPNodeConfigOverride is used to overrides some of the BGP configurations which are node local. Users can user this resource to override auto-generated BGP settings for the node.
+ *
+ * @schema CiliumBGPNodeConfigOverride
+ */
+export class CiliumBgpNodeConfigOverride extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumBGPNodeConfigOverride"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumBGPNodeConfigOverride',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumBGPNodeConfigOverride".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumBgpNodeConfigOverrideProps): any {
+    return {
+      ...CiliumBgpNodeConfigOverride.GVK,
+      ...toJson_CiliumBgpNodeConfigOverrideProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumBGPNodeConfigOverride" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumBgpNodeConfigOverrideProps) {
+    super(scope, id, {
+      ...CiliumBgpNodeConfigOverride.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumBgpNodeConfigOverride.GVK,
+      ...toJson_CiliumBgpNodeConfigOverrideProps(resolved),
+    };
+  }
+}
+
+/**
+ * CiliumBGPNodeConfigOverride is used to overrides some of the BGP configurations which are node local. Users can user this resource to override auto-generated BGP settings for the node.
+ *
+ * @schema CiliumBGPNodeConfigOverride
+ */
+export interface CiliumBgpNodeConfigOverrideProps {
+  /**
+   * @schema CiliumBGPNodeConfigOverride#metadata
+   */
+  readonly metadata: ApiObjectMetadata;
+
+  /**
+   * Spec is the specification of the desired behavior of the CiliumBGPNodeConfigOverride.
+   *
+   * @schema CiliumBGPNodeConfigOverride#spec
+   */
+  readonly spec: CiliumBgpNodeConfigOverrideSpec;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigOverrideProps' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigOverrideProps(obj: CiliumBgpNodeConfigOverrideProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumBgpNodeConfigOverrideSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Spec is the specification of the desired behavior of the CiliumBGPNodeConfigOverride.
+ *
+ * @schema CiliumBgpNodeConfigOverrideSpec
+ */
+export interface CiliumBgpNodeConfigOverrideSpec {
+  /**
+   * BGPInstances is a list of BGP instances to override.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpec#bgpInstances
+   */
+  readonly bgpInstances: CiliumBgpNodeConfigOverrideSpecBgpInstances[];
+
+  /**
+   * NodeRef is the name of the node for which the BGP configuration is overridden.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpec#nodeRef
+   */
+  readonly nodeRef: string;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigOverrideSpec' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigOverrideSpec(obj: CiliumBgpNodeConfigOverrideSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'bgpInstances': obj.bgpInstances?.map(y => toJson_CiliumBgpNodeConfigOverrideSpecBgpInstances(y)),
+    'nodeRef': obj.nodeRef,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPNodeConfigInstanceOverride defines configuration options which can be overridden for a specific BGP instance.
+ *
+ * @schema CiliumBgpNodeConfigOverrideSpecBgpInstances
+ */
+export interface CiliumBgpNodeConfigOverrideSpecBgpInstances {
+  /**
+   * LocalPort is port to use for this BGP instance.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstances#localPort
+   */
+  readonly localPort?: number;
+
+  /**
+   * Name is the name of the BGP instance for which the configuration is overridden.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstances#name
+   */
+  readonly name: string;
+
+  /**
+   * Peers is a list of peer configurations to override.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstances#peers
+   */
+  readonly peers?: CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers[];
+
+  /**
+   * RouterID is BGP router id to use for this instance. It must be unique across all BGP instances.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstances#routerID
+   */
+  readonly routerId?: string;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigOverrideSpecBgpInstances' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigOverrideSpecBgpInstances(obj: CiliumBgpNodeConfigOverrideSpecBgpInstances | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localPort': obj.localPort,
+    'name': obj.name,
+    'peers': obj.peers?.map(y => toJson_CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers(y)),
+    'routerID': obj.routerId,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPNodeConfigPeerOverride defines configuration options which can be overridden for a specific peer.
+ *
+ * @schema CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers
+ */
+export interface CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers {
+  /**
+   * LocalAddress is the IP address to use for connecting to this peer.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers#localAddress
+   */
+  readonly localAddress?: string;
+
+  /**
+   * LocalPort is source port to use for connecting to this peer.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers#localPort
+   */
+  readonly localPort?: number;
+
+  /**
+   * Name is the name of the peer for which the configuration is overridden.
+   *
+   * @schema CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers(obj: CiliumBgpNodeConfigOverrideSpecBgpInstancesPeers | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localAddress': obj.localAddress,
+    'localPort': obj.localPort,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+
+/**
+ *
+ *
+ * @schema CiliumBGPPeerConfig
+ */
+export class CiliumBgpPeerConfig extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumBGPPeerConfig"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumBGPPeerConfig',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumBGPPeerConfig".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumBgpPeerConfigProps): any {
+    return {
+      ...CiliumBgpPeerConfig.GVK,
+      ...toJson_CiliumBgpPeerConfigProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumBGPPeerConfig" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumBgpPeerConfigProps) {
+    super(scope, id, {
+      ...CiliumBgpPeerConfig.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumBgpPeerConfig.GVK,
+      ...toJson_CiliumBgpPeerConfigProps(resolved),
+    };
+  }
+}
+
+/**
+ * @schema CiliumBGPPeerConfig
+ */
+export interface CiliumBgpPeerConfigProps {
+  /**
+   * @schema CiliumBGPPeerConfig#metadata
+   */
+  readonly metadata: ApiObjectMetadata;
+
+  /**
+   * Spec is the specification of the desired behavior of the CiliumBGPPeerConfig.
+   *
+   * @schema CiliumBGPPeerConfig#spec
+   */
+  readonly spec: CiliumBgpPeerConfigSpec;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigProps' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigProps(obj: CiliumBgpPeerConfigProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumBgpPeerConfigSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Spec is the specification of the desired behavior of the CiliumBGPPeerConfig.
+ *
+ * @schema CiliumBgpPeerConfigSpec
+ */
+export interface CiliumBgpPeerConfigSpec {
+  /**
+   * AuthSecretRef is the name of the secret to use to fetch a TCP authentication password for this peer.
+   * If not specified, no authentication is used.
+   *
+   * @schema CiliumBgpPeerConfigSpec#authSecretRef
+   */
+  readonly authSecretRef?: string;
+
+  /**
+   * EBGPMultihopTTL controls the multi-hop feature for eBGP peers. Its value defines the Time To Live (TTL) value used in BGP packets sent to the peer.
+   * If not specified, EBGP multihop is disabled. This field is ignored for iBGP neighbors.
+   *
+   * @schema CiliumBgpPeerConfigSpec#ebgpMultihop
+   */
+  readonly ebgpMultihop?: number;
+
+  /**
+   * Families, if provided, defines a set of AFI/SAFIs the speaker will negotiate with it's peer.
+   * If not specified, the default families of IPv6/unicast and IPv4/unicast will be created.
+   *
+   * @schema CiliumBgpPeerConfigSpec#families
+   */
+  readonly families?: CiliumBgpPeerConfigSpecFamilies[];
+
+  /**
+   * GracefulRestart defines graceful restart parameters which are negotiated with this peer.
+   * If not specified, the graceful restart capability is disabled.
+   *
+   * @schema CiliumBgpPeerConfigSpec#gracefulRestart
+   */
+  readonly gracefulRestart?: CiliumBgpPeerConfigSpecGracefulRestart;
+
+  /**
+   * Timers defines the BGP timers for the peer.
+   * If not specified, the default timers are used.
+   *
+   * @schema CiliumBgpPeerConfigSpec#timers
+   */
+  readonly timers?: CiliumBgpPeerConfigSpecTimers;
+
+  /**
+   * Transport defines the BGP transport parameters for the peer.
+   * If not specified, the default transport parameters are used.
+   *
+   * @schema CiliumBgpPeerConfigSpec#transport
+   */
+  readonly transport?: CiliumBgpPeerConfigSpecTransport;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpec' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpec(obj: CiliumBgpPeerConfigSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authSecretRef': obj.authSecretRef,
+    'ebgpMultihop': obj.ebgpMultihop,
+    'families': obj.families?.map(y => toJson_CiliumBgpPeerConfigSpecFamilies(y)),
+    'gracefulRestart': toJson_CiliumBgpPeerConfigSpecGracefulRestart(obj.gracefulRestart),
+    'timers': toJson_CiliumBgpPeerConfigSpecTimers(obj.timers),
+    'transport': toJson_CiliumBgpPeerConfigSpecTransport(obj.transport),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPFamilyWithAdverts represents a AFI/SAFI address family pair along with reference to BGP Advertisements.
+ *
+ * @schema CiliumBgpPeerConfigSpecFamilies
+ */
+export interface CiliumBgpPeerConfigSpecFamilies {
+  /**
+   * Advertisements selects group of BGP Advertisement(s) to advertise for this family.
+   * If not specified, no advertisements are sent for this family.
+   * This field is ignored in CiliumBGPNeighbor which is used in CiliumBGPPeeringPolicy. Use CiliumBGPPeeringPolicy advertisement options instead.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamilies#advertisements
+   */
+  readonly advertisements?: CiliumBgpPeerConfigSpecFamiliesAdvertisements;
+
+  /**
+   * Afi is the Address Family Identifier (AFI) of the family.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamilies#afi
+   */
+  readonly afi: CiliumBgpPeerConfigSpecFamiliesAfi;
+
+  /**
+   * Safi is the Subsequent Address Family Identifier (SAFI) of the family.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamilies#safi
+   */
+  readonly safi: CiliumBgpPeerConfigSpecFamiliesSafi;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpecFamilies' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpecFamilies(obj: CiliumBgpPeerConfigSpecFamilies | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'advertisements': toJson_CiliumBgpPeerConfigSpecFamiliesAdvertisements(obj.advertisements),
+    'afi': obj.afi,
+    'safi': obj.safi,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * GracefulRestart defines graceful restart parameters which are negotiated with this peer.
+ * If not specified, the graceful restart capability is disabled.
+ *
+ * @schema CiliumBgpPeerConfigSpecGracefulRestart
+ */
+export interface CiliumBgpPeerConfigSpecGracefulRestart {
+  /**
+   * Enabled flag, when set enables graceful restart capability.
+   *
+   * @schema CiliumBgpPeerConfigSpecGracefulRestart#enabled
+   */
+  readonly enabled: boolean;
+
+  /**
+   * RestartTimeSeconds is the estimated time it will take for the BGP session to be re-established with peer after a restart. After this period, peer will remove stale routes. This is described RFC 4724 section 4.2.
+   *
+   * @schema CiliumBgpPeerConfigSpecGracefulRestart#restartTimeSeconds
+   */
+  readonly restartTimeSeconds?: number;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpecGracefulRestart' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpecGracefulRestart(obj: CiliumBgpPeerConfigSpecGracefulRestart | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'enabled': obj.enabled,
+    'restartTimeSeconds': obj.restartTimeSeconds,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Timers defines the BGP timers for the peer.
+ * If not specified, the default timers are used.
+ *
+ * @schema CiliumBgpPeerConfigSpecTimers
+ */
+export interface CiliumBgpPeerConfigSpecTimers {
+  /**
+   * ConnectRetryTimeSeconds defines the initial value for the BGP ConnectRetryTimer (RFC 4271, Section 8).
+   * If not specified, defaults to 120 seconds.
+   *
+   * @schema CiliumBgpPeerConfigSpecTimers#connectRetryTimeSeconds
+   */
+  readonly connectRetryTimeSeconds?: number;
+
+  /**
+   * HoldTimeSeconds defines the initial value for the BGP HoldTimer (RFC 4271, Section 4.2). Updating this value will cause a session reset.
+   * If not specified, defaults to 90 seconds.
+   *
+   * @schema CiliumBgpPeerConfigSpecTimers#holdTimeSeconds
+   */
+  readonly holdTimeSeconds?: number;
+
+  /**
+   * KeepaliveTimeSeconds defines the initial value for the BGP KeepaliveTimer (RFC 4271, Section 8). It can not be larger than HoldTimeSeconds. Updating this value will cause a session reset.
+   * If not specified, defaults to 30 seconds.
+   *
+   * @schema CiliumBgpPeerConfigSpecTimers#keepAliveTimeSeconds
+   */
+  readonly keepAliveTimeSeconds?: number;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpecTimers' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpecTimers(obj: CiliumBgpPeerConfigSpecTimers | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'connectRetryTimeSeconds': obj.connectRetryTimeSeconds,
+    'holdTimeSeconds': obj.holdTimeSeconds,
+    'keepAliveTimeSeconds': obj.keepAliveTimeSeconds,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Transport defines the BGP transport parameters for the peer.
+ * If not specified, the default transport parameters are used.
+ *
+ * @schema CiliumBgpPeerConfigSpecTransport
+ */
+export interface CiliumBgpPeerConfigSpecTransport {
+  /**
+   * LocalPort is the local port to be used for the BGP session.
+   * If not specified, defaults to TCP port 179.
+   *
+   * @schema CiliumBgpPeerConfigSpecTransport#localPort
+   */
+  readonly localPort?: number;
+
+  /**
+   * PeerPort is the peer port to be used for the BGP session.
+   * If not specified, defaults to TCP port 179.
+   *
+   * @schema CiliumBgpPeerConfigSpecTransport#peerPort
+   */
+  readonly peerPort?: number;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpecTransport' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpecTransport(obj: CiliumBgpPeerConfigSpecTransport | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localPort': obj.localPort,
+    'peerPort': obj.peerPort,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Advertisements selects group of BGP Advertisement(s) to advertise for this family.
+ * If not specified, no advertisements are sent for this family.
+ * This field is ignored in CiliumBGPNeighbor which is used in CiliumBGPPeeringPolicy. Use CiliumBGPPeeringPolicy advertisement options instead.
+ *
+ * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisements
+ */
+export interface CiliumBgpPeerConfigSpecFamiliesAdvertisements {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisements#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisements#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpecFamiliesAdvertisements' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpecFamiliesAdvertisements(obj: CiliumBgpPeerConfigSpecFamiliesAdvertisements | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Afi is the Address Family Identifier (AFI) of the family.
+ *
+ * @schema CiliumBgpPeerConfigSpecFamiliesAfi
+ */
+export enum CiliumBgpPeerConfigSpecFamiliesAfi {
+  /** ipv4 */
+  IPV4 = "ipv4",
+  /** ipv6 */
+  IPV6 = "ipv6",
+  /** l2vpn */
+  L2VPN = "l2vpn",
+  /** ls */
+  LS = "ls",
+  /** opaque */
+  OPAQUE = "opaque",
+}
+
+/**
+ * Safi is the Subsequent Address Family Identifier (SAFI) of the family.
+ *
+ * @schema CiliumBgpPeerConfigSpecFamiliesSafi
+ */
+export enum CiliumBgpPeerConfigSpecFamiliesSafi {
+  /** unicast */
+  UNICAST = "unicast",
+  /** multicast */
+  MULTICAST = "multicast",
+  /** mpls_label */
+  MPLS_UNDERSCORE_LABEL = "mpls_label",
+  /** encapsulation */
+  ENCAPSULATION = "encapsulation",
+  /** vpls */
+  VPLS = "vpls",
+  /** evpn */
+  EVPN = "evpn",
+  /** ls */
+  LS = "ls",
+  /** sr_policy */
+  SR_UNDERSCORE_POLICY = "sr_policy",
+  /** mup */
+  MUP = "mup",
+  /** mpls_vpn */
+  MPLS_UNDERSCORE_VPN = "mpls_vpn",
+  /** mpls_vpn_multicast */
+  MPLS_UNDERSCORE_VPN_UNDERSCORE_MULTICAST = "mpls_vpn_multicast",
+  /** route_target_constraints */
+  ROUTE_UNDERSCORE_TARGET_UNDERSCORE_CONSTRAINTS = "route_target_constraints",
+  /** flowspec_unicast */
+  FLOWSPEC_UNDERSCORE_UNICAST = "flowspec_unicast",
+  /** flowspec_vpn */
+  FLOWSPEC_UNDERSCORE_VPN = "flowspec_vpn",
+  /** key_value */
+  KEY_UNDERSCORE_VALUE = "key_value",
+}
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions
+ */
+export interface CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions(obj: CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressionsOperator
+ */
+export enum CiliumBgpPeerConfigSpecFamiliesAdvertisementsMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+
+/**
+ * CiliumBGPPeeringPolicy is a Kubernetes third-party resource for instructing Cilium's BGP control plane to create virtual BGP routers.
+ *
+ * @schema CiliumBGPPeeringPolicy
+ */
+export class CiliumBgpPeeringPolicy extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumBGPPeeringPolicy"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumBGPPeeringPolicy',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumBGPPeeringPolicy".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumBgpPeeringPolicyProps): any {
+    return {
+      ...CiliumBgpPeeringPolicy.GVK,
+      ...toJson_CiliumBgpPeeringPolicyProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumBGPPeeringPolicy" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumBgpPeeringPolicyProps) {
+    super(scope, id, {
+      ...CiliumBgpPeeringPolicy.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumBgpPeeringPolicy.GVK,
+      ...toJson_CiliumBgpPeeringPolicyProps(resolved),
+    };
+  }
+}
+
+/**
+ * CiliumBGPPeeringPolicy is a Kubernetes third-party resource for instructing Cilium's BGP control plane to create virtual BGP routers.
+ *
+ * @schema CiliumBGPPeeringPolicy
+ */
+export interface CiliumBgpPeeringPolicyProps {
+  /**
+   * @schema CiliumBGPPeeringPolicy#metadata
+   */
+  readonly metadata: ApiObjectMetadata;
+
+  /**
+   * Spec is a human readable description of a BGP peering policy
+   *
+   * @schema CiliumBGPPeeringPolicy#spec
+   */
+  readonly spec?: CiliumBgpPeeringPolicySpec;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicyProps' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicyProps(obj: CiliumBgpPeeringPolicyProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumBgpPeeringPolicySpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Spec is a human readable description of a BGP peering policy
+ *
+ * @schema CiliumBgpPeeringPolicySpec
+ */
+export interface CiliumBgpPeeringPolicySpec {
+  /**
+   * NodeSelector selects a group of nodes where this BGP Peering Policy applies.
+   * If empty / nil this policy applies to all nodes.
+   *
+   * @schema CiliumBgpPeeringPolicySpec#nodeSelector
+   */
+  readonly nodeSelector?: CiliumBgpPeeringPolicySpecNodeSelector;
+
+  /**
+   * A list of CiliumBGPVirtualRouter(s) which instructs the BGP control plane how to instantiate virtual BGP routers.
+   *
+   * @schema CiliumBgpPeeringPolicySpec#virtualRouters
+   */
+  readonly virtualRouters: CiliumBgpPeeringPolicySpecVirtualRouters[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpec' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpec(obj: CiliumBgpPeeringPolicySpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'nodeSelector': toJson_CiliumBgpPeeringPolicySpecNodeSelector(obj.nodeSelector),
+    'virtualRouters': obj.virtualRouters?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRouters(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * NodeSelector selects a group of nodes where this BGP Peering Policy applies.
+ * If empty / nil this policy applies to all nodes.
+ *
+ * @schema CiliumBgpPeeringPolicySpecNodeSelector
+ */
+export interface CiliumBgpPeeringPolicySpecNodeSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecNodeSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecNodeSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecNodeSelector' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecNodeSelector(obj: CiliumBgpPeeringPolicySpecNodeSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPVirtualRouter defines a discrete BGP virtual router configuration.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRouters
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRouters {
+  /**
+   * ExportPodCIDR determines whether to export the Node's private CIDR block to the configured neighbors.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#exportPodCIDR
+   */
+  readonly exportPodCidr?: boolean;
+
+  /**
+   * LocalASN is the ASN of this virtual router. Supports extended 32bit ASNs
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#localASN
+   */
+  readonly localAsn: number;
+
+  /**
+   * Neighbors is a list of neighboring BGP peers for this virtual router
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#neighbors
+   */
+  readonly neighbors: CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors[];
+
+  /**
+   * PodIPPoolSelector selects CiliumPodIPPools based on labels. The virtual router will announce allocated CIDRs of matching CiliumPodIPPools.
+   * If empty / nil no CiliumPodIPPools will be announced.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#podIPPoolSelector
+   */
+  readonly podIpPoolSelector?: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector;
+
+  /**
+   * ServiceSelector selects a group of load balancer services which this virtual router will announce. The loadBalancerClass for a service must be nil or specify a class supported by Cilium, e.g. "io.cilium/bgp-control-plane". Refer to the following document for additional details regarding load balancer classes:
+   * https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
+   * If empty / nil no services will be announced.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#serviceSelector
+   */
+  readonly serviceSelector?: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRouters' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRouters(obj: CiliumBgpPeeringPolicySpecVirtualRouters | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'exportPodCIDR': obj.exportPodCidr,
+    'localASN': obj.localAsn,
+    'neighbors': obj.neighbors?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors(y)),
+    'podIPPoolSelector': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector(obj.podIpPoolSelector),
+    'serviceSelector': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector(obj.serviceSelector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions
+ */
+export interface CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPNeighbor is a neighboring peer for use in a CiliumBGPVirtualRouter configuration.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors {
+  /**
+   * AdvertisedPathAttributes can be used to apply additional path attributes to selected routes when advertising them to the peer. If empty / nil, no additional path attributes are advertised.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#advertisedPathAttributes
+   */
+  readonly advertisedPathAttributes?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes[];
+
+  /**
+   * AuthSecretRef is the name of the secret to use to fetch a TCP authentication password for this peer.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#authSecretRef
+   */
+  readonly authSecretRef?: string;
+
+  /**
+   * ConnectRetryTimeSeconds defines the initial value for the BGP ConnectRetryTimer (RFC 4271, Section 8).
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#connectRetryTimeSeconds
+   */
+  readonly connectRetryTimeSeconds?: number;
+
+  /**
+   * EBGPMultihopTTL controls the multi-hop feature for eBGP peers. Its value defines the Time To Live (TTL) value used in BGP packets sent to the neighbor. The value 1 implies that eBGP multi-hop feature is disabled (only a single hop is allowed). This field is ignored for iBGP peers.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#eBGPMultihopTTL
+   */
+  readonly eBgpMultihopTtl?: number;
+
+  /**
+   * Families, if provided, defines a set of AFI/SAFIs the speaker will negotiate with it's peer.
+   * If this slice is not provided the default families of IPv6 and IPv4 will be provided.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#families
+   */
+  readonly families?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies[];
+
+  /**
+   * GracefulRestart defines graceful restart parameters which are negotiated with this neighbor. If empty / nil, the graceful restart capability is disabled.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#gracefulRestart
+   */
+  readonly gracefulRestart?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart;
+
+  /**
+   * HoldTimeSeconds defines the initial value for the BGP HoldTimer (RFC 4271, Section 4.2). Updating this value will cause a session reset.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#holdTimeSeconds
+   */
+  readonly holdTimeSeconds?: number;
+
+  /**
+   * KeepaliveTimeSeconds defines the initial value for the BGP KeepaliveTimer (RFC 4271, Section 8). It can not be larger than HoldTimeSeconds. Updating this value will cause a session reset.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#keepAliveTimeSeconds
+   */
+  readonly keepAliveTimeSeconds?: number;
+
+  /**
+   * PeerASN is the ASN of the peer BGP router. Supports extended 32bit ASNs
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#peerASN
+   */
+  readonly peerAsn: number;
+
+  /**
+   * PeerAddress is the IP address of the peer. This must be in CIDR notation and use a /32 to express a single host.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#peerAddress
+   */
+  readonly peerAddress: string;
+
+  /**
+   * PeerPort is the TCP port of the peer. 1-65535 is the range of valid port numbers that can be specified. If unset, defaults to 179.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#peerPort
+   */
+  readonly peerPort?: number;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'advertisedPathAttributes': obj.advertisedPathAttributes?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes(y)),
+    'authSecretRef': obj.authSecretRef,
+    'connectRetryTimeSeconds': obj.connectRetryTimeSeconds,
+    'eBGPMultihopTTL': obj.eBgpMultihopTtl,
+    'families': obj.families?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies(y)),
+    'gracefulRestart': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart(obj.gracefulRestart),
+    'holdTimeSeconds': obj.holdTimeSeconds,
+    'keepAliveTimeSeconds': obj.keepAliveTimeSeconds,
+    'peerASN': obj.peerAsn,
+    'peerAddress': obj.peerAddress,
+    'peerPort': obj.peerPort,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * PodIPPoolSelector selects CiliumPodIPPools based on labels. The virtual router will announce allocated CIDRs of matching CiliumPodIPPools.
+ * If empty / nil no CiliumPodIPPools will be announced.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector(obj: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * ServiceSelector selects a group of load balancer services which this virtual router will announce. The loadBalancerClass for a service must be nil or specify a class supported by Cilium, e.g. "io.cilium/bgp-control-plane". Refer to the following document for additional details regarding load balancer classes:
+ * https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
+ * If empty / nil no services will be announced.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector(obj: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressionsOperator
+ */
+export enum CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+/**
+ * CiliumBGPPathAttributes can be used to apply additional path attributes to matched routes when advertising them to a BGP peer.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes {
+  /**
+   * Communities defines a set of community values advertised in the supported BGP Communities path attributes. If nil / not set, no BGP Communities path attribute will be advertised.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#communities
+   */
+  readonly communities?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities;
+
+  /**
+   * LocalPreference defines the preference value advertised in the BGP Local Preference path attribute. As Local Preference is only valid for iBGP peers, this value will be ignored for eBGP peers (no Local Preference path attribute will be advertised). If nil / not set, the default Local Preference of 100 will be advertised in the Local Preference path attribute for iBGP peers.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#localPreference
+   */
+  readonly localPreference?: number;
+
+  /**
+   * Selector selects a group of objects of the SelectorType resulting into routes that will be announced with the configured Attributes. If nil / not set, all objects of the SelectorType are selected.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#selector
+   */
+  readonly selector?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector;
+
+  /**
+   * SelectorType defines the object type on which the Selector applies: - For "PodCIDR" the Selector matches k8s CiliumNode resources (path attributes apply to routes announced for PodCIDRs of selected CiliumNodes. Only affects routes of cluster scope / Kubernetes IPAM CIDRs, not Multi-Pool IPAM CIDRs. - For "CiliumLoadBalancerIPPool" the Selector matches CiliumLoadBalancerIPPool custom resources (path attributes apply to routes announced for selected CiliumLoadBalancerIPPools). - For "CiliumPodIPPool" the Selector matches CiliumPodIPPool custom resources (path attributes apply to routes announced for allocated CIDRs of selected CiliumPodIPPools).
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#selectorType
+   */
+  readonly selectorType: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorType;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'communities': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities(obj.communities),
+    'localPreference': obj.localPreference,
+    'selector': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector(obj.selector),
+    'selectorType': obj.selectorType,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * CiliumBGPFamily represents a AFI/SAFI address family pair.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies {
+  /**
+   * Afi is the Address Family Identifier (AFI) of the family.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies#afi
+   */
+  readonly afi: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesAfi;
+
+  /**
+   * Safi is the Subsequent Address Family Identifier (SAFI) of the family.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies#safi
+   */
+  readonly safi: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesSafi;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'afi': obj.afi,
+    'safi': obj.safi,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * GracefulRestart defines graceful restart parameters which are negotiated with this neighbor. If empty / nil, the graceful restart capability is disabled.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart {
+  /**
+   * Enabled flag, when set enables graceful restart capability.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart#enabled
+   */
+  readonly enabled: boolean;
+
+  /**
+   * RestartTimeSeconds is the estimated time it will take for the BGP session to be re-established with peer after a restart. After this period, peer will remove stale routes. This is described RFC 4724 section 4.2.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart#restartTimeSeconds
+   */
+  readonly restartTimeSeconds?: number;
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'enabled': obj.enabled,
+    'restartTimeSeconds': obj.restartTimeSeconds,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Communities defines a set of community values advertised in the supported BGP Communities path attributes. If nil / not set, no BGP Communities path attribute will be advertised.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities {
+  /**
+   * Large holds a list of the BGP Large Communities Attribute (RFC 8092) values.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities#large
+   */
+  readonly large?: string[];
+
+  /**
+   * Standard holds a list of "standard" 32-bit BGP Communities Attribute (RFC 1997) values.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities#standard
+   */
+  readonly standard?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'large': obj.large?.map(y => y),
+    'standard': obj.standard?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * Selector selects a group of objects of the SelectorType resulting into routes that will be announced with the configured Attributes. If nil / not set, all objects of the SelectorType are selected.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * SelectorType defines the object type on which the Selector applies: - For "PodCIDR" the Selector matches k8s CiliumNode resources (path attributes apply to routes announced for PodCIDRs of selected CiliumNodes. Only affects routes of cluster scope / Kubernetes IPAM CIDRs, not Multi-Pool IPAM CIDRs. - For "CiliumLoadBalancerIPPool" the Selector matches CiliumLoadBalancerIPPool custom resources (path attributes apply to routes announced for selected CiliumLoadBalancerIPPools). - For "CiliumPodIPPool" the Selector matches CiliumPodIPPool custom resources (path attributes apply to routes announced for allocated CIDRs of selected CiliumPodIPPools).
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorType
+ */
+export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorType {
+  /** PodCIDR */
+  POD_CIDR = "PodCIDR",
+  /** CiliumLoadBalancerIPPool */
+  CILIUM_LOAD_BALANCER_IP_POOL = "CiliumLoadBalancerIPPool",
+  /** CiliumPodIPPool */
+  CILIUM_POD_IP_POOL = "CiliumPodIPPool",
+}
+
+/**
+ * Afi is the Address Family Identifier (AFI) of the family.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesAfi
+ */
+export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesAfi {
+  /** ipv4 */
+  IPV4 = "ipv4",
+  /** ipv6 */
+  IPV6 = "ipv6",
+  /** l2vpn */
+  L2VPN = "l2vpn",
+  /** ls */
+  LS = "ls",
+  /** opaque */
+  OPAQUE = "opaque",
+}
+
+/**
+ * Safi is the Subsequent Address Family Identifier (SAFI) of the family.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesSafi
+ */
+export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesSafi {
+  /** unicast */
+  UNICAST = "unicast",
+  /** multicast */
+  MULTICAST = "multicast",
+  /** mpls_label */
+  MPLS_UNDERSCORE_LABEL = "mpls_label",
+  /** encapsulation */
+  ENCAPSULATION = "encapsulation",
+  /** vpls */
+  VPLS = "vpls",
+  /** evpn */
+  EVPN = "evpn",
+  /** ls */
+  LS = "ls",
+  /** sr_policy */
+  SR_UNDERSCORE_POLICY = "sr_policy",
+  /** mup */
+  MUP = "mup",
+  /** mpls_vpn */
+  MPLS_UNDERSCORE_VPN = "mpls_vpn",
+  /** mpls_vpn_multicast */
+  MPLS_UNDERSCORE_VPN_UNDERSCORE_MULTICAST = "mpls_vpn_multicast",
+  /** route_target_constraints */
+  ROUTE_UNDERSCORE_TARGET_UNDERSCORE_CONSTRAINTS = "route_target_constraints",
+  /** flowspec_unicast */
+  FLOWSPEC_UNDERSCORE_UNICAST = "flowspec_unicast",
+  /** flowspec_vpn */
+  FLOWSPEC_UNDERSCORE_VPN = "flowspec_vpn",
+  /** key_value */
+  KEY_UNDERSCORE_VALUE = "key_value",
+}
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressionsOperator
+ */
+export enum CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressionsOperator
+ */
+export enum CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions
+ */
+export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   *
+   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, quote-props */
+export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, quote-props */
+
+/**
+ * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressionsOperator
+ */
+export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+
+/**
  * CiliumCIDRGroup is a list of external CIDRs (i.e: CIDRs selecting peers outside the clusters) that can be referenced as a single entity from CiliumNetworkPolicies.
  *
  * @schema CiliumCIDRGroup

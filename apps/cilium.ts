@@ -97,6 +97,7 @@ const manifests: ManifestsCallback = async (app) => {
     CiliumClusterwideNetworkPolicy,
     CiliumLoadBalancerIpPool,
     CiliumL2AnnouncementPolicy,
+    CiliumBgpPeeringPolicy,
   } = await import("../resources/cilium/cilium.io");
   const { createNetworkPolicy } = await import("../utils/createNetworkPolicy");
 
@@ -155,6 +156,9 @@ const manifests: ManifestsCallback = async (app) => {
     helmFlags: ["--include-crds"],
     values: {
       ...baseChartValues,
+      bgpControlPlane: {
+        enabled: true,
+      },
       bpf: {
         // do not aggregate flow traces
         monitorAggregation: "none",
@@ -225,11 +229,11 @@ const manifests: ManifestsCallback = async (app) => {
       },
       l2announcements: {
         // enables advertising of load balancer ips assigned by cilium
-        enabled: true,
+        // enabled: true,
       },
       l2podannouncements: {
         // enables advertising of load balancer ips assigned by cilium
-        enabled: true,
+        // enabled: true,
       },
       loadBalancer: {
         // use direct server return mode to preserve client ip when connecting to loadbalancer services
@@ -258,12 +262,29 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new CiliumL2AnnouncementPolicy(chart, "announcement-policy", {
+  new CiliumBgpPeeringPolicy(chart, "peering-policy", {
     metadata: { namespace: chart.namespace, name: "default" },
     spec: {
-      loadBalancerIPs: true,
+      virtualRouters: [
+        {
+          localAsn: 64512,
+          neighbors: [
+            {
+              peerAddress: "192.168.88.1/32",
+              peerAsn: 64512,
+            },
+          ],
+        },
+      ],
     },
   });
+
+  // new CiliumL2AnnouncementPolicy(chart, "announcement-policy", {
+  //   metadata: { namespace: chart.namespace, name: "default" },
+  //   spec: {
+  //     loadBalancerIPs: true,
+  //   },
+  // });
 
   new CiliumClusterwideNetworkPolicy(chart, "default", {
     metadata: {
@@ -417,6 +438,12 @@ const manifests: ManifestsCallback = async (app) => {
 
 const resources: ResourcesCallback = async (manifestFile) => {
   const resources = [
+    ["v2alpha1", "ciliumbgpadvertisements"],
+    ["v2alpha1", "ciliumbgpclusterconfigs"],
+    ["v2alpha1", "ciliumbgpnodeconfigoverrides"],
+    ["v2alpha1", "ciliumbgpnodeconfigs"],
+    ["v2alpha1", "ciliumbgppeerconfigs"],
+    ["v2alpha1", "ciliumbgppeeringpolicies"],
     ["v2alpha1", "ciliumcidrgroups"],
     ["v2", "ciliumclusterwideenvoyconfigs"],
     ["v2", "ciliumclusterwidenetworkpolicies"],
