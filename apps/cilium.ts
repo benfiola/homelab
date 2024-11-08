@@ -226,8 +226,8 @@ const manifests: ManifestsCallback = async (app) => {
       rollOutCiliumPods: true,
       // use geneve as a tunnel protocol (required for load balancer dsr)
       // tunnelProtocol: "geneve",
-      // use direct routing mode (BGP advertises pod routes directly)
-      routingMode: "direct",
+      // use native routing mode (BGP advertises pod routes directly)
+      routingMode: "native",
       // specify broad subnet for native routing (BGD advertises pod routes)
       ipv4NativeRoutingCIDR: "10.0.0.0/8",
     },
