@@ -213,8 +213,6 @@ const manifests: ManifestsCallback = async (app) => {
         loadbalancerMode: "shared",
       },
       loadBalancer: {
-        // enable native load balancer acceleration (performance)
-        acceleration: "native",
         // use direct server return mode to preserve client ip when connecting to loadbalancer services
         mode: "dsr",
         // use geneve for the load balancer (NOTE: requires tunnelProtocol to be set)
