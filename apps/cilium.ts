@@ -267,6 +267,7 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       virtualRouters: [
         {
+          exportPodCidr: true,
           localAsn: 64512,
           neighbors: [
             {
