@@ -231,7 +231,7 @@ const manifests: ManifestsCallback = async (app) => {
         dsrDispatch: "geneve",
       },
       // deny all traffic not included in a network policy
-      policyEnforcementMode: "never",
+      policyEnforcementMode: "always",
       // restart cilium pods on config map change
       rollOutCiliumPods: true,
       // use geneve as a tunnel protocol (required for load balancer dsr)
