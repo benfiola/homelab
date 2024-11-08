@@ -53,7 +53,6 @@ const manifests: ManifestsCallback = async (app) => {
           EULA: "TRUE",
           MAX_MEMORY: "6G",
           USE_AIKAR_FLAGS: "true",
-          USE_NATIVE_TRANSPORT: "false",
         },
         mounts: {
           data: "/data",

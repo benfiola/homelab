@@ -157,6 +157,7 @@ const manifests: ManifestsCallback = async (app) => {
     values: {
       ...baseChartValues,
       bgpControlPlane: {
+        // enable use of bgp to advertise routes
         enabled: true,
       },
       bpf: {
@@ -172,10 +173,6 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: true,
         // allow viewing of endpoint policy enablement in kubectl/k9s
         status: "policy",
-      },
-      gatewayAPI: {
-        // enable gateway api support
-        enabled: true,
       },
       hubble: {
         // enables hubble metrics
@@ -227,14 +224,6 @@ const manifests: ManifestsCallback = async (app) => {
         // share the same ip per ingress resource
         loadbalancerMode: "shared",
       },
-      l2announcements: {
-        // enables advertising of load balancer ips assigned by cilium
-        // enabled: true,
-      },
-      l2podannouncements: {
-        // enables advertising of load balancer ips assigned by cilium
-        // enabled: true,
-      },
       loadBalancer: {
         // use direct server return mode to preserve client ip when connecting to loadbalancer services
         mode: "dsr",
@@ -242,7 +231,7 @@ const manifests: ManifestsCallback = async (app) => {
         dsrDispatch: "geneve",
       },
       // deny all traffic not included in a network policy
-      policyEnforcementMode: "always",
+      policyEnforcementMode: "never",
       // restart cilium pods on config map change
       rollOutCiliumPods: true,
       // use geneve as a tunnel protocol (required for load balancer dsr)
