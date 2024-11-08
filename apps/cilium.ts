@@ -232,6 +232,7 @@ const manifests: ManifestsCallback = async (app) => {
       ipv4NativeRoutingCIDR: "10.0.0.0/8",
       // auto-detect routes to other nodes on same l2 network
       autoDirectNodeRoutes: true,
+      enableIPv4Masquerade: false,
     },
   });
 
