@@ -18,7 +18,7 @@ import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLab
 
 const chartData = {
   chart: "cilium",
-  version: "1.15.5",
+  version: "1.16.3",
   repo: "https://helm.cilium.io/",
 };
 
@@ -230,7 +230,6 @@ const manifests: ManifestsCallback = async (app) => {
         // use geneve for the load balancer (NOTE: requires tunnelProtocol to be set)
         dsrDispatch: "geneve",
       },
-      MTU: "1500",
       // deny all traffic not included in a network policy
       policyEnforcementMode: "always",
       // restart cilium pods on config map change
