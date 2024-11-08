@@ -101,6 +101,7 @@ const manifests: ManifestsCallback = async (app) => {
     "cilium",
     "dynamic-localpv-provisioner",
     "external-dns",
+    "factorio",
     "kube-prometheus",
     "longhorn",
     "minecraft",

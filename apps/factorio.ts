@@ -1,13 +1,21 @@
 import { Chart } from "cdk8s";
+import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getPodLabels } from "../utils/getPodLabels";
+import { getStorageClassName } from "../utils/getStorageClassName";
+import { parseEnv } from "../utils/parseEnv";
 
 const manifests: ManifestsCallback = async (app) => {
+  const env = parseEnv((zod) => ({
+    FACTORIO_ACCESS_PASSWORD: zod.string(),
+  }));
+
   const chart = new Chart(app, "factorio", {
     namespace: "factorio",
   });
@@ -28,10 +36,7 @@ const manifests: ManifestsCallback = async (app) => {
       from: { homeNetwork: null },
       to: {
         pod: "factorio",
-        ports: [
-          [27015, "tcp"],
-          [34197, "udp"],
-        ],
+        ports: [[34197, "udp"]],
       },
     },
   ]);
@@ -51,9 +56,12 @@ const manifests: ManifestsCallback = async (app) => {
   const deployment = await createDeployment(chart, {
     containers: [
       {
-        image: "factoriotools/factorio",
+        image: "factoriotools/factorio:2.0.15",
+        mounts: {
+          data: "/factorio",
+        },
         name: "factorio",
-        ports: { tcp: [27015, "tcp"], udp: [34197, "udp"] },
+        ports: { udp: [34197, "udp"] },
         resources: {
           mem: 1000,
         },
@@ -64,6 +72,9 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
     updateStrategy: "Recreate",
+    volumes: {
+      data: [getStorageClassName(false), "10Gi"],
+    },
   });
 
   new Service(chart, "factorio-service", {
@@ -74,11 +85,37 @@ const manifests: ManifestsCallback = async (app) => {
     },
     spec: {
       type: "LoadBalancer",
-      ports: [
-        { name: "tcp", port: 27015 },
-        { name: "udp", port: 34197 },
-      ],
+      ports: [{ name: "udp", port: 34197 }],
       selector: getPodLabels(deployment.name),
+    },
+  });
+
+  const accessSecret = await createSealedSecret(chart, "access-secret", {
+    metadata: { namespace: chart.namespace, name: "factorio" },
+    stringData: {
+      password: env.FACTORIO_ACCESS_PASSWORD,
+    },
+  });
+
+  new AccessClaim(chart, "access", {
+    metadata: {
+      namespace: chart.namespace,
+      name: "factorio",
+    },
+    spec: {
+      dns: "factorio.bfiola.dev",
+      passwordRef: {
+        key: "password",
+        name: accessSecret.name,
+      },
+      serviceTemplates: [
+        {
+          type: "LoadBalancer",
+          ports: [{ name: "udp", port: 34197 }],
+          selector: getPodLabels(deployment.name),
+        },
+      ],
+      ttl: "168h",
     },
   });
 
