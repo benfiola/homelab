@@ -1,0 +1,67 @@
+name: publish
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{github.workflow}}
+    permissions:
+      id-token: write
+      contents: write
+    environment:
+      name: publish
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.18.0"
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: checkout manifests
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: main
+          repository: benfiola/homelab-manifests
+          path: manifests
+          token: ${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}
+      - name: install helm
+        run: |
+          curl -o /tmp/archive.tar.gz -fsSL https://get.helm.sh/helm-v3.14.3-linux-amd64.tar.gz
+          tar xvzf /tmp/archive.tar.gz -C /usr/local/bin --strip-components 1
+          rm -rf /tmp/archive.tar.gz
+      - name: install kubeseal
+        run: |
+          curl -o /tmp/archive.tar.gz -fsSL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.2/kubeseal-0.26.2-linux-amd64.tar.gz
+          tar xvzf /tmp/archive.tar.gz -C /usr/local/bin
+          rm -rf /tmp/archive.tar.gz
+      - name: install yarn
+        run: |
+          npm install -g yarn
+      - name: install project dependencies
+        run: |
+          yarn install
+          echo "$(pwd)/node_modules/.bin" >> "${GITHUB_PATH}"
+      - name: generate manifests
+        run: |
+          rm -rf manifests/*
+          echo '${{secrets.ENV_FILE}}' > .env
+          echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
+          homelab manifests all generate
+        env:
+          SEALED_SECRETS_CERT_PATH: /tmp/sealed-secrets.crt
+      - name: commit manifests
+        run: |
+          cd manifests
+          git config --global user.name 'Ben Fiola'
+          git config --global user.email 'benfiola@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}@github.com/benfiola/homelab-manifests.git
+          git add -A
+          git commit --allow-empty -m "${{github.event.head_commit.message}}"
+          git push origin
