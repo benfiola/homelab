@@ -2,13 +2,15 @@
 import { ApiObject, Chart, Include, YamlOutputType } from "cdk8s";
 import { Command, program } from "commander";
 import { configDotenv } from "dotenv";
-import { cp, lstat, mkdir, rm, writeFile } from "fs/promises";
+import { cp, lstat, mkdir, readFile, rm, writeFile } from "fs/promises";
 import { glob as baseGlob } from "glob";
 import path from "path";
 import { setTimeout } from "timers";
 
 import { execSync } from "child_process";
+import { randomBytes } from "crypto";
 import { join } from "shlex";
+import { parse, stringify } from "yaml";
 import { App } from "./utils/App";
 import {
   BootstrapCallback,
@@ -20,7 +22,6 @@ import {
 import { getChecksumLabel } from "./utils/createSealedSecret";
 import { exec } from "./utils/exec";
 import { temporaryDirectory } from "./utils/temporaryDirectory";
-
 const baseFolder = __dirname;
 
 /**
@@ -214,19 +215,122 @@ async function generateAllResources(entries: {
  *
  * NOTE: https://www.siderolabs.com/blog/how-to-ssh-into-talos-linux/
  *
- * @param entries
+ * @param node the target node
  */
 async function nodeShell(node: string) {
+  const rand = randomBytes(6).toString("hex");
+  const pod = {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: `node-shell-${node}-${rand}`,
+      namespace: "kube-system",
+    },
+    spec: {
+      nodeSelector: {
+        "kubernetes.io/hostname": `node-${node}`,
+      },
+      containers: [
+        {
+          name: "node-shell",
+          image: "alpine:latest",
+          args: [
+            "sh",
+            "-c",
+            "apk add lvm2 parted vim net-tools; while true; do sleep 1; done;",
+          ],
+          securityContext: { privileged: true },
+          volumeMounts: [
+            { name: "dev", mountPath: "/dev" },
+            { name: "host", mountPath: "/host" },
+          ],
+        },
+      ],
+      hostIPC: true,
+      hostNetwork: true,
+      hostPID: true,
+      tolerations: [
+        {
+          effect: "NoSchedule",
+          key: "node-role.kubernetes.io/control-plane",
+        },
+      ],
+      volumes: [
+        {
+          name: "dev",
+          hostPath: { path: "/dev" },
+        },
+        { name: "host", hostPath: { path: "/" } },
+      ],
+    },
+  };
+
+  await temporaryDirectory(async (tempDir) => {
+    const manifest = path.join(tempDir, "manifest.yaml");
+
+    console.log(`creating pod: ${pod.metadata.name}`);
+    await writeFile(manifest, stringify(pod));
+    await exec(["kubectl", "apply", "-f", manifest]);
+
+    console.log(`waiting for pod to be ready`);
+    await exec([
+      "kubectl",
+      "wait",
+      "--for=condition=ready",
+      `--namespace=${pod.metadata.namespace}`,
+      "pod",
+      pod.metadata.name,
+    ]);
+
+    let error: Error | null = null;
+    try {
+      console.log(`connecting to pod`);
+      execSync(
+        join([
+          "kubectl",
+          "exec",
+          "-it",
+          `--namespace=${pod.metadata.namespace}`,
+          pod.metadata.name,
+          "--",
+          "sh",
+          "-l",
+        ]),
+        { stdio: "inherit" }
+      );
+    } catch (e) {
+      error = e as Error;
+    }
+
+    console.log(`deleting pod: ${pod.metadata.name}`);
+    await exec(["kubectl", "delete", "-f", manifest]);
+    if (error) {
+      throw error;
+    }
+  });
+}
+
+/**
+ * Applies updated machine config to the target node
+ *
+ * @param node the target node
+ */
+async function nodeApplyConfig(node: string) {
+  const configPatch = path.join(
+    __dirname,
+    "talos",
+    `node-${node}.cluster.bulia.yaml`
+  );
+  const configPatchData = parse((await readFile(configPatch)).toString());
+  const role = configPatchData["machine"]["env"]["ROLE"];
+  const file = path.join(__dirname, "talos", `${role}.yaml`);
   execSync(
     join([
-      "kubectl",
-      "debug",
-      "--namespace=kube-system",
-      "--profile=sysadmin",
-      "-it",
-      "--image",
-      "ubuntu",
-      `node/${node}`,
+      "talosctl",
+      `--nodes=node-${node}.cluster.bulia`,
+      "apply-config",
+      `--file=${file}`,
+      `--config-patch=@${configPatch}`,
     ]),
     { stdio: "inherit" }
   );
@@ -297,11 +401,19 @@ async function generateResources(
   cmdManifests
     .command("all")
     .action(() => generateAllManifests(manifestsEntries));
-  program
-    .command("node-shell")
+  const cmdNodes = program
+    .command("nodes")
+    .description("administrate kubernetes nodes");
+  cmdNodes
+    .command("shell")
     .description("create a privileged shell on the target node")
     .argument("node")
     .action(nodeShell);
+  cmdNodes
+    .command("apply-config")
+    .description("apply talos config to target node")
+    .argument("node")
+    .action(nodeApplyConfig);
   const resourcesEntries: { [k: string]: [ResourcesCallback, ResourcesOpts] } =
     {};
   const cmdResources = program

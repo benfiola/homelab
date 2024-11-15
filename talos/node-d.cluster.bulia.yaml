@@ -1,4 +1,6 @@
 machine:
+  env:
+    ROLE: worker
   install:
     disk: /dev/nvme0n1
   network:

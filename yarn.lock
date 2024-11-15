@@ -1977,6 +1977,7 @@ __metadata:
     tempy: "npm:^3.1.0"
     tsx: "npm:^4.7.2"
     typescript: "npm:^5.4.4"
+    yaml: "npm:^2.6.0"
     zod: "npm:^3.23.8"
   bin:
     homelab: ./cli.ts
@@ -2561,6 +2562,15 @@ __metadata:
   bin:
     yaml: bin.mjs
   checksum: 10c0/771a1df083c8217cf04ef49f87244ae2dd7d7457094425e793b8f056159f167602ce172aa32d6bca21f787d24ec724aee3cecde938f6643564117bd151452631
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "yaml@npm:2.6.0"
+  bin:
+    yaml: bin.mjs
+  checksum: 10c0/9e74cdb91cc35512a1c41f5ce509b0e93cc1d00eff0901e4ba831ee75a71ddf0845702adcd6f4ee6c811319eb9b59653248462ab94fa021ab855543a75396ceb
   languageName: node
   linkType: hard
 

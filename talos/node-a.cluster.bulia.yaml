@@ -1,4 +1,6 @@
 machine:
+  env:
+    ROLE: controlplane
   install:
     disk: /dev/sda
   network:

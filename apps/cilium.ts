@@ -267,13 +267,6 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  // new CiliumL2AnnouncementPolicy(chart, "announcement-policy", {
-  //   metadata: { namespace: chart.namespace, name: "default" },
-  //   spec: {
-  //     loadBalancerIPs: true,
-  //   },
-  // });
-
   new CiliumClusterwideNetworkPolicy(chart, "default", {
     metadata: {
       name: `default`,
