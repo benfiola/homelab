@@ -135,21 +135,21 @@ const manifests: ManifestsCallback = async (app) => {
       },
       storagePools: [
         {
-          name: "default",
-          lvmPool: { volumeGroup: "vg-storage" },
+          name: "lvm-thin",
+          lvmThinPool: { volumeGroup: "vg-storage", thinPool: "thin-pool" },
         },
       ],
     },
   });
 
   new StorageClass(chart, "storage-class", {
-    metadata: { name: "linstor" },
+    metadata: { name: "lvm-thin" },
     provisioner: "linstor.csi.linbit.com",
     allowVolumeExpansion: true,
     volumeBindingMode: "WaitForFirstConsumer",
     parameters: {
       autoPlace: "2",
-      storagePool: "default",
+      storagePool: "lvm-thin",
       "csi.storage.k8s.io/fstype": "ext4",
     },
   });

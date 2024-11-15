@@ -4,5 +4,5 @@
  * @returns the storage class name
  */
 export const getStorageClassName = () => {
-  return "linstor";
+  return "lvm-thin";
 };

@@ -41,7 +41,7 @@ export const createVolumeBackupConfig = async (
     metadata: { namespace: chart.namespace, name: opts.pvc },
     spec: {
       restic: {
-        copyMethod: "Direct" as any,
+        copyMethod: "Clone" as any,
         moverPodLabels: getPodLabels("volsync-mover"),
         moverSecurityContext: {
           fsGroup: opts.user,
