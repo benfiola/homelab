@@ -154,7 +154,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new StorageClass(chart, "storage-class", {
+  new StorageClass(chart, "backup-storage-class", {
     metadata: { name: "lvm-thin-backup" },
     provisioner: "linstor.csi.linbit.com",
     allowVolumeExpansion: true,
