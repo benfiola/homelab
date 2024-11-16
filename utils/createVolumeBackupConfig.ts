@@ -57,7 +57,7 @@ export const createVolumeBackupConfig = async (
           daily: 7,
           within: "1d",
         },
-        storageClassName: getStorageClassName(),
+        storageClassName: getStorageClassName("backup"),
       },
       sourcePvc: opts.pvc,
       trigger: {

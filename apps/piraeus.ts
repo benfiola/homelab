@@ -154,6 +154,18 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
+  new StorageClass(chart, "storage-class", {
+    metadata: { name: "lvm-thin-backup" },
+    provisioner: "linstor.csi.linbit.com",
+    allowVolumeExpansion: true,
+    volumeBindingMode: "WaitForFirstConsumer",
+    parameters: {
+      autoPlace: "0",
+      storagePool: "lvm-thin",
+      "csi.storage.k8s.io/fstype": "ext4",
+    },
+  });
+
   return chart;
 };
 
