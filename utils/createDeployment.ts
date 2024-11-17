@@ -196,7 +196,7 @@ const convertVolumeMap = (volumeMap: VolumeMap) => {
     let volume;
     if (resource.kind === "PersistentVolumeClaim") {
       volume = {
-        persistentVolumeCLaim: {
+        persistentVolumeClaim: {
           claimName: resource.name,
         },
       };
