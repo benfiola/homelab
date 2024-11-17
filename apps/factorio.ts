@@ -15,6 +15,7 @@ import { parseEnv } from "../utils/parseEnv";
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     FACTORIO_ACCESS_PASSWORD: zod.string(),
+    FACTORIO_TOKEN: zod.string(),
   }));
 
   const chart = new Chart(app, "factorio", {
@@ -58,7 +59,25 @@ const manifests: ManifestsCallback = async (app) => {
     size: "10Gi",
   });
 
+  const serverSecret = await createSealedSecret(chart, "secret", {
+    metadata: { namespace: chart.namespace, name: "factorio" },
+    stringData: {
+      USERNAME: "itsbenlol",
+      TOKEN: env.FACTORIO_TOKEN,
+    },
+  });
+
   const deployment = createDeployment(chart, "deployment", {
+    initContainers: [
+      {
+        image: "ubuntu:latest",
+        name: "download-mods",
+        envFrom: [serverSecret],
+        mounts: {
+          data: "/factorio",
+        },
+      },
+    ],
     containers: [
       {
         env: {
@@ -101,7 +120,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const accessSecret = await createSealedSecret(chart, "access-secret", {
-    metadata: { namespace: chart.namespace, name: "factorio" },
+    metadata: { namespace: chart.namespace, name: "factorio-access" },
     stringData: {
       password: env.FACTORIO_ACCESS_PASSWORD,
     },
