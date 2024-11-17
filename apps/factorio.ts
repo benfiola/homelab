@@ -119,7 +119,12 @@ const manifests: ManifestsCallback = async (app) => {
           modlist: "/modlist",
         },
         name: "copy-mod-list",
-        args: ["cp", "/modlist/mod-list.json", "/factorio/mods/mod-list.json"],
+        args: [
+          "/bin/bash",
+          "-ex",
+          "-c",
+          "mkdir -p /factorio/mods && cp /modlist/mod-list.json /factorio/mods/mod-list.json",
+        ],
       },
     ],
     containers: [
