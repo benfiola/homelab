@@ -204,6 +204,7 @@ const convertVolumeMap = (volumeMap: VolumeMap) => {
 };
 
 interface CreateDeploymentOpts {
+  initContainers?: Container[];
   containers: Container[];
   namespace?: string;
   name: string;
@@ -222,6 +223,10 @@ export const createDeployment = (
   opts: CreateDeploymentOpts
 ) => {
   const containers = opts.containers.map(convertContainer);
+  const initContainers =
+    opts.initContainers !== undefined
+      ? opts.initContainers.map(convertContainer)
+      : undefined;
   const strategy = opts.updateStrategy
     ? { type: opts.updateStrategy }
     : undefined;
@@ -244,6 +249,7 @@ export const createDeployment = (
           },
         },
         spec: {
+          initContainers,
           containers,
           securityContext: {
             fsGroup: user,
