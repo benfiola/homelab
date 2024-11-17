@@ -116,10 +116,10 @@ const manifests: ManifestsCallback = async (app) => {
         image: "ubuntu:latest",
         mounts: {
           data: "/factorio",
-          modList: "/mod-list",
+          modlist: "/modlist",
         },
         name: "copy-mod-list",
-        args: ["cp /mod-list/mod-list.json /factorio/mods/mod-list.json"],
+        args: ["cp /modlist/mod-list.json /factorio/mods/mod-list.json"],
       },
     ],
     containers: [
@@ -143,7 +143,7 @@ const manifests: ManifestsCallback = async (app) => {
     user: 845,
     volumes: {
       data: dataVolume,
-      modList: modList,
+      modlist: modList,
     },
   });
 
