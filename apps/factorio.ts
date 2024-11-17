@@ -89,7 +89,7 @@ const manifests: ManifestsCallback = async (app) => {
       enabled: true,
     },
     {
-      name: "StatsGUI",
+      name: "StatsGui",
       enabled: true,
     },
   ];
