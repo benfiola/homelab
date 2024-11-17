@@ -183,21 +183,32 @@ const convertContainer = (container: Container): ActualContainer => {
   };
 };
 
-type VolumeMap = { [k: string]: PersistentVolumeClaim };
+type VolumeMap = { [k: string]: PersistentVolumeClaim | ConfigMap };
 
 /**
- * Converts a volume map to a list of volume references to persistent volume claims
+ * Converts a volume map to a list of volume references to resources
  *
  * @param volumeMap the volume map
  */
 const convertVolumeMap = (volumeMap: VolumeMap) => {
   const toReturn: Volume[] = [];
-  Object.entries(volumeMap).map(([volumeName, claim]) => {
+  Object.entries(volumeMap).map(([volumeName, resource]) => {
+    let volume;
+    if (resource.kind === "PersistentVolumeClaim") {
+      volume = {
+        persistentVolumeCLaim: {
+          claimName: resource.name,
+        },
+      };
+    } else if (resource.kind === "ConfigMap") {
+      volume = { configMap: { name: resource.name } };
+    } else {
+      throw new Error(`unrecognized resource kind: ${resource.kind}`);
+    }
+
     toReturn.push({
       name: volumeName,
-      persistentVolumeClaim: {
-        claimName: claim.name,
-      },
+      ...volume,
     });
   });
   return toReturn;

@@ -1,6 +1,6 @@
 import { Chart } from "cdk8s";
 import { AccessClaim } from "../resources/access-operator/bfiola.dev";
-import { Namespace, Service } from "../resources/k8s/k8s";
+import { ConfigMap, Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
@@ -59,9 +59,52 @@ const manifests: ManifestsCallback = async (app) => {
     size: "10Gi",
   });
 
+  const mods = [
+    {
+      name: "elevated-rails",
+      enabled: true,
+    },
+    {
+      name: "quality",
+      enabled: true,
+    },
+    {
+      name: "space-age",
+      enabled: true,
+    },
+    {
+      name: "ammo-loader",
+      enabled: true,
+    },
+    {
+      name: "DiscoScience",
+      enabled: true,
+    },
+    {
+      name: "flib",
+      enabled: true,
+    },
+    {
+      name: "squeak-through-2",
+      enabled: true,
+    },
+    {
+      name: "StatsGUI",
+      enabled: true,
+    },
+  ];
+
+  const modList = new ConfigMap(chart, "mod-list", {
+    metadata: { namespace: chart.namespace, name: "factorio" },
+    data: {
+      "mod-list.json": JSON.stringify({ mods }),
+    },
+  });
+
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "factorio" },
     stringData: {
+      UPDATE_MODS_ON_START: "true",
       USERNAME: "itsbenlol",
       TOKEN: env.FACTORIO_TOKEN,
     },
@@ -71,18 +114,17 @@ const manifests: ManifestsCallback = async (app) => {
     initContainers: [
       {
         image: "ubuntu:latest",
-        name: "download-mods",
-        envFrom: [serverSecret],
         mounts: {
           data: "/factorio",
+          modList: "/mod-list",
         },
+        name: "copy-mod-list",
+        args: ["cp /mod-list/mod-list.json /factorio/mods/mod-list.json"],
       },
     ],
     containers: [
       {
-        env: {
-          DLC_SPACE_AGE: "false",
-        },
+        envFrom: [serverSecret],
         image: "factoriotools/factorio:2.0.15",
         mounts: {
           data: "/factorio",
@@ -101,6 +143,7 @@ const manifests: ManifestsCallback = async (app) => {
     user: 845,
     volumes: {
       data: dataVolume,
+      modList: modList,
     },
   });
 
