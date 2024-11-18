@@ -162,7 +162,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
     spec: {
       type: "LoadBalancer",
-      ports: [{ name: "udp", port: 34197 }],
+      ports: [{ name: "udp", port: 34197, protocol: "UDP" }],
       selector: getPodLabels(deployment.name),
     },
   });
@@ -188,7 +188,7 @@ const manifests: ManifestsCallback = async (app) => {
       serviceTemplates: [
         {
           type: "LoadBalancer",
-          ports: [{ name: "udp", port: 34197 }],
+          ports: [{ name: "udp", port: 34197, protocol: "UDP" }],
           selector: getPodLabels(deployment.name),
         },
       ],
