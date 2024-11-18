@@ -122,6 +122,10 @@ const manifests: ManifestsCallback = async (app) => {
       from: { entity: "ingress" },
       to: { pod: "prometheus-kube-prometheus", ports: [[9090, "tcp"]] },
     },
+    {
+      from: { pod: "kube-prometheus-grafana" },
+      to: { pod: "prometheus-kube-prometheus", ports: [[9090, "tcp"]] },
+    },
   ]);
 
   new Namespace(chart, "namespace", {
@@ -388,23 +392,6 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
   });
-
-  /**  
-  await createNetworkPolicy("pod:kube-state-metrics", {
-    ingress: [["pod:prometheus", [8080]]],
-    egress: [["entity:kube-apiserver", [6443]]],
-  });
-  await createNetworkPolicy("pod:prometheus", {
-    egress: [
-      ["endpoint:kube-dns", [9153]],
-      ["entity:remote-node", []],
-      ["pod:alertmanager", [8080, 9093]],
-      ["pod:grafana", [3000]],
-      ["pod:kube-state-metrics", [8080]],
-      ["pod:prometheus-operator", [10250]],
-    ],
-  });
-   */
 
   return chart;
 };
