@@ -17,7 +17,7 @@ Its goals are:
 
 ### Pre-requisites
 
-> [!INFO]
+> [!NOTE]
 > Use [VSCode](https://code.visualstudio.com/) + [devcontainers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for a streamlined environment setup process. This project already includes the necessary devcontainer configuration.
 
 - `make`
