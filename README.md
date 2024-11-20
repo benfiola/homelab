@@ -42,7 +42,7 @@ export PATH=$(pwd)/.dev:$(pwd)/node_modules/.bin:${PATH}
 
 ## Apps
 
-The core of this project centers around the notion of _appliations_. These are defined in the [./apps](./apps) folder. The app name is inferred from the filename.
+_Apps_ are the central concept of this project. These are defined in the [./apps](./apps) folder. The app name is inferred from the filename.
 
 Apps can:
 
