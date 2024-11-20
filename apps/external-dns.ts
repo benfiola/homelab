@@ -9,7 +9,7 @@ import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
   version: "0.14.2",
-  webhookVersion: "2.0.1-rc.1",
+  webhookVersion: "2.0.1",
 };
 
 const manifests: ManifestsCallback = async (app) => {
