@@ -103,13 +103,13 @@ export default async function (context: CliContext) {
 
 ## `homelab` CLI
 
-The `homelab` CLI builds on the notion of _Apps_ and exposes an entry point to the automation provided by this project. You can get a high-level overview of the commands available to you by viewing the CLI help directly:
+The `homelab` CLI is the entry point into the automation provided by this project. You can get a high-level overview of the commands available to you by viewing the CLI help directly:
 
 ```shell
 homelab --help
 ```
 
-Here's an example of some of the ways it can be used:
+There's a handful of commands - here's an example of some of the ways it can be used:
 
 ```shell
 # get sealed-secrets signing-cert
@@ -138,6 +138,8 @@ This workflow requires three pieces of data to operate:
 | `ENV_FILE`                    | The contents of `.env`                                                                                                      |
 | `HOMELAB_MANIFESTS_GIT_TOKEN` | A token that has permissions to push commits to the [private repository](https://github.com/benfiola/homelab-manifests.git) |
 | `SEALED_SECRETS_CERT`         | The public certificate used to sign sealed secrets for the cluster. (`homelab apps sealed-secrets get-certificate`)         |
+
+This information is currently hosted as secrets in the _publish_ Github environment attached to the workflow.
 
 ## Maintenance
 
