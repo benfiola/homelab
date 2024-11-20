@@ -146,7 +146,7 @@ This workflow requires three pieces of data to operate:
 > [!IMPORTANT]
 > Raspberry PI machines need to be set up with [UEFI firmware](https://github.com/pftf/RPi4) before proceeding. Once done, ensure that the 3GB RAM limit is disabled within the UEFI menu.
 
-> [!INFO]
+> [!NOTE]
 > The cluster endpoint is `cluster.bulia` - whose DNS A points to _all_ controlplane worker node IPs. Each node has a domain `node-[name].cluster.bulia` as an additional DNS A record.
 
 Each node is running [Talos Linux](https://www.talos.dev/) - a Linux distribution designed purely to run Kubernetes.
@@ -155,7 +155,7 @@ To install Talos Linux onto a node, prepare USB installation media with [Ventoy]
 
 Boot into the installation media on each node - which then launches Talos Linux in maintenance mode. This allows you to 'apply configuration' to these machines - which triggers installation/repair processes. Use the `homelab` CLI to apply configuration to the nodes. This starts the installation process.
 
-> [!INFO]
+> [!NOTE]
 > The node configuration can be found at `./talos/node-[name].cluster.bulia.yaml`. Take note of the `ROLE` field. These configuration files are overlaid on top of `./talos/[role].yaml` to produce the full configuration.
 
 ```shell
