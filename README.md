@@ -20,7 +20,7 @@ Its goals are:
 > [!NOTE]
 > Use [VSCode](https://code.visualstudio.com/) + [devcontainers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for a streamlined environment setup process. This project already includes the necessary devcontainer configuration.
 
-- `make`
+- _make_
 - [NodeJS](https://nodejs.org)
 - [Yarn](https://yarnpkg.com/) package manager
 - Sensitive configuration:
@@ -204,7 +204,7 @@ ArgoCD should begin deploying all manifests and will _eventually_ reconcile them
 
 #### Updating configuration
 
-Modifications made to either the `./talos/[ROLE].yaml` or `./talos/node-[node].cluster.bulia.yaml` files need to be applied to the node for the changes to take effect. Use the `homelab` CLI to do this:
+Modifications made to either the `./talos/[role].yaml` or `./talos/node-[node].cluster.bulia.yaml` files need to be applied to the node for the changes to take effect. Use the `homelab` CLI to do this:
 
 ```shell
 homelab nodes [name] apply-config
@@ -216,7 +216,7 @@ To update the Talos Linux version on all nodes, navigate to Talos' [image factor
 
 - drbd
 
-Once an image is produced, you should have an image that looks like `factory.talos.dev/installer/[hash]:v[talos-version]`. Update the `.machine.install.image` field within each `./talos/[ROLE].yaml` file with this value and then upload these files to cloud storage.
+Once an image is produced, you should have an image that looks like `factory.talos.dev/installer/[hash]:v[talos-version]`. Update the `.machine.install.image` field within each `./talos/[role].yaml` file with this value and then upload these files to cloud storage.
 
 Then, run the following command to upgrade the nodes:
 
@@ -226,7 +226,7 @@ talosctl upgrade --image <image>
 
 #### Upgrade Kubernetes
 
-Update the `./talos/[ROLE].yaml` files - replacing the `kubelet`, `kube-apiserver`, `kube-controller-manager` and `kube-scheduler` image tags with the desired Kubernetes version. Upload these files to cloud storage.
+Update the `./talos/[role].yaml` files - replacing the `kubelet`, `kube-apiserver`, `kube-controller-manager` and `kube-scheduler` image tags with the desired Kubernetes version. Upload these files to cloud storage.
 
 Then, run the following command to upgrade the nodes:
 
