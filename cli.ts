@@ -310,12 +310,18 @@ async function nodeShell(node: string) {
   });
 }
 
+interface NodeApplyConfigOpts {
+  insecure?: boolean;
+}
+
 /**
  * Applies updated machine config to the target node
  *
  * @param node the target node
  */
-async function nodeApplyConfig(node: string) {
+async function nodeApplyConfig(node: string, opts: NodeApplyConfigOpts = {}) {
+  const insecure = opts.insecure !== undefined ? opts.insecure : false;
+
   const configPatch = path.join(
     __dirname,
     "talos",
@@ -324,16 +330,17 @@ async function nodeApplyConfig(node: string) {
   const configPatchData = parse((await readFile(configPatch)).toString());
   const role = configPatchData["machine"]["env"]["ROLE"];
   const file = path.join(__dirname, "talos", `${role}.yaml`);
-  execSync(
-    join([
-      "talosctl",
-      `--nodes=node-${node}.cluster.bulia`,
-      "apply-config",
-      `--file=${file}`,
-      `--config-patch=@${configPatch}`,
-    ]),
-    { stdio: "inherit" }
-  );
+  let cmd = [
+    "talosctl",
+    `--nodes=node-${node}.cluster.bulia`,
+    "apply-config",
+    `--file=${file}`,
+    `--config-patch=@${configPatch}`,
+  ];
+  if (insecure) {
+    cmd.push("--insecure");
+  }
+  execSync(join(cmd), { stdio: "inherit" });
 }
 
 /**
@@ -391,6 +398,9 @@ async function generateResources(
   program.description("administrate the homelab");
 
   // create top-level (and sub-level) commands
+  const cmdApps = program
+    .command("apps")
+    .description("perform app-level administrative functions");
   const cmdBootstrap = program
     .command("bootstrap")
     .description("generate and apply bootstrap manifests");
@@ -400,27 +410,30 @@ async function generateResources(
     .description("generate manifests");
   cmdManifests
     .command("all")
+    .description("generate manifests for all apps")
     .action(() => generateAllManifests(manifestsEntries));
   const cmdNodes = program
     .command("nodes")
     .description("administrate kubernetes nodes");
   cmdNodes
+    .command("apply-config")
+    .description("apply talos config to target node")
+    .argument("node")
+    .option("--insecure", "disable authentication", false)
+    .action(nodeApplyConfig);
+  cmdNodes
     .command("shell")
     .description("create a privileged shell on the target node")
     .argument("node")
     .action(nodeShell);
-  cmdNodes
-    .command("apply-config")
-    .description("apply talos config to target node")
-    .argument("node")
-    .action(nodeApplyConfig);
   const resourcesEntries: { [k: string]: [ResourcesCallback, ResourcesOpts] } =
     {};
   const cmdResources = program
     .command("resources")
-    .description("create cdk8s resources from manifests");
+    .description("create cdk8s resources");
   cmdResources
     .command("all")
+    .description("create cdk8s resources for all apps")
     .action(() => generateAllResources(resourcesEntries));
 
   // find all app scripts
@@ -449,15 +462,18 @@ async function generateResources(
         // register new 'bootstrap' subcommand
         cmdBootstrap
           .command(appName)
+          .description(
+            `generate and apply bootstrap manifests for the '${appName}' app`
+          )
           .action(() => bootstrap(appName, callback));
       },
       command: (callback) => {
         // allow app to define custom command line tooling
         cmdApp =
           cmdApp ||
-          program
+          cmdApps
             .command(appName)
-            .description(`administrate the '${appName}' app`);
+            .description(`perform '${appName}' administrative functions`);
         callback(cmdApp);
       },
       manifests: (callback) => {
@@ -467,6 +483,7 @@ async function generateResources(
         // register new 'manifests' subcommand
         cmdManifests
           .command(appName)
+          .description(`generate manifests for the '${appName}' app`)
           .action(() => generateManifests(appName, callback));
       },
       resources: (callback, opts?: ResourcesOpts) => {
@@ -476,6 +493,7 @@ async function generateResources(
         // register new 'generate resources' subcommand
         cmdResources
           .command(appName)
+          .description(`create cdk8s resources for the '${appName}' app`)
           .action(() => generateResources(appName, callback, opts));
       },
     };
