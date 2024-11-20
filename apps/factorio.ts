@@ -137,6 +137,7 @@ const manifests: ManifestsCallback = async (app) => {
         name: "factorio",
         ports: { udp: [34197, "udp"] },
         resources: {
+          cpu: 300,
           mem: 1000,
         },
       },
