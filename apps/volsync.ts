@@ -6,7 +6,6 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createMinioBucket } from "../utils/createMinioBucket";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -19,10 +18,6 @@ const appData = {
 };
 
 const manifests: ManifestsCallback = async (app) => {
-  const env = parseEnv((zod) => ({
-    VOLSYNC_MINIO_SECRET_KEY: zod.string(),
-  }));
-
   const chart = new Chart(app, "volsync", { namespace: "volsync" });
 
   createNetworkPolicy(chart, "network-policy", [
@@ -48,11 +43,6 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: chart.namespace,
     releaseName: "volsync",
     helmFlags: ["--include-crds"],
-  });
-
-  await createMinioBucket(chart, "bucket", {
-    name: "volsync",
-    secretKey: env.VOLSYNC_MINIO_SECRET_KEY,
   });
 
   return chart;

@@ -21,7 +21,7 @@ export const createVolumeBackupConfig = async (
 ) => {
   const env = parseEnv((zod) => ({
     VOLSYNC_ENCRYPTION_KEY: zod.string(),
-    VOLSYNC_MINIO_SECRET_KEY: zod.string(),
+    VOLSYNC_GCS_KEY_JSON: zod.string(),
   }));
 
   const secret = await createSealedSecret(chart, `restic-${opts.pvc}`, {
@@ -30,10 +30,10 @@ export const createVolumeBackupConfig = async (
       name: `restic-${opts.pvc}`,
     },
     stringData: {
-      RESTIC_REPOSITORY: `s3:http://minio.minio.svc.cluster.local/volsync/${chart.namespace}/${opts.pvc}`,
+      RESTIC_REPOSITORY: `gs://volsync-x8nj3a`,
       RESTIC_PASSWORD: env.VOLSYNC_ENCRYPTION_KEY,
-      AWS_ACCESS_KEY_ID: "volsync-default",
-      AWS_SECRET_ACCESS_KEY: env.VOLSYNC_MINIO_SECRET_KEY,
+      GOOGLE_PROJECT_ID: "592515172912",
+      GOOGLE_APPLICATION_CREDENTIALS: env.VOLSYNC_GCS_KEY_JSON,
     },
   });
 
