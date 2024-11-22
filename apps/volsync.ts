@@ -9,7 +9,6 @@ import {
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
-import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
   chart: "volsync",
@@ -28,7 +27,7 @@ const manifests: ManifestsCallback = async (app) => {
 
     {
       from: { externalPod: ["*", "volsync-mover"] },
-      to: { externalPod: ["minio", "minio-tenant"], ports: [[9000, "tcp"]] },
+      to: { dns: "*.googleapis.com", ports: [[443, "tcp"]] },
     },
   ]);
 
