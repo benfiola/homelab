@@ -30,7 +30,7 @@ export const createVolumeBackupConfig = async (
       name: `restic-${opts.pvc}`,
     },
     stringData: {
-      RESTIC_REPOSITORY: `gs:volsync-x8nj3a:/`,
+      RESTIC_REPOSITORY: `gs:volsync-x8nj3a:/${chart.namespace}/${opts.pvc}`,
       RESTIC_PASSWORD: env.VOLSYNC_ENCRYPTION_KEY,
       GOOGLE_PROJECT_ID: "592515172912",
       GOOGLE_APPLICATION_CREDENTIALS: env.VOLSYNC_GCS_KEY_JSON,
