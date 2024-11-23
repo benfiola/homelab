@@ -25,7 +25,8 @@ export const createVolumeBackupConfig = async (
   }));
 
   const googleApplicationCredentials = Buffer.from(
-    env.VOLSYNC_ENCRYPTION_KEY
+    env.VOLSYNC_GCS_KEY_JSON_BASE64,
+    "base64"
   ).toString("ascii");
   const secret = await createSealedSecret(chart, `restic-${opts.pvc}`, {
     metadata: {
