@@ -53,7 +53,7 @@ jobs:
           rm -rf manifests/*
           echo '${{secrets.ENV_FILE}}' > .env
           echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
-          # homelab manifests all generate
+          homelab manifests all generate
         env:
           SEALED_SECRETS_CERT_PATH: /tmp/sealed-secrets.crt
       - name: commit manifests
