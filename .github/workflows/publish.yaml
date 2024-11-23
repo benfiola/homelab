@@ -38,14 +38,13 @@ jobs:
       - name: install deps
         run: |
           make download-tools
-          make install-nodejs-project
           echo "$(pwd)/.dev" >> "${GITHUB_PATH}"
-      - name: fetch .env
-        run: |
-          gcloud storage cp gs://homelab-8hxm62/.env .env
+          make install-nodejs-project
+          echo "$(pwd)/node_modules/.bin" >> "${GITHUB_PATH}"
       - name: generate manifests
         run: |
           rm -rf manifests/*
+          gcloud storage cp gs://homelab-8hxm62/.env .env
           echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
           homelab manifests all generate
         env:
