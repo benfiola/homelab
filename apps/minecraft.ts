@@ -62,6 +62,7 @@ const manifests: ManifestsCallback = async (app) => {
   const mods = [
     `DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar`,
     `tectonic-fabric-${minecraftVersion}-2.4.1a.jar`,
+    `fabric-api-0.109.0+${minecraftVersion}.jar`,
   ];
   const downloadCommand = mods
     .map((m) => {
