@@ -65,8 +65,8 @@ const manifests: ManifestsCallback = async (app) => {
         command: ["sh", "-ex", "-c"],
         args: [
           codeblock`
-            mkdir -p /minecraft/plugins;
-            curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.1.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.1.jar
+            mkdir -p /minecraft/mods;
+            curl -o /minecraft/mods/DistantHorizons-2.3.0-b-dev-1.20.1-fabric-forge.jar -fsSL https://storage.googleapis.com/minecraft-vy2vra/DistantHorizons-2.3.0-b-dev-1.20.1-fabric-forge.jar
           `,
         ],
       },
