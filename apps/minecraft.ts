@@ -29,7 +29,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
     {
       from: { pod: "minecraft" },
-      to: { dns: "*.google.com", ports: [[443, "tcp"]] },
+      to: { dns: "*.googleapis.com", ports: [[443, "tcp"]] },
     },
 
     {
