@@ -82,7 +82,7 @@ const manifests: ManifestsCallback = async (app) => {
         name: "minecraft",
         env: {
           EULA: "TRUE",
-          MAX_MEMORY: "6G",
+          MAX_MEMORY: "16G",
           MODE: "creative",
           TYPE: "FABRIC",
           USE_AIKAR_FLAGS: "true",
@@ -93,7 +93,8 @@ const manifests: ManifestsCallback = async (app) => {
         },
         ports: { tcp: [25565, "tcp"] },
         resources: {
-          mem: 6000,
+          cpu: 1000,
+          mem: 16000,
         },
       },
     ],
