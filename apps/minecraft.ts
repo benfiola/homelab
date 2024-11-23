@@ -2,6 +2,7 @@ import { Chart } from "cdk8s";
 import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
+import { codeblock } from "../utils/codeblock";
 import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
@@ -61,7 +62,12 @@ const manifests: ManifestsCallback = async (app) => {
           "/bin/bash",
           "-ex",
           "-c",
-          "mkdir -p /minecraft/plugins && curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.4.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.4.jar",
+          codeblock`
+            apt -y update;
+            apt -y install curl;
+            mkdir -p /minecraft/plugins;
+            curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.4.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.4.jar
+          `,
         ],
       },
     ],
