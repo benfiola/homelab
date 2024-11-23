@@ -80,6 +80,7 @@ const manifests: ManifestsCallback = async (app) => {
           [7009, "tcp"],
           [7010, "tcp"],
           [7011, "tcp"],
+          [7012, "tcp"],
         ],
       },
     },
