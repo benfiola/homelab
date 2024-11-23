@@ -78,6 +78,7 @@ const manifests: ManifestsCallback = async (app) => {
         env: {
           EULA: "TRUE",
           MAX_MEMORY: "6G",
+          TYPE: "FABRIC",
           USE_AIKAR_FLAGS: "true",
           VERSION: "1.20.1",
         },
