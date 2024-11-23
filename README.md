@@ -33,9 +33,11 @@ Its goals are:
 
 ```shell
 # install cli tools
-make install-tools
+make download-tools
 # install nodejs dependencies
-yarn install
+make install-nodejs-project
+# (optional): log into gcloud for fetching resources from cloud storage
+gcloud auth application-default login
 # update path
 export PATH=$(pwd)/.dev:$(pwd)/node_modules/.bin:${PATH}
 ```
@@ -116,10 +118,14 @@ There's a handful of commands - here's an example of some of the ways it can be 
 homelab apps sealed-secrets get-certificate
 # bootstrap a cluster with argocd
 homelab bootstrap argocd
+# download env file from cloud storage
+homelab env download
 # generate manifests for factorio
 homelab manifests factorio generate
 # apply talos configuration to node 'a'
-homelab nodes apply-config a
+homelab nodes config apply [node]
+# upload modified talos configuration to cloud storage
+homelab nodes config upload
 # generate cdk8s resources for volsync
 homelab resources volsync generate
 ```
@@ -161,7 +167,7 @@ Boot into the installation media on each node - which then launches Talos Linux 
 > The node configuration can be found at `./talos/node-[name].cluster.bulia.yaml`. Take note of the `ROLE` field. These configuration files are overlaid on top of `./talos/[role].yaml` to produce the full configuration.
 
 ```shell
-homelab nodes apply-config [name] --insecure
+homelab nodes config apply [name] --insecure
 ```
 
 Once complete, the nodes should reboot automatically - booting off of the partition that Talos Linux was installed to.
@@ -209,7 +215,7 @@ ArgoCD should begin deploying all manifests and will _eventually_ reconcile them
 Modifications made to either the `./talos/[role].yaml` or `./talos/node-[node].cluster.bulia.yaml` files need to be applied to the node for the changes to take effect. Use the `homelab` CLI to do this:
 
 ```shell
-homelab nodes [name] apply-config
+homelab nodes config apply [node]
 ```
 
 #### Upgrade Talos Linux
