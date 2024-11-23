@@ -160,7 +160,7 @@ const manifests: ManifestsCallback = async (app) => {
     allowVolumeExpansion: true,
     volumeBindingMode: "WaitForFirstConsumer",
     parameters: {
-      autoPlace: "0",
+      autoPlace: "1",
       storagePool: "lvm-thin",
       "csi.storage.k8s.io/fstype": "ext4",
     },
