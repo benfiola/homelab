@@ -73,7 +73,7 @@ const manifests: ManifestsCallback = async (app) => {
           EULA: "TRUE",
           MAX_MEMORY: "6G",
           USE_AIKAR_FLAGS: "true",
-          JVM_DD_OPTS: "java.util.logging.ConsoleHandler.level=ALL",
+          VERSION: "1.20.4",
         },
         mounts: {
           data: "/data",
