@@ -50,6 +50,21 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const deployment = createDeployment(chart, "deployment", {
+    initContainers: [
+      {
+        image: "ubuntu:latest",
+        mounts: {
+          data: "/minecraft",
+        },
+        name: "download-dh",
+        args: [
+          "/bin/bash",
+          "-ex",
+          "-c",
+          "mkdir -p /minecraft/plugins && curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.4.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.4.jar",
+        ],
+      },
+    ],
     containers: [
       {
         image: "itzg/minecraft-server:java21",
