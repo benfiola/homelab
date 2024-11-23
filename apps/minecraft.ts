@@ -27,6 +27,10 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "minecraft" },
       to: { dns: "*.mojang.com", ports: [[443, "tcp"]] },
     },
+    {
+      from: { pod: "minecraft" },
+      to: { dns: "storage.cloud.google.com", ports: [[443, "tcp"]] },
+    },
 
     {
       from: { homeNetwork: null },
@@ -53,7 +57,7 @@ const manifests: ManifestsCallback = async (app) => {
   const deployment = createDeployment(chart, "deployment", {
     initContainers: [
       {
-        image: "ubuntu:latest",
+        image: "alpine/curl",
         mounts: {
           data: "/minecraft",
         },
@@ -63,8 +67,6 @@ const manifests: ManifestsCallback = async (app) => {
           "-ex",
           "-c",
           codeblock`
-            apt -y update;
-            apt -y install curl;
             mkdir -p /minecraft/plugins;
             curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.4.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.4.jar
           `,
