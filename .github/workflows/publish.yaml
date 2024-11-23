@@ -56,8 +56,6 @@ jobs:
           # homelab manifests all generate
         env:
           SEALED_SECRETS_CERT_PATH: /tmp/sealed-secrets.crt
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: commit manifests
         run: |
           cd manifests

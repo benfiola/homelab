@@ -21,9 +21,12 @@ export const createVolumeBackupConfig = async (
 ) => {
   const env = parseEnv((zod) => ({
     VOLSYNC_ENCRYPTION_KEY: zod.string(),
-    VOLSYNC_GCS_KEY_JSON: zod.string(),
+    VOLSYNC_GCS_KEY_JSON_BASE64: zod.string(),
   }));
 
+  const googleApplicationCredentials = Buffer.from(
+    env.VOLSYNC_ENCRYPTION_KEY
+  ).toString("ascii");
   const secret = await createSealedSecret(chart, `restic-${opts.pvc}`, {
     metadata: {
       namespace: chart.namespace,
@@ -33,7 +36,7 @@ export const createVolumeBackupConfig = async (
       RESTIC_REPOSITORY: `gs:volsync-x8nj3a:/${chart.namespace}/${opts.pvc}`,
       RESTIC_PASSWORD: env.VOLSYNC_ENCRYPTION_KEY,
       GOOGLE_PROJECT_ID: "592515172912",
-      GOOGLE_APPLICATION_CREDENTIALS: env.VOLSYNC_GCS_KEY_JSON,
+      GOOGLE_APPLICATION_CREDENTIALS: googleApplicationCredentials,
     },
   });
 
