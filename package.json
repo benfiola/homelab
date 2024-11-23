@@ -1,6 +1,7 @@
 {
   "private": true,
   "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
     "@types/node": "^18",
     "cdk8s": "^2.68.69",
     "cdk8s-cli": "^2.198.119",

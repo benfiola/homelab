@@ -31,27 +31,21 @@ jobs:
           repository: benfiola/homelab-manifests
           path: manifests
           token: ${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}
-      - name: install helm
+      - id: gcloud auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{secrets.GOOGLE_SERVICE_ACCOUNT_CREDS}}
+      - name: install deps
         run: |
-          curl -o /tmp/archive.tar.gz -fsSL https://get.helm.sh/helm-v3.14.3-linux-amd64.tar.gz
-          tar xvzf /tmp/archive.tar.gz -C /usr/local/bin --strip-components 1
-          rm -rf /tmp/archive.tar.gz
-      - name: install kubeseal
+          make download-tools
+          make install-nodejs-project
+          echo "$(pwd)/.dev" >> "${GITHUB_PATH}"
+      - name: fetch .env
         run: |
-          curl -o /tmp/archive.tar.gz -fsSL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.2/kubeseal-0.26.2-linux-amd64.tar.gz
-          tar xvzf /tmp/archive.tar.gz -C /usr/local/bin
-          rm -rf /tmp/archive.tar.gz
-      - name: install yarn
-        run: |
-          npm install -g yarn
-      - name: install project dependencies
-        run: |
-          yarn install
-          echo "$(pwd)/node_modules/.bin" >> "${GITHUB_PATH}"
+          gcloud storage cp gs://homelab-8hxm62/.env .env
       - name: generate manifests
         run: |
           rm -rf manifests/*
-          echo '${{secrets.ENV_FILE}}' > .env
           echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
           homelab manifests all generate
         env:

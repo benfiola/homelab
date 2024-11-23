@@ -29,6 +29,7 @@
     }
   },
   "image": "ubuntu:latest",
+  "postAttachCommand": ".devcontainer/post-attach.sh",
   "postCreateCommand": ".devcontainer/post-create.sh",
   "remoteEnv": {
     "MC_DISABLE_PAGER": "1",

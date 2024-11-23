@@ -1,14 +1,16 @@
 #!/usr/bin/env tsx
-import { ApiObject, Chart, Include, YamlOutputType } from "cdk8s";
+import { Chart, Include, YamlOutputType } from "cdk8s";
 import { Command, program } from "commander";
 import { configDotenv } from "dotenv";
-import { cp, lstat, mkdir, readFile, rm, writeFile } from "fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "fs/promises";
 import { glob as baseGlob } from "glob";
 import path from "path";
 import { setTimeout } from "timers";
 
+import { Storage } from "@google-cloud/storage";
 import { execSync } from "child_process";
 import { randomBytes } from "crypto";
+import { existsSync } from "fs";
 import { join } from "shlex";
 import { parse, stringify } from "yaml";
 import { App } from "./utils/App";
@@ -19,10 +21,11 @@ import {
   ResourcesCallback,
   ResourcesOpts,
 } from "./utils/CliContext";
-import { getChecksumLabel } from "./utils/createSealedSecret";
 import { exec } from "./utils/exec";
 import { temporaryDirectory } from "./utils/temporaryDirectory";
 const baseFolder = __dirname;
+
+const bucketName = "homelab-8hxm62";
 
 /**
  * Uses 'glob' but returns an iterable of absolute file paths.
@@ -97,62 +100,6 @@ const appFromFile = (path: string) => {
 };
 
 /**
- * Sealed secrets are non-deterministic by design (e.g., sealing the same secret multiple times produces different data).
- *
- * These secrets *should* only change when their source material has changed to allow for easier auditing of manifest changes.
- *
- * This method will merge existing, matching sealed-secrets from `from` to `to` when the checksum for the source input has changed.
- *
- * @param from
- * @param to
- */
-const mergeUnchangedSealedSecrets = (from: App, to: App) => {
-  const findSealedSecrets = (a: App): { [k: string]: ApiObject } => {
-    const data: { [k: string]: ApiObject } = {};
-    for (const child of a.node.findAll()) {
-      if (!ApiObject.isApiObject(child)) {
-        // ignore non-api objects
-        continue;
-      }
-      if (
-        child.apiVersion !== "bitnami.com/v1alpha1" ||
-        child.kind !== "SealedSecret"
-      ) {
-        // ignore non-sealed secrets
-        continue;
-      }
-      // store sealed secret by 'namespace/name' key
-      const key = `${child!.metadata!.namespace}/${child!.metadata.name}`;
-      data[key] = child;
-    }
-    return data;
-  };
-
-  const srcs = findSealedSecrets(from);
-  const dests = findSealedSecrets(to);
-  for (const [key, src] of Object.entries(srcs)) {
-    const dest = dests[key];
-    if (dest === undefined) {
-      // ignore sealed secrets that no longer exist
-      continue;
-    }
-    const srcHash = (src as any).props.metadata?.labels?.[getChecksumLabel()];
-    const destHash = (dest as any).props.metadata?.labels?.[getChecksumLabel()];
-    if (
-      srcHash === undefined ||
-      destHash === undefined ||
-      srcHash !== destHash
-    ) {
-      // ignore sealed secrets with undefined hashes
-      // ignore sealed secrets with defined hashes that differ
-      continue;
-    }
-    // sealed-secret content matches - re-use existing data
-    (dest as any).props = (src as any).props;
-  }
-};
-
-/**
  * Delegates to an application with a 'manifest' callback to attach a cdk8s Chart object
  * to a top-level cdk8s App obejct.
  *
@@ -172,16 +119,6 @@ async function generateManifests(appName: string, callback: ManifestsCallback) {
       yamlOutputType: YamlOutputType.FILE_PER_APP,
     });
     await callback(app);
-
-    const existingManifest = path.join(manifestsFolder, "app.yaml");
-    const existingManifestExists = await lstat(existingManifest)
-      .then(() => true)
-      .catch((e) => false);
-    if (existingManifestExists) {
-      // if a matching manifest exists, attempt to preserve unchanged sealed secrets
-      const existing = appFromFile(existingManifest);
-      mergeUnchangedSealedSecrets(existing, app);
-    }
 
     // synthesize yaml
     app.synth();
@@ -207,6 +144,51 @@ async function generateAllResources(entries: {
     console.log(`generating resources: ${appName}`);
     await generateResources(appName, callback, opts);
   }
+}
+
+async function downloadFromCloudStorage(files: Record<string, string>) {
+  const storage = new Storage();
+  const bucket = storage.bucket(bucketName);
+
+  for (const [remoteName, localPath] of Object.entries(files)) {
+    const remoteFile = bucket.file(remoteName);
+    console.log(`downloading ${remoteFile.cloudStorageURI} to ${localPath}`);
+    await remoteFile.download({ destination: localPath });
+  }
+}
+
+async function uploadToCloudStorage(files: Record<string, string>) {
+  const storage = new Storage();
+  const bucket = storage.bucket(bucketName);
+
+  for (const [remoteName, localPath] of Object.entries(files)) {
+    if (!existsSync(localPath)) {
+      throw new Error(`file '${localPath}' not found`);
+    }
+    const remoteFile = bucket.file(remoteName);
+    console.log(`uploading ${localPath} to ${remoteFile.cloudStorageURI}`);
+    await remoteFile.bucket.upload(localPath, { destination: remoteFile.name });
+  }
+}
+
+const envFile = {
+  ".env": path.join(__dirname, ".env"),
+};
+
+/**
+ * Downloads the (sensitive) .env file from cloud storage.
+ * Expected to exist at '.env'.
+ */
+async function envFileDownload() {
+  await downloadFromCloudStorage(envFile);
+}
+
+/**
+ * Uploads the (sensitive) .env file to cloud storage.
+ * Expected to exist at '.env' and will fail if the file does not exist.
+ */
+async function envFileUpload() {
+  await uploadToCloudStorage(envFile);
 }
 
 /**
@@ -319,7 +301,7 @@ interface NodeApplyConfigOpts {
  *
  * @param node the target node
  */
-async function nodeApplyConfig(node: string, opts: NodeApplyConfigOpts = {}) {
+async function nodeConfigApply(node: string, opts: NodeApplyConfigOpts = {}) {
   const insecure = opts.insecure !== undefined ? opts.insecure : false;
 
   const configPatch = path.join(
@@ -341,6 +323,30 @@ async function nodeApplyConfig(node: string, opts: NodeApplyConfigOpts = {}) {
     cmd.push("--insecure");
   }
   execSync(join(cmd), { stdio: "inherit" });
+}
+
+const nodeConfigFiles = {
+  "talos/controlplane.yaml": path.join(__dirname, "talos", "worker.yaml"),
+  "talos/worker.yaml": path.join(__dirname, "talos", "worker.yaml"),
+};
+
+/**
+ * Downloads (sensitive) talos node config files from cloud storage.
+ *
+ * These files are expected to exist within the `talos` subdirectory.
+ */
+async function nodeConfigDownload() {
+  await downloadFromCloudStorage(nodeConfigFiles);
+}
+
+/**
+ * Uploads (sensitive) talos node config files to cloud storage.
+ *
+ * These files are expected to exist within the `talos` subdirectory.
+ * Will fail if files do not exist.
+ */
+async function nodeConfigUpload() {
+  await uploadToCloudStorage(nodeConfigFiles);
 }
 
 /**
@@ -404,6 +410,15 @@ async function generateResources(
   const cmdBootstrap = program
     .command("bootstrap")
     .description("generate and apply bootstrap manifests");
+  const cmdEnv = program.command("env").description("work with .env files");
+  cmdEnv
+    .command("download")
+    .description("download .env file from cloud storage")
+    .action(envFileDownload);
+  cmdEnv
+    .command("upload")
+    .description("upload .env file to cloud storage")
+    .action(envFileUpload);
   const manifestsEntries: { [k: string]: ManifestsCallback } = {};
   const cmdManifests = program
     .command("manifests")
@@ -415,12 +430,23 @@ async function generateResources(
   const cmdNodes = program
     .command("nodes")
     .description("administrate kubernetes nodes");
-  cmdNodes
-    .command("apply-config")
+  const cmdNodeConfig = cmdNodes
+    .command("config")
+    .description("manipulate kubernetes node configs");
+  cmdNodeConfig
+    .command("apply")
     .description("apply talos config to target node")
     .argument("node")
     .option("--insecure", "disable authentication", false)
-    .action(nodeApplyConfig);
+    .action(nodeConfigApply);
+  cmdNodeConfig
+    .command("download")
+    .description("download worker/controlplane talos config files")
+    .action(nodeConfigDownload);
+  cmdNodeConfig
+    .command("upload")
+    .description("upload worker/controlplane talos config files")
+    .action(nodeConfigUpload);
   cmdNodes
     .command("shell")
     .description("create a privileged shell on the target node")

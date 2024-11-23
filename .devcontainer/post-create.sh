@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
 
-make install-tools
-yarn install
+make download-tools
+make install-nodejs-project
