@@ -66,7 +66,7 @@ const manifests: ManifestsCallback = async (app) => {
         args: [
           codeblock`
             mkdir -p /minecraft/mods;
-            curl -o /minecraft/mods/DistantHorizons-2.3.0-b-dev-1.20.1-fabric-forge.jar -fsSL https://storage.googleapis.com/minecraft-vy2vra/DistantHorizons-2.3.0-b-dev-1.20.1-fabric-forge.jar
+            curl -o /minecraft/mods/DistantHorizons-2.3.0-b-dev-1.21.1-fabric-neoforge.jar -fsSL https://storage.googleapis.com/minecraft-vy2vra/DistantHorizons-2.3.0-b-dev-1.21.1-fabric-neoforge.jar
           `,
         ],
       },
