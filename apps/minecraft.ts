@@ -59,6 +59,15 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const minecraftVersion = "1.21.1";
+  const mods = [
+    `DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar`,
+    `tectonic-fabric-${minecraftVersion}-2.4.1a.jar`,
+  ];
+  const downloadCommand = mods
+    .map((m) => {
+      return `curl -o /minecraft/mods/${m} -fsSL https://storage.googleapis.com/minecraft-vy2vra/${m};`;
+    })
+    .join("\n");
   const deployment = createDeployment(chart, "deployment", {
     initContainers: [
       {
@@ -71,7 +80,7 @@ const manifests: ManifestsCallback = async (app) => {
         args: [
           codeblock`
             mkdir -p /minecraft/mods;
-            curl -o /minecraft/mods/DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar -fsSL https://storage.googleapis.com/minecraft-vy2vra/DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar
+            ${downloadCommand}
           `,
         ],
       },
