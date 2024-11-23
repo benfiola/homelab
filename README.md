@@ -22,12 +22,6 @@ Its goals are:
 
 - _make_
 - [NodeJS](https://nodejs.org)
-- [Yarn](https://yarnpkg.com/) package manager
-- Sensitive configuration:
-  - _.env_
-  - _talos/config_
-  - _talos/controlplane.yaml_
-  - _talos/worker.yaml_
 
 ### Setup
 
@@ -36,10 +30,12 @@ Its goals are:
 make download-tools
 # install nodejs dependencies
 make install-nodejs-project
-# (optional): log into gcloud for fetching resources from cloud storage
-gcloud auth application-default login
-# update path
+# update path to expose tools and `homelab` CLI
 export PATH=$(pwd)/.dev:$(pwd)/node_modules/.bin:${PATH}
+# (optional): fetch sensitive configuration from cloud storage
+gcloud auth application-default login
+homelab env download
+homelab nodes config download
 ```
 
 ## Apps
