@@ -31,7 +31,7 @@ jobs:
           repository: benfiola/homelab-manifests
           path: manifests
           token: ${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}
-      - id: gcloud auth
+      - name: gcloud auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{secrets.GOOGLE_SERVICE_ACCOUNT_CREDS}}
