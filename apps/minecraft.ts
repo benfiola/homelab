@@ -58,6 +58,7 @@ const manifests: ManifestsCallback = async (app) => {
     size: "10Gi",
   });
 
+  const minecraftVersion = "1.21.1";
   const deployment = createDeployment(chart, "deployment", {
     initContainers: [
       {
@@ -70,7 +71,7 @@ const manifests: ManifestsCallback = async (app) => {
         args: [
           codeblock`
             mkdir -p /minecraft/mods;
-            curl -o /minecraft/mods/DistantHorizons-2.3.0-b-dev-1.21.1-fabric-neoforge.jar -fsSL https://storage.googleapis.com/minecraft-vy2vra/DistantHorizons-2.3.0-b-dev-1.21.1-fabric-neoforge.jar
+            curl -o /minecraft/mods/DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar -fsSL https://storage.googleapis.com/minecraft-vy2vra/DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar
           `,
         ],
       },
@@ -84,7 +85,7 @@ const manifests: ManifestsCallback = async (app) => {
           MAX_MEMORY: "6G",
           TYPE: "FABRIC",
           USE_AIKAR_FLAGS: "true",
-          VERSION: "1.20.1",
+          VERSION: minecraftVersion,
         },
         mounts: {
           data: "/data",
