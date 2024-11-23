@@ -92,7 +92,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         ports: { tcp: [25565, "tcp"] },
         resources: {
-          cpu: 1000,
+          cpu: 2500,
           mem: 12000,
         },
       },
