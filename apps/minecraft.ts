@@ -83,7 +83,6 @@ const manifests: ManifestsCallback = async (app) => {
         env: {
           EULA: "TRUE",
           MAX_MEMORY: "16G",
-          MODE: "creative",
           TYPE: "FABRIC",
           USE_AIKAR_FLAGS: "true",
           VERSION: minecraftVersion,
