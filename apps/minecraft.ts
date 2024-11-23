@@ -66,7 +66,7 @@ const manifests: ManifestsCallback = async (app) => {
         args: [
           codeblock`
             mkdir -p /minecraft/plugins;
-            curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.4.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.4.jar
+            curl -o /minecraft/plugins/DHS-0.6.1_for_MC-1.20.1.jar -fsSL https://storage.cloud.google.com/minecraft-vy2vra/DHS-0.6.1_for_MC-1.20.1.jar
           `,
         ],
       },
@@ -79,7 +79,7 @@ const manifests: ManifestsCallback = async (app) => {
           EULA: "TRUE",
           MAX_MEMORY: "6G",
           USE_AIKAR_FLAGS: "true",
-          VERSION: "1.20.4",
+          VERSION: "1.20.1",
         },
         mounts: {
           data: "/data",
