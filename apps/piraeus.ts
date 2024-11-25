@@ -67,21 +67,7 @@ const manifests: ManifestsCallback = async (app) => {
       from: { piraeus: "linstor-satellite" },
       to: {
         piraeus: "linstor-satellite",
-        ports: [
-          [7000, "tcp"],
-          [7001, "tcp"],
-          [7002, "tcp"],
-          [7003, "tcp"],
-          [7004, "tcp"],
-          [7005, "tcp"],
-          [7006, "tcp"],
-          [7007, "tcp"],
-          [7008, "tcp"],
-          [7009, "tcp"],
-          [7010, "tcp"],
-          [7011, "tcp"],
-          [7012, "tcp"],
-        ],
+        ports: [[[7000, 7999], "tcp"]],
       },
     },
 

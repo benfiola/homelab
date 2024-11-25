@@ -8,7 +8,7 @@ import {
 import { getPodLabels } from "./getPodLabels";
 
 type Protocol = "tcp" | "udp" | "any";
-type Port = [number, Protocol];
+type Port = [number | [number, number], Protocol];
 
 interface WithPorts {
   ports: Port[];
@@ -219,11 +219,25 @@ export const createNetworkPolicy = (
     const ruleTo = processResource(rule.to, chart.namespace);
     const ruleFrom = processResource(rule.from, chart.namespace);
 
-    let ports: { port: string; protocol: any }[] = [];
-    for (const port of ruleTo.ports) {
+    type Port = {
+      port: string;
+      endPort: number | undefined;
+      protocol: string;
+    };
+    let ports: Port[] = [];
+    for (const portData of ruleTo.ports) {
+      let port: number;
+      let endPort: number | undefined;
+      if (Array.isArray(portData[0])) {
+        port = portData[0][0];
+        endPort = portData[0][1];
+      } else {
+        port = portData[0];
+      }
       ports.push({
-        port: `${port[0]}`,
-        protocol: port[1].toUpperCase() as any,
+        port: `${port}`,
+        endPort,
+        protocol: portData[1].toUpperCase(),
       });
     }
 
