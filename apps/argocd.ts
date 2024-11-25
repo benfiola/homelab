@@ -55,6 +55,7 @@ const baseValues = {
       "resource.customizations.ignoreDifferences.volsync.backube_ReplicationSource": codeblock`
           jqPathExpressions:
           - '.spec.trigger.manual'
+          - '.spec.trigger.unlock'
       `,
       // exclude cilium identity resources (as they cause argocd to be out of sync)
       "resource.exclusions": yamlDump([
