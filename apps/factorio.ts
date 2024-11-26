@@ -130,7 +130,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "factoriotools/factorio:2.0.20",
+        image: "factoriotools/factorio:2.0.21",
         mounts: {
           data: "/factorio",
         },
