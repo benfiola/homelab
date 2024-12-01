@@ -14,16 +14,14 @@ download-tools: download-$(1)
 .PHONY: download-$(1)
 download-$(1): $$($(1))
 $$($(1)): | $$(dot_dev)
-	# clean extract directory
-	rm -rf $$(dot_dev)/.tmp
-	# create extract directory
-	mkdir -p $$(dot_dev)/.tmp
+	# clean extract files
+	rm -rf /tmp/extract /tmp/archive.tar.gz && mkdir -p /tmp/extract
 	# download $(1) archive
-	curl -o $$(dot_dev)/.tmp/archive.tar.gz -fsSL $$($(1)_url)
+	curl -o /tmp/archive.tar.gz -fsSL $$($(1)_url)
 	# extract $(1)
-	tar xzf $$(dot_dev)/.tmp/archive.tar.gz --strip-components $(2) -C $$(dot_dev)/.tmp
+	tar xzf /tmp/archive.tar.gz --strip-components $(2) -C /tmp/extract
 	# move $(1)
-	mv $$(dot_dev)/.tmp/$(1) $$($(1))
-	# clean extract directory
-	rm -rf $$(dot_dev)/.tmp
+	mv /tmp/extract/$(1) $$($(1))
+	# clean extract files
+	rm -rf /tmp/extract /tmp/archive.tar.gz
 endef

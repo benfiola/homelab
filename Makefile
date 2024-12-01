@@ -22,6 +22,8 @@ endif
 gcloudarch = $(arch)
 ifeq ($(arch),amd64)
 	gcloudarch = x86_64
+else ifeq ($(arch),arm64)
+	gcloudarch = arm
 endif
 
 argocd = $(dot_dev)/argocd
@@ -54,6 +56,8 @@ clean:
 install-nodejs-project:
 	# install yarn
 	npm install -g yarn
+	# configure yarn
+	yarn config set --home enableTelemetry 0
 	# install project dependencies
 	yarn install
 	# symlink homelab cli to node_modules manually
@@ -78,15 +82,19 @@ download-tools: download-gcloud
 download-gcloud: $(gcloud)
 $(gcloud): | $(dot_dev)
 	# clean gcloud subdirectory
-	rm -rf $(dot_dev)/gcloud-extract && mkdir -p $(dot_dev)/gcloud-extract
+	rm -rf $(dot_dev)/gcloud-extract
+	# clean extract files
+	rm -rf /tmp/extract /tmp/archive.tar.gz && mkdir -p /tmp/extract
 	# download archive
-	curl -o $(dot_dev)/gcloud.tar.gz -fsSL $(gcloud_url)
+	curl -o /tmp/archive.tar.gz -fsSL $(gcloud_url)
 	# extract archive
-	tar xzf $(dot_dev)/gcloud.tar.gz -C $(dot_dev)/gcloud-extract --strip-components=1
+	tar xzf /tmp/archive.tar.gz --strip-components=1 -C /tmp/extract
+	# copy extract folder to .dev folder
+	mv /tmp/extract $(dot_dev)/gcloud-extract
 	# create symlink
-	ln -s $(dot_dev)/gcloud-extract/bin/gcloud $(dot_dev)/gcloud
-	# delete archive
-	rm -rf $(dot_dev)/gcloud.tar.gz
+	ln -s $(dot_dev)/gcloud-extract/bin/gcloud $(gcloud)
+	# delete archive files
+	rm -rf /tmp/extract /tmp/archive.tar.gz
 
 $(dot_dev):
 	# create .dev directory
