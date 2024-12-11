@@ -41,6 +41,10 @@ const manifests: ManifestsCallback = async (app) => {
     },
     {
       from: { pod: "seven-days-to-die" },
+      to: { dns: "*.googleapis.com", ports: [[443, "tcp"]] },
+    },
+    {
+      from: { pod: "seven-days-to-die" },
       to: {
         dns: "api.steampowered.com",
         ports: [[443, "tcp"]],
