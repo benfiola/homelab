@@ -106,6 +106,7 @@ const manifests: ManifestsCallback = async (app) => {
     "minio",
     "piraeus",
     "sealed-secrets",
+    "seven-days-to-die",
     "snapshot-controller",
     "trust-manager",
     "volsync",
