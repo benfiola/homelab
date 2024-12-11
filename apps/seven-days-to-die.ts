@@ -105,6 +105,7 @@ const manifests: ManifestsCallback = async (app) => {
       {
         envFrom: [serverSecret],
         image: "benfiola/seven-days-to-die:6852366042385286885",
+        imagePullPolicy: "Always",
         mounts: {
           data: "/data",
         },

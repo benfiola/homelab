@@ -124,6 +124,7 @@ interface Container {
   env?: EnvMap;
   envFrom?: EnvFrom[];
   image: string;
+  imagePullPolicy?: "Always" | "Never" | "IfNotPresent";
   mounts?: MountMap;
   name: string;
   ports?: PortMap;
@@ -170,6 +171,7 @@ const convertContainer = (container: Container): ActualContainer => {
     env,
     envFrom,
     image: container.image,
+    imagePullPolicy: container.imagePullPolicy,
     livenessProbe: probe,
     name: container.name,
     ports,
