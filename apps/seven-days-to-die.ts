@@ -4,6 +4,7 @@ import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
@@ -76,9 +77,19 @@ const manifests: ManifestsCallback = async (app) => {
     name: "seven-days-to-die",
   });
 
+  const dataVolume = createPersistentVolumeClaim(chart, "pvc", {
+    name: "seven-days-to-die-data",
+    size: "30Gi",
+  });
+
+  const roots = [
+    "https://storage.googleapis.com/seven-days-to-die-fqgzw2/DF-V6-DEV-B16.zip",
+  ];
+
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
     stringData: {
+      ROOT_URLS: roots.join(","),
       SETTING_Region: "NorthAmericaWest",
       SETTING_ServerName: "seven-days-to-die.bfiola.dev",
       SETTING_ServerVisibility: "0",
@@ -90,6 +101,9 @@ const manifests: ManifestsCallback = async (app) => {
       {
         envFrom: [serverSecret],
         image: "benfiola/seven-days-to-die:6852366042385286885",
+        mounts: {
+          data: "/data",
+        },
         name: "seven-days-to-die",
         ports: {
           udp1: [26900, "udp"],
@@ -109,6 +123,9 @@ const manifests: ManifestsCallback = async (app) => {
     serviceAccount: serviceAccount.name,
     updateStrategy: "Recreate",
     user: 1000,
+    volumes: {
+      data: dataVolume,
+    },
   });
 
   new Service(chart, "service", {
