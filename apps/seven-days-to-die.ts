@@ -7,6 +7,7 @@ import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
+import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
@@ -85,6 +86,8 @@ const manifests: ManifestsCallback = async (app) => {
     name: "seven-days-to-die-data",
     size: "30Gi",
   });
+
+  await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
   const roots = [
     "https://storage.googleapis.com/seven-days-to-die-fqgzw2/DF-V6-DEV-B17.zip",
