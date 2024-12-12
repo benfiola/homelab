@@ -87,13 +87,17 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const roots = [
-    "https://storage.googleapis.com/seven-days-to-die-fqgzw2/DF-V6-DEV-B16.zip",
+    "https://storage.googleapis.com/seven-days-to-die-fqgzw2/DF-V6-DEV-B17.zip",
   ];
 
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
     stringData: {
       ROOT_URLS: roots.join(","),
+      SETTING_EACEnabled: "false",
+      SETTING_GameDifficulty: "2",
+      SETTING_GameWorld: "DFalls-Navezgane",
+      SETTING_MaxSpawnedZombies: "100",
       SETTING_Region: "NorthAmericaWest",
       SETTING_ServerName: "seven-days-to-die.bfiola.dev",
       SETTING_ServerVisibility: "0",
