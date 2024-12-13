@@ -4,6 +4,7 @@ import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { codeblock } from "../utils/codeblock";
 import { createDeployment } from "../utils/createDeployment";
+import { createMinioBucket } from "../utils/createMinioBucket";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
@@ -16,6 +17,7 @@ import { parseEnv } from "../utils/parseEnv";
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     MINECRAFT_ACCESS_PASSWORD: zod.string(),
+    MINECRAFT_MINIO_SECRET_KEY: zod.string(),
   }));
 
   const chart = new Chart(app, "minecraft", {
@@ -48,6 +50,11 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
+  await createMinioBucket(chart, "seven-days-to-die", {
+    name: "seven-days-to-die",
+    secretKey: env.MINECRAFT_MINIO_SECRET_KEY,
+  });
+
   const serviceAccount = createServiceAccount(chart, "service-account", {
     access: {},
     name: "minecraft",
@@ -57,6 +64,8 @@ const manifests: ManifestsCallback = async (app) => {
     name: "minecraft-data",
     size: "10Gi",
   });
+
+  await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
   const minecraftVersion = "1.21.1";
   const mods = [
@@ -116,8 +125,6 @@ const manifests: ManifestsCallback = async (app) => {
     },
     user: 1000,
   });
-
-  await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
   new Service(chart, "service", {
     metadata: {

@@ -3,6 +3,7 @@ import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
+import { createMinioBucket } from "../utils/createMinioBucket";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
@@ -15,6 +16,7 @@ import { parseEnv } from "../utils/parseEnv";
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     SEVEN_DAYS_TO_DIE_ACCESS_PASSWORD: zod.string(),
+    SEVEN_DAYS_TO_DIE_MINIO_SECRET_KEY: zod.string(),
   }));
 
   const chart = new Chart(app, "seven-days-to-die", {
@@ -75,6 +77,11 @@ const manifests: ManifestsCallback = async (app) => {
     metadata: {
       name: chart.namespace,
     },
+  });
+
+  await createMinioBucket(chart, "seven-days-to-die", {
+    name: "seven-days-to-die",
+    secretKey: env.SEVEN_DAYS_TO_DIE_MINIO_SECRET_KEY,
   });
 
   const serviceAccount = createServiceAccount(chart, "service-account", {
