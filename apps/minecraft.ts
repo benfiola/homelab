@@ -50,8 +50,8 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  await createMinioBucket(chart, "seven-days-to-die", {
-    name: "seven-days-to-die",
+  await createMinioBucket(chart, "minio-bucket", {
+    name: "minecraft",
     secretKey: env.MINECRAFT_MINIO_SECRET_KEY,
   });
 

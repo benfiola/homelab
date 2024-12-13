@@ -79,7 +79,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  await createMinioBucket(chart, "seven-days-to-die", {
+  await createMinioBucket(chart, "minio-bucket", {
     name: "seven-days-to-die",
     secretKey: env.SEVEN_DAYS_TO_DIE_MINIO_SECRET_KEY,
   });
