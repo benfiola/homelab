@@ -159,7 +159,7 @@ const manifests: ManifestsCallback = async (app) => {
             // size pvs to account for potential velero backups
             size: "10Gi",
             // constrain the amount of resources given to each server in the pool
-            resources: getPodRequests({ mem: 600 }),
+            resources: getPodRequests({ mem: 2000 }),
             // ensure persistent volumes use the deployed storage controller
             storageClassName: getStorageClassName(),
           },
