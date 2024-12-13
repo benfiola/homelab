@@ -38,6 +38,13 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "minecraft" },
       to: { dns: "*.fabricmc.net", ports: [[443, "tcp"]] },
     },
+    {
+      from: { pod: "minecraft" },
+      to: {
+        externalPod: ["minio", "minio-tenant"],
+        ports: [[9000, "tcp"]],
+      },
+    },
 
     {
       from: { homeNetwork: null },

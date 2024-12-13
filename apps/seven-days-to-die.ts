@@ -72,6 +72,13 @@ const manifests: ManifestsCallback = async (app) => {
         ],
       },
     },
+    {
+      from: { pod: "seven-days-to-die" },
+      to: {
+        externalPod: ["minio", "minio-tenant"],
+        ports: [[9000, "tcp"]],
+      },
+    },
   ]);
 
   new Namespace(chart, "namespace", {
