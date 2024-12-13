@@ -10,6 +10,7 @@ import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
+import { getMinioUrl } from "../utils/getMinioUrl";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
 
@@ -96,14 +97,12 @@ const manifests: ManifestsCallback = async (app) => {
 
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
-  const roots = [
-    "https://storage.googleapis.com/seven-days-to-die-fqgzw2/DF-V6-DEV-B17.zip",
-  ];
-
+  const roots = ["DF-V6-DEV-B17.zip"];
+  const rootUrls = roots.map((r) => getMinioUrl(`seven-days-to-die/${r}`));
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
     stringData: {
-      ROOT_URLS: roots.join(","),
+      ROOT_URLS: rootUrls.join(","),
       SETTING_EACEnabled: "false",
       SETTING_GameDifficulty: "2",
       SETTING_GameWorld: "DFalls-Navezgane",

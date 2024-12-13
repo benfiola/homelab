@@ -11,6 +11,7 @@ import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
+import { getMinioUrl } from "../utils/getMinioUrl";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
 
@@ -75,7 +76,8 @@ const manifests: ManifestsCallback = async (app) => {
   ];
   const downloadCommand = mods
     .map((m) => {
-      return `curl -o /minecraft/mods/${m} -fsSL https://storage.googleapis.com/minecraft-vy2vra/${m};`;
+      const url = getMinioUrl(`minecraft/${m}`);
+      return `curl -o /minecraft/mods/${m} -fsSL ${url}`;
     })
     .join("\n");
   const deployment = createDeployment(chart, "deployment", {
