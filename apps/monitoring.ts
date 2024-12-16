@@ -445,18 +445,18 @@ const manifests: ManifestsCallback = async (app) => {
     ...appData.loki,
     namespace: chart.namespace,
     values: {
+      backend: {
+        // persistence required for fault-tolerance
+        persistence: {
+          storageClass: getStorageClassName(),
+          volumeClaimsEnabled: true,
+        },
+      },
       // deploy loki in 'simple scalable' mode
       deploymentMode: "SimpleScalable",
       // give helm release a more concise name
       fullnameOverride: "loki",
       loki: {
-        backend: {
-          // persistence required for fault-tolerance
-          persistence: {
-            storageClass: getStorageClassName(),
-            volumeClaimsEnabled: true,
-          },
-        },
         ingress: {
           // expose loki via ingress
           enabled: true,
@@ -495,13 +495,6 @@ const manifests: ManifestsCallback = async (app) => {
             secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
           },
         },
-        write: {
-          // persistence required for fault-tolerance
-          persistence: {
-            storageClass: getStorageClassName(),
-            volumeClaimsEnabled: true,
-          },
-        },
       },
       lokiCanary: {
         // disable the canary used to validate a working installation
@@ -510,6 +503,13 @@ const manifests: ManifestsCallback = async (app) => {
       test: {
         // disable manifests intended to test the helm release
         enabled: false,
+      },
+      write: {
+        // persistence required for fault-tolerance
+        persistence: {
+          storageClass: getStorageClassName(),
+          volumeClaimsEnabled: true,
+        },
       },
     },
   });
