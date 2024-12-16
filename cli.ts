@@ -326,7 +326,8 @@ async function nodeConfigApply(node: string, opts: NodeApplyConfigOpts = {}) {
 }
 
 const nodeConfigFiles = {
-  "talos/controlplane.yaml": path.join(__dirname, "talos", "worker.yaml"),
+  "talos/config": path.join(__dirname, "talos", "config"),
+  "talos/controlplane.yaml": path.join(__dirname, "talos", "controlplane.yaml"),
   "talos/worker.yaml": path.join(__dirname, "talos", "worker.yaml"),
 };
 
