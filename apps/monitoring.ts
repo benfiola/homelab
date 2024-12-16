@@ -445,10 +445,13 @@ const manifests: ManifestsCallback = async (app) => {
     ...appData.loki,
     namespace: chart.namespace,
     values: {
+      // deploy loki in 'simple scalable' mode
       deploymentMode: "SimpleScalable",
+      // give helm release a more concise name
       fullnameOverride: "loki",
       loki: {
         ingress: {
+          // expose loki via ingress
           enabled: true,
           hosts: ["loki.bulia"],
           ingressClassName: getIngressClassName(),
@@ -456,6 +459,7 @@ const manifests: ManifestsCallback = async (app) => {
         schemaConfig: {
           configs: [
             {
+              // default (but required) schema configuration
               from: "2024-04-01",
               index: {
                 prefix: "loki_index_",
@@ -469,12 +473,14 @@ const manifests: ManifestsCallback = async (app) => {
         },
         storage: {
           bucketNames: {
+            // customize required bucket names
             admin: lokiMinioBucketAdmin.name,
             chunks: lokiMinioBucketChunks.name,
             ruler: lokiMinioBucketRuler.name,
           },
           type: "s3",
           s3: {
+            // configure loki to use internal minio as storage
             accessKeyId: lokiMinioUser.name,
             endpoint: "minio.minio.svc:9000",
             insecure: true,
@@ -482,9 +488,14 @@ const manifests: ManifestsCallback = async (app) => {
             secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
           },
         },
-        test: {
-          enabled: false,
-        },
+      },
+      lokiCanary: {
+        // disable the canary used to validate a working installation
+        enabled: false,
+      },
+      test: {
+        // disable manifests intended to test the helm release
+        enabled: false,
       },
     },
   });
