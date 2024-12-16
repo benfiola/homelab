@@ -5,6 +5,9 @@ import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { codeblock } from "../utils/codeblock";
 import { createDeployment } from "../utils/createDeployment";
 import { createMinioBucket } from "../utils/createMinioBucket";
+import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
+import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
+import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
@@ -58,10 +61,14 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  await createMinioBucket(chart, "minio-bucket", {
-    name: "minecraft",
-    secretKey: env.MINECRAFT_MINIO_SECRET_KEY,
-  });
+  const minioUser = await createMinioUser(
+    chart,
+    "minecraft",
+    env.MINECRAFT_MINIO_SECRET_KEY
+  );
+  const minioBucket = createMinioBucket(chart, "minecraft");
+  const minioPolicy = createMinioBucketAdminPolicy(chart, minioBucket.name);
+  createMinioPolicyBinding(chart, minioPolicy.name, minioUser.name);
 
   const serviceAccount = createServiceAccount(chart, "service-account", {
     access: {},
@@ -83,7 +90,7 @@ const manifests: ManifestsCallback = async (app) => {
   ];
   const downloadCommand = mods
     .map((m) => {
-      const url = getMinioUrl(`minecraft/${m}`);
+      const url = getMinioUrl(`${minioBucket.name}/${m}`);
       return `curl -o /minecraft/mods/${m} -fsSL ${url}`;
     })
     .join("\n");

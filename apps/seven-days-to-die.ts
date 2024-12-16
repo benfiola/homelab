@@ -4,6 +4,9 @@ import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createMinioBucket } from "../utils/createMinioBucket";
+import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
+import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
+import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
@@ -87,10 +90,14 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  await createMinioBucket(chart, "minio-bucket", {
-    name: "seven-days-to-die",
-    secretKey: env.SEVEN_DAYS_TO_DIE_MINIO_SECRET_KEY,
-  });
+  const minioUser = await createMinioUser(
+    chart,
+    "seven-days-to-die",
+    env.SEVEN_DAYS_TO_DIE_MINIO_SECRET_KEY
+  );
+  const minioBucket = createMinioBucket(chart, "seven-days-to-die");
+  const minioPolicy = createMinioBucketAdminPolicy(chart, minioBucket.name);
+  createMinioPolicyBinding(chart, minioPolicy.name, minioUser.name);
 
   const serviceAccount = createServiceAccount(chart, "service-account", {
     access: {},
@@ -105,7 +112,7 @@ const manifests: ManifestsCallback = async (app) => {
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
   const roots = ["DF-V6-DEV-B17.zip"];
-  const rootUrls = roots.map((r) => getMinioUrl(`seven-days-to-die/${r}`));
+  const rootUrls = roots.map((r) => getMinioUrl(`${minioBucket.name}/${r}`));
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
     stringData: {

@@ -12,6 +12,10 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
+import { createMinioBucket } from "../utils/createMinioBucket";
+import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
+import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
+import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
@@ -29,12 +33,18 @@ const appData = {
     version: "58.5.1",
     repo: "https://prometheus-community.github.io/helm-charts",
   },
+  loki: {
+    chart: "loki",
+    version: "6.23.0",
+    repo: "https://grafana.github.io/helm-charts",
+  },
 };
 
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     ALERTMANAGER_GMAIL_PASSWORD: zod.string(),
     GRAFANA_PASSWORD: zod.string(),
+    LOKI_MINIO_SECRET_KEY: zod.string(),
   }));
 
   const chart = new Chart(app, "monitoring", {
@@ -251,7 +261,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new Helm(chart, "helm", {
+  new Helm(chart, "helm-kube-prometheus", {
     ...appData.kubePrometheus,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
@@ -395,11 +405,80 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
+  const lokiMinioUser = await createMinioUser(
+    chart,
+    "loki",
+    env.LOKI_MINIO_SECRET_KEY
+  );
+  const lokiMinioBucketAdmin = createMinioBucket(chart, "loki-admin");
+  const lokiMinioBucketChunks = createMinioBucket(chart, "loki-chunks");
+  const lokiMinioBucketRuler = createMinioBucket(chart, "loki-ruler");
+  const lokiMinioPolicyAdmin = createMinioBucketAdminPolicy(
+    chart,
+    lokiMinioBucketAdmin.name
+  );
+  const lokiMinioPolicyChunks = createMinioBucketAdminPolicy(
+    chart,
+    lokiMinioBucketChunks.name
+  );
+  const lokiMinioPolicyRuler = createMinioBucketAdminPolicy(
+    chart,
+    lokiMinioBucketRuler.name
+  );
+  createMinioPolicyBinding(
+    chart,
+    lokiMinioPolicyAdmin.name,
+    lokiMinioUser.name
+  );
+  createMinioPolicyBinding(
+    chart,
+    lokiMinioPolicyChunks.name,
+    lokiMinioUser.name
+  );
+  createMinioPolicyBinding(
+    chart,
+    lokiMinioPolicyRuler.name,
+    lokiMinioUser.name
+  );
+
+  new Helm(chart, "helm-loki", {
+    ...appData.loki,
+    namespace: chart.namespace,
+    values: {
+      deploymentMode: "SimpleScalable",
+      ingress: {
+        enabled: true,
+        hosts: ["loki.bulia"],
+        ingressClassName: getIngressClassName(),
+      },
+      storage: {
+        bucketNames: {
+          admin: lokiMinioBucketAdmin.name,
+          chunks: lokiMinioBucketChunks.name,
+          ruler: lokiMinioBucketRuler.name,
+        },
+        type: "s3",
+        s3: {
+          accessKeyId: lokiMinioUser.name,
+          endpoint: "minio.minio.svc:9000",
+          insecure: true,
+          s3forcepathstyle: true,
+          secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
+        },
+      },
+      test: {
+        enabled: false,
+      },
+    },
+  });
+
   return chart;
 };
 
 const resources: ResourcesCallback = async (manifestsFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData.kubePrometheus));
+  const manifest = [
+    await exec(getHelmTemplateCommand(appData.kubePrometheus)),
+  ].join("\n---\n");
   await writeFile(manifestsFile, manifest);
 };
 
