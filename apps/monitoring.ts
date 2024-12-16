@@ -450,6 +450,13 @@ const manifests: ManifestsCallback = async (app) => {
       // give helm release a more concise name
       fullnameOverride: "loki",
       loki: {
+        backend: {
+          // persistence required for fault-tolerance
+          persistence: {
+            storageClass: getStorageClassName(),
+            volumeClaimsEnabled: true,
+          },
+        },
         ingress: {
           // expose loki via ingress
           enabled: true,
@@ -486,6 +493,13 @@ const manifests: ManifestsCallback = async (app) => {
             insecure: true,
             s3forcepathstyle: true,
             secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
+          },
+        },
+        write: {
+          // persistence required for fault-tolerance
+          persistence: {
+            storageClass: getStorageClassName(),
+            volumeClaimsEnabled: true,
           },
         },
       },
