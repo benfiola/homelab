@@ -24,9 +24,11 @@ import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
-  chart: "kube-prometheus-stack",
-  version: "58.5.1",
-  repo: "https://prometheus-community.github.io/helm-charts",
+  kubePrometheus: {
+    chart: "kube-prometheus-stack",
+    version: "58.5.1",
+    repo: "https://prometheus-community.github.io/helm-charts",
+  },
 };
 
 const manifests: ManifestsCallback = async (app) => {
@@ -35,8 +37,8 @@ const manifests: ManifestsCallback = async (app) => {
     GRAFANA_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "kube-prometheus", {
-    namespace: "kube-prometheus",
+  const chart = new Chart(app, "monitoring", {
+    namespace: "monitoring",
   });
 
   createNetworkPolicy(chart, "network-policy", [
@@ -156,13 +158,13 @@ const manifests: ManifestsCallback = async (app) => {
   const cert = new Certificate(chart, "certificate", {
     metadata: {
       namespace: "cert-manager",
-      name: "kube-prometheus",
+      name: "monitoring",
     },
     spec: {
       isCa: true,
       // NOTE: secretName intentionally matches metadata.name
-      secretName: "kube-prometheus",
-      commonName: "kube-prometheus",
+      secretName: "monitoring",
+      commonName: "monitoring",
       privateKey: {
         algorithm: CertificateSpecPrivateKeyAlgorithm.ECDSA,
         size: 256,
@@ -178,7 +180,7 @@ const manifests: ManifestsCallback = async (app) => {
   const issuer = new ClusterIssuer(chart, "issuer", {
     metadata: {
       namespace: "cert-manager",
-      name: "kube-prometheus",
+      name: "monitoring",
     },
     spec: {
       ca: {
@@ -250,7 +252,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...appData.kubePrometheus,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -397,7 +399,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 const resources: ResourcesCallback = async (manifestsFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData));
+  const manifest = await exec(getHelmTemplateCommand(appData.kubePrometheus));
   await writeFile(manifestsFile, manifest);
 };
 
