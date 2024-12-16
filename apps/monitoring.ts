@@ -446,28 +446,45 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: chart.namespace,
     values: {
       deploymentMode: "SimpleScalable",
-      ingress: {
-        enabled: true,
-        hosts: ["loki.bulia"],
-        ingressClassName: getIngressClassName(),
-      },
-      storage: {
-        bucketNames: {
-          admin: lokiMinioBucketAdmin.name,
-          chunks: lokiMinioBucketChunks.name,
-          ruler: lokiMinioBucketRuler.name,
+      fullnameOverride: "loki",
+      loki: {
+        ingress: {
+          enabled: true,
+          hosts: ["loki.bulia"],
+          ingressClassName: getIngressClassName(),
         },
-        type: "s3",
-        s3: {
-          accessKeyId: lokiMinioUser.name,
-          endpoint: "minio.minio.svc:9000",
-          insecure: true,
-          s3forcepathstyle: true,
-          secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
+        schemaConfig: {
+          configs: [
+            {
+              from: "2024-04-01",
+              index: {
+                prefix: "loki_index_",
+                period: "24h",
+              },
+              object_store: "s3",
+              schema: "v13",
+              store: "tsdb",
+            },
+          ],
         },
-      },
-      test: {
-        enabled: false,
+        storage: {
+          bucketNames: {
+            admin: lokiMinioBucketAdmin.name,
+            chunks: lokiMinioBucketChunks.name,
+            ruler: lokiMinioBucketRuler.name,
+          },
+          type: "s3",
+          s3: {
+            accessKeyId: lokiMinioUser.name,
+            endpoint: "minio.minio.svc:9000",
+            insecure: true,
+            s3forcepathstyle: true,
+            secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
+          },
+        },
+        test: {
+          enabled: false,
+        },
       },
     },
   });
