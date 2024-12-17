@@ -554,12 +554,6 @@ const manifests: ManifestsCallback = async (app) => {
       deploymentMode: "SimpleScalable",
       // give helm release a more concise name
       fullnameOverride: "loki",
-      ingress: {
-        // expose loki via ingress
-        enabled: true,
-        hosts: ["loki.bulia"],
-        ingressClassName: getIngressClassName(),
-      },
       loki: {
         schemaConfig: {
           configs: [
