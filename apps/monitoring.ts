@@ -90,6 +90,13 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
+      from: { pod: "loki-backend" },
+      to: {
+        entity: "kube-apiserver",
+        ports: [[6443, "tcp"]],
+      },
+    },
+    {
       from: { pod: "prometheus-kube-prometheus" },
       to: {
         entity: "kube-apiserver",
