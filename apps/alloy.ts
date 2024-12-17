@@ -3,6 +3,7 @@ import { Namespace } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { codeblock } from "../utils/codeblock";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import { getPodRequests } from "../utils/getPodRequests";
 
 const appData = {
   chart: "alloy",
@@ -114,6 +115,8 @@ const manifests: ManifestsCallback = async (app) => {
       },
       // give helm release a more concise name
       fullnameOverride: "alloy",
+      // set resource limits for workload
+      resources: getPodRequests({ mem: 300 }),
     },
   });
 
