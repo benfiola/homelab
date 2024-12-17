@@ -116,7 +116,7 @@ const manifests: ManifestsCallback = async (app) => {
       // give helm release a more concise name
       fullnameOverride: "alloy",
       // set resource limits for workload
-      resources: getPodRequests({ mem: 300 }),
+      resources: getPodRequests({ mem: 600 }),
     },
   });
 
