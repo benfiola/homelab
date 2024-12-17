@@ -234,6 +234,11 @@ const manifests: ManifestsCallback = async (app) => {
       // give helm release a more concise name
       fullnameOverride: "loki",
       loki: {
+        analytics: {
+          // disable phoning home to grafana
+          reporting_enabled: false,
+        },
+        // used primarily to signal a single-tenant environment
         auth_enabled: false,
         schemaConfig: {
           configs: [
