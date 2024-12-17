@@ -80,7 +80,7 @@ const manifests: ManifestsCallback = async (app) => {
                 source_labels = ["__meta_kubernetes_pod_container_id"]
                 action = "replace"
                 target_label = "container_runtime"
-                regex = "^(\\S+):\\/\\/.+$"
+                regex = "^(\\\\S+):\\\\/\\\\/.+$"
                 replacement = "$1"
               }
             }
