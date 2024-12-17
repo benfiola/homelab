@@ -428,17 +428,14 @@ const manifests: ManifestsCallback = async (app) => {
               alert: "PodOomKilled",
               annotations: {
                 description:
-                  "Pod {{$labels.namespace}}/{{$labels.pod}} was recently OOMkilled.",
+                  "Pod {{$labels.namespace}}/{{$labels.pod}} was recently OOMKilled.",
                 summary: "Pod was recently OOMKilled",
               },
               expr: {
-                value:
-                  "sum by(namespace, pod) (kube_pod_container_status_last_terminated_reason{reason=“OOMKilled”}) > 0",
+                value: `sum by(namespace, pod) (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}) > 0`,
               } as any,
               for: "30s",
               labels: {
-                issue:
-                  "Pod {{$labels.namespace}}/{{$labels.pod}} was recently OOMkilled.",
                 severity: "critical",
               },
             },
