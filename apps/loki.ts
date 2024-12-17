@@ -228,6 +228,8 @@ const manifests: ManifestsCallback = async (app) => {
           storageClass: getStorageClassName(),
           volumeClaimsEnabled: true,
         },
+        // ensure backend workloads have sufficient memory
+        resources: getPodRequests({ mem: 300 }),
       },
       // deploy loki in 'simple scalable' mode
       deploymentMode: "SimpleScalable",
