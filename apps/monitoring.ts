@@ -105,6 +105,28 @@ const manifests: ManifestsCallback = async (app) => {
     },
 
     {
+      from: { pod: "loki-backend" },
+      to: {
+        externalPod: ["minio", "minio-tenant"],
+        ports: [[9000, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-read" },
+      to: {
+        externalPod: ["minio", "minio-tenant"],
+        ports: [[9000, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-write" },
+      to: {
+        externalPod: ["minio", "minio-tenant"],
+        ports: [[9000, "tcp"]],
+      },
+    },
+
+    {
       from: { entity: "ingress" },
       to: {
         pod: "alertmanager-kube-prometheus",
@@ -145,6 +167,13 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
+      from: { pod: "loki-backend" },
+      to: {
+        pod: "loki-write",
+        ports: [[7946, "tcp"]],
+      },
+    },
+    {
       from: { pod: "loki-read" },
       to: {
         pod: "loki-backend",
@@ -165,6 +194,13 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "loki-read" },
       to: {
         pod: "loki-write",
+        ports: [[7946, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-write" },
+      to: {
+        pod: "loki-backend",
         ports: [[7946, "tcp"]],
       },
     },
