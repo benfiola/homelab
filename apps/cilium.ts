@@ -293,7 +293,7 @@ const manifests: ManifestsCallback = async (app) => {
             fromEndpoints: [
               {
                 matchLabels: {
-                  "io.kubernetes.pod.namespace": "monitoring",
+                  "io.kubernetes.pod.namespace": "kube-prometheus",
                   "bfiola.dev/pod-name": "prometheus-kube-prometheus",
                 },
               },

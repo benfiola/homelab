@@ -47,8 +47,8 @@ const manifests: ManifestsCallback = async (app) => {
     LOKI_MINIO_SECRET_KEY: zod.string(),
   }));
 
-  const chart = new Chart(app, "monitoring", {
-    namespace: "monitoring",
+  const chart = new Chart(app, "kube-prometheus", {
+    namespace: "kube-prometheus",
   });
 
   createNetworkPolicy(chart, "network-policy", [
@@ -280,13 +280,13 @@ const manifests: ManifestsCallback = async (app) => {
   const cert = new Certificate(chart, "certificate", {
     metadata: {
       namespace: "cert-manager",
-      name: "monitoring",
+      name: "kube-prometheus",
     },
     spec: {
       isCa: true,
       // NOTE: secretName intentionally matches metadata.name
-      secretName: "monitoring",
-      commonName: "monitoring",
+      secretName: "kube-prometheus",
+      commonName: "kube-prometheus",
       privateKey: {
         algorithm: CertificateSpecPrivateKeyAlgorithm.ECDSA,
         size: 256,
@@ -302,7 +302,7 @@ const manifests: ManifestsCallback = async (app) => {
   const issuer = new ClusterIssuer(chart, "issuer", {
     metadata: {
       namespace: "cert-manager",
-      name: "monitoring",
+      name: "kube-prometheus",
     },
     spec: {
       ca: {
@@ -636,7 +636,7 @@ const manifests: ManifestsCallback = async (app) => {
             name: "Loki",
             type: "loki",
             access: "proxy",
-            url: "http://loki-gateway.monitoring",
+            url: "http://loki-gateway.kube-prometheus",
           },
         ],
       }),
