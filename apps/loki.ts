@@ -7,6 +7,7 @@ import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPol
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import { getPodRequests } from "../utils/getPodRequests";
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
 
@@ -257,6 +258,8 @@ const manifests: ManifestsCallback = async (app) => {
           storageClass: getStorageClassName(),
           volumeClaimsEnabled: true,
         },
+        // ensure write workloads have sufficient memory
+        resources: getPodRequests({ mem: 1000 }),
       },
     },
   });
