@@ -96,7 +96,7 @@ const manifests: ManifestsCallback = async (app) => {
 
             loki.write "default" {
               endpoint {
-                url = "https://loki-gateway.loki.svc/loki/api/v1/push"
+                url = "http://loki-gateway.loki.svc/loki/api/v1/push"
               }
             }`,
         },
