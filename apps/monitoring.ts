@@ -628,7 +628,7 @@ const manifests: ManifestsCallback = async (app) => {
             name: "Loki",
             type: "loki",
             access: "proxy",
-            url: "http://loki-read.monitoring:3100",
+            url: "http://loki-gateway.monitoring",
           },
         ],
       }),
