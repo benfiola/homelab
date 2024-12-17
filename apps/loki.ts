@@ -258,7 +258,7 @@ const manifests: ManifestsCallback = async (app) => {
       labels: { grafana_datasource: "1" },
     },
     data: {
-      "datasource.yaml": yamlDump({
+      [`datasources-${chart.namespace}.yaml`]: yamlDump({
         apiVersion: 1,
         datasources: [
           {
