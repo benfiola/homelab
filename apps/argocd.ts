@@ -77,7 +77,7 @@ const baseValues = {
     // value recommended by argocd ha instructions
     replicas: 1,
     // constrain all resources for controller workloads
-    resources: getPodRequests({ cpu: 500, mem: 1500 }),
+    resources: getPodRequests({ cpu: 500, mem: 2000 }),
   },
   // give all resources a static prefix
   fullnameOverride: "argocd",
