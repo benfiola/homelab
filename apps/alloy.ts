@@ -15,7 +15,12 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: "alloy",
   });
 
-  createNetworkPolicy(chart, "network-policy", []);
+  createNetworkPolicy(chart, "network-policy", [
+    {
+      from: { pod: "alloy" },
+      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
+    },
+  ]);
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -53,12 +58,6 @@ const manifests: ManifestsCallback = async (app) => {
                 source_labels = ["__meta_kubernetes_pod_container_name"]
                 action = "replace"
                 target_label = "container"
-              }
-
-              rule {
-                source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
-                action = "replace"
-                target_label = "app"
               }
 
               rule {
