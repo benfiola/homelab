@@ -30,6 +30,10 @@ const appData = {
 };
 
 const manifests: ManifestsCallback = async (app) => {
+  const { PrometheusRule } = await import(
+    "../resources/kube-prometheus/monitoring.coreos.com"
+  );
+
   const env = parseEnv((zod) => ({
     ALERTMANAGER_GMAIL_PASSWORD: zod.string(),
     GRAFANA_PASSWORD: zod.string(),
@@ -407,6 +411,40 @@ const manifests: ManifestsCallback = async (app) => {
           },
         },
       },
+    },
+  });
+
+  new PrometheusRule(chart, "prometheus-rule-pod-oom-killed", {
+    metadata: {
+      namespace: chart.namespace,
+      name: "pod-oom-killed",
+    },
+    spec: {
+      groups: [
+        {
+          name: "kubernetes-apps",
+          rules: [
+            {
+              alert: "PodOomKilled",
+              annotations: {
+                description:
+                  "Pod {{$labels.namespace}}/{{$labels.pod}} was recently OOMkilled.",
+                summary: "Pod was recently OOMKilled",
+              },
+              expr: {
+                value:
+                  "sum by(namespace, pod) (kube_pod_container_status_last_terminated_reason{reason=“OOMKilled”}) > 0",
+              } as any,
+              for: "30s",
+              labels: {
+                issue:
+                  "Pod {{$labels.namespace}}/{{$labels.pod}} was recently OOMkilled.",
+                severity: "critical",
+              },
+            },
+          ],
+        },
+      ],
     },
   });
 
