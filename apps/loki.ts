@@ -82,6 +82,13 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
+      from: { pod: "loki-read" },
+      to: {
+        pod: "loki-chunks-cache",
+        ports: [[11211, "tcp"]],
+      },
+    },
+    {
       from: { pod: "loki-write" },
       to: {
         pod: "loki-chunks-cache",
@@ -124,6 +131,13 @@ const manifests: ManifestsCallback = async (app) => {
       to: {
         pod: "loki-read",
         ports: [[7946, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-read" },
+      to: {
+        pod: "loki-results-cache",
+        ports: [[11211, "tcp"]],
       },
     },
     {
