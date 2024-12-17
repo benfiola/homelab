@@ -138,6 +138,23 @@ const manifests: ManifestsCallback = async (app) => {
       to: { pod: "kube-prometheus-operator", ports: [[10250, "tcp"]] },
     },
     {
+      from: { pod: "loki-read" },
+      to: {
+        pod: "loki-backend",
+        ports: [
+          [7946, "tcp"],
+          [9095, "tcp"],
+        ],
+      },
+    },
+    {
+      from: { pod: "loki-read" },
+      to: {
+        pod: "loki-write",
+        ports: [[7946, "tcp"]],
+      },
+    },
+    {
       from: { entity: "ingress" },
       to: { pod: "prometheus-kube-prometheus", ports: [[9090, "tcp"]] },
     },
