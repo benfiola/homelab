@@ -310,6 +310,14 @@ const manifests: ManifestsCallback = async (app) => {
             enabled: true,
             // specify annotation mapping to desired grafana dashboard folder
             folderAnnotation: "grafana_folder",
+            // search all namespaces for annotated dashboards
+            searchNamespace: "ALL",
+          },
+          datasources: {
+            // enable datasource discovery
+            enabled: true,
+            // search all namespaces for annotated dashboards
+            searchNamespace: "ALL",
           },
         },
       },
