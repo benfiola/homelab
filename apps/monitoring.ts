@@ -167,13 +167,6 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-write",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
       from: { pod: "loki-read" },
       to: {
         pod: "loki-backend",
@@ -184,7 +177,14 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
-      from: { pod: "loki-read" },
+      from: { pod: "loki-write" },
+      to: {
+        pod: "loki-backend",
+        ports: [[7946, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-backend" },
       to: {
         pod: "loki-read",
         ports: [[7946, "tcp"]],
@@ -193,14 +193,28 @@ const manifests: ManifestsCallback = async (app) => {
     {
       from: { pod: "loki-read" },
       to: {
-        pod: "loki-write",
+        pod: "loki-read",
         ports: [[7946, "tcp"]],
       },
     },
     {
       from: { pod: "loki-write" },
       to: {
-        pod: "loki-backend",
+        pod: "loki-read",
+        ports: [[7946, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-backend" },
+      to: {
+        pod: "loki-write",
+        ports: [[7946, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "loki-read" },
+      to: {
+        pod: "loki-write",
         ports: [[7946, "tcp"]],
       },
     },
