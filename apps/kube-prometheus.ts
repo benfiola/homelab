@@ -298,6 +298,15 @@ const manifests: ManifestsCallback = async (app) => {
         },
         // give resource names a static prefix
         fullnameOverride: "kube-prometheus-grafana",
+        "grafana.ini": {
+          analytics: {
+            // generally prevent grafana from phoning home
+            check_for_plugin_updates: false,
+            check_for_updates: false,
+            feedback_links_enabled: false,
+            reporting_enabled: false,
+          },
+        },
         // expose grafana via ingress
         ingress: {
           enabled: true,
