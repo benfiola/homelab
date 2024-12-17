@@ -1,12 +1,12 @@
 import { Chart, Helm } from "cdk8s";
 import { writeFile } from "fs/promises";
-import { dump } from "js-yaml";
+import { dump, dump as yamlDump } from "js-yaml";
 import {
   Certificate,
   CertificateSpecPrivateKeyAlgorithm,
   ClusterIssuer,
 } from "../resources/cert-manager/cert-manager.io";
-import { Namespace } from "../resources/k8s/k8s";
+import { ConfigMap, Namespace } from "../resources/k8s/k8s";
 import {
   CliContext,
   ManifestsCallback,
@@ -606,6 +606,27 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
+  new ConfigMap(chart, "config-map-datasource-loki", {
+    metadata: {
+      namespace: chart.namespace,
+      name: "loki-grafana-datasource",
+      labels: { grafana_datasource: "1" },
+    },
+    data: {
+      "datasource.yaml": yamlDump({
+        apiVersion: 1,
+        datasources: [
+          {
+            uid: "loki",
+            name: "Loki",
+            type: "loki",
+            access: "proxy",
+            url: "http://loki-read.monitoring:3100",
+          },
+        ],
+      }),
+    },
+  });
   return chart;
 };
 
