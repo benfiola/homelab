@@ -20,6 +20,11 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "alloy" },
       to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
     },
+
+    {
+      from: { pod: "alloy" },
+      to: { externalPod: ["loki", "loki-gateway"], ports: [[8080, "tcp"]] },
+    },
   ]);
 
   new Namespace(chart, "namespace", {
