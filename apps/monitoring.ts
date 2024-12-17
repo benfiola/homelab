@@ -569,6 +569,7 @@ const manifests: ManifestsCallback = async (app) => {
       // give helm release a more concise name
       fullnameOverride: "loki",
       loki: {
+        auth_enabled: false,
         schemaConfig: {
           configs: [
             {
