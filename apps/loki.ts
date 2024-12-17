@@ -82,6 +82,13 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
+      from: { pod: "loki-write" },
+      to: {
+        pod: "loki-chunks-cache",
+        ports: [[11211, "tcp"]],
+      },
+    },
+    {
       from: { externalPod: ["kube-prometheus", "kube-prometheus-grafana"] },
       to: {
         pod: "loki-gateway",
@@ -137,7 +144,10 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "loki-read" },
       to: {
         pod: "loki-write",
-        ports: [[7946, "tcp"]],
+        ports: [
+          [7946, "tcp"],
+          [9095, "tcp"],
+        ],
       },
     },
     {
