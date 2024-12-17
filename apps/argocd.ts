@@ -65,6 +65,8 @@ const baseValues = {
           clusters: ["*"],
         },
       ]),
+      // refresh every 10 seconds
+      "timeout.reconciliation": "10s",
     },
     params: {
       // disable tls
