@@ -573,7 +573,7 @@ const manifests: ManifestsCallback = async (app) => {
           s3: {
             // configure loki to use internal minio as storage
             accessKeyId: lokiMinioUser.name,
-            endpoint: "minio.minio.svc:9000",
+            endpoint: "minio.minio.svc",
             insecure: true,
             s3ForcePathStyle: true,
             secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
