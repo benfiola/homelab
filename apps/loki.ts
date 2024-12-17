@@ -258,6 +258,15 @@ const manifests: ManifestsCallback = async (app) => {
         // disable the canary used to validate a working installation
         enabled: false,
       },
+      read: {
+        // persistence required for fault-tolerance
+        persistence: {
+          storageClass: getStorageClassName(),
+          volumeClaimsEnabled: true,
+        },
+        // ensure read workloads have sufficient memory
+        resources: getPodRequests({ mem: 300 }),
+      },
       test: {
         // disable manifests intended to test the helm release
         enabled: false,
