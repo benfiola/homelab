@@ -539,7 +539,7 @@ const manifests: ManifestsCallback = async (app) => {
             accessKeyId: lokiMinioUser.name,
             endpoint: "minio.minio.svc:9000",
             insecure: true,
-            s3forcepathstyle: true,
+            s3ForcePathStyle: true,
             secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
           },
         },
