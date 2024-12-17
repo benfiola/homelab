@@ -67,27 +67,9 @@ const manifests: ManifestsCallback = async (app) => {
               }
 
               rule {
-                source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+                source_labels = ["__mtea_kubernetes_labels_bfiola.dev/pod-name"]
                 action = "replace"
                 target_label = "job"
-                separator = "/"
-                replacement = "$1"
-              }
-
-              rule {
-                source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
-                action = "replace"
-                target_label = "__path__"
-                separator = "/"
-                replacement = "/var/log/pods/*$1/*.log"
-              }
-
-              rule {
-                source_labels = ["__meta_kubernetes_pod_container_id"]
-                action = "replace"
-                target_label = "container_runtime"
-                regex = "^(\\\\S+):\\\\/\\\\/.+$"
-                replacement = "$1"
               }
             }
 
