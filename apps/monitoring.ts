@@ -186,8 +186,8 @@ const manifests: ManifestsCallback = async (app) => {
     {
       from: { pod: "kube-prometheus-grafana" },
       to: {
-        pod: "loki-read",
-        ports: [[3100, "tcp"]],
+        pod: "loki-gateway",
+        ports: [[8080, "tcp"]],
       },
     },
     {
