@@ -1,21 +1,17 @@
 import { Chart, Helm } from "cdk8s";
 import { writeFile } from "fs/promises";
-import { dump, dump as yamlDump } from "js-yaml";
+import { dump } from "js-yaml";
 import {
   Certificate,
   CertificateSpecPrivateKeyAlgorithm,
   ClusterIssuer,
 } from "../resources/cert-manager/cert-manager.io";
-import { ConfigMap, Namespace } from "../resources/k8s/k8s";
+import { Namespace } from "../resources/k8s/k8s";
 import {
   CliContext,
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createMinioBucket } from "../utils/createMinioBucket";
-import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
-import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
-import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
@@ -28,23 +24,15 @@ import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
-  kubePrometheus: {
-    chart: "kube-prometheus-stack",
-    version: "58.5.1",
-    repo: "https://prometheus-community.github.io/helm-charts",
-  },
-  loki: {
-    chart: "loki",
-    version: "6.23.0",
-    repo: "https://grafana.github.io/helm-charts",
-  },
+  chart: "kube-prometheus-stack",
+  version: "58.5.1",
+  repo: "https://prometheus-community.github.io/helm-charts",
 };
 
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     ALERTMANAGER_GMAIL_PASSWORD: zod.string(),
     GRAFANA_PASSWORD: zod.string(),
-    LOKI_MINIO_SECRET_KEY: zod.string(),
   }));
 
   const chart = new Chart(app, "kube-prometheus", {
@@ -90,39 +78,10 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
-      from: { pod: "loki-backend" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
       from: { pod: "prometheus-kube-prometheus" },
       to: {
         entity: "kube-apiserver",
         ports: [[6443, "tcp"]],
-      },
-    },
-
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
       },
     },
 
@@ -158,89 +117,6 @@ const manifests: ManifestsCallback = async (app) => {
     {
       from: { pod: "prometheus-kube-prometheus" },
       to: { pod: "kube-prometheus-operator", ports: [[10250, "tcp"]] },
-    },
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-backend",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-backend",
-        ports: [
-          [7946, "tcp"],
-          [9095, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-backend",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "kube-prometheus-grafana" },
-      to: {
-        pod: "loki-gateway",
-        ports: [[8080, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-read",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-gateway" },
-      to: {
-        pod: "loki-read",
-        ports: [[3100, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-read",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-read",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-write",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-write",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-write",
-        ports: [
-          [7946, "tcp"],
-          [9095, "tcp"],
-        ],
-      },
     },
     {
       from: { entity: "ingress" },
@@ -374,7 +250,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm-kube-prometheus", {
-    ...appData.kubePrometheus,
+    ...appData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -517,138 +393,11 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  const lokiMinioUser = await createMinioUser(
-    chart,
-    "loki",
-    env.LOKI_MINIO_SECRET_KEY
-  );
-  const lokiMinioBucketAdmin = createMinioBucket(chart, "loki-admin");
-  const lokiMinioBucketChunks = createMinioBucket(chart, "loki-chunks");
-  const lokiMinioBucketRuler = createMinioBucket(chart, "loki-ruler");
-  const lokiMinioPolicyAdmin = createMinioBucketAdminPolicy(
-    chart,
-    lokiMinioBucketAdmin.name
-  );
-  const lokiMinioPolicyChunks = createMinioBucketAdminPolicy(
-    chart,
-    lokiMinioBucketChunks.name
-  );
-  const lokiMinioPolicyRuler = createMinioBucketAdminPolicy(
-    chart,
-    lokiMinioBucketRuler.name
-  );
-  createMinioPolicyBinding(
-    chart,
-    lokiMinioPolicyAdmin.name,
-    lokiMinioUser.name
-  );
-  createMinioPolicyBinding(
-    chart,
-    lokiMinioPolicyChunks.name,
-    lokiMinioUser.name
-  );
-  createMinioPolicyBinding(
-    chart,
-    lokiMinioPolicyRuler.name,
-    lokiMinioUser.name
-  );
-
-  new Helm(chart, "helm-loki", {
-    ...appData.loki,
-    namespace: chart.namespace,
-    values: {
-      backend: {
-        // persistence required for fault-tolerance
-        persistence: {
-          storageClass: getStorageClassName(),
-          volumeClaimsEnabled: true,
-        },
-      },
-      // deploy loki in 'simple scalable' mode
-      deploymentMode: "SimpleScalable",
-      // give helm release a more concise name
-      fullnameOverride: "loki",
-      loki: {
-        auth_enabled: false,
-        schemaConfig: {
-          configs: [
-            {
-              // default (but required) schema configuration
-              from: "2024-04-01",
-              index: {
-                prefix: "loki_index_",
-                period: "24h",
-              },
-              object_store: "s3",
-              schema: "v13",
-              store: "tsdb",
-            },
-          ],
-        },
-        storage: {
-          bucketNames: {
-            // customize required bucket names
-            admin: lokiMinioBucketAdmin.name,
-            chunks: lokiMinioBucketChunks.name,
-            ruler: lokiMinioBucketRuler.name,
-          },
-          type: "s3",
-          s3: {
-            // configure loki to use internal minio as storage
-            accessKeyId: lokiMinioUser.name,
-            endpoint: "minio.minio.svc",
-            insecure: true,
-            s3ForcePathStyle: true,
-            secretAccessKey: env.LOKI_MINIO_SECRET_KEY,
-          },
-        },
-      },
-      lokiCanary: {
-        // disable the canary used to validate a working installation
-        enabled: false,
-      },
-      test: {
-        // disable manifests intended to test the helm release
-        enabled: false,
-      },
-      write: {
-        // persistence required for fault-tolerance
-        persistence: {
-          storageClass: getStorageClassName(),
-          volumeClaimsEnabled: true,
-        },
-      },
-    },
-  });
-
-  new ConfigMap(chart, "config-map-datasource-loki", {
-    metadata: {
-      namespace: chart.namespace,
-      name: "loki-grafana-datasource",
-      labels: { grafana_datasource: "1" },
-    },
-    data: {
-      "datasource.yaml": yamlDump({
-        apiVersion: 1,
-        datasources: [
-          {
-            uid: "loki",
-            name: "Loki",
-            type: "loki",
-            access: "proxy",
-            url: "http://loki-gateway.kube-prometheus",
-          },
-        ],
-      }),
-    },
-  });
   return chart;
 };
 
 const resources: ResourcesCallback = async (manifestsFile) => {
-  const manifest = [
-    await exec(getHelmTemplateCommand(appData.kubePrometheus)),
-  ].join("\n---\n");
+  const manifest = await exec(getHelmTemplateCommand(appData));
   await writeFile(manifestsFile, manifest);
 };
 

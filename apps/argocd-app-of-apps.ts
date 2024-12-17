@@ -102,6 +102,7 @@ const manifests: ManifestsCallback = async (app) => {
     "external-dns",
     "factorio",
     "kube-prometheus",
+    "loki",
     "minecraft",
     "minio",
     "piraeus",
