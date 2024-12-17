@@ -172,7 +172,10 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "loki-write" },
       to: {
         pod: "loki-write",
-        ports: [[7946, "tcp"]],
+        ports: [
+          [7946, "tcp"],
+          [9095, "tcp"],
+        ],
       },
     },
     {
