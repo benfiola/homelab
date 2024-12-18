@@ -250,7 +250,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         limits_config: {
           // define retention period for logs
-          retention_period: "5m",
+          retention_period: "168h",
         },
         schemaConfig: {
           configs: [
