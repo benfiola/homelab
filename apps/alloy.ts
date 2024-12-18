@@ -68,7 +68,7 @@ const manifests: ManifestsCallback = async (app) => {
 
               // relabel piraeus/linstor workflows
               rule {
-                source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app_kubernetes_io_component]
+                source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app_kubernetes_io_component"]
                 separator = "/"
                 regex= "^piraeus-datastore\\\\/(.*)$"
                 action = "replace"
