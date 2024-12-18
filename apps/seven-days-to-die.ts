@@ -227,7 +227,7 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       type: "LoadBalancer",
       ports: [
-        { name: "tcp", port: 8080, protocol: "TCP" },
+        { name: "http", port: 8080, protocol: "TCP" },
         { name: "udp1", port: 26900, protocol: "UDP" },
         { name: "tcp", port: 26900, protocol: "TCP" },
         { name: "udp2", port: 26901, protocol: "UDP" },
