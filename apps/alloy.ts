@@ -69,7 +69,7 @@ const manifests: ManifestsCallback = async (app) => {
               rule {
                 source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app_kubernetes_io_component"]
                 separator = "/"
-                regex= "^piraeus-datastore\\\\/(.*)$"
+                regex = "^piraeus-datastore\\\\/(.*)$"
                 action = "replace"
                 replacement = "$1"
                 target_label = "job"
@@ -77,6 +77,7 @@ const manifests: ManifestsCallback = async (app) => {
 
               rule {
                 source_labels = ["__meta_kubernetes_pod_label_bfiola_dev_pod_name"]
+                regex = "^(\\S+)$"
                 action = "replace"
                 target_label = "job"
               }
