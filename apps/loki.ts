@@ -242,6 +242,14 @@ const manifests: ManifestsCallback = async (app) => {
         },
         // used primarily to signal a single-tenant environment
         auth_enabled: false,
+        compactor: {
+          // enable log retention
+          retention_enabled: true,
+        },
+        limits_config: {
+          // define retention period for logs
+          retention_period: "5m",
+        },
         schemaConfig: {
           configs: [
             {
