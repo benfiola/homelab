@@ -188,7 +188,7 @@ type CidrLike = HomeNetwork;
 type EndpointLike = ExternalPod | KubeDns | Piraeus | Pod;
 type Resource = Cidr | CidrLike | Dns | Endpoint | EndpointLike | Entity;
 
-interface CreateNetworkPolicyRule {
+export interface CreateNetworkPolicyRule {
   from: Resource;
   to: Resource & WithPorts;
 }

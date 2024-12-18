@@ -7,7 +7,10 @@ import { createMinioBucket } from "../utils/createMinioBucket";
 import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  CreateNetworkPolicyRule,
+} from "../utils/createNetworkPolicy";
 import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
@@ -27,6 +30,58 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: "seven-days-to-die",
   });
 
+  const udpCidrs = [
+    "45.121.184.0/24",
+    "103.10.124.0/24",
+    "103.10.125.0/24",
+    "103.28.54.0/24",
+    "146.66.152.0/24",
+    "146.66.155.0/24",
+    "155.133.224.0/2",
+    "155.133.225.0/2",
+    "155.133.226.0/2",
+    "155.133.227.0/2",
+    "155.133.228.0/2",
+    "155.133.229.0/2",
+    "155.133.230.0/2",
+    "155.133.232.0/2",
+    "155.133.236.0/2",
+    "155.133.238.0/2",
+    "155.133.240.0/2",
+    "155.133.244.0/2",
+    "155.133.246.0/2",
+    "155.133.248.0/2",
+    "155.133.249.0/2",
+    "155.133.250.0/2",
+    "155.133.251.0/2",
+    "155.133.252.0/2",
+    "155.133.253.0/2",
+    "155.133.254.0/2",
+    "155.133.255.0/2",
+    "162.254.192.0/2",
+    "162.254.193.0/2",
+    "162.254.195.0/2",
+    "162.254.196.0/2",
+    "162.254.197.0/2",
+    "162.254.198.0/2",
+    "162.254.199.0/2",
+    "185.25.182.0/24",
+    "185.25.183.0/24",
+    "192.69.96.0/22",
+    "205.196.6.0/24",
+    "208.64.200.0/24",
+    "208.64.201.0/24",
+    "208.64.202.0/24",
+    "208.64.203.0/24",
+    "208.78.164.0/22",
+  ];
+  const sdtdToSteamUdpCidrsRules: CreateNetworkPolicyRule[] = udpCidrs.map(
+    (cidr) => ({
+      from: { pod: "seven-days-to-die" },
+      to: { cidr, ports: [[[27015, 27060], "udp"]] },
+    })
+  );
+
   createNetworkPolicy(chart, "network-policy", [
     {
       from: { homeNetwork: null },
@@ -38,6 +93,8 @@ const manifests: ManifestsCallback = async (app) => {
         ],
       },
     },
+
+    ...sdtdToSteamUdpCidrsRules,
 
     {
       from: { pod: "seven-days-to-die" },
@@ -71,7 +128,7 @@ const manifests: ManifestsCallback = async (app) => {
         ports: [
           [80, "tcp"],
           [443, "tcp"],
-          [[27015, 27050], "any"],
+          [[27015, 27060], "any"],
         ],
       },
     },
