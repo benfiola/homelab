@@ -243,6 +243,8 @@ const manifests: ManifestsCallback = async (app) => {
         // used primarily to signal a single-tenant environment
         auth_enabled: false,
         compactor: {
+          // specify storage to apply retention policies to
+          delete_request_store: "s3",
           // enable log retention
           retention_enabled: true,
         },
