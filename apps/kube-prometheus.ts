@@ -414,15 +414,15 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new PrometheusRule(chart, "prometheus-rule-pod-oom-killed", {
+  new PrometheusRule(chart, "prometheus-rules-custom", {
     metadata: {
       namespace: chart.namespace,
-      name: "pod-oom-killed",
+      name: "custom",
     },
     spec: {
       groups: [
         {
-          name: "kubernetes-apps",
+          name: "custom",
           rules: [
             {
               alert: "PodOomKilled",
