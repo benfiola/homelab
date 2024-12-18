@@ -67,7 +67,7 @@ const manifests: ManifestsCallback = async (app) => {
               }
 
               rule {
-                source_labels = ["__mtea_kubernetes_labels_bfiola.dev/pod-name"]
+                source_labels = ["__meta_kubernetes_pod_label_bfiola_dev_pod_name"]
                 action = "replace"
                 target_label = "job"
               }
