@@ -66,7 +66,6 @@ const manifests: ManifestsCallback = async (app) => {
                 target_label = "container"
               }
 
-              // relabel piraeus/linstor workflows
               rule {
                 source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name", "__meta_kubernetes_pod_label_app_kubernetes_io_component"]
                 separator = "/"
@@ -76,7 +75,6 @@ const manifests: ManifestsCallback = async (app) => {
                 target_label = "job"
               }
 
-              // relabel any workflow with bfiola.dev/pod-name label
               rule {
                 source_labels = ["__meta_kubernetes_pod_label_bfiola_dev_pod_name"]
                 action = "replace"
