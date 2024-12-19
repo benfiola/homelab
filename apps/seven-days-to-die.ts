@@ -196,6 +196,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         name: "seven-days-to-die",
         ports: {
+          http: [8080, "tcp"],
           udp1: [26900, "udp"],
           tcp: [26900, "tcp"],
           udp2: [26901, "udp"],
