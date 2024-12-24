@@ -168,7 +168,7 @@ const manifests: ManifestsCallback = async (app) => {
 
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
-  const roots = ["DF-V6-DEV-B17.zip"];
+  const roots = ["DF-V6-DEV-B18.zip"];
   const rootUrls = roots.map((r) => getMinioUrl(`${minioBucket.name}/${r}`));
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
