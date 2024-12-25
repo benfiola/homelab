@@ -88,6 +88,8 @@ const manifests: ManifestsCallback = async (app) => {
       to: {
         pod: "seven-days-to-die",
         ports: [
+          [8080, "tcp"],
+          [8081, "tcp"],
           [[26900, 26903], "udp"],
           [26900, "tcp"],
         ],
