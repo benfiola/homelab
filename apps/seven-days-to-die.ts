@@ -263,11 +263,11 @@ const manifests: ManifestsCallback = async (app) => {
         {
           type: "LoadBalancer",
           ports: [
-            { name: "udp1", port: 26900, protocol: "UDP" },
-            { name: "tcp", port: 26900, protocol: "TCP" },
-            { name: "udp2", port: 26901, protocol: "UDP" },
-            { name: "udp3", port: 26902, protocol: "UDP" },
-            { name: "udp4", port: 26903, protocol: "UDP" },
+            { name: "gameUdp1", port: 26900, protocol: "UDP" },
+            { name: "gameTcp", port: 26900, protocol: "TCP" },
+            { name: "gameUdp2", port: 26901, protocol: "UDP" },
+            { name: "gameUdp3", port: 26902, protocol: "UDP" },
+            { name: "gameUdp4", port: 26903, protocol: "UDP" },
           ],
           selector: getPodLabels(deployment.name),
         },
