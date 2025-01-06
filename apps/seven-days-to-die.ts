@@ -208,7 +208,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         resources: {
           cpu: 2000,
-          mem: 8000,
+          mem: 10000,
         },
       },
     ],
