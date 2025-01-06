@@ -3,6 +3,7 @@ import {
   Container as ActualContainer,
   ConfigMap,
   Deployment,
+  EnvFromSource,
   IntOrString,
   PersistentVolumeClaim,
   Quantity,
@@ -10,6 +11,7 @@ import {
   Volume,
 } from "../resources/k8s/k8s";
 import { SealedSecret } from "../resources/sealed-secrets/bitnami.com";
+import { getHash } from "./getHash";
 import { getPodLabels } from "./getPodLabels";
 import { getPodRequests } from "./getPodRequests";
 
@@ -152,13 +154,44 @@ const convertPodRequests = (
   return toReturn;
 };
 
+const calculateEnvFromHash = (envFroms: EnvFrom[]) => {
+  const data = [];
+  for (const envFrom of envFroms) {
+    let resource: EnvFromResource;
+    if (Array.isArray(envFrom)) {
+      resource = envFrom[0];
+    } else {
+      resource = envFrom;
+    }
+
+    if (resource.kind === "SealedSecret") {
+      const checksum = resource.metadata.getLabel("bfiola.dev/checksum");
+      if (!checksum) {
+        throw new Error(`checksum not found: ${resource}`);
+      }
+      data.push({ checksum: checksum });
+    } else {
+      throw new Error(
+        `unimplemented resource: ${resource.apiVersion}/${resource.kind}`
+      );
+    }
+  }
+  return getHash(JSON.stringify(data)).toString();
+};
+
 /**
  * Function that converts a simple 'container' data object
  * into a proper kubernetes container resource.
  */
 const convertContainer = (container: Container): ActualContainer => {
-  const env = container.env ? convertEnvMap(container.env) : undefined;
-  const envFrom = container.envFrom?.map(convertEnvFrom);
+  let env = container.env ? convertEnvMap(container.env) : [];
+  let envFrom: EnvFromSource[] | undefined;
+  if (container.envFrom) {
+    envFrom = container.envFrom?.map(convertEnvFrom);
+    const envFromHash = calculateEnvFromHash(container.envFrom);
+    env = env || [];
+    env.push({ name: "_ENV_FROM_HASH", value: envFromHash });
+  }
   const ports = container.ports ? convertPortMap(container.ports) : undefined;
   const probe = container.probe ? convertProbe(container.probe) : undefined;
   const volumeMounts = container.mounts
