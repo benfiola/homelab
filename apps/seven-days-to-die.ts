@@ -179,11 +179,15 @@ const manifests: ManifestsCallback = async (app) => {
       SETTING_EACEnabled: "false",
       SETTING_GameDifficulty: "2",
       SETTING_GameWorld: "DFalls-Navezgane",
-      SETTING_LootRespawnDays: "1",
+      SETTING_LootRespawnDays: "3",
       SETTING_MaxSpawnedZombies: "100",
       SETTING_Region: "NorthAmericaWest",
       SETTING_ServerName: "seven-days-to-die.bfiola.dev",
       SETTING_ServerVisibility: "0",
+      SETTING_ZombieMove: "0",
+      SETTING_ZombieMoveNight: "1",
+      SETTING_ZombieFeralMove: "2",
+      SETTING_ZombieBMMove: "3"
     },
   });
 
