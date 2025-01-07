@@ -31,7 +31,10 @@ const manifests: ManifestsCallback = async (app) => {
       from: { homeNetwork: null },
       to: {
         pod: "escape-from-tarkov",
-        ports: [[6969, "tcp"]],
+        ports: [
+          [6969, "tcp"],
+          [26969, "udp"],
+        ],
       },
     },
 
@@ -82,7 +85,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/escape-from-tarkov:1.0.0",
+        image: "benfiola/escape-from-tarkov:0.1.1-spt3.10.5-fika2.3.6",
         imagePullPolicy: "Always",
         mounts: {
           data: "/data",
@@ -90,6 +93,7 @@ const manifests: ManifestsCallback = async (app) => {
         name: "escape-from-tarkov",
         ports: {
           server: [6969, "tcp"],
+          p2p: [25565, "udp"],
         },
         resources: {
           cpu: 2000,
@@ -115,7 +119,15 @@ const manifests: ManifestsCallback = async (app) => {
     },
     spec: {
       type: "LoadBalancer",
-      ports: [{ name: "server", port: 6969, protocol: "TCP" }],
+      ports: [
+        { name: "server", port: 6969, protocol: "TCP" },
+        {
+          name: "p2p",
+          port: 26969,
+          targetPort: { value: "25565" } as any,
+          protocol: "UDP",
+        },
+      ],
       selector: getPodLabels(deployment.name),
     },
   });
@@ -141,7 +153,15 @@ const manifests: ManifestsCallback = async (app) => {
       serviceTemplates: [
         {
           type: "LoadBalancer",
-          ports: [{ name: "server", port: 6969, protocol: "TCP" }],
+          ports: [
+            { name: "server", port: 6969, protocol: "TCP" },
+            {
+              name: "p2p",
+              port: 26969,
+              targetPort: { value: "25565" } as any,
+              protocol: "UDP",
+            },
+          ],
           selector: getPodLabels(deployment.name),
         },
       ],
