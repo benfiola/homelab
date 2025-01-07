@@ -124,7 +124,7 @@ const manifests: ManifestsCallback = async (app) => {
         {
           name: "p2p",
           port: 26969,
-          targetPort: { value: "25565" } as any,
+          targetPort: { value: 25565 } as any,
           protocol: "UDP",
         },
       ],
@@ -158,7 +158,7 @@ const manifests: ManifestsCallback = async (app) => {
             {
               name: "p2p",
               port: 26969,
-              targetPort: { value: "25565" } as any,
+              targetPort: { value: 25565 } as any,
               protocol: "UDP",
             },
           ],
