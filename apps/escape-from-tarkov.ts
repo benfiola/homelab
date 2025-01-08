@@ -92,7 +92,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         name: "escape-from-tarkov",
         ports: {
-          server: [6969, "tcp"],
+          "spt-server": [6969, "tcp"],
         },
         resources: {
           cpu: 2000,
@@ -104,8 +104,8 @@ const manifests: ManifestsCallback = async (app) => {
         name: "p2p-tunnel",
         args: ["server", "--reverse", "8080"],
         ports: {
-          tcpTunnel: [8080, "tcp"],
-          p2p: [25565, "udp"],
+          "chisel-server": [8080, "tcp"],
+          "fika-p2p": [25565, "udp"],
         },
       },
     ],
@@ -128,14 +128,14 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       type: "LoadBalancer",
       ports: [
-        { name: "server", port: 6969, protocol: "TCP" },
+        { name: "spt-server", port: 6969, protocol: "TCP" },
         {
-          name: "tcpTunnel",
+          name: "chisel-server",
           port: 8080,
           protocol: "TCP",
         },
         {
-          name: "p2p",
+          name: "fika-p2p",
           port: 25565,
           protocol: "UDP",
         },
@@ -166,9 +166,9 @@ const manifests: ManifestsCallback = async (app) => {
         {
           type: "LoadBalancer",
           ports: [
-            { name: "server", port: 6969, protocol: "TCP" },
+            { name: "spt-server", port: 6969, protocol: "TCP" },
             {
-              name: "p2p",
+              name: "fika-p2p",
               port: 26969,
               targetPort: { value: 25565 } as any,
               protocol: "UDP",
