@@ -33,7 +33,8 @@ const manifests: ManifestsCallback = async (app) => {
         pod: "escape-from-tarkov",
         ports: [
           [6969, "tcp"],
-          [26969, "udp"],
+          [8080, "tcp"],
+          [25565, "udp"],
         ],
       },
     },
@@ -86,18 +87,25 @@ const manifests: ManifestsCallback = async (app) => {
       {
         envFrom: [serverSecret],
         image: "benfiola/escape-from-tarkov:0.1.6-spt3.10.5-fika2.3.6",
-        imagePullPolicy: "Always",
         mounts: {
           data: "/data",
         },
         name: "escape-from-tarkov",
         ports: {
           server: [6969, "tcp"],
-          p2p: [25565, "udp"],
         },
         resources: {
           cpu: 2000,
           mem: 4000,
+        },
+      },
+      {
+        image: "jpillora/chisel:1.10.1",
+        name: "p2p-tunnel",
+        args: ["server", "--reverse", "8080"],
+        ports: {
+          tcpTunnel: [8080, "tcp"],
+          p2p: [25565, "udp"],
         },
       },
     ],
@@ -122,9 +130,13 @@ const manifests: ManifestsCallback = async (app) => {
       ports: [
         { name: "server", port: 6969, protocol: "TCP" },
         {
+          name: "tcpTunnel",
+          port: 8080,
+          protocol: "TCP",
+        },
+        {
           name: "p2p",
-          port: 26969,
-          targetPort: { value: 25565 } as any,
+          port: 25565,
           protocol: "UDP",
         },
       ],
