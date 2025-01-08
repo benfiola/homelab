@@ -13,6 +13,7 @@ import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
+import { getMinioUrl } from "../utils/getMinioUrl";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
 
@@ -75,10 +76,28 @@ const manifests: ManifestsCallback = async (app) => {
 
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
+  const mods = [
+    "algorithmic-level-progression-5.4.3.zip",
+    "big-brain-1.2.0.7z",
+    "dynamic-maps-0.5.2.zip",
+    "fika-plugin-1.1.4.0.zip",
+    "fika-server-2.3.6.zip",
+    "item-info-4.3.0.zip",
+    "item-sell-price-1.5.0.zip",
+    "live-flea-prices-1.4.0.zip",
+    "looting-bots-1.4.1.zip",
+    "modsync-0.10.2.zip",
+    "remove-time-gate-from-quests-1.0.3.7z",
+    "sain-3.2.1.7z",
+    "thats-lit-1.3100.1.zip",
+    "ui-fixes-3.1.1.zip",
+    "waypoints-1.6.1.7z",
+  ];
+  const modUrls = mods.map((m) => getMinioUrl(`${minioBucket.name}/${m}`));
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "escape-from-tarkov" },
     stringData: {
-      EMPTY: "1",
+      MOD_URLS: modUrls.join(","),
     },
   });
 
@@ -86,7 +105,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/escape-from-tarkov:0.1.6-spt3.10.5-fika2.3.6",
+        image: "benfiola/escape-from-tarkov:0.1.8-spt3.10.5",
         mounts: {
           data: "/data",
         },
