@@ -100,6 +100,7 @@ const manifests: ManifestsCallback = async (app) => {
     "argocd",
     "cert-manager",
     "cilium",
+    "escape-from-tarkov",
     "external-dns",
     "factorio",
     "kube-prometheus",
