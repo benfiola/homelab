@@ -105,7 +105,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/escape-from-tarkov:0.1.10-spt3.10.5",
+        image: "benfiola/escape-from-tarkov:0.1.11-spt3.10.5",
         mounts: {
           data: "/data",
         },
