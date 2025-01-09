@@ -35,7 +35,7 @@ const manifests: ManifestsCallback = async (app) => {
         ports: [
           [6969, "tcp"],
           [8080, "tcp"],
-          [25565, "udp"],
+          [26969, "udp"],
         ],
       },
     },
@@ -132,7 +132,7 @@ const manifests: ManifestsCallback = async (app) => {
         args: ["server", "--reverse", "8080"],
         ports: {
           "chisel-server": [8080, "tcp"],
-          "fika-p2p": [25565, "udp"],
+          "fika-p2p": [26969, "udp"],
         },
       },
     ],
@@ -163,7 +163,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         {
           name: "fika-p2p",
-          port: 25565,
+          port: 26969,
           protocol: "UDP",
         },
       ],
@@ -197,7 +197,7 @@ const manifests: ManifestsCallback = async (app) => {
             {
               name: "fika-p2p",
               port: 26969,
-              targetPort: { value: 25565 } as any,
+              targetPort: { value: 26969 } as any,
               protocol: "UDP",
             },
           ],
