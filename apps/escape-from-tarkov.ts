@@ -86,10 +86,10 @@ const manifests: ManifestsCallback = async (app) => {
 
   const configPatches = {
     "SPT_Data/Server/database/globals.json": [
-      {op: "replace", "path": "/SavagePlayCooldown", value: "1"},
-      {op: "replace", "path": "/SavagePlayCooldownNdaFree", value: "1"},
-    ]
-  }
+      { op: "replace", path: "/config/SavagePlayCooldown", value: "1" },
+      { op: "replace", path: "/config/SavagePlayCooldownNdaFree", value: "1" },
+    ],
+  };
   const mods = [
     "algorithmic-level-progression-5.4.3.zip",
     "big-brain-1.2.0.7z",
@@ -115,7 +115,6 @@ const manifests: ManifestsCallback = async (app) => {
       MOD_URLS: modUrls.join(","),
     },
   });
-
 
   const deployment = createDeployment(chart, "deployment", {
     containers: [
