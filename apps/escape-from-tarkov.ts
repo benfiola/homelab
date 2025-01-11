@@ -104,6 +104,7 @@ const manifests: ManifestsCallback = async (app) => {
   const mods = [
     "algorithmic-level-progression-5.4.3.zip",
     "big-brain-1.2.0.7z",
+    "moar-2.6.7.zip",
     "dynamic-maps-0.5.2.zip",
     "fika-plugin-1.1.4.0.zip",
     "fika-server-2.3.6.zip",
