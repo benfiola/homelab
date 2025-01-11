@@ -84,6 +84,12 @@ const manifests: ManifestsCallback = async (app) => {
 
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
+  const configPatches = {
+    "SPT_Data/Server/database/globals.json": [
+      {op: "replace", "path": "/SavagePlayCooldown", value: "1"},
+      {op: "replace", "path": "/SavagePlayCooldownNdaFree", value: "1"},
+    ]
+  }
   const mods = [
     "algorithmic-level-progression-5.4.3.zip",
     "big-brain-1.2.0.7z",
@@ -105,15 +111,17 @@ const manifests: ManifestsCallback = async (app) => {
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "escape-from-tarkov" },
     stringData: {
+      CONFIG_PATCHES: JSON.stringify(configPatches),
       MOD_URLS: modUrls.join(","),
     },
   });
+
 
   const deployment = createDeployment(chart, "deployment", {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/escape-from-tarkov:0.1.11-spt3.10.5",
+        image: "benfiola/single-player-tarkov:0.2.4-spt3.10.5",
         mounts: {
           data: "/data",
         },
