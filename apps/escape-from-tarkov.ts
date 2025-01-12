@@ -85,13 +85,6 @@ const manifests: ManifestsCallback = async (app) => {
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
   const configPatches = {
-    "BepInEx/config/MOAR.settings.cfg": [
-      {
-        op: "replace",
-        path: "/1. Main Settings/Moar Preset",
-        value: "Live Like",
-      },
-    ],
     "SPT_Data/Server/configs/insurance.json": [
       { op: "replace", path: "/runIntervalSeconds", value: "60" },
     ],
