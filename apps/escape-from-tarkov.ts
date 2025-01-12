@@ -85,6 +85,9 @@ const manifests: ManifestsCallback = async (app) => {
   await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
 
   const configPatches = {
+    "BepInEx/config/MOAR.settings.cfg": [
+      {op: "replace", "path": "/1. Main Settings/Moar Preset", value: "Live Like"}
+    ],
     "SPT_Data/Server/configs/insurance.json": [
       { op: "replace", path: "/runIntervalSeconds", value: "60" },
     ],
@@ -104,7 +107,6 @@ const manifests: ManifestsCallback = async (app) => {
   const mods = [
     "algorithmic-level-progression-5.4.3.zip",
     "big-brain-1.2.0.7z",
-    "moar-2.6.7.zip",
     "dynamic-maps-0.5.2.zip",
     "fika-plugin-1.1.4.0.zip",
     "fika-server-2.3.6.zip",
@@ -112,6 +114,7 @@ const manifests: ManifestsCallback = async (app) => {
     "item-sell-price-1.5.0.zip",
     "live-flea-prices-1.4.0.zip",
     "looting-bots-1.4.1.zip",
+    "moar-2.6.7.zip",
     "modsync-0.10.2.zip",
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
