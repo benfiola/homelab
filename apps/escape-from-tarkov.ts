@@ -115,7 +115,8 @@ const manifests: ManifestsCallback = async (app) => {
     "modsync-0.10.2.zip",
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
-    "thats-lit-1.3100.1.zip",
+    "thats-lit-1.3100.3.zip",
+    "thats-lit-sync-1.3100.3.zip",
     "ui-fixes-3.1.1.zip",
     "waypoints-1.6.1.7z",
   ];
