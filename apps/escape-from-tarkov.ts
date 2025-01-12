@@ -86,7 +86,11 @@ const manifests: ManifestsCallback = async (app) => {
 
   const configPatches = {
     "BepInEx/config/MOAR.settings.cfg": [
-      {op: "replace", "path": "/1. Main Settings/Moar Preset", value: "Live Like"}
+      {
+        op: "replace",
+        path: "/1. Main Settings/Moar Preset",
+        value: "Live Like",
+      },
     ],
     "SPT_Data/Server/configs/insurance.json": [
       { op: "replace", path: "/runIntervalSeconds", value: "60" },
@@ -135,7 +139,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/single-player-tarkov:0.2.5-spt3.10.5",
+        image: "benfiola/single-player-tarkov:0.3.0-spt3.10.5",
         mounts: {
           data: "/data",
         },
