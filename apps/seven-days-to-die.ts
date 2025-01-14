@@ -176,11 +176,13 @@ const manifests: ManifestsCallback = async (app) => {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
     stringData: {
       ROOT_URLS: rootUrls.join(","),
+      SETTING_DynamicMeshEnabled: "false",
       SETTING_EACEnabled: "false",
       SETTING_GameDifficulty: "2",
       SETTING_GameWorld: "DFalls-Navezgane",
       SETTING_LootRespawnDays: "3",
       SETTING_MaxSpawnedZombies: "100",
+      SETTING_OptionsDynamicMusicEnabled: "false",
       SETTING_Region: "NorthAmericaWest",
       SETTING_ServerName: "seven-days-to-die.bfiola.dev",
       SETTING_ServerVisibility: "0",
