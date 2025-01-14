@@ -189,7 +189,7 @@ const manifests: ManifestsCallback = async (app) => {
       SETTING_ZombieMove: "0",
       SETTING_ZombieMoveNight: "1",
       SETTING_ZombieFeralMove: "2",
-      SETTING_ZombieBMMove: "3"
+      SETTING_ZombieBMMove: "3",
     },
   });
 
@@ -214,7 +214,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         resources: {
           cpu: 2000,
-          mem: 10000,
+          mem: 16000,
         },
       },
     ],
