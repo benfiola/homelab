@@ -103,6 +103,8 @@ const manifests: ManifestsCallback = async (app) => {
     "algorithmic-level-progression-5.4.3.zip",
     "big-brain-1.2.0.7z",
     "dynamic-maps-0.5.2.zip",
+    "fika-plugin-1.1.4.0.zip",
+    "fika-server-2.3.6.zip",
     "item-info-4.3.0.zip",
     "item-sell-price-1.5.0.zip",
     "live-flea-prices-1.4.0.zip",
@@ -113,6 +115,7 @@ const manifests: ManifestsCallback = async (app) => {
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
     "thats-lit-1.3100.3.zip",
+    "thats-lit-sync-1.3100.3.zip",
     "ui-fixes-3.1.1.zip",
     "waypoints-1.6.1.7z",
   ];
