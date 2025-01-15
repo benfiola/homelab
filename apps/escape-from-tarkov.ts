@@ -181,6 +181,7 @@ const manifests: ManifestsCallback = async (app) => {
       type: "LoadBalancer",
       ports: [
         { name: "spt-server", port: 6969, protocol: "TCP" },
+        { name: "chisel-server", port: 8080, protocol: "TCP" },
         {
           name: "raid-rev-ws",
           port: 7828,
