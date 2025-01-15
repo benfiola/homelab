@@ -1,4 +1,5 @@
 import { Chart } from "cdk8s";
+import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
@@ -19,6 +20,7 @@ import { parseEnv } from "../utils/parseEnv";
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     ESCAPE_FROM_TARKOV_MINIO_SECRET_KEY: zod.string(),
+    ESCAPE_FROM_TARKOV_ACCESS_PASSWORD: zod.string(),
   }));
 
   const chart = new Chart(app, "escape-from-tarkov", {
@@ -32,6 +34,8 @@ const manifests: ManifestsCallback = async (app) => {
         pod: "escape-from-tarkov",
         ports: [
           [6969, "tcp"],
+          [8080, "tcp"],
+          [26969, "udp"],
           [7828, "tcp"],
           [7829, "tcp"],
         ],
@@ -147,6 +151,15 @@ const manifests: ManifestsCallback = async (app) => {
           mem: 4000,
         },
       },
+      {
+        image: "jpillora/chisel:1.10.1",
+        name: "p2p-tunnel",
+        args: ["server", "--reverse", "8080"],
+        ports: {
+          "chisel-server": [8080, "tcp"],
+          "fika-p2p": [26969, "udp"],
+        },
+      },
     ],
     name: "escape-from-tarkov",
     namespace: chart.namespace,
@@ -178,8 +191,46 @@ const manifests: ManifestsCallback = async (app) => {
           port: 7829,
           protocol: "TCP",
         },
+        { name: "fika-p2p", port: 26969, protocol: "UDP" },
       ],
       selector: getPodLabels(deployment.name),
+    },
+  });
+
+  const accessSecret = await createSealedSecret(chart, "access-secret", {
+    metadata: { namespace: chart.namespace, name: "escape-from-tarkov-access" },
+    stringData: {
+      password: env.ESCAPE_FROM_TARKOV_ACCESS_PASSWORD,
+    },
+  });
+
+  new AccessClaim(chart, "access", {
+    metadata: {
+      namespace: chart.namespace,
+      name: "escape-from-tarkov",
+    },
+    spec: {
+      dns: "eft.bfiola.dev",
+      passwordRef: {
+        key: "password",
+        name: accessSecret.name,
+      },
+      serviceTemplates: [
+        {
+          type: "LoadBalancer",
+          ports: [
+            { name: "spt-server", port: 6969, protocol: "TCP" },
+            {
+              name: "fika-p2p",
+              port: 26969,
+              targetPort: { value: 26969 } as any,
+              protocol: "UDP",
+            },
+          ],
+          selector: getPodLabels(deployment.name),
+        },
+      ],
+      ttl: "168h",
     },
   });
 
