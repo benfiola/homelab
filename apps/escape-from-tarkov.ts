@@ -136,7 +136,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         name: "escape-from-tarkov",
         ports: {
-          "raid-review-websocket": [7828, "tcp"],
+          "raid-review-ws": [7828, "tcp"],
           "raid-review-http": [7829, "tcp"],
           "spt-server": [6969, "tcp"],
         },
@@ -167,7 +167,7 @@ const manifests: ManifestsCallback = async (app) => {
       ports: [
         { name: "spt-server", port: 6969, protocol: "TCP" },
         {
-          name: "raid-review-websocket",
+          name: "raid-review-ws",
           port: 7828,
           protocol: "TCP",
         },
