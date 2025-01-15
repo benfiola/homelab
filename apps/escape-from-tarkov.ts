@@ -1,5 +1,4 @@
 import { Chart } from "cdk8s";
-import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
@@ -19,7 +18,6 @@ import { parseEnv } from "../utils/parseEnv";
 
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
-    ESCAPE_FROM_TARKOV_ACCESS_PASSWORD: zod.string(),
     ESCAPE_FROM_TARKOV_MINIO_SECRET_KEY: zod.string(),
   }));
 
@@ -34,8 +32,8 @@ const manifests: ManifestsCallback = async (app) => {
         pod: "escape-from-tarkov",
         ports: [
           [6969, "tcp"],
-          [8080, "tcp"],
-          [26969, "udp"],
+          [7828, "tcp"],
+          [7829, "tcp"],
         ],
       },
     },
@@ -105,14 +103,13 @@ const manifests: ManifestsCallback = async (app) => {
     "algorithmic-level-progression-5.4.3.zip",
     "big-brain-1.2.0.7z",
     "dynamic-maps-0.5.2.zip",
-    "fika-plugin-1.1.4.0.zip",
-    "fika-server-2.3.6.zip",
     "item-info-4.3.0.zip",
     "item-sell-price-1.5.0.zip",
     "live-flea-prices-1.4.0.zip",
     "looting-bots-1.4.1.zip",
     "moar-2.6.7.zip",
     "modsync-0.10.2.zip",
+    "raid-review-0.3.0.zip",
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
     "thats-lit-1.3100.3.zip",
@@ -139,20 +136,13 @@ const manifests: ManifestsCallback = async (app) => {
         },
         name: "escape-from-tarkov",
         ports: {
+          "raid-review-websocket": [7828, "tcp"],
+          "raid-review-http": [7829, "tcp"],
           "spt-server": [6969, "tcp"],
         },
         resources: {
           cpu: 2000,
           mem: 4000,
-        },
-      },
-      {
-        image: "jpillora/chisel:1.10.1",
-        name: "p2p-tunnel",
-        args: ["server", "--reverse", "8080"],
-        ports: {
-          "chisel-server": [8080, "tcp"],
-          "fika-p2p": [26969, "udp"],
         },
       },
     ],
@@ -177,54 +167,17 @@ const manifests: ManifestsCallback = async (app) => {
       ports: [
         { name: "spt-server", port: 6969, protocol: "TCP" },
         {
-          name: "chisel-server",
-          port: 8080,
+          name: "raid-review-websocket",
+          port: 7828,
           protocol: "TCP",
         },
         {
-          name: "fika-p2p",
-          port: 26969,
-          protocol: "UDP",
+          name: "raid-review-http",
+          port: 7829,
+          protocol: "TCP",
         },
       ],
       selector: getPodLabels(deployment.name),
-    },
-  });
-
-  const accessSecret = await createSealedSecret(chart, "access-secret", {
-    metadata: { namespace: chart.namespace, name: "escape-from-tarkov-access" },
-    stringData: {
-      password: env.ESCAPE_FROM_TARKOV_ACCESS_PASSWORD,
-    },
-  });
-
-  new AccessClaim(chart, "access", {
-    metadata: {
-      namespace: chart.namespace,
-      name: "escape-from-tarkov",
-    },
-    spec: {
-      dns: "eft.bfiola.dev",
-      passwordRef: {
-        key: "password",
-        name: accessSecret.name,
-      },
-      serviceTemplates: [
-        {
-          type: "LoadBalancer",
-          ports: [
-            { name: "spt-server", port: 6969, protocol: "TCP" },
-            {
-              name: "fika-p2p",
-              port: 26969,
-              targetPort: { value: 26969 } as any,
-              protocol: "UDP",
-            },
-          ],
-          selector: getPodLabels(deployment.name),
-        },
-      ],
-      ttl: "168h",
     },
   });
 
