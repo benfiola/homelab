@@ -123,11 +123,13 @@ const manifests: ManifestsCallback = async (app) => {
     "ui-fixes-3.1.1.zip",
     "waypoints-1.6.1.7z",
   ];
+  const dataDirs = ["user/mods/raid_review__0.3.0/data"];
   const modUrls = mods.map((m) => getMinioUrl(`${minioBucket.name}/${m}`));
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "escape-from-tarkov" },
     stringData: {
       CONFIG_PATCHES: JSON.stringify(configPatches),
+      DATA_DIRS: dataDirs.join(","),
       MOD_URLS: modUrls.join(","),
     },
   });
@@ -136,7 +138,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/single-player-tarkov:0.4.5-spt3.10.5",
+        image: "benfiola/single-player-tarkov:0.5.0-spt3.10.5",
         mounts: {
           data: "/data",
         },
