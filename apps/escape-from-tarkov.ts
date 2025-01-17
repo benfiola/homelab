@@ -88,19 +88,19 @@ const manifests: ManifestsCallback = async (app) => {
 
   const configPatches = {
     "SPT_Data/Server/configs/insurance.json": [
-      { op: "replace", path: "/runIntervalSeconds", value: "60" },
+      { op: "replace", path: "/runIntervalSeconds", value: 60 },
     ],
     "SPT_Data/Server/database/globals.json": [
-      { op: "replace", path: "/config/SavagePlayCooldown", value: "1" },
-      { op: "replace", path: "/config/SavagePlayCooldownNdaFree", value: "1" },
+      { op: "replace", path: "/config/SavagePlayCooldown", value: 1 },
+      { op: "replace", path: "/config/SavagePlayCooldownNdaFree", value: 1 },
     ],
     "SPT_Data/Server/database/traders/54cb57776803fa99248b456e/base.json": [
-      { op: "replace", path: "/insurance/min_return_hour", value: "0" },
-      { op: "replace", path: "/insurance/max_return_hour", value: "0" },
+      { op: "replace", path: "/insurance/min_return_hour", value: 0 },
+      { op: "replace", path: "/insurance/max_return_hour", value: 0 },
     ],
     "SPT_Data/Server/database/traders/54cb50c76803fa8b248b4571/base.json": [
-      { op: "replace", path: "/insurance/min_return_hour", value: "0" },
-      { op: "replace", path: "/insurance/max_return_hour", value: "0" },
+      { op: "replace", path: "/insurance/min_return_hour", value: 0 },
+      { op: "replace", path: "/insurance/max_return_hour", value: 0 },
     ],
   };
   const mods = [
