@@ -102,6 +102,9 @@ const manifests: ManifestsCallback = async (app) => {
       { op: "replace", path: "/insurance/min_return_hour", value: "0" },
       { op: "replace", path: "/insurance/max_return_hour", value: "0" },
     ],
+    "user/mods/raid_review__0.3.0/config.json": [
+      { op: "replace", path: "/enableDebugLogs", value: true },
+    ],
   };
   const mods = [
     "algorithmic-level-progression-5.4.3.zip",
