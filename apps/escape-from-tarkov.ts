@@ -115,6 +115,7 @@ const manifests: ManifestsCallback = async (app) => {
     "looting-bots-1.4.1.zip",
     "moar-2.6.7.zip",
     "modsync-0.10.2.zip",
+    "quicksell-2.0.1.zip",
     "raid-review-0.3.0.zip",
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
