@@ -79,6 +79,11 @@ const manifests: ManifestsCallback = async (app) => {
     name: "escape-from-tarkov",
   });
 
+  const cacheVolume = createPersistentVolumeClaim(chart, "pvc", {
+    name: "escape-from-tarkov-cache",
+    size: "1Gi",
+  });
+
   const dataVolume = createPersistentVolumeClaim(chart, "pvc", {
     name: "escape-from-tarkov-data",
     size: "1Gi",
@@ -132,6 +137,7 @@ const manifests: ManifestsCallback = async (app) => {
       CONFIG_PATCHES: JSON.stringify(configPatches),
       DATA_DIRS: dataDirs.join(","),
       MOD_URLS: modUrls.join(","),
+      SPT_VERSION: "3.10.5",
     },
   });
 
@@ -139,8 +145,9 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/single-player-tarkov:0.5.0-spt3.10.5",
+        image: "benfiola/single-player-tarkov:0.6.0-rc.2",
         mounts: {
+          cache: "/cache",
           data: "/data",
         },
         name: "escape-from-tarkov",
@@ -170,6 +177,7 @@ const manifests: ManifestsCallback = async (app) => {
     updateStrategy: "Recreate",
     user: 1000,
     volumes: {
+      cache: cacheVolume,
       data: dataVolume,
     },
   });
