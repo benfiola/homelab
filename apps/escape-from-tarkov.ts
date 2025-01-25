@@ -63,6 +63,13 @@ const manifests: ManifestsCallback = async (app) => {
         ports: [[443, "tcp"]],
       },
     },
+    {
+      from: { pod: "escape-from-tarkov" },
+      to: {
+        dns: "registry.npmjs.org",
+        ports: [[443, "tcp"]],
+      },
+    },
 
     {
       from: { pod: "escape-from-tarkov" },
