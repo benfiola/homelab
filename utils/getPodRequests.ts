@@ -17,12 +17,12 @@ export const getPodRequests = (opts?: Opts) => {
   return {
     limits: {
       memory: `${mem}Mi`,
-      ephemeralStorage: `${ephemeralStorage}Mi`,
+      "ephemeral-storage": `${ephemeralStorage}Mi`,
     },
     requests: {
       cpu: `${cpu}m`,
       memory: `${mem}Mi`,
-      ephemeralStorage: `${ephemeralStorage}Mi`,
+      "ephemeral-storage": `${ephemeralStorage}Mi`,
     },
   };
 };
