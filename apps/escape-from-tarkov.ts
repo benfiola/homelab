@@ -102,7 +102,7 @@ const manifests: ManifestsCallback = async (app) => {
 
   const cacheVolume = createPersistentVolumeClaim(chart, "pvc-cache", {
     name: "escape-from-tarkov-cache",
-    size: "2Gi",
+    size: "3Gi",
   });
 
   const dataVolume = createPersistentVolumeClaim(chart, "pvc-data", {
