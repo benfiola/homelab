@@ -59,6 +59,13 @@ const manifests: ManifestsCallback = async (app) => {
     {
       from: { pod: "escape-from-tarkov" },
       to: {
+        dns: "objects.githubusercontent.com",
+        ports: [[443, "tcp"]],
+      },
+    },
+    {
+      from: { pod: "escape-from-tarkov" },
+      to: {
         dns: "raw.githubusercontent.com",
         ports: [[443, "tcp"]],
       },
