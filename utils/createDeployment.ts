@@ -134,6 +134,7 @@ interface Container {
   resources?: {
     cpu?: number;
     mem?: number;
+    ephemeralStorage?: number;
   };
 }
 
