@@ -109,7 +109,7 @@ const manifests: ManifestsCallback = async (app) => {
 
   const cacheVolume = createPersistentVolumeClaim(chart, "pvc-cache", {
     name: "escape-from-tarkov-cache",
-    size: "3Gi",
+    size: "2Gi",
   });
 
   const dataVolume = createPersistentVolumeClaim(chart, "pvc-data", {
@@ -162,6 +162,8 @@ const manifests: ManifestsCallback = async (app) => {
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "escape-from-tarkov" },
     stringData: {
+      CACHE_ENABLED: "true",
+      CACHE_FILE_SIZE_LIMIT: "1500",
       CONFIG_PATCHES: JSON.stringify(configPatches),
       DATA_DIRS: dataDirs.join(","),
       MOD_URLS: modUrls.join(","),
@@ -173,7 +175,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/single-player-tarkov:0.6.0",
+        image: "benfiola/single-player-tarkov:0.7.0-rc.2",
         mounts: {
           cache: "/cache",
           data: "/data",
