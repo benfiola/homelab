@@ -204,7 +204,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/seven-days-to-die:0.1.",
+        image: "benfiola/seven-days-to-die:0.1.0",
         imagePullPolicy: "Always",
         mounts: {
           cache: "/cache",
