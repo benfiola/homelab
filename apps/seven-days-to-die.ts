@@ -163,6 +163,11 @@ const manifests: ManifestsCallback = async (app) => {
     name: "seven-days-to-die",
   });
 
+  const cacheVolume = createPersistentVolumeClaim(chart, "pvc-cache", {
+    name: "seven-days-to-die-cache",
+    size: "30Gi",
+  });
+
   const dataVolume = createPersistentVolumeClaim(chart, "pvc", {
     name: "seven-days-to-die-data",
     size: "30Gi",
@@ -175,6 +180,8 @@ const manifests: ManifestsCallback = async (app) => {
   const serverSecret = await createSealedSecret(chart, "secret", {
     metadata: { namespace: chart.namespace, name: "seven-days-to-die" },
     stringData: {
+      CACHE_ENABLED: "true",
+      CACHE_SIZE_LIMIT: "26000",
       ROOT_URLS: rootUrls.join(","),
       SETTING_DynamicMeshEnabled: "false",
       SETTING_EACEnabled: "false",
@@ -197,9 +204,10 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/seven-days-to-die:6852366042385286885",
+        image: "benfiola/seven-days-to-die:0.1.",
         imagePullPolicy: "Always",
         mounts: {
+          cache: "/cache",
           data: "/data",
         },
         name: "seven-days-to-die",
@@ -224,6 +232,7 @@ const manifests: ManifestsCallback = async (app) => {
     updateStrategy: "Recreate",
     user: 1000,
     volumes: {
+      cache: cacheVolume,
       data: dataVolume,
     },
   });
