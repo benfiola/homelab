@@ -100,13 +100,6 @@ const manifests: ManifestsCallback = async (app) => {
     {
       from: { pod: "seven-days-to-die" },
       to: {
-        dns: "steam-software-cc.dlt.qwilted-cds.cqloud.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "seven-days-to-die" },
-      to: {
         dns: "api.epicgames.dev",
         ports: [[443, "tcp"]],
       },
@@ -140,6 +133,14 @@ const manifests: ManifestsCallback = async (app) => {
         ],
       },
     },
+    {
+      from: { pod: "seven-days-to-die" },
+      to: {
+        dns: "*.qwilted-cds.cqloud.com ",
+        ports: [[443, "tcp"]],
+      },
+    },
+
     {
       from: { pod: "seven-days-to-die" },
       to: {
