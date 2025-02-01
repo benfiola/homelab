@@ -182,6 +182,7 @@ const manifests: ManifestsCallback = async (app) => {
     stringData: {
       CACHE_ENABLED: "true",
       CACHE_SIZE_LIMIT: "26000",
+      MANIFEST_ID: "6852366042385286885",
       ROOT_URLS: rootUrls.join(","),
       SETTING_DynamicMeshEnabled: "false",
       SETTING_EACEnabled: "false",
