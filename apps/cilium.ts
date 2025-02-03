@@ -195,7 +195,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         ui: {
           backend: {
-            resources: getPodRequests({ mem: 200 }),
+            resources: getPodRequests({ mem: 400 }),
           },
           // enables the hubble ui
           enabled: true,
