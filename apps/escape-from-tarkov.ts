@@ -154,6 +154,7 @@ const manifests: ManifestsCallback = async (app) => {
     "raid-review-0.3.0.zip",
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
+    "stash-search-1.4.0.7z",
     "thats-lit-1.3100.3.zip",
     "thats-lit-sync-1.3100.3.zip",
     "ui-fixes-3.1.2.zip",
