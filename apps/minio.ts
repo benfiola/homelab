@@ -181,7 +181,7 @@ const manifests: ManifestsCallback = async (app) => {
       // give all resources a static prefix
       fullnameOverride: "minio-operator-ext",
       // define resources for workload
-      resources: getPodRequests({ mem: 300 }),
+      resources: getPodRequests({ mem: 400 }),
     },
   });
 
