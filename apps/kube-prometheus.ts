@@ -405,7 +405,7 @@ const manifests: ManifestsCallback = async (app) => {
             // use certmanager to generate certificates for admission webhooks
             admissionCert: {
               // configures duration of certificate to be half that of the issuer
-              duration: "45d",
+              duration: "1080h",
             },
             enabled: true,
             issuerRef: {
