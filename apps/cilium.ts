@@ -191,7 +191,7 @@ const manifests: ManifestsCallback = async (app) => {
               name: issuer.name,
             },
             // configures duration of certificate to be half that of the issuer
-            certValidityDuration: "45d",
+            certValidityDuration: 45,
             enabled: true,
             method: "certmanager",
           },
