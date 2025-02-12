@@ -118,19 +118,20 @@ const manifests: ManifestsCallback = async (app) => {
       name: "cilium",
     },
     spec: {
-      isCa: true,
       commonName: "cilium",
-      // NOTE: secretName intentionally matches metadata.name
-      secretName: "cilium",
-      privateKey: {
-        algorithm: CertificateSpecPrivateKeyAlgorithm.ECDSA,
-        size: 256,
-      },
+      duration: "90d",
+      isCa: true,
       issuerRef: {
         name: "root",
         kind: "ClusterIssuer",
         group: "cert-manager.io",
       },
+      privateKey: {
+        algorithm: CertificateSpecPrivateKeyAlgorithm.ECDSA,
+        size: 256,
+      },
+      // NOTE: secretName intentionally matches metadata.name
+      secretName: "cilium",
     },
   });
 
@@ -189,6 +190,8 @@ const manifests: ManifestsCallback = async (app) => {
               kind: issuer.kind,
               name: issuer.name,
             },
+            // configures duration of certificate to be half that of the issuer
+            certValidityDuration: "45d",
             enabled: true,
             method: "certmanager",
           },

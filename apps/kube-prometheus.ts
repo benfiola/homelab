@@ -163,19 +163,20 @@ const manifests: ManifestsCallback = async (app) => {
       name: "kube-prometheus",
     },
     spec: {
-      isCa: true,
-      // NOTE: secretName intentionally matches metadata.name
-      secretName: "kube-prometheus",
       commonName: "kube-prometheus",
-      privateKey: {
-        algorithm: CertificateSpecPrivateKeyAlgorithm.ECDSA,
-        size: 256,
-      },
+      duration: "90d",
+      isCa: true,
       issuerRef: {
         name: "root",
         kind: "ClusterIssuer",
         group: "cert-manager.io",
       },
+      privateKey: {
+        algorithm: CertificateSpecPrivateKeyAlgorithm.ECDSA,
+        size: 256,
+      },
+      // NOTE: secretName intentionally matches metadata.name
+      secretName: "kube-prometheus",
     },
   });
 
@@ -402,6 +403,10 @@ const manifests: ManifestsCallback = async (app) => {
         admissionWebhooks: {
           certManager: {
             // use certmanager to generate certificates for admission webhooks
+            admissionCert: {
+              // configures duration of certificate to be half that of the issuer
+              duration: "45d",
+            },
             enabled: true,
             issuerRef: {
               name: issuer.name,
