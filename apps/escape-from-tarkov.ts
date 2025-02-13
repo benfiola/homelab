@@ -142,6 +142,7 @@ const manifests: ManifestsCallback = async (app) => {
     "dynamic-maps-0.5.2.zip",
     "fika-plugin-1.1.4.0.zip",
     "fika-server-2.3.6.zip",
+    "hands-are-not-busy-1.4.zip",
     "item-info-4.3.0.zip",
     "item-sell-price-1.5.0.zip",
     "live-flea-prices-1.4.0.zip",
