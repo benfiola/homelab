@@ -137,7 +137,7 @@ const manifests: ManifestsCallback = async (app) => {
     ],
   };
   const mods = [
-    "algorithmic-level-progression-5.4.3.zip",
+    "acids-progressive-bot-system-1.6.0.zip",
     "big-brain-1.2.0.7z",
     "dynamic-maps-0.5.2.zip",
     "fika-plugin-1.1.4.0.zip",
