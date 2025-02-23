@@ -164,7 +164,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
     spec: {
       commonName: "kube-prometheus",
-      duration: "90d",
+      duration: "2160h",
       isCa: true,
       issuerRef: {
         name: "root",
