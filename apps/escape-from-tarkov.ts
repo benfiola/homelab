@@ -147,7 +147,6 @@ const manifests: ManifestsCallback = async (app) => {
     "item-sell-price-1.5.0.zip",
     "live-flea-prices-1.4.0.zip",
     "looting-bots-1.4.1.zip",
-    "moar-2.6.7.zip",
     "modsync-0.10.2.zip",
     "please-just-fight-1.0.3.7z",
     "questing-bots-0.9.0.zip",
@@ -156,9 +155,11 @@ const manifests: ManifestsCallback = async (app) => {
     "remove-time-gate-from-quests-1.0.3.7z",
     "sain-3.2.1.7z",
     "stash-search-1.4.0.7z",
+    "swag-donuts-4.0.0.7z",
     "thats-lit-1.3100.3.zip",
     "thats-lit-sync-1.3100.3.zip",
     "ui-fixes-3.1.2.zip",
+    "unity-toolkit-1.2.0.7z",
     "waypoints-1.6.2.7z",
   ];
   const dataDirs = ["user/mods/raid_review__0.3.0/data"];
