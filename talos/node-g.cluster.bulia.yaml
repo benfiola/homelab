@@ -1,0 +1,7 @@
+machine:
+  env:
+    ROLE: worker
+  install:
+    disk: /dev/nvme0n1
+  network:
+    hostname: node-g.cluster.bulia
