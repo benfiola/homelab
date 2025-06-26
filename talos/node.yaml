@@ -1,0 +1,29 @@
+machine:
+  kernel:
+    modules:
+      # configure drbd kernel modules (linstor)
+      - name: dm_mod
+      - name: dm_thin_pool
+      - name: drbd
+        parameters:
+          - usermode_helper=disabled
+      - name: drbd_transport_tcp
+  kubelet:
+    extraMounts:
+      # configure r/w mounts (linstor)
+      - destination: /var/local
+        source: /var/local
+        type: bind
+        options:
+          - rbind
+          - rshared
+          - rw
+cluster:
+  network:
+    # disable cni (cilium)
+    cni:
+      name: none
+  # disable kube-proxy (cilium)
+  proxy:
+    disabled: true
+

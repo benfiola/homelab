@@ -10,7 +10,9 @@ import { setTimeout } from "timers";
 import { Storage } from "@google-cloud/storage";
 import { execSync } from "child_process";
 import { randomBytes } from "crypto";
+import { deepmerge } from "deepmerge-ts";
 import { existsSync } from "fs";
+import { dump } from "js-yaml";
 import { join } from "shlex";
 import { parse, stringify } from "yaml";
 import { App } from "./utils/App";
@@ -349,6 +351,7 @@ const talosConfigFiles = {
   "talos/config": path.join(__dirname, "talos", "config"),
   "talos/controlplane.yaml": path.join(__dirname, "talos", "controlplane.yaml"),
   "talos/worker.yaml": path.join(__dirname, "talos", "worker.yaml"),
+  "talos/secrets.yaml": path.join(__dirname, "talos", "secrets.yaml"),
 };
 
 /**
@@ -360,12 +363,74 @@ async function talosDownload() {
   await downloadFromCloudStorage(talosConfigFiles);
 }
 
+interface TalosGenerateConfigOpts {
+  image: string;
+  k8s: string;
+}
+
 /**
  * Generate new talosctl config
  *
  */
-async function talosGenerate() {
-  let cmd = ["talosctl"];
+async function talosGenerateConfig(opts: TalosGenerateConfigOpts) {
+  const secrets = talosConfigFiles["talos/secrets.yaml"];
+  const baseCmd = [
+    "talosctl",
+    "gen",
+    "config",
+    "cluster.bulia",
+    "https://cluster.bulia:6443",
+    "--additional-sans=cluster.bulia",
+    `--install-image=${opts.image}`,
+    `--kubernetes-version=${opts.k8s}`,
+    `--output=-`,
+    "--with-cluster-discovery=false",
+    "--with-docs=false",
+    "--with-examples=false",
+    `--with-secrets=${secrets}`,
+  ];
+
+  const systemDiskPath = path.join(__dirname, "talos", "system-disk.yaml");
+  const systemDisk = parse((await readFile(systemDiskPath)).toString());
+
+  const nodePath = path.join(__dirname, "talos", "node.yaml");
+  const node = parse((await readFile(nodePath)).toString());
+
+  let cmd = [...baseCmd, "--output-types=controlplane"];
+  const baseControlPlane = parse(
+    execSync(join(cmd), { stdio: "pipe" }).toString()
+  );
+  const controlPlane = [deepmerge(baseControlPlane, node), systemDisk];
+  const controlPlanePath = talosConfigFiles["talos/controlplane.yaml"];
+  let content = controlPlane.map((v) => dump(v)).join("\n---\n");
+  await writeFile(controlPlanePath, content);
+
+  cmd = [...baseCmd, "--output-types=worker"];
+  const baseWorker = parse(execSync(join(cmd), { stdio: "pipe" }).toString());
+  const worker = [deepmerge(baseWorker, node), systemDisk];
+  const workerPath = talosConfigFiles["talos/worker.yaml"];
+  content = worker.map((v) => dump(v)).join("\n---\n");
+  await writeFile(workerPath, content);
+
+  cmd = [...baseCmd, "--output-types=talosconfig"];
+  const config = execSync(join(cmd), { stdio: "pipe" }).toString();
+  const configPath = talosConfigFiles["talos/config"];
+  await writeFile(configPath, config);
+}
+
+/**
+ * Generate new talosctl secrets
+ *
+ */
+async function talosGenerateSecrets() {
+  const path = talosConfigFiles["talos/secrets.yaml"];
+  const cmd = [
+    "talosctl",
+    "gen",
+    "secrets",
+    "--force",
+    `--output-file=${path}`,
+  ];
   execSync(join(cmd), { stdio: "inherit" });
 }
 
@@ -516,11 +581,19 @@ async function generateResources(
     .description("download talos config files from cloud storage")
     .action(talosDownload);
   cmdTalos
-    .command("generate")
+    .command("generate-config")
     .description(
       "generates talos config files used to initialize a new cluster"
     )
-    .action(talosGenerate);
+    .requiredOption("--talos <string>", "talos image")
+    .requiredOption("--k8s <string>", "kubernetes version")
+    .action(talosGenerateConfig);
+  cmdTalos
+    .command("generate-secrets")
+    .description(
+      "generates talos secret files used to initialize a new cluster"
+    )
+    .action(talosGenerateSecrets);
   cmdTalos
     .command("kubeconfig")
     .description("obtain kubeconfig from talos cluster")
