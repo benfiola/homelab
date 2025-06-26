@@ -1,4 +1,4 @@
-config
-controlplane.yaml
-worker.yaml
-image/_out
+config*
+controlplane.yaml*
+worker.yaml*
+secrets.yaml*

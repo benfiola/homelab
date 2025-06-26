@@ -345,6 +345,21 @@ async function talosBootstrap(node: string) {
   execSync(join(cmd), { stdio: "inherit" });
 }
 
+const talosConfigFiles = {
+  "talos/config": path.join(__dirname, "talos", "config"),
+  "talos/controlplane.yaml": path.join(__dirname, "talos", "controlplane.yaml"),
+  "talos/worker.yaml": path.join(__dirname, "talos", "worker.yaml"),
+};
+
+/**
+ * Downloads (sensitive) talos config files from cloud storage.
+ *
+ * These files are expected to exist within the `talos` subdirectory.
+ */
+async function talosDownload() {
+  await downloadFromCloudStorage(talosConfigFiles);
+}
+
 /**
  * Generate new talosctl config
  *
@@ -364,20 +379,19 @@ async function talosKubeconfig(node: string) {
   execSync(join(cmd), { stdio: "inherit" });
 }
 
-const talosConfigFiles = {
-  "talos/config": path.join(__dirname, "talos", "config"),
-  "talos/controlplane.yaml": path.join(__dirname, "talos", "controlplane.yaml"),
-  "talos/worker.yaml": path.join(__dirname, "talos", "worker.yaml"),
-};
+/**
+ * Upgrades the cluster to the version of talos linux defined within the talos config files.
+ *
+ * Will fail if the configuration is inconsistent.
+ */
+async function talosUpgrade() {}
 
 /**
- * Downloads (sensitive) talos config files from cloud storage.
+ * Upgrades the cluster to the version of kubernetes defined within the talos config files.
  *
- * These files are expected to exist within the `talos` subdirectory.
+ * Will fail if the configuration is inconsistent
  */
-async function talosDownload() {
-  await downloadFromCloudStorage(talosConfigFiles);
-}
+async function talosUpgradeK8s() {}
 
 /**
  * Uploads (sensitive) talos config files to cloud storage.
@@ -511,6 +525,18 @@ async function generateResources(
     .command("kubeconfig")
     .description("obtain kubeconfig from talos cluster")
     .action(talosKubeconfig);
+  cmdTalos
+    .command("upgrade")
+    .description(
+      "upgrade talos linux to the version defined within the talos config files"
+    )
+    .action(talosUpgrade);
+  cmdTalos
+    .command("upgrade-k8s")
+    .description(
+      "upgrade kubernetes to the version defined within the talos config files"
+    )
+    .action(talosUpgradeK8s);
   cmdTalos
     .command("upload")
     .description("upload talos config files to cloud storage")
