@@ -346,6 +346,15 @@ async function talosBootstrap(node: string) {
 }
 
 /**
+ * Generate new talosctl config
+ *
+ */
+async function talosGenerate() {
+  let cmd = ["talosctl"];
+  execSync(join(cmd), { stdio: "inherit" });
+}
+
+/**
  * Obtains the administrative kubeconfig for a talos cluster via the given node
  *
  * @param node the target node
@@ -485,13 +494,19 @@ async function generateResources(
     .action(talosApply);
   cmdTalos
     .command("bootstrap")
-    .description("bootstrap a new talos cluster")
+    .description("bootstrap an initialized talos cluster")
     .argument("node")
     .action(talosBootstrap);
   cmdTalos
     .command("download")
     .description("download talos config files from cloud storage")
     .action(talosDownload);
+  cmdTalos
+    .command("generate")
+    .description(
+      "generates talos config files used to initialize a new cluster"
+    )
+    .action(talosGenerate);
   cmdTalos
     .command("kubeconfig")
     .description("obtain kubeconfig from talos cluster")
