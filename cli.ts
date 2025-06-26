@@ -297,11 +297,11 @@ interface NodeApplyConfigOpts {
 }
 
 /**
- * Applies updated machine config to the target node
+ * Applies updated talos config to the target node
  *
  * @param node the target node
  */
-async function nodeConfigApply(node: string, opts: NodeApplyConfigOpts = {}) {
+async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
   const insecure = opts.insecure !== undefined ? opts.insecure : false;
 
   const configPatch = path.join(
@@ -325,29 +325,59 @@ async function nodeConfigApply(node: string, opts: NodeApplyConfigOpts = {}) {
   execSync(join(cmd), { stdio: "inherit" });
 }
 
-const nodeConfigFiles = {
+/**
+ * Bootstraps an initialized cluster through the given node
+ *
+ * @param node the target node
+ */
+async function talosBootstrap(node: string) {
+  const configPatch = path.join(
+    __dirname,
+    "talos",
+    `node-${node}.cluster.bulia.yaml`
+  );
+  const configPatchData = parse((await readFile(configPatch)).toString());
+  const role = configPatchData["machine"]["env"]["ROLE"];
+  if (role !== "control-plane") {
+    throw new Error(`node ${node} does not have 'control-plane' role.`);
+  }
+  let cmd = ["talosctl", `--nodes=node-${node}.cluster.bulia`, "bootstrap"];
+  execSync(join(cmd), { stdio: "inherit" });
+}
+
+/**
+ * Obtains the administrative kubeconfig for a talos cluster via the given node
+ *
+ * @param node the target node
+ */
+async function talosKubeconfig(node: string) {
+  let cmd = ["talosctl", `--nodes=node-${node}.cluster.bulia`, "kubeconfig"];
+  execSync(join(cmd), { stdio: "inherit" });
+}
+
+const talosConfigFiles = {
   "talos/config": path.join(__dirname, "talos", "config"),
   "talos/controlplane.yaml": path.join(__dirname, "talos", "controlplane.yaml"),
   "talos/worker.yaml": path.join(__dirname, "talos", "worker.yaml"),
 };
 
 /**
- * Downloads (sensitive) talos node config files from cloud storage.
+ * Downloads (sensitive) talos config files from cloud storage.
  *
  * These files are expected to exist within the `talos` subdirectory.
  */
-async function nodeConfigDownload() {
-  await downloadFromCloudStorage(nodeConfigFiles);
+async function talosDownload() {
+  await downloadFromCloudStorage(talosConfigFiles);
 }
 
 /**
- * Uploads (sensitive) talos node config files to cloud storage.
+ * Uploads (sensitive) talos config files to cloud storage.
  *
  * These files are expected to exist within the `talos` subdirectory.
  * Will fail if files do not exist.
  */
-async function nodeConfigUpload() {
-  await uploadToCloudStorage(nodeConfigFiles);
+async function talosUpload() {
+  await uploadToCloudStorage(talosConfigFiles);
 }
 
 /**
@@ -403,15 +433,14 @@ async function generateResources(
   configDotenv({ path: ".env" });
 
   program.description("administrate the homelab");
+  program.configureHelp({ sortSubcommands: true });
 
   // create top-level (and sub-level) commands
-  const cmdApps = program
-    .command("apps")
-    .description("perform app-level administrative functions");
+  const cmdApps = program.command("apps").description("run app commands");
   const cmdBootstrap = program
     .command("bootstrap")
-    .description("generate and apply bootstrap manifests");
-  const cmdEnv = program.command("env").description("work with .env files");
+    .description("bootstrap the cluster");
+  const cmdEnv = program.command("env").description("manipulate .env files");
   cmdEnv
     .command("download")
     .description("download .env file from cloud storage")
@@ -430,24 +459,7 @@ async function generateResources(
     .action(() => generateAllManifests(manifestsEntries));
   const cmdNodes = program
     .command("nodes")
-    .description("administrate kubernetes nodes");
-  const cmdNodeConfig = cmdNodes
-    .command("config")
-    .description("manipulate kubernetes node configs");
-  cmdNodeConfig
-    .command("apply")
-    .description("apply talos config to target node")
-    .argument("node")
-    .option("--insecure", "disable authentication", false)
-    .action(nodeConfigApply);
-  cmdNodeConfig
-    .command("download")
-    .description("download worker/controlplane talos config files")
-    .action(nodeConfigDownload);
-  cmdNodeConfig
-    .command("upload")
-    .description("upload worker/controlplane talos config files")
-    .action(nodeConfigUpload);
+    .description("work with kubernetes nodes");
   cmdNodes
     .command("shell")
     .description("create a privileged shell on the target node")
@@ -457,11 +469,37 @@ async function generateResources(
     {};
   const cmdResources = program
     .command("resources")
-    .description("create cdk8s resources");
+    .description("generate cdk8s resources");
   cmdResources
     .command("all")
-    .description("create cdk8s resources for all apps")
+    .description("generate cdk8s resources for all apps")
     .action(() => generateAllResources(resourcesEntries));
+  const cmdTalos = program
+    .command("talos")
+    .description("manipulate talos configuration");
+  cmdTalos
+    .command("apply")
+    .description("apply talos config to target node")
+    .argument("node")
+    .option("--insecure", "disable authentication", false)
+    .action(talosApply);
+  cmdTalos
+    .command("bootstrap")
+    .description("bootstrap a new talos cluster")
+    .argument("node")
+    .action(talosBootstrap);
+  cmdTalos
+    .command("download")
+    .description("download talos config files from cloud storage")
+    .action(talosDownload);
+  cmdTalos
+    .command("kubeconfig")
+    .description("obtain kubeconfig from talos cluster")
+    .action(talosKubeconfig);
+  cmdTalos
+    .command("upload")
+    .description("upload talos config files to cloud storage")
+    .action(talosUpload);
 
   // find all app scripts
   let scripts = await glob("apps/*.ts");
@@ -489,18 +527,14 @@ async function generateResources(
         // register new 'bootstrap' subcommand
         cmdBootstrap
           .command(appName)
-          .description(
-            `generate and apply bootstrap manifests for the '${appName}' app`
-          )
+          .description(`bootstrap '${appName}'`)
           .action(() => bootstrap(appName, callback));
       },
       command: (callback) => {
         // allow app to define custom command line tooling
         cmdApp =
           cmdApp ||
-          cmdApps
-            .command(appName)
-            .description(`perform '${appName}' administrative functions`);
+          cmdApps.command(appName).description(`run '${appName}' commands`);
         callback(cmdApp);
       },
       manifests: (callback) => {
@@ -510,7 +544,7 @@ async function generateResources(
         // register new 'manifests' subcommand
         cmdManifests
           .command(appName)
-          .description(`generate manifests for the '${appName}' app`)
+          .description(`generate '${appName}' manifests`)
           .action(() => generateManifests(appName, callback));
       },
       resources: (callback, opts?: ResourcesOpts) => {
@@ -520,7 +554,7 @@ async function generateResources(
         // register new 'generate resources' subcommand
         cmdResources
           .command(appName)
-          .description(`create cdk8s resources for the '${appName}' app`)
+          .description(`generate '${appName}' cdk8s resources`)
           .action(() => generateResources(appName, callback, opts));
       },
     };

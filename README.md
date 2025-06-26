@@ -163,7 +163,7 @@ Boot into the installation media on each node - which then launches Talos Linux 
 > The node configuration can be found at `./talos/node-[name].cluster.bulia.yaml`. Take note of the `ROLE` field. These configuration files are overlaid on top of `./talos/[role].yaml` to produce the full configuration.
 
 ```shell
-homelab nodes config apply [name] --insecure
+homelab talos apply [name] --insecure
 ```
 
 Once complete, the nodes should reboot automatically - booting off of the partition that Talos Linux was installed to.
@@ -176,13 +176,13 @@ Once complete, the nodes should reboot automatically - booting off of the partit
 When all nodes have been prepared, start Kubernetes by bootstrapping the cluster:
 
 ```shell
-talosctl bootstrap --nodes node-[name].cluster.bulia
+homelab talos bootstrap a
 ```
 
-This starts Kubernetes - and all nodes will then join the cluster. You can then obtain the administrative kubeconfig from the cluster through `talosctl`:
+This starts Kubernetes - and all nodes will then join the cluster. You can then obtain the administrative kubeconfig for the cluster using the `homelab` CLI:
 
 ```shell
-talosctl --nodes node-[name].cluster.bulia kubeconfig
+homelab talos kubeconfig
 ```
 
 You can then use the `homelab` CLI to bootstrap the cluster with required applications:
