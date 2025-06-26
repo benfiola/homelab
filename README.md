@@ -145,6 +145,20 @@ This information is currently hosted as secrets in the _publish_ Github environm
 
 ## Maintenance
 
+### Initial Cluster Setup
+
+Generate secret material used to initialize the talos cluster
+
+```shell
+homelab talos generate-secrets
+```
+
+Use these secrets to generate a local talosconfig file to communicate with the cluster
+
+```shell
+homelab talos generate-config
+```
+
 ### Initial Node Setup
 
 > [!IMPORTANT]
@@ -171,7 +185,26 @@ Once complete, the nodes should reboot automatically - booting off of the partit
 > [!IMPORTANT]
 > Raspberry PI machines do not automatically reboot after installation. Manually power cycle them.
 
+#### Linstor-specific setup
+
+In order for Linstor to operate correctly, an LVM thin pool needs to be configured on the node after it joints the cluster.
+
+Run the following command to open a privileged shell on the node:
+
+```shell
+homelab nodes shell [node]
+```
+
+Then run the following commands to provision an LVM thin pool:
+
+```shell
+
+```
+
 ### Initial Cluster Setup
+
+> [!IMPORTANT]
+> You must specify a control plane node when bootstrapping the cluster
 
 When all nodes have been prepared, start Kubernetes by bootstrapping the cluster:
 
@@ -208,10 +241,16 @@ ArgoCD should begin deploying all manifests and will _eventually_ reconcile them
 
 #### Updating configuration
 
-Modifications made to either the `./talos/[role].yaml` or `./talos/node-[node].cluster.bulia.yaml` files need to be applied to the node for the changes to take effect. Use the `homelab` CLI to do this:
+Modifications made to the:
+
+- `./talos/node-*.cluster.bulia.yaml`
+- `./talos/node.yaml`
+- `./talos/system-disk.yaml`
+
+files need to be applied to node for the changes to take effect. Use the `homelab` CLI to do this:
 
 ```shell
-homelab nodes config apply [node]
+homelab talos apply [node]
 ```
 
 #### Upgrade Talos Linux
@@ -220,17 +259,17 @@ To update the Talos Linux version on all nodes, navigate to Talos' [image factor
 
 - drbd
 
-Once an image is produced, you should have an image that looks like `factory.talos.dev/installer/[hash]:v[talos-version]`. Update the `.machine.install.image` field within each `./talos/[role].yaml` file with this value and then upload these files to cloud storage.
+Once an image is produced, you should have an image that looks like `factory.talos.dev/installer/[hash]:v[talos-version]`. Update the `.machine.env.IMAGE` field within the `./talos/node.yaml` file with this value.
 
 Then, run the following command to upgrade the nodes:
 
 ```shell
-talosctl upgrade --image <image>
+homelab talos upgrade
 ```
 
 #### Upgrade Kubernetes
 
-Update the `./talos/[role].yaml` files - replacing the `kubelet`, `kube-apiserver`, `kube-controller-manager` and `kube-scheduler` image tags with the desired Kubernetes version. Upload these files to cloud storage.
+Update the `./talos/node.yaml` file and set the `.machine.env.K8S` field to the desired Kubernetes version.
 
 Then, run the following command to upgrade the nodes:
 
@@ -238,5 +277,5 @@ Then, run the following command to upgrade the nodes:
 > Even though the above command targets a single node - _all_ nodes will be updated.
 
 ```shell
-talosctl --nodes node-[node].cluster.bulia upgrade-k8s --to [version]
+homelab talos upgrade-k8s
 ```

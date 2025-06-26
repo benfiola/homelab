@@ -1,4 +1,7 @@
 machine:
+  env:
+    IMAGE: factory.talos.dev/metal-installer/e048aaf4461ff9f9576c9a42f760f2fef566559bd4933f322853ac291e46f238:v1.10.4
+    K8S: 1.33.2
   kernel:
     modules:
       # configure drbd kernel modules (linstor)
@@ -26,4 +29,3 @@ cluster:
   # disable kube-proxy (cilium)
   proxy:
     disabled: true
-
