@@ -165,7 +165,7 @@ const manifests: ManifestsCallback = async (app) => {
       MOD_URLS: modUrls.join(","),
       SPT_VERSION: "3.10.5",
       SQUASHFS_NO_XATTRS: "1",
-      CMD_NO_TRUNCATE: "1",
+      CMD_NO_TRUNCATE_STDIO: "1",
     },
   });
 
