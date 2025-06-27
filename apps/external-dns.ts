@@ -40,10 +40,11 @@ const manifests: ManifestsCallback = async (app) => {
   const serviceAccount = createServiceAccount(chart, "service-account", {
     name: "external-dns",
     access: {
-      services: ["get", "watch", "list"],
-      endpoints: ["get", "watch", "list"],
-      nodes: ["list"],
+      nodes: ["watch", "list"],
       pods: ["get", "watch", "list"],
+      services: ["get", "watch", "list"],
+      "discovery.k8s.io/endpointslices": ["get", "watch", "list"],
+      "extensions/ingresses": ["get", "watch", "list"],
       "networking.k8s.io/ingresses": ["get", "watch", "list"],
     },
   });
