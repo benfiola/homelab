@@ -86,6 +86,10 @@ download-gcloud: $(gcloud)
 download-tools: download-gsutil
 download-gsutil: $(gsutil)
 
+$(dot_dev):
+	# create .dev directory
+	mkdir -p $(dot_dev)
+
 $(gcloud_extract):
 	# clean gcloud-extract subdirectory
 	rm -rf $(dot_dev)/gcloud-extract
