@@ -348,7 +348,7 @@ const manifests: ManifestsCallback = async (app) => {
             searchNamespace: "ALL",
           },
           // resources for sidecars
-          resources: getPodRequests({ mem: 300 }),
+          resources: getPodRequests({ mem: 500 }),
         },
       },
       kubeControllerManager: {
