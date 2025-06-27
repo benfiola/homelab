@@ -2,6 +2,11 @@ machine:
   env:
     IMAGE: factory.talos.dev/metal-installer/e048aaf4461ff9f9576c9a42f760f2fef566559bd4933f322853ac291e46f238:v1.10.4
     K8S: 1.33.2
+  features:
+    hostDNS:
+      # TODO: update cilium network policies to allow DNS requests to be made to 169.254.116.108 - then remove this patch
+      # SEE: https://www.talos.dev/v1.10/talos-guides/network/host-dns/
+      forwardKubeDNSToHost: false
   kernel:
     modules:
       # configure drbd kernel modules (linstor)
