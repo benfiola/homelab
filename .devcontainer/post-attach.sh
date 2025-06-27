@@ -4,4 +4,4 @@ set -e
 gcloud auth application-default login --launch-browser
 homelab env download
 homelab talos generate-talosconfig
-homelab talos kubeconfig
+homelab talos generate-kubeconfig

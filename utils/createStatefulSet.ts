@@ -1,9 +1,5 @@
 import { Chart } from "cdk8s";
-import {
-  PersistentVolumeClaim,
-  Quantity,
-  StatefulSet,
-} from "../resources/k8s/k8s";
+import { Quantity, StatefulSet } from "../resources/k8s/k8s";
 import {
   Container,
   convertContainer,
@@ -22,12 +18,10 @@ type VolumeClaimTemplateMap = { [k: string]: string };
  * @returns a list of PersistentVolumeClaims
  */
 const convertVolumeClaimTemplateMap = (
-  chart: Chart,
-  parentId: string,
   volumeTemplateMap: VolumeClaimTemplateMap
-) => {
+): any => {
   return Object.entries(volumeTemplateMap).map(([name, size], index) => {
-    return new PersistentVolumeClaim(chart, `${parentId}-pvc-${index}`, {
+    return {
       metadata: { name },
       spec: {
         accessModes: ["ReadWriteOnce"],
@@ -38,7 +32,7 @@ const convertVolumeClaimTemplateMap = (
         },
         storageClassName: getStorageClassName(),
       },
-    });
+    };
   });
 };
 
@@ -70,7 +64,7 @@ export const createStatefulSet = (
   const user = opts.user !== undefined ? opts.user : 1001;
   const volumes = opts.volumes ? convertVolumeMap(opts.volumes) : undefined;
   const volumeClaimTemplates = opts.volumeClaimTemplates
-    ? convertVolumeClaimTemplateMap(chart, id, opts.volumeClaimTemplates)
+    ? convertVolumeClaimTemplateMap(opts.volumeClaimTemplates)
     : undefined;
 
   const statefulSet = new StatefulSet(chart, id, {
