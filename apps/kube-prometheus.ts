@@ -332,6 +332,8 @@ const manifests: ManifestsCallback = async (app) => {
           hosts: ["grafana.bulia"],
           ingressClassName: getIngressClassName(),
         },
+        // constrain resources for grafana workloads
+        requests: getPodRequests({ mem: 300 }),
         sidecar: {
           dashboards: {
             // enable dashboard discovery
