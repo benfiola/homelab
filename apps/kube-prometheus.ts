@@ -75,6 +75,13 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
+      from: { pod: "kube-prometheus-grafana" },
+      to: {
+        dns: "storage.googleapis.com",
+        ports: [[443, "tcp"]],
+      },
+    },
+    {
       from: { pod: "kube-prometheus-kube-state-metrics" },
       to: {
         entity: "kube-apiserver",
