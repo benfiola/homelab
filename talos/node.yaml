@@ -9,7 +9,7 @@ machine:
       forwardKubeDNSToHost: false
   kernel:
     modules:
-      # configure drbd kernel modules (linstor)
+      # configure drbd kernel modules (piraeus)
       - name: dm_mod
       - name: dm_thin_pool
       - name: drbd
@@ -18,7 +18,7 @@ machine:
       - name: drbd_transport_tcp
   kubelet:
     extraMounts:
-      # configure r/w mounts (linstor)
+      # configure r/w mounts (piraeus)
       - destination: /var/local
         source: /var/local
         type: bind

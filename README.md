@@ -185,9 +185,9 @@ Once complete, the nodes should reboot automatically - booting off of the partit
 > [!IMPORTANT]
 > Raspberry PI machines do not automatically reboot after installation. Manually power cycle them.
 
-#### Linstor-specific setup
+#### Piraeus-specific setup
 
-In order for Linstor to operate correctly, an LVM thin pool needs to be configured on the node after it joints the cluster.
+In order for Piraeus to operate correctly, an LVM thin pool needs to be configured on the node after it joints the cluster.
 
 Run the following command to open a privileged shell on the node:
 
@@ -198,7 +198,14 @@ homelab nodes shell [node]
 Then run the following commands to provision an LVM thin pool:
 
 ```shell
-
+parted <block-device>
+(parted) print free
+(parted) mkpart primary <free-space-start> 100%
+(parted) set <partition-number> lvm on
+(parted) quit
+pvcreate <partition>
+vgcreate vg <partition>
+lvcreate -L <pool-size> -T vg/piraeus
 ```
 
 ### Initial Cluster Setup
