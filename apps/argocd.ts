@@ -155,6 +155,13 @@ const manifests: ManifestsCallback = async (app) => {
       },
     },
     {
+      from: { pod: "argocd-redis-secret-init" },
+      to: {
+        entity: "kube-apiserver",
+        ports: [[6443, "tcp"]],
+      },
+    },
+    {
       from: { pod: "argocd-server" },
       to: {
         entity: "kube-apiserver",
