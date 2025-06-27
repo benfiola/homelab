@@ -207,7 +207,10 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  await createVolumeBackupConfig(chart, { pvc: "data-0", user: 1000 });
+  await createVolumeBackupConfig(chart, {
+    pvc: "data-escape-from-tarkov-0",
+    user: 1000,
+  });
 
   new Service(chart, "service", {
     metadata: {

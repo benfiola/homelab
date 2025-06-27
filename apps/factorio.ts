@@ -148,7 +148,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  await createVolumeBackupConfig(chart, { pvc: "data-0", user: 845 });
+  await createVolumeBackupConfig(chart, { pvc: "data-factorio-0", user: 845 });
 
   new Service(chart, "service", {
     metadata: {

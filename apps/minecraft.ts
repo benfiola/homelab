@@ -133,7 +133,10 @@ const manifests: ManifestsCallback = async (app) => {
     user: 1000,
   });
 
-  await createVolumeBackupConfig(chart, { pvc: "data-0", user: 1000 });
+  await createVolumeBackupConfig(chart, {
+    pvc: "data-minecraft-0",
+    user: 1000,
+  });
 
   new Service(chart, "service", {
     metadata: {
