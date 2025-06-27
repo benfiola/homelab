@@ -123,7 +123,7 @@ const manifests: ManifestsCallback = async (app) => {
       storagePools: [
         {
           name: "lvm-thin",
-          lvmThinPool: { volumeGroup: "vg-storage", thinPool: "thin-pool" },
+          lvmThinPool: { volumeGroup: "vg", thinPool: "piraeus" },
         },
       ],
     },
