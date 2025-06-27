@@ -171,7 +171,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/single-player-tarkov:0.7.3",
+        image: "benfiola/single-player-tarkov:0.7.5-rc.1",
         mounts: {
           cache: "/cache",
           data: "/data",
