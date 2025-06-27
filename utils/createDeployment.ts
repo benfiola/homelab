@@ -23,6 +23,7 @@ type Defined<V extends any> = V extends undefined ? never : V;
 type EnvFromResource = Secret | SealedSecret | ConfigMap;
 type EnvFrom = EnvFromResource | [EnvFromResource, string];
 type ActualEnvFrom = Defined<ActualContainer["envFrom"]>[number];
+
 /**
  * Function that converts a simple 'envFrom' field (which points to a cdk8s resource, or a cdk8s resource + key)
  * into a proper container 'envFrom' reference.
@@ -59,6 +60,7 @@ const convertEnvFrom = (envFrom: EnvFrom): ActualEnvFrom => {
 
 type EnvMap = { [k: string]: string };
 type ActualEnv = Defined<ActualContainer["env"]>[number];
+
 /**
  * Function that converts a simple 'env' field (a Record<[env var name], [env var value]> map)
  * into a proper container 'env' reference.
@@ -73,6 +75,7 @@ const convertEnvMap = (env: EnvMap): ActualEnv[] => {
 type Protocol = "tcp" | "udp";
 type PortMap = { [k: string]: [number, Protocol] };
 type ActualPort = Defined<ActualContainer["ports"]>[number];
+
 /**
  * Function that converts a simple 'ports' field (a Record<[port name], [<port number>, <port protocol>] value)
  * into a proper container 'ports' reference.
@@ -120,7 +123,8 @@ const convertMountMap = (mountMap: MountMap) => {
     mountPath,
   }));
 };
-interface Container {
+
+export interface Container {
   args?: string[];
   command?: string[];
   env?: EnvMap;
@@ -155,6 +159,12 @@ const convertPodRequests = (
   return toReturn;
 };
 
+/**
+ * Calculates a hash from a container's 'envFrom' values.
+ *
+ * @param envFroms environment variable sources
+ * @returns a string hash
+ */
 const calculateEnvFromHash = (envFroms: EnvFrom[]) => {
   const data = [];
   for (const envFrom of envFroms) {
@@ -184,7 +194,7 @@ const calculateEnvFromHash = (envFroms: EnvFrom[]) => {
  * Function that converts a simple 'container' data object
  * into a proper kubernetes container resource.
  */
-const convertContainer = (container: Container): ActualContainer => {
+export const convertContainer = (container: Container): ActualContainer => {
   let env = container.env ? convertEnvMap(container.env) : [];
   let envFrom: EnvFromSource[] | undefined;
   if (container.envFrom) {
@@ -219,14 +229,14 @@ const convertContainer = (container: Container): ActualContainer => {
   };
 };
 
-type VolumeMap = { [k: string]: PersistentVolumeClaim | ConfigMap };
+export type VolumeMap = { [k: string]: PersistentVolumeClaim | ConfigMap };
 
 /**
  * Converts a volume map to a list of volume references to resources
  *
  * @param volumeMap the volume map
  */
-const convertVolumeMap = (volumeMap: VolumeMap) => {
+export const convertVolumeMap = (volumeMap: VolumeMap) => {
   const toReturn: Volume[] = [];
   Object.entries(volumeMap).map(([volumeName, resource]) => {
     let volume;
@@ -255,6 +265,7 @@ interface CreateDeploymentOpts {
   containers: Container[];
   namespace?: string;
   name: string;
+  replicas?: number;
   serviceAccount: string;
   updateStrategy?: "Recreate";
   user?: number;
@@ -288,6 +299,7 @@ export const createDeployment = (
           ...getPodLabels(opts.name),
         },
       },
+      replicas: opts.replicas,
       strategy,
       template: {
         metadata: {
@@ -312,5 +324,6 @@ export const createDeployment = (
       },
     },
   });
+
   return deployment;
 };
