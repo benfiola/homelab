@@ -18,7 +18,7 @@ import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLab
 
 const chartData = {
   chart: "cilium",
-  version: "1.16.3",
+  version: "1.17.5",
   repo: "https://helm.cilium.io/",
 };
 
@@ -96,7 +96,6 @@ const manifests: ManifestsCallback = async (app) => {
   const {
     CiliumClusterwideNetworkPolicy,
     CiliumLoadBalancerIpPool,
-    CiliumL2AnnouncementPolicy,
     CiliumBgpPeeringPolicy,
   } = await import("../resources/cilium/cilium.io");
   const { createNetworkPolicy } = await import("../utils/createNetworkPolicy");
