@@ -33,7 +33,9 @@ cilium_url = https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_VE
 cloudflared = $(dot_dev)/CLOUDFLARED
 cloudflared_url = https://github.com/cloudflare/cloudflared/releases/download/$(CLOUDFLARED_VERSION)/cloudflared-linux-$(arch)
 gcloud = $(dot_dev)/gcloud
+gcloud_extract = $(dot_dev)/gcloud-extract
 gcloud_url = https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-$(gcloudarch).tar.gz
+gsutil = $(dot_dev)/gsutil
 helm = $(dot_dev)/helm
 helm_url = https://get.helm.sh/helm-v$(HELM_VERSION)-linux-$(arch).tar.gz
 k9s = $(dot_dev)/k9s
@@ -80,8 +82,12 @@ $(eval $(call create-download-tool-from-binary,talosctl))
 
 download-tools: download-gcloud
 download-gcloud: $(gcloud)
-$(gcloud): | $(dot_dev)
-	# clean gcloud subdirectory
+
+download-tools: download-gsutil
+download-gsutil: $(gsutil)
+
+$(gcloud_extract):
+	# clean gcloud-extract subdirectory
 	rm -rf $(dot_dev)/gcloud-extract
 	# clean extract files
 	rm -rf /tmp/extract /tmp/archive.tar.gz && mkdir -p /tmp/extract
@@ -91,11 +97,13 @@ $(gcloud): | $(dot_dev)
 	tar xzf /tmp/archive.tar.gz --strip-components=1 -C /tmp/extract
 	# copy extract folder to .dev folder
 	mv /tmp/extract $(dot_dev)/gcloud-extract
-	# create symlink
-	ln -s $(dot_dev)/gcloud-extract/bin/gcloud $(gcloud)
 	# delete archive files
 	rm -rf /tmp/extract /tmp/archive.tar.gz
 
-$(dot_dev):
-	# create .dev directory
-	mkdir -p $(dot_dev)
+$(gcloud): $(gcloud_extract) | $(dot_dev)
+	# create gcloud symlink
+	ln -sf $(gcloud_extract)/bin/gcloud $(gcloud)
+
+$(gsutil): $(gcloud_extract) | $(dot_dev)
+	# create gsutil symlink
+	ln -sf $(gcloud_extract)/bin/gsutil $(gsutil)
