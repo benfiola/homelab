@@ -25,7 +25,7 @@ import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
   chart: "kube-prometheus-stack",
-  version: "58.5.1",
+  version: "75.6.0",
   repo: "https://prometheus-community.github.io/helm-charts",
 };
 

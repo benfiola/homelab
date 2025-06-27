@@ -80,7 +80,7 @@ export interface LinstorClusterProps {
 /**
  * Converts an object of type 'LinstorClusterProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterProps(obj: LinstorClusterProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -90,7 +90,7 @@ export function toJson_LinstorClusterProps(obj: LinstorClusterProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LinstorClusterSpec defines the desired state of LinstorCluster
@@ -167,7 +167,7 @@ export interface LinstorClusterSpec {
   readonly linstorPassphraseSecret?: string;
 
   /**
-   * NodeAffinity selects the nodes on which LINSTOR Satellite will be deployed.
+   * NodeAffinity selects the nodes on which LINSTOR Satellites will be deployed.
    * See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
    *
    * @schema LinstorClusterSpec#nodeAffinity
@@ -208,12 +208,21 @@ export interface LinstorClusterSpec {
    */
   readonly repository?: string;
 
+  /**
+   * Tolerations selects the nodes on which LINSTOR Satellites will be deployed.
+   *
+   * The default tolerations for DaemonSets are automatically added.
+   *
+   * @schema LinstorClusterSpec#tolerations
+   */
+  readonly tolerations?: LinstorClusterSpecTolerations[];
+
 }
 
 /**
  * Converts an object of type 'LinstorClusterSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpec(obj: LinstorClusterSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -230,11 +239,12 @@ export function toJson_LinstorClusterSpec(obj: LinstorClusterSpec | undefined): 
     'patches': obj.patches?.map(y => toJson_LinstorClusterSpecPatches(y)),
     'properties': obj.properties?.map(y => toJson_LinstorClusterSpecProperties(y)),
     'repository': obj.repository,
+    'tolerations': obj.tolerations?.map(y => toJson_LinstorClusterSpecTolerations(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ApiTLS secures the LINSTOR API.
@@ -302,7 +312,7 @@ export interface LinstorClusterSpecApiTls {
 /**
  * Converts an object of type 'LinstorClusterSpecApiTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecApiTls(obj: LinstorClusterSpecApiTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -316,7 +326,7 @@ export function toJson_LinstorClusterSpecApiTls(obj: LinstorClusterSpecApiTls | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Controller controls the deployment of the LINSTOR Controller Deployment.
@@ -347,7 +357,7 @@ export interface LinstorClusterSpecController {
 /**
  * Converts an object of type 'LinstorClusterSpecController' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecController(obj: LinstorClusterSpecController | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -357,7 +367,7 @@ export function toJson_LinstorClusterSpecController(obj: LinstorClusterSpecContr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSIController controls the deployment of the CSI Controller Deployment.
@@ -388,7 +398,7 @@ export interface LinstorClusterSpecCsiController {
 /**
  * Converts an object of type 'LinstorClusterSpecCsiController' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecCsiController(obj: LinstorClusterSpecCsiController | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -398,7 +408,7 @@ export function toJson_LinstorClusterSpecCsiController(obj: LinstorClusterSpecCs
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSINode controls the deployment of the CSI Node DaemonSet.
@@ -429,7 +439,7 @@ export interface LinstorClusterSpecCsiNode {
 /**
  * Converts an object of type 'LinstorClusterSpecCsiNode' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecCsiNode(obj: LinstorClusterSpecCsiNode | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -439,7 +449,7 @@ export function toJson_LinstorClusterSpecCsiNode(obj: LinstorClusterSpecCsiNode 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExternalController references an external controller.
@@ -461,7 +471,7 @@ export interface LinstorClusterSpecExternalController {
 /**
  * Converts an object of type 'LinstorClusterSpecExternalController' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecExternalController(obj: LinstorClusterSpecExternalController | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -470,7 +480,7 @@ export function toJson_LinstorClusterSpecExternalController(obj: LinstorClusterS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HighAvailabilityController controls the deployment of the High Availability Controller DaemonSet.
@@ -501,7 +511,7 @@ export interface LinstorClusterSpecHighAvailabilityController {
 /**
  * Converts an object of type 'LinstorClusterSpecHighAvailabilityController' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecHighAvailabilityController(obj: LinstorClusterSpecHighAvailabilityController | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -511,7 +521,7 @@ export function toJson_LinstorClusterSpecHighAvailabilityController(obj: Linstor
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * InternalTLS secures the connection between LINSTOR Controller and Satellite.
@@ -551,7 +561,7 @@ export interface LinstorClusterSpecInternalTls {
 /**
  * Converts an object of type 'LinstorClusterSpecInternalTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecInternalTls(obj: LinstorClusterSpecInternalTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -562,10 +572,10 @@ export function toJson_LinstorClusterSpecInternalTls(obj: LinstorClusterSpecInte
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * NodeAffinity selects the nodes on which LINSTOR Satellite will be deployed.
+ * NodeAffinity selects the nodes on which LINSTOR Satellites will be deployed.
  * See https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
  *
  * @schema LinstorClusterSpecNodeAffinity
@@ -583,7 +593,7 @@ export interface LinstorClusterSpecNodeAffinity {
 /**
  * Converts an object of type 'LinstorClusterSpecNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecNodeAffinity(obj: LinstorClusterSpecNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -592,7 +602,7 @@ export function toJson_LinstorClusterSpecNodeAffinity(obj: LinstorClusterSpecNod
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Patch represent either a Strategic Merge Patch or a JSON patch and its targets.
@@ -626,7 +636,7 @@ export interface LinstorClusterSpecPatches {
 /**
  * Converts an object of type 'LinstorClusterSpecPatches' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecPatches(obj: LinstorClusterSpecPatches | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -637,7 +647,7 @@ export function toJson_LinstorClusterSpecPatches(obj: LinstorClusterSpecPatches 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorClusterSpecProperties
@@ -662,7 +672,7 @@ export interface LinstorClusterSpecProperties {
 /**
  * Converts an object of type 'LinstorClusterSpecProperties' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecProperties(obj: LinstorClusterSpecProperties | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -672,7 +682,79 @@ export function toJson_LinstorClusterSpecProperties(obj: LinstorClusterSpecPrope
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The pod this Toleration is attached to tolerates any taint that matches
+ * the triple <key,value,effect> using the matching operator <operator>.
+ *
+ * @schema LinstorClusterSpecTolerations
+ */
+export interface LinstorClusterSpecTolerations {
+  /**
+   * Effect indicates the taint effect to match. Empty means match all taint effects.
+   * When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+   *
+   * @schema LinstorClusterSpecTolerations#effect
+   */
+  readonly effect?: string;
+
+  /**
+   * Key is the taint key that the toleration applies to. Empty means match all taint keys.
+   * If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+   *
+   * @schema LinstorClusterSpecTolerations#key
+   */
+  readonly key?: string;
+
+  /**
+   * Operator represents a key's relationship to the value.
+   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Exists is equivalent to wildcard for value, so that a pod can
+   * tolerate all taints of a particular category.
+   *
+   * @default Equal.
+   * @schema LinstorClusterSpecTolerations#operator
+   */
+  readonly operator?: string;
+
+  /**
+   * TolerationSeconds represents the period of time the toleration (which must be
+   * of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+   * it is not set, which means tolerate the taint forever (do not evict). Zero and
+   * negative values will be treated as 0 (evict immediately) by the system.
+   *
+   * @schema LinstorClusterSpecTolerations#tolerationSeconds
+   */
+  readonly tolerationSeconds?: number;
+
+  /**
+   * Value is the taint value the toleration matches to.
+   * If the operator is Exists, the value should be empty, otherwise just a regular string.
+   *
+   * @schema LinstorClusterSpecTolerations#value
+   */
+  readonly value?: string;
+
+}
+
+/**
+ * Converts an object of type 'LinstorClusterSpecTolerations' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_LinstorClusterSpecTolerations(obj: LinstorClusterSpecTolerations | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'effect': obj.effect,
+    'key': obj.key,
+    'operator': obj.operator,
+    'tolerationSeconds': obj.tolerationSeconds,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CAReference configures the CA certificate to use when validating TLS certificates.
@@ -716,7 +798,7 @@ export interface LinstorClusterSpecApiTlsCaReference {
 /**
  * Converts an object of type 'LinstorClusterSpecApiTlsCaReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecApiTlsCaReference(obj: LinstorClusterSpecApiTlsCaReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -728,7 +810,7 @@ export function toJson_LinstorClusterSpecApiTlsCaReference(obj: LinstorClusterSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertManager references a cert-manager Issuer or ClusterIssuer.
@@ -764,7 +846,7 @@ export interface LinstorClusterSpecApiTlsCertManager {
 /**
  * Converts an object of type 'LinstorClusterSpecApiTlsCertManager' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecApiTlsCertManager(obj: LinstorClusterSpecApiTlsCertManager | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -775,7 +857,7 @@ export function toJson_LinstorClusterSpecApiTlsCertManager(obj: LinstorClusterSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CAReference configures the CA certificate to use when validating TLS certificates.
@@ -819,7 +901,7 @@ export interface LinstorClusterSpecInternalTlsCaReference {
 /**
  * Converts an object of type 'LinstorClusterSpecInternalTlsCaReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecInternalTlsCaReference(obj: LinstorClusterSpecInternalTlsCaReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -831,7 +913,7 @@ export function toJson_LinstorClusterSpecInternalTlsCaReference(obj: LinstorClus
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertManager references a cert-manager Issuer or ClusterIssuer.
@@ -867,7 +949,7 @@ export interface LinstorClusterSpecInternalTlsCertManager {
 /**
  * Converts an object of type 'LinstorClusterSpecInternalTlsCertManager' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecInternalTlsCertManager(obj: LinstorClusterSpecInternalTlsCertManager | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -878,7 +960,7 @@ export function toJson_LinstorClusterSpecInternalTlsCertManager(obj: LinstorClus
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -907,7 +989,7 @@ export interface LinstorClusterSpecNodeAffinityNodeSelectorTerms {
 /**
  * Converts an object of type 'LinstorClusterSpecNodeAffinityNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecNodeAffinityNodeSelectorTerms(obj: LinstorClusterSpecNodeAffinityNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -917,7 +999,7 @@ export function toJson_LinstorClusterSpecNodeAffinityNodeSelectorTerms(obj: Lins
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Target points to the resources that the patch is applied to
@@ -977,7 +1059,7 @@ export interface LinstorClusterSpecPatchesTarget {
 /**
  * Converts an object of type 'LinstorClusterSpecPatchesTarget' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecPatchesTarget(obj: LinstorClusterSpecPatchesTarget | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -992,7 +1074,7 @@ export function toJson_LinstorClusterSpecPatchesTarget(obj: LinstorClusterSpecPa
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Kind of the resource containing the CA Certificate, either a ConfigMap or Secret.
@@ -1056,7 +1138,7 @@ export interface LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchExpressions
 /**
  * Converts an object of type 'LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchExpressions(obj: LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1067,7 +1149,7 @@ export function toJson_LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchExpre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -1107,7 +1189,7 @@ export interface LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchFields {
 /**
  * Converts an object of type 'LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchFields(obj: LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1118,7 +1200,7 @@ export function toJson_LinstorClusterSpecNodeAffinityNodeSelectorTermsMatchField
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -1198,7 +1280,7 @@ export interface LinstorNodeConnectionProps {
 /**
  * Converts an object of type 'LinstorNodeConnectionProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorNodeConnectionProps(obj: LinstorNodeConnectionProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1208,7 +1290,7 @@ export function toJson_LinstorNodeConnectionProps(obj: LinstorNodeConnectionProp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LinstorNodeConnectionSpec defines the desired state of LinstorNodeConnection
@@ -1246,7 +1328,7 @@ export interface LinstorNodeConnectionSpec {
 /**
  * Converts an object of type 'LinstorNodeConnectionSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorNodeConnectionSpec(obj: LinstorNodeConnectionSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1257,7 +1339,7 @@ export function toJson_LinstorNodeConnectionSpec(obj: LinstorNodeConnectionSpec 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorNodeConnectionSpecPaths
@@ -1282,7 +1364,7 @@ export interface LinstorNodeConnectionSpecPaths {
 /**
  * Converts an object of type 'LinstorNodeConnectionSpecPaths' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorNodeConnectionSpecPaths(obj: LinstorNodeConnectionSpecPaths | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1292,7 +1374,7 @@ export function toJson_LinstorNodeConnectionSpecPaths(obj: LinstorNodeConnection
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorNodeConnectionSpecProperties
@@ -1317,7 +1399,7 @@ export interface LinstorNodeConnectionSpecProperties {
 /**
  * Converts an object of type 'LinstorNodeConnectionSpecProperties' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorNodeConnectionSpecProperties(obj: LinstorNodeConnectionSpecProperties | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1327,7 +1409,7 @@ export function toJson_LinstorNodeConnectionSpecProperties(obj: LinstorNodeConne
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelectorTerm matches pairs of nodes by checking that the nodes match all specified requirements.
@@ -1347,7 +1429,7 @@ export interface LinstorNodeConnectionSpecSelector {
 /**
  * Converts an object of type 'LinstorNodeConnectionSpecSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorNodeConnectionSpecSelector(obj: LinstorNodeConnectionSpecSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1356,7 +1438,7 @@ export function toJson_LinstorNodeConnectionSpecSelector(obj: LinstorNodeConnect
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorNodeConnectionSpecSelectorMatchLabels
@@ -1394,7 +1476,7 @@ export interface LinstorNodeConnectionSpecSelectorMatchLabels {
 /**
  * Converts an object of type 'LinstorNodeConnectionSpecSelectorMatchLabels' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorNodeConnectionSpecSelectorMatchLabels(obj: LinstorNodeConnectionSpecSelectorMatchLabels | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1405,7 +1487,7 @@ export function toJson_LinstorNodeConnectionSpecSelectorMatchLabels(obj: Linstor
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Op to apply to the label.
@@ -1511,7 +1593,7 @@ export interface LinstorSatelliteProps {
 /**
  * Converts an object of type 'LinstorSatelliteProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteProps(obj: LinstorSatelliteProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1521,7 +1603,7 @@ export function toJson_LinstorSatelliteProps(obj: LinstorSatelliteProps | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LinstorSatelliteSpec defines the desired state of LinstorSatellite
@@ -1537,6 +1619,25 @@ export interface LinstorSatelliteSpec {
   readonly clusterRef: LinstorSatelliteSpecClusterRef;
 
   /**
+   * DeletionPolicy configures the way LinstorSatellite resources are deleted.
+   *
+   * A LinstorSatellite may be deleted because:
+   * * It no longer matches the affinity and node selector of the LinstorCluster resource.
+   * * The node it references has been removed from Kubernetes.
+   * * It was manually deleted outside the Operator.
+   *
+   * A LinstorSatellite may store the last copy of a volume, in which case it is not desirable to unconditionally remove
+   * the satellite from the cluster. For this reason, the following deletion policies exist:
+   *
+   * * DeletionPolicyEvacuate will start evacuation of the LINSTOR Satellite and wait until it completes before removing the LinstorSatellite object, comparable to the "linstor node evacuate" command.
+   * * DeletionPolicyRetain will retain the LINSTOR Satellite, keeping it registered in LINSTOR, but removing associated Kubernetes resources.
+   * * DeletionPolicyDelete will remove the LINSTOR Satellite from the LINSTOR Cluster without prior eviction, comparable to the "linstor node lost" command.
+   *
+   * @schema LinstorSatelliteSpec#deletionPolicy
+   */
+  readonly deletionPolicy?: LinstorSatelliteSpecDeletionPolicy;
+
+  /**
    * InternalTLS configures secure communication for the LINSTOR Satellite.
    *
    * If set, the control traffic between LINSTOR Controller and Satellite will be encrypted using mTLS.
@@ -1545,6 +1646,16 @@ export interface LinstorSatelliteSpec {
    * @schema LinstorSatelliteSpec#internalTLS
    */
   readonly internalTls?: LinstorSatelliteSpecInternalTls;
+
+  /**
+   * IPFamilies configures the IP Family (IPv4 or IPv6) to use to connect to the LINSTOR Satellite.
+   *
+   * If set, the control traffic between LINSTOR Controller and Satellite will use only the given IP Family.
+   * If not set, the Operator will configure all families found in the Satellites Pods' Status.
+   *
+   * @schema LinstorSatelliteSpec#ipFamilies
+   */
+  readonly ipFamilies?: LinstorSatelliteSpecIpFamilies[];
 
   /**
    * Patches is a list of kustomize patches to apply.
@@ -1581,12 +1692,14 @@ export interface LinstorSatelliteSpec {
 /**
  * Converts an object of type 'LinstorSatelliteSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpec(obj: LinstorSatelliteSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'clusterRef': toJson_LinstorSatelliteSpecClusterRef(obj.clusterRef),
+    'deletionPolicy': obj.deletionPolicy,
     'internalTLS': toJson_LinstorSatelliteSpecInternalTls(obj.internalTls),
+    'ipFamilies': obj.ipFamilies?.map(y => y),
     'patches': obj.patches?.map(y => toJson_LinstorSatelliteSpecPatches(y)),
     'properties': obj.properties?.map(y => toJson_LinstorSatelliteSpecProperties(y)),
     'repository': obj.repository,
@@ -1595,7 +1708,7 @@ export function toJson_LinstorSatelliteSpec(obj: LinstorSatelliteSpec | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterRef references the LinstorCluster used to create this LinstorSatellite.
@@ -1638,7 +1751,7 @@ export interface LinstorSatelliteSpecClusterRef {
 /**
  * Converts an object of type 'LinstorSatelliteSpecClusterRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecClusterRef(obj: LinstorSatelliteSpecClusterRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1650,7 +1763,33 @@ export function toJson_LinstorSatelliteSpecClusterRef(obj: LinstorSatelliteSpecC
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeletionPolicy configures the way LinstorSatellite resources are deleted.
+ *
+ * A LinstorSatellite may be deleted because:
+ * * It no longer matches the affinity and node selector of the LinstorCluster resource.
+ * * The node it references has been removed from Kubernetes.
+ * * It was manually deleted outside the Operator.
+ *
+ * A LinstorSatellite may store the last copy of a volume, in which case it is not desirable to unconditionally remove
+ * the satellite from the cluster. For this reason, the following deletion policies exist:
+ *
+ * * DeletionPolicyEvacuate will start evacuation of the LINSTOR Satellite and wait until it completes before removing the LinstorSatellite object, comparable to the "linstor node evacuate" command.
+ * * DeletionPolicyRetain will retain the LINSTOR Satellite, keeping it registered in LINSTOR, but removing associated Kubernetes resources.
+ * * DeletionPolicyDelete will remove the LINSTOR Satellite from the LINSTOR Cluster without prior eviction, comparable to the "linstor node lost" command.
+ *
+ * @schema LinstorSatelliteSpecDeletionPolicy
+ */
+export enum LinstorSatelliteSpecDeletionPolicy {
+  /** Evacuate */
+  EVACUATE = "Evacuate",
+  /** Retain */
+  RETAIN = "Retain",
+  /** Delete */
+  DELETE = "Delete",
+}
 
 /**
  * InternalTLS configures secure communication for the LINSTOR Satellite.
@@ -1700,7 +1839,7 @@ export interface LinstorSatelliteSpecInternalTls {
 /**
  * Converts an object of type 'LinstorSatelliteSpecInternalTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecInternalTls(obj: LinstorSatelliteSpecInternalTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1712,7 +1851,19 @@ export function toJson_LinstorSatelliteSpecInternalTls(obj: LinstorSatelliteSpec
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * IPFamily represents the IP Family (IPv4 or IPv6).
+ *
+ * @schema LinstorSatelliteSpecIpFamilies
+ */
+export enum LinstorSatelliteSpecIpFamilies {
+  /** IPv4 */
+  I_PV4 = "IPv4",
+  /** IPv6 */
+  I_PV6 = "IPv6",
+}
 
 /**
  * Patch represent either a Strategic Merge Patch or a JSON patch and its targets.
@@ -1746,7 +1897,7 @@ export interface LinstorSatelliteSpecPatches {
 /**
  * Converts an object of type 'LinstorSatelliteSpecPatches' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecPatches(obj: LinstorSatelliteSpecPatches | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1757,7 +1908,7 @@ export function toJson_LinstorSatelliteSpecPatches(obj: LinstorSatelliteSpecPatc
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteSpecProperties
@@ -1805,7 +1956,7 @@ export interface LinstorSatelliteSpecProperties {
 /**
  * Converts an object of type 'LinstorSatelliteSpecProperties' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecProperties(obj: LinstorSatelliteSpecProperties | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1818,7 +1969,7 @@ export function toJson_LinstorSatelliteSpecProperties(obj: LinstorSatelliteSpecP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteSpecStoragePools
@@ -1890,7 +2041,7 @@ export interface LinstorSatelliteSpecStoragePools {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePools' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePools(obj: LinstorSatelliteSpecStoragePools | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1907,7 +2058,7 @@ export function toJson_LinstorSatelliteSpecStoragePools(obj: LinstorSatelliteSpe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CAReference configures the CA certificate to use when validating TLS certificates.
@@ -1951,7 +2102,7 @@ export interface LinstorSatelliteSpecClusterRefCaReference {
 /**
  * Converts an object of type 'LinstorSatelliteSpecClusterRefCaReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecClusterRefCaReference(obj: LinstorSatelliteSpecClusterRefCaReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1963,7 +2114,7 @@ export function toJson_LinstorSatelliteSpecClusterRefCaReference(obj: LinstorSat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExternalController references an external controller.
@@ -1984,7 +2135,7 @@ export interface LinstorSatelliteSpecClusterRefExternalController {
 /**
  * Converts an object of type 'LinstorSatelliteSpecClusterRefExternalController' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecClusterRefExternalController(obj: LinstorSatelliteSpecClusterRefExternalController | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1993,7 +2144,7 @@ export function toJson_LinstorSatelliteSpecClusterRefExternalController(obj: Lin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CAReference configures the CA certificate to use when validating TLS certificates.
@@ -2037,7 +2188,7 @@ export interface LinstorSatelliteSpecInternalTlsCaReference {
 /**
  * Converts an object of type 'LinstorSatelliteSpecInternalTlsCaReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecInternalTlsCaReference(obj: LinstorSatelliteSpecInternalTlsCaReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2049,7 +2200,7 @@ export function toJson_LinstorSatelliteSpecInternalTlsCaReference(obj: LinstorSa
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertManager references a cert-manager Issuer or ClusterIssuer.
@@ -2085,7 +2236,7 @@ export interface LinstorSatelliteSpecInternalTlsCertManager {
 /**
  * Converts an object of type 'LinstorSatelliteSpecInternalTlsCertManager' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecInternalTlsCertManager(obj: LinstorSatelliteSpecInternalTlsCertManager | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2096,7 +2247,7 @@ export function toJson_LinstorSatelliteSpecInternalTlsCertManager(obj: LinstorSa
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Target points to the resources that the patch is applied to
@@ -2156,7 +2307,7 @@ export interface LinstorSatelliteSpecPatchesTarget {
 /**
  * Converts an object of type 'LinstorSatelliteSpecPatchesTarget' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecPatchesTarget(obj: LinstorSatelliteSpecPatchesTarget | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2171,7 +2322,7 @@ export function toJson_LinstorSatelliteSpecPatchesTarget(obj: LinstorSatelliteSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExpandFrom can reference multiple resource fields at once.
@@ -2220,7 +2371,7 @@ export interface LinstorSatelliteSpecPropertiesExpandFrom {
 /**
  * Converts an object of type 'LinstorSatelliteSpecPropertiesExpandFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecPropertiesExpandFrom(obj: LinstorSatelliteSpecPropertiesExpandFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2232,7 +2383,7 @@ export function toJson_LinstorSatelliteSpecPropertiesExpandFrom(obj: LinstorSate
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValueFrom sets the value from an existing resource.
@@ -2252,7 +2403,7 @@ export interface LinstorSatelliteSpecPropertiesValueFrom {
 /**
  * Converts an object of type 'LinstorSatelliteSpecPropertiesValueFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecPropertiesValueFrom(obj: LinstorSatelliteSpecPropertiesValueFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2261,7 +2412,7 @@ export function toJson_LinstorSatelliteSpecPropertiesValueFrom(obj: LinstorSatel
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a file system based storage pool, allocating a regular file per volume.
@@ -2281,7 +2432,7 @@ export interface LinstorSatelliteSpecStoragePoolsFilePool {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsFilePool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsFilePool(obj: LinstorSatelliteSpecStoragePoolsFilePool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2290,7 +2441,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsFilePool(obj: LinstorSate
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a file system based storage pool, allocating a sparse file per volume.
@@ -2310,7 +2461,7 @@ export interface LinstorSatelliteSpecStoragePoolsFileThinPool {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsFileThinPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsFileThinPool(obj: LinstorSatelliteSpecStoragePoolsFileThinPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2319,7 +2470,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsFileThinPool(obj: Linstor
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a LVM Volume Group as storage pool.
@@ -2337,7 +2488,7 @@ export interface LinstorSatelliteSpecStoragePoolsLvmPool {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsLvmPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsLvmPool(obj: LinstorSatelliteSpecStoragePoolsLvmPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2346,7 +2497,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsLvmPool(obj: LinstorSatel
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a LVM Thin Pool as storage pool.
@@ -2371,7 +2522,7 @@ export interface LinstorSatelliteSpecStoragePoolsLvmThinPool {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsLvmThinPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsLvmThinPool(obj: LinstorSatelliteSpecStoragePoolsLvmThinPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2381,7 +2532,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsLvmThinPool(obj: LinstorS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteSpecStoragePoolsProperties
@@ -2429,7 +2580,7 @@ export interface LinstorSatelliteSpecStoragePoolsProperties {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsProperties' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsProperties(obj: LinstorSatelliteSpecStoragePoolsProperties | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2442,7 +2593,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsProperties(obj: LinstorSa
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteSpecStoragePoolsSource
@@ -2460,7 +2611,7 @@ export interface LinstorSatelliteSpecStoragePoolsSource {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsSource(obj: LinstorSatelliteSpecStoragePoolsSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2469,7 +2620,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsSource(obj: LinstorSatell
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a ZFS system based storage pool, allocating zvols from the given zpool.
@@ -2489,7 +2640,7 @@ export interface LinstorSatelliteSpecStoragePoolsZfsPool {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsZfsPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsZfsPool(obj: LinstorSatelliteSpecStoragePoolsZfsPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2498,7 +2649,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsZfsPool(obj: LinstorSatel
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a ZFS system based storage pool, allocating sparse zvols from the given zpool.
@@ -2518,7 +2669,7 @@ export interface LinstorSatelliteSpecStoragePoolsZfsThinPool {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsZfsThinPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsZfsThinPool(obj: LinstorSatelliteSpecStoragePoolsZfsThinPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2527,7 +2678,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsZfsThinPool(obj: LinstorS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Kind of the resource containing the CA Certificate, either a ConfigMap or Secret.
@@ -2600,7 +2751,7 @@ export interface LinstorSatelliteSpecStoragePoolsPropertiesExpandFrom {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsPropertiesExpandFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsPropertiesExpandFrom(obj: LinstorSatelliteSpecStoragePoolsPropertiesExpandFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2612,7 +2763,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsPropertiesExpandFrom(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValueFrom sets the value from an existing resource.
@@ -2632,7 +2783,7 @@ export interface LinstorSatelliteSpecStoragePoolsPropertiesValueFrom {
 /**
  * Converts an object of type 'LinstorSatelliteSpecStoragePoolsPropertiesValueFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteSpecStoragePoolsPropertiesValueFrom(obj: LinstorSatelliteSpecStoragePoolsPropertiesValueFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2641,7 +2792,7 @@ export function toJson_LinstorSatelliteSpecStoragePoolsPropertiesValueFrom(obj: 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -2724,7 +2875,7 @@ export interface LinstorSatelliteConfigurationProps {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationProps(obj: LinstorSatelliteConfigurationProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2734,7 +2885,7 @@ export function toJson_LinstorSatelliteConfigurationProps(obj: LinstorSatelliteC
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LinstorSatelliteConfigurationSpec defines a partial, desired state of a LinstorSatelliteSpec.
@@ -2746,6 +2897,25 @@ export function toJson_LinstorSatelliteConfigurationProps(obj: LinstorSatelliteC
  */
 export interface LinstorSatelliteConfigurationSpec {
   /**
+   * DeletionPolicy configures the way LinstorSatellite resources are deleted.
+   *
+   * A LinstorSatellite may be deleted because:
+   * * It no longer matches the affinity and node selector of the LinstorCluster resource.
+   * * The node it references has been removed from Kubernetes.
+   * * It was manually deleted outside the Operator.
+   *
+   * A LinstorSatellite may store the last copy of a volume, in which case it is not desirable to unconditionally remove
+   * the satellite from the cluster. For this reason, the following deletion policies exist:
+   *
+   * * DeletionPolicyEvacuate will start evacuation of the LINSTOR Satellite and wait until it completes before removing the LinstorSatellite object, comparable to the "linstor node evacuate" command.
+   * * DeletionPolicyRetain will retain the LINSTOR Satellite, keeping it registered in LINSTOR, but removing associated Kubernetes resources.
+   * * DeletionPolicyDelete will remove the LINSTOR Satellite from the LINSTOR Cluster without prior eviction, comparable to the "linstor node lost" command.
+   *
+   * @schema LinstorSatelliteConfigurationSpec#deletionPolicy
+   */
+  readonly deletionPolicy?: LinstorSatelliteConfigurationSpecDeletionPolicy;
+
+  /**
    * InternalTLS configures secure communication for the LINSTOR Satellite.
    *
    * If set, the control traffic between LINSTOR Controller and Satellite will be encrypted using mTLS.
@@ -2753,6 +2923,16 @@ export interface LinstorSatelliteConfigurationSpec {
    * @schema LinstorSatelliteConfigurationSpec#internalTLS
    */
   readonly internalTls?: LinstorSatelliteConfigurationSpecInternalTls;
+
+  /**
+   * IPFamilies configures the IP Family (IPv4 or IPv6) to use to connect to the LINSTOR Satellite.
+   *
+   * If set, the control traffic between LINSTOR Controller and Satellite will use only the given IP Family.
+   * If not set, the Operator will configure all families found in the Satellites Pods' Status.
+   *
+   * @schema LinstorSatelliteConfigurationSpec#ipFamilies
+   */
+  readonly ipFamilies?: LinstorSatelliteConfigurationSpecIpFamilies[];
 
   /**
    * NodeAffinity selects which LinstorSatellite resources this spec should be applied to.
@@ -2809,11 +2989,13 @@ export interface LinstorSatelliteConfigurationSpec {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpec(obj: LinstorSatelliteConfigurationSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'deletionPolicy': obj.deletionPolicy,
     'internalTLS': toJson_LinstorSatelliteConfigurationSpecInternalTls(obj.internalTls),
+    'ipFamilies': obj.ipFamilies?.map(y => y),
     'nodeAffinity': toJson_LinstorSatelliteConfigurationSpecNodeAffinity(obj.nodeAffinity),
     'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'patches': obj.patches?.map(y => toJson_LinstorSatelliteConfigurationSpecPatches(y)),
@@ -2824,7 +3006,33 @@ export function toJson_LinstorSatelliteConfigurationSpec(obj: LinstorSatelliteCo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeletionPolicy configures the way LinstorSatellite resources are deleted.
+ *
+ * A LinstorSatellite may be deleted because:
+ * * It no longer matches the affinity and node selector of the LinstorCluster resource.
+ * * The node it references has been removed from Kubernetes.
+ * * It was manually deleted outside the Operator.
+ *
+ * A LinstorSatellite may store the last copy of a volume, in which case it is not desirable to unconditionally remove
+ * the satellite from the cluster. For this reason, the following deletion policies exist:
+ *
+ * * DeletionPolicyEvacuate will start evacuation of the LINSTOR Satellite and wait until it completes before removing the LinstorSatellite object, comparable to the "linstor node evacuate" command.
+ * * DeletionPolicyRetain will retain the LINSTOR Satellite, keeping it registered in LINSTOR, but removing associated Kubernetes resources.
+ * * DeletionPolicyDelete will remove the LINSTOR Satellite from the LINSTOR Cluster without prior eviction, comparable to the "linstor node lost" command.
+ *
+ * @schema LinstorSatelliteConfigurationSpecDeletionPolicy
+ */
+export enum LinstorSatelliteConfigurationSpecDeletionPolicy {
+  /** Evacuate */
+  EVACUATE = "Evacuate",
+  /** Retain */
+  RETAIN = "Retain",
+  /** Delete */
+  DELETE = "Delete",
+}
 
 /**
  * InternalTLS configures secure communication for the LINSTOR Satellite.
@@ -2873,7 +3081,7 @@ export interface LinstorSatelliteConfigurationSpecInternalTls {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecInternalTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecInternalTls(obj: LinstorSatelliteConfigurationSpecInternalTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2885,7 +3093,19 @@ export function toJson_LinstorSatelliteConfigurationSpecInternalTls(obj: Linstor
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * IPFamily represents the IP Family (IPv4 or IPv6).
+ *
+ * @schema LinstorSatelliteConfigurationSpecIpFamilies
+ */
+export enum LinstorSatelliteConfigurationSpecIpFamilies {
+  /** IPv4 */
+  I_PV4 = "IPv4",
+  /** IPv6 */
+  I_PV6 = "IPv6",
+}
 
 /**
  * NodeAffinity selects which LinstorSatellite resources this spec should be applied to.
@@ -2906,7 +3126,7 @@ export interface LinstorSatelliteConfigurationSpecNodeAffinity {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecNodeAffinity(obj: LinstorSatelliteConfigurationSpecNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2915,7 +3135,7 @@ export function toJson_LinstorSatelliteConfigurationSpecNodeAffinity(obj: Linsto
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Patch represent either a Strategic Merge Patch or a JSON patch and its targets.
@@ -2949,7 +3169,7 @@ export interface LinstorSatelliteConfigurationSpecPatches {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecPatches' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecPatches(obj: LinstorSatelliteConfigurationSpecPatches | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2960,7 +3180,7 @@ export function toJson_LinstorSatelliteConfigurationSpecPatches(obj: LinstorSate
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteConfigurationSpecProperties
@@ -3008,7 +3228,7 @@ export interface LinstorSatelliteConfigurationSpecProperties {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecProperties' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecProperties(obj: LinstorSatelliteConfigurationSpecProperties | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3021,7 +3241,7 @@ export function toJson_LinstorSatelliteConfigurationSpecProperties(obj: LinstorS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteConfigurationSpecStoragePools
@@ -3093,7 +3313,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePools {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePools' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePools(obj: LinstorSatelliteConfigurationSpecStoragePools | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3110,7 +3330,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePools(obj: Linsto
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CAReference configures the CA certificate to use when validating TLS certificates.
@@ -3154,7 +3374,7 @@ export interface LinstorSatelliteConfigurationSpecInternalTlsCaReference {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecInternalTlsCaReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecInternalTlsCaReference(obj: LinstorSatelliteConfigurationSpecInternalTlsCaReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3166,7 +3386,7 @@ export function toJson_LinstorSatelliteConfigurationSpecInternalTlsCaReference(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertManager references a cert-manager Issuer or ClusterIssuer.
@@ -3202,7 +3422,7 @@ export interface LinstorSatelliteConfigurationSpecInternalTlsCertManager {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecInternalTlsCertManager' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecInternalTlsCertManager(obj: LinstorSatelliteConfigurationSpecInternalTlsCertManager | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3213,7 +3433,7 @@ export function toJson_LinstorSatelliteConfigurationSpecInternalTlsCertManager(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -3242,7 +3462,7 @@ export interface LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTerms 
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTerms(obj: LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3252,7 +3472,7 @@ export function toJson_LinstorSatelliteConfigurationSpecNodeAffinityNodeSelector
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Target points to the resources that the patch is applied to
@@ -3312,7 +3532,7 @@ export interface LinstorSatelliteConfigurationSpecPatchesTarget {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecPatchesTarget' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecPatchesTarget(obj: LinstorSatelliteConfigurationSpecPatchesTarget | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3327,7 +3547,7 @@ export function toJson_LinstorSatelliteConfigurationSpecPatchesTarget(obj: Linst
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExpandFrom can reference multiple resource fields at once.
@@ -3376,7 +3596,7 @@ export interface LinstorSatelliteConfigurationSpecPropertiesExpandFrom {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecPropertiesExpandFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecPropertiesExpandFrom(obj: LinstorSatelliteConfigurationSpecPropertiesExpandFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3388,7 +3608,7 @@ export function toJson_LinstorSatelliteConfigurationSpecPropertiesExpandFrom(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValueFrom sets the value from an existing resource.
@@ -3408,7 +3628,7 @@ export interface LinstorSatelliteConfigurationSpecPropertiesValueFrom {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecPropertiesValueFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecPropertiesValueFrom(obj: LinstorSatelliteConfigurationSpecPropertiesValueFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3417,7 +3637,7 @@ export function toJson_LinstorSatelliteConfigurationSpecPropertiesValueFrom(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a file system based storage pool, allocating a regular file per volume.
@@ -3437,7 +3657,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsFilePool {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsFilePool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsFilePool(obj: LinstorSatelliteConfigurationSpecStoragePoolsFilePool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3446,7 +3666,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsFilePool(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a file system based storage pool, allocating a sparse file per volume.
@@ -3466,7 +3686,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsFileThinPool {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsFileThinPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsFileThinPool(obj: LinstorSatelliteConfigurationSpecStoragePoolsFileThinPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3475,7 +3695,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsFileThinPool
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a LVM Volume Group as storage pool.
@@ -3493,7 +3713,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsLvmPool {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsLvmPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsLvmPool(obj: LinstorSatelliteConfigurationSpecStoragePoolsLvmPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3502,7 +3722,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsLvmPool(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a LVM Thin Pool as storage pool.
@@ -3527,7 +3747,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsLvmThinPool {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsLvmThinPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsLvmThinPool(obj: LinstorSatelliteConfigurationSpecStoragePoolsLvmThinPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3537,7 +3757,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsLvmThinPool(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteConfigurationSpecStoragePoolsProperties
@@ -3585,7 +3805,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsProperties {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsProperties' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsProperties(obj: LinstorSatelliteConfigurationSpecStoragePoolsProperties | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3598,7 +3818,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsProperties(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema LinstorSatelliteConfigurationSpecStoragePoolsSource
@@ -3616,7 +3836,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsSource {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsSource(obj: LinstorSatelliteConfigurationSpecStoragePoolsSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3625,7 +3845,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsSource(obj: 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a ZFS system based storage pool, allocating zvols from the given zpool.
@@ -3645,7 +3865,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsZfsPool {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsZfsPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsZfsPool(obj: LinstorSatelliteConfigurationSpecStoragePoolsZfsPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3654,7 +3874,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsZfsPool(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Configures a ZFS system based storage pool, allocating sparse zvols from the given zpool.
@@ -3674,7 +3894,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsZfsThinPool {
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsZfsThinPool' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsZfsThinPool(obj: LinstorSatelliteConfigurationSpecStoragePoolsZfsThinPool | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3683,7 +3903,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsZfsThinPool(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Kind of the resource containing the CA Certificate, either a ConfigMap or Secret.
@@ -3735,7 +3955,7 @@ export interface LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsM
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsMatchExpressions(obj: LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3746,7 +3966,7 @@ export function toJson_LinstorSatelliteConfigurationSpecNodeAffinityNodeSelector
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -3786,7 +4006,7 @@ export interface LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsM
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsMatchFields(obj: LinstorSatelliteConfigurationSpecNodeAffinityNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3797,7 +4017,7 @@ export function toJson_LinstorSatelliteConfigurationSpecNodeAffinityNodeSelector
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExpandFrom can reference multiple resource fields at once.
@@ -3846,7 +4066,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsPropertiesExpandFr
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsPropertiesExpandFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsPropertiesExpandFrom(obj: LinstorSatelliteConfigurationSpecStoragePoolsPropertiesExpandFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3858,7 +4078,7 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsPropertiesEx
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValueFrom sets the value from an existing resource.
@@ -3878,7 +4098,7 @@ export interface LinstorSatelliteConfigurationSpecStoragePoolsPropertiesValueFro
 /**
  * Converts an object of type 'LinstorSatelliteConfigurationSpecStoragePoolsPropertiesValueFrom' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsPropertiesValueFrom(obj: LinstorSatelliteConfigurationSpecStoragePoolsPropertiesValueFrom | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3887,5 +4107,5 @@ export function toJson_LinstorSatelliteConfigurationSpecStoragePoolsPropertiesVa
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 

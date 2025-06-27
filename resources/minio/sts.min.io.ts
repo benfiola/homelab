@@ -76,7 +76,7 @@ export interface PolicyBindingProps {
 /**
  * Converts an object of type 'PolicyBindingProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PolicyBindingProps(obj: PolicyBindingProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -86,7 +86,7 @@ export function toJson_PolicyBindingProps(obj: PolicyBindingProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema PolicyBindingSpec
@@ -107,7 +107,7 @@ export interface PolicyBindingSpec {
 /**
  * Converts an object of type 'PolicyBindingSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PolicyBindingSpec(obj: PolicyBindingSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -117,7 +117,7 @@ export function toJson_PolicyBindingSpec(obj: PolicyBindingSpec | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema PolicyBindingSpecApplication
@@ -138,7 +138,7 @@ export interface PolicyBindingSpecApplication {
 /**
  * Converts an object of type 'PolicyBindingSpecApplication' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PolicyBindingSpecApplication(obj: PolicyBindingSpecApplication | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -148,5 +148,5 @@ export function toJson_PolicyBindingSpecApplication(obj: PolicyBindingSpecApplic
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 

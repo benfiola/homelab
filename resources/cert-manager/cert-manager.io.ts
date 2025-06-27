@@ -4,8 +4,10 @@ import { Construct } from 'constructs';
 
 
 /**
- * A Certificate resource should be created to ensure an up to date and signed X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`. 
- The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
+ * A Certificate resource should be created to ensure an up to date and signed
+X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`.
+
+The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
  *
  * @schema Certificate
  */
@@ -59,7 +61,9 @@ export class Certificate extends ApiObject {
 }
 
 /**
- * A Certificate resource should be created to ensure an up to date and signed X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`.
+ * A Certificate resource should be created to ensure an up to date and signed
+ * X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`.
+ *
  * The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
  *
  * @schema Certificate
@@ -71,7 +75,8 @@ export interface CertificateProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
-   * Specification of the desired state of the Certificate resource. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+   * Specification of the desired state of the Certificate resource.
+   * https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
    *
    * @schema Certificate#spec
    */
@@ -82,7 +87,7 @@ export interface CertificateProps {
 /**
  * Converts an object of type 'CertificateProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateProps(obj: CertificateProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -92,25 +97,31 @@ export function toJson_CertificateProps(obj: CertificateProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Specification of the desired state of the Certificate resource. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+ * Specification of the desired state of the Certificate resource.
+ * https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
  *
  * @schema CertificateSpec
  */
 export interface CertificateSpec {
   /**
-   * Defines extra output formats of the private key and signed certificate chain to be written to this Certificate's target Secret.
-   * This is an Alpha Feature and is only enabled with the `--feature-gates=AdditionalCertificateOutputFormats=true` option set on both the controller and webhook components.
+   * Defines extra output formats of the private key and signed certificate chain
+   * to be written to this Certificate's target Secret.
    *
    * @schema CertificateSpec#additionalOutputFormats
    */
   readonly additionalOutputFormats?: CertificateSpecAdditionalOutputFormats[];
 
   /**
-   * Requested common name X509 certificate subject attribute. More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6 NOTE: TLS clients will ignore this value when any subject alternative name is set (see https://tools.ietf.org/html/rfc6125#section-6.4.4).
-   * Should have a length of 64 characters or fewer to avoid generating invalid CSRs. Cannot be set if the `literalSubject` field is set.
+   * Requested common name X509 certificate subject attribute.
+   * More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6
+   * NOTE: TLS clients will ignore this value when any subject alternative name is
+   * set (see https://tools.ietf.org/html/rfc6125#section-6.4.4).
+   *
+   * Should have a length of 64 characters or fewer to avoid generating invalid CSRs.
+   * Cannot be set if the `literalSubject` field is set.
    *
    * @schema CertificateSpec#commonName
    */
@@ -124,8 +135,13 @@ export interface CertificateSpec {
   readonly dnsNames?: string[];
 
   /**
-   * Requested 'duration' (i.e. lifetime) of the Certificate. Note that the issuer may choose to ignore the requested duration, just like any other requested attribute.
-   * If unset, this defaults to 90 days. Minimum accepted duration is 1 hour. Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+   * Requested 'duration' (i.e. lifetime) of the Certificate. Note that the
+   * issuer may choose to ignore the requested duration, just like any other
+   * requested attribute.
+   *
+   * If unset, this defaults to 90 days.
+   * Minimum accepted duration is 1 hour.
+   * Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
    *
    * @schema CertificateSpec#duration
    */
@@ -140,7 +156,9 @@ export interface CertificateSpec {
 
   /**
    * Whether the KeyUsage and ExtKeyUsage extensions should be set in the encoded CSR.
-   * This option defaults to true, and should only be disabled if the target issuer does not support CSRs with these X509 KeyUsage/ ExtKeyUsage extensions.
+   *
+   * This option defaults to true, and should only be disabled if the target
+   * issuer does not support CSRs with these X509 KeyUsage/ ExtKeyUsage extensions.
    *
    * @schema CertificateSpec#encodeUsagesInRequest
    */
@@ -154,15 +172,24 @@ export interface CertificateSpec {
   readonly ipAddresses?: string[];
 
   /**
-   * Requested basic constraints isCA value. The isCA value is used to set the `isCA` field on the created CertificateRequest resources. Note that the issuer may choose to ignore the requested isCA value, just like any other requested attribute.
-   * If true, this will automatically add the `cert sign` usage to the list of requested `usages`.
+   * Requested basic constraints isCA value.
+   * The isCA value is used to set the `isCA` field on the created CertificateRequest
+   * resources. Note that the issuer may choose to ignore the requested isCA value, just
+   * like any other requested attribute.
+   *
+   * If true, this will automatically add the `cert sign` usage to the list
+   * of requested `usages`.
    *
    * @schema CertificateSpec#isCA
    */
   readonly isCa?: boolean;
 
   /**
-   * Reference to the issuer responsible for issuing the certificate. If the issuer is namespace-scoped, it must be in the same namespace as the Certificate. If the issuer is cluster-scoped, it can be used from any namespace.
+   * Reference to the issuer responsible for issuing the certificate.
+   * If the issuer is namespace-scoped, it must be in the same namespace
+   * as the Certificate. If the issuer is cluster-scoped, it can be used
+   * from any namespace.
+   *
    * The `name` field of the reference must always be specified.
    *
    * @schema CertificateSpec#issuerRef
@@ -177,69 +204,142 @@ export interface CertificateSpec {
   readonly keystores?: CertificateSpecKeystores;
 
   /**
-   * Requested X.509 certificate subject, represented using the LDAP "String Representation of a Distinguished Name" [1]. Important: the LDAP string format also specifies the order of the attributes in the subject, this is important when issuing certs for LDAP authentication. Example: `CN=foo,DC=corp,DC=example,DC=com` More info [1]: https://datatracker.ietf.org/doc/html/rfc4514 More info: https://github.com/cert-manager/cert-manager/issues/3203 More info: https://github.com/cert-manager/cert-manager/issues/4424
-   * Cannot be set if the `subject` or `commonName` field is set. This is an Alpha Feature and is only enabled with the `--feature-gates=LiteralCertificateSubject=true` option set on both the controller and webhook components.
+   * Requested X.509 certificate subject, represented using the LDAP "String
+   * Representation of a Distinguished Name" [1].
+   * Important: the LDAP string format also specifies the order of the attributes
+   * in the subject, this is important when issuing certs for LDAP authentication.
+   * Example: `CN=foo,DC=corp,DC=example,DC=com`
+   * More info [1]: https://datatracker.ietf.org/doc/html/rfc4514
+   * More info: https://github.com/cert-manager/cert-manager/issues/3203
+   * More info: https://github.com/cert-manager/cert-manager/issues/4424
+   *
+   * Cannot be set if the `subject` or `commonName` field is set.
    *
    * @schema CertificateSpec#literalSubject
    */
   readonly literalSubject?: string;
 
   /**
-   * x.509 certificate NameConstraint extension which MUST NOT be used in a non-CA certificate. More Info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
-   * This is an Alpha Feature and is only enabled with the `--feature-gates=NameConstraints=true` option set on both the controller and webhook components.
+   * x.509 certificate NameConstraint extension which MUST NOT be used in a non-CA certificate.
+   * More Info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
+   *
+   * This is an Alpha Feature and is only enabled with the
+   * `--feature-gates=NameConstraints=true` option set on both
+   * the controller and webhook components.
    *
    * @schema CertificateSpec#nameConstraints
    */
   readonly nameConstraints?: CertificateSpecNameConstraints;
 
   /**
-   * `otherNames` is an escape hatch for SAN that allows any type. We currently restrict the support to string like otherNames, cf RFC 5280 p 37 Any UTF8 String valued otherName can be passed with by setting the keys oid: x.x.x.x and UTF8Value: somevalue for `otherName`. Most commonly this would be UPN set with oid: 1.3.6.1.4.1.311.20.2.3 You should ensure that any OID passed is valid for the UTF8String type as we do not explicitly validate this.
+   * `otherNames` is an escape hatch for SAN that allows any type. We currently restrict the support to string like otherNames, cf RFC 5280 p 37
+   * Any UTF8 String valued otherName can be passed with by setting the keys oid: x.x.x.x and UTF8Value: somevalue for `otherName`.
+   * Most commonly this would be UPN set with oid: 1.3.6.1.4.1.311.20.2.3
+   * You should ensure that any OID passed is valid for the UTF8String type as we do not explicitly validate this.
    *
    * @schema CertificateSpec#otherNames
    */
   readonly otherNames?: CertificateSpecOtherNames[];
 
   /**
-   * Private key options. These include the key algorithm and size, the used encoding and the rotation policy.
+   * Private key options. These include the key algorithm and size, the used
+   * encoding and the rotation policy.
    *
    * @schema CertificateSpec#privateKey
    */
   readonly privateKey?: CertificateSpecPrivateKey;
 
   /**
-   * How long before the currently issued certificate's expiry cert-manager should renew the certificate. For example, if a certificate is valid for 60 minutes, and `renewBefore=10m`, cert-manager will begin to attempt to renew the certificate 50 minutes after it was issued (i.e. when there are 10 minutes remaining until the certificate is no longer valid).
-   * NOTE: The actual lifetime of the issued certificate is used to determine the renewal time. If an issuer returns a certificate with a different lifetime than the one requested, cert-manager will use the lifetime of the issued certificate.
-   * If unset, this defaults to 1/3 of the issued certificate's lifetime. Minimum accepted value is 5 minutes. Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+   * How long before the currently issued certificate's expiry cert-manager should
+   * renew the certificate. For example, if a certificate is valid for 60 minutes,
+   * and `renewBefore=10m`, cert-manager will begin to attempt to renew the certificate
+   * 50 minutes after it was issued (i.e. when there are 10 minutes remaining until
+   * the certificate is no longer valid).
+   *
+   * NOTE: The actual lifetime of the issued certificate is used to determine the
+   * renewal time. If an issuer returns a certificate with a different lifetime than
+   * the one requested, cert-manager will use the lifetime of the issued certificate.
+   *
+   * If unset, this defaults to 1/3 of the issued certificate's lifetime.
+   * Minimum accepted value is 5 minutes.
+   * Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+   * Cannot be set if the `renewBeforePercentage` field is set.
    *
    * @schema CertificateSpec#renewBefore
    */
   readonly renewBefore?: string;
 
   /**
-   * The maximum number of CertificateRequest revisions that are maintained in the Certificate's history. Each revision represents a single `CertificateRequest` created by this Certificate, either when it was created, renewed, or Spec was changed. Revisions will be removed by oldest first if the number of revisions exceeds this number.
-   * If set, revisionHistoryLimit must be a value of `1` or greater. If unset (`nil`), revisions will not be garbage collected. Default value is `nil`.
+   * `renewBeforePercentage` is like `renewBefore`, except it is a relative percentage
+   * rather than an absolute duration. For example, if a certificate is valid for 60
+   * minutes, and  `renewBeforePercentage=25`, cert-manager will begin to attempt to
+   * renew the certificate 45 minutes after it was issued (i.e. when there are 15
+   * minutes (25%) remaining until the certificate is no longer valid).
+   *
+   * NOTE: The actual lifetime of the issued certificate is used to determine the
+   * renewal time. If an issuer returns a certificate with a different lifetime than
+   * the one requested, cert-manager will use the lifetime of the issued certificate.
+   *
+   * Value must be an integer in the range (0,100). The minimum effective
+   * `renewBefore` derived from the `renewBeforePercentage` and `duration` fields is 5
+   * minutes.
+   * Cannot be set if the `renewBefore` field is set.
+   *
+   * @schema CertificateSpec#renewBeforePercentage
+   */
+  readonly renewBeforePercentage?: number;
+
+  /**
+   * The maximum number of CertificateRequest revisions that are maintained in
+   * the Certificate's history. Each revision represents a single `CertificateRequest`
+   * created by this Certificate, either when it was created, renewed, or Spec
+   * was changed. Revisions will be removed by oldest first if the number of
+   * revisions exceeds this number.
+   *
+   * If set, revisionHistoryLimit must be a value of `1` or greater.
+   * Default value is `1`.
    *
    * @schema CertificateSpec#revisionHistoryLimit
    */
   readonly revisionHistoryLimit?: number;
 
   /**
-   * Name of the Secret resource that will be automatically created and managed by this Certificate resource. It will be populated with a private key and certificate, signed by the denoted issuer. The Secret resource lives in the same namespace as the Certificate resource.
+   * Name of the Secret resource that will be automatically created and
+   * managed by this Certificate resource. It will be populated with a
+   * private key and certificate, signed by the denoted issuer. The Secret
+   * resource lives in the same namespace as the Certificate resource.
    *
    * @schema CertificateSpec#secretName
    */
   readonly secretName: string;
 
   /**
-   * Defines annotations and labels to be copied to the Certificate's Secret. Labels and annotations on the Secret will be changed as they appear on the SecretTemplate when added or removed. SecretTemplate annotations are added in conjunction with, and cannot overwrite, the base set of annotations cert-manager sets on the Certificate's Secret.
+   * Defines annotations and labels to be copied to the Certificate's Secret.
+   * Labels and annotations on the Secret will be changed as they appear on the
+   * SecretTemplate when added or removed. SecretTemplate annotations are added
+   * in conjunction with, and cannot overwrite, the base set of annotations
+   * cert-manager sets on the Certificate's Secret.
    *
    * @schema CertificateSpec#secretTemplate
    */
   readonly secretTemplate?: CertificateSpecSecretTemplate;
 
   /**
-   * Requested set of X509 certificate subject attributes. More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6
-   * The common name attribute is specified separately in the `commonName` field. Cannot be set if the `literalSubject` field is set.
+   * Signature algorithm to use.
+   * Allowed values for RSA keys: SHA256WithRSA, SHA384WithRSA, SHA512WithRSA.
+   * Allowed values for ECDSA keys: ECDSAWithSHA256, ECDSAWithSHA384, ECDSAWithSHA512.
+   * Allowed values for Ed25519 keys: PureEd25519.
+   *
+   * @schema CertificateSpec#signatureAlgorithm
+   */
+  readonly signatureAlgorithm?: CertificateSpecSignatureAlgorithm;
+
+  /**
+   * Requested set of X509 certificate subject attributes.
+   * More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6
+   *
+   * The common name attribute is specified separately in the `commonName` field.
+   * Cannot be set if the `literalSubject` field is set.
    *
    * @schema CertificateSpec#subject
    */
@@ -253,7 +353,11 @@ export interface CertificateSpec {
   readonly uris?: string[];
 
   /**
-   * Requested key usages and extended key usages. These usages are used to set the `usages` field on the created CertificateRequest resources. If `encodeUsagesInRequest` is unset or set to `true`, the usages will additionally be encoded in the `request` field which contains the CSR blob.
+   * Requested key usages and extended key usages.
+   * These usages are used to set the `usages` field on the created CertificateRequest
+   * resources. If `encodeUsagesInRequest` is unset or set to `true`, the usages
+   * will additionally be encoded in the `request` field which contains the CSR blob.
+   *
    * If unset, defaults to `digital signature` and `key encipherment`.
    *
    * @schema CertificateSpec#usages
@@ -265,7 +369,7 @@ export interface CertificateSpec {
 /**
  * Converts an object of type 'CertificateSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpec(obj: CertificateSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -284,9 +388,11 @@ export function toJson_CertificateSpec(obj: CertificateSpec | undefined): Record
     'otherNames': obj.otherNames?.map(y => toJson_CertificateSpecOtherNames(y)),
     'privateKey': toJson_CertificateSpecPrivateKey(obj.privateKey),
     'renewBefore': obj.renewBefore,
+    'renewBeforePercentage': obj.renewBeforePercentage,
     'revisionHistoryLimit': obj.revisionHistoryLimit,
     'secretName': obj.secretName,
     'secretTemplate': toJson_CertificateSpecSecretTemplate(obj.secretTemplate),
+    'signatureAlgorithm': obj.signatureAlgorithm,
     'subject': toJson_CertificateSpecSubject(obj.subject),
     'uris': obj.uris?.map(y => y),
     'usages': obj.usages?.map(y => y),
@@ -294,16 +400,19 @@ export function toJson_CertificateSpec(obj: CertificateSpec | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CertificateAdditionalOutputFormat defines an additional output format of a Certificate resource. These contain supplementary data formats of the signed certificate chain and paired private key.
+ * CertificateAdditionalOutputFormat defines an additional output format of a
+ * Certificate resource. These contain supplementary data formats of the signed
+ * certificate chain and paired private key.
  *
  * @schema CertificateSpecAdditionalOutputFormats
  */
 export interface CertificateSpecAdditionalOutputFormats {
   /**
-   * Type is the name of the format type that should be written to the Certificate's target Secret.
+   * Type is the name of the format type that should be written to the
+   * Certificate's target Secret.
    *
    * @schema CertificateSpecAdditionalOutputFormats#type
    */
@@ -314,7 +423,7 @@ export interface CertificateSpecAdditionalOutputFormats {
 /**
  * Converts an object of type 'CertificateSpecAdditionalOutputFormats' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecAdditionalOutputFormats(obj: CertificateSpecAdditionalOutputFormats | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -323,10 +432,14 @@ export function toJson_CertificateSpecAdditionalOutputFormats(obj: CertificateSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Reference to the issuer responsible for issuing the certificate. If the issuer is namespace-scoped, it must be in the same namespace as the Certificate. If the issuer is cluster-scoped, it can be used from any namespace.
+ * Reference to the issuer responsible for issuing the certificate.
+ * If the issuer is namespace-scoped, it must be in the same namespace
+ * as the Certificate. If the issuer is cluster-scoped, it can be used
+ * from any namespace.
+ *
  * The `name` field of the reference must always be specified.
  *
  * @schema CertificateSpecIssuerRef
@@ -358,7 +471,7 @@ export interface CertificateSpecIssuerRef {
 /**
  * Converts an object of type 'CertificateSpecIssuerRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecIssuerRef(obj: CertificateSpecIssuerRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -369,7 +482,7 @@ export function toJson_CertificateSpecIssuerRef(obj: CertificateSpecIssuerRef | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Additional keystore output formats to be stored in the Certificate's Secret.
@@ -378,14 +491,16 @@ export function toJson_CertificateSpecIssuerRef(obj: CertificateSpecIssuerRef | 
  */
 export interface CertificateSpecKeystores {
   /**
-   * JKS configures options for storing a JKS keystore in the `spec.secretName` Secret resource.
+   * JKS configures options for storing a JKS keystore in the
+   * `spec.secretName` Secret resource.
    *
    * @schema CertificateSpecKeystores#jks
    */
   readonly jks?: CertificateSpecKeystoresJks;
 
   /**
-   * PKCS12 configures options for storing a PKCS12 keystore in the `spec.secretName` Secret resource.
+   * PKCS12 configures options for storing a PKCS12 keystore in the
+   * `spec.secretName` Secret resource.
    *
    * @schema CertificateSpecKeystores#pkcs12
    */
@@ -396,7 +511,7 @@ export interface CertificateSpecKeystores {
 /**
  * Converts an object of type 'CertificateSpecKeystores' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecKeystores(obj: CertificateSpecKeystores | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -406,11 +521,15 @@ export function toJson_CertificateSpecKeystores(obj: CertificateSpecKeystores | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * x.509 certificate NameConstraint extension which MUST NOT be used in a non-CA certificate. More Info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
- * This is an Alpha Feature and is only enabled with the `--feature-gates=NameConstraints=true` option set on both the controller and webhook components.
+ * x.509 certificate NameConstraint extension which MUST NOT be used in a non-CA certificate.
+ * More Info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
+ *
+ * This is an Alpha Feature and is only enabled with the
+ * `--feature-gates=NameConstraints=true` option set on both
+ * the controller and webhook components.
  *
  * @schema CertificateSpecNameConstraints
  */
@@ -423,7 +542,9 @@ export interface CertificateSpecNameConstraints {
   readonly critical?: boolean;
 
   /**
-   * Excluded contains the constraints which must be disallowed. Any name matching a restriction in the excluded field is invalid regardless of information appearing in the permitted
+   * Excluded contains the constraints which must be disallowed. Any name matching a
+   * restriction in the excluded field is invalid regardless
+   * of information appearing in the permitted
    *
    * @schema CertificateSpecNameConstraints#excluded
    */
@@ -441,7 +562,7 @@ export interface CertificateSpecNameConstraints {
 /**
  * Converts an object of type 'CertificateSpecNameConstraints' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecNameConstraints(obj: CertificateSpecNameConstraints | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -452,21 +573,24 @@ export function toJson_CertificateSpecNameConstraints(obj: CertificateSpecNameCo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema CertificateSpecOtherNames
  */
 export interface CertificateSpecOtherNames {
   /**
-   * OID is the object identifier for the otherName SAN. The object identifier must be expressed as a dotted string, for example, "1.2.840.113556.1.4.221".
+   * OID is the object identifier for the otherName SAN.
+   * The object identifier must be expressed as a dotted string, for
+   * example, "1.2.840.113556.1.4.221".
    *
    * @schema CertificateSpecOtherNames#oid
    */
   readonly oid?: string;
 
   /**
-   * utf8Value is the string value of the otherName SAN. The utf8Value accepts any valid UTF8 string to set as value for the otherName SAN.
+   * utf8Value is the string value of the otherName SAN.
+   * The utf8Value accepts any valid UTF8 string to set as value for the otherName SAN.
    *
    * @schema CertificateSpecOtherNames#utf8Value
    */
@@ -477,7 +601,7 @@ export interface CertificateSpecOtherNames {
 /**
  * Converts an object of type 'CertificateSpecOtherNames' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecOtherNames(obj: CertificateSpecOtherNames | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -487,25 +611,36 @@ export function toJson_CertificateSpecOtherNames(obj: CertificateSpecOtherNames 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Private key options. These include the key algorithm and size, the used encoding and the rotation policy.
+ * Private key options. These include the key algorithm and size, the used
+ * encoding and the rotation policy.
  *
  * @schema CertificateSpecPrivateKey
  */
 export interface CertificateSpecPrivateKey {
   /**
-   * Algorithm is the private key algorithm of the corresponding private key for this certificate.
-   * If provided, allowed values are either `RSA`, `ECDSA` or `Ed25519`. If `algorithm` is specified and `size` is not provided, key size of 2048 will be used for `RSA` key algorithm and key size of 256 will be used for `ECDSA` key algorithm. key size is ignored when using the `Ed25519` key algorithm.
+   * Algorithm is the private key algorithm of the corresponding private key
+   * for this certificate.
+   *
+   * If provided, allowed values are either `RSA`, `ECDSA` or `Ed25519`.
+   * If `algorithm` is specified and `size` is not provided,
+   * key size of 2048 will be used for `RSA` key algorithm and
+   * key size of 256 will be used for `ECDSA` key algorithm.
+   * key size is ignored when using the `Ed25519` key algorithm.
    *
    * @schema CertificateSpecPrivateKey#algorithm
    */
   readonly algorithm?: CertificateSpecPrivateKeyAlgorithm;
 
   /**
-   * The private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in.
-   * If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1 and PKCS#8, respectively. Defaults to `PKCS1` if not specified.
+   * The private key cryptography standards (PKCS) encoding for this
+   * certificate's private key to be encoded in.
+   *
+   * If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1
+   * and PKCS#8, respectively.
+   * Defaults to `PKCS1` if not specified.
    *
    * @default PKCS1` if not specified.
    * @schema CertificateSpecPrivateKey#encoding
@@ -513,17 +648,35 @@ export interface CertificateSpecPrivateKey {
   readonly encoding?: CertificateSpecPrivateKeyEncoding;
 
   /**
-   * RotationPolicy controls how private keys should be regenerated when a re-issuance is being processed.
-   * If set to `Never`, a private key will only be generated if one does not already exist in the target `spec.secretName`. If one does exists but it does not have the correct algorithm or size, a warning will be raised to await user intervention. If set to `Always`, a private key matching the specified requirements will be generated whenever a re-issuance occurs. Default is `Never` for backward compatibility.
+   * RotationPolicy controls how private keys should be regenerated when a
+   * re-issuance is being processed.
    *
-   * @default Never` for backward compatibility.
+   * If set to `Never`, a private key will only be generated if one does not
+   * already exist in the target `spec.secretName`. If one does exist but it
+   * does not have the correct algorithm or size, a warning will be raised
+   * to await user intervention.
+   * If set to `Always`, a private key matching the specified requirements
+   * will be generated whenever a re-issuance occurs.
+   * Default is `Always`.
+   * The default was changed from `Never` to `Always` in cert-manager >=v1.18.0.
+   * The new default can be disabled by setting the
+   * `--feature-gates=DefaultPrivateKeyRotationPolicyAlways=false` option on
+   * the controller component.
+   *
+   * @default Always`.
    * @schema CertificateSpecPrivateKey#rotationPolicy
    */
   readonly rotationPolicy?: CertificateSpecPrivateKeyRotationPolicy;
 
   /**
    * Size is the key bit size of the corresponding private key for this certificate.
-   * If `algorithm` is set to `RSA`, valid values are `2048`, `4096` or `8192`, and will default to `2048` if not specified. If `algorithm` is set to `ECDSA`, valid values are `256`, `384` or `521`, and will default to `256` if not specified. If `algorithm` is set to `Ed25519`, Size is ignored. No other values are allowed.
+   *
+   * If `algorithm` is set to `RSA`, valid values are `2048`, `4096` or `8192`,
+   * and will default to `2048` if not specified.
+   * If `algorithm` is set to `ECDSA`, valid values are `256`, `384` or `521`,
+   * and will default to `256` if not specified.
+   * If `algorithm` is set to `Ed25519`, Size is ignored.
+   * No other values are allowed.
    *
    * @schema CertificateSpecPrivateKey#size
    */
@@ -534,7 +687,7 @@ export interface CertificateSpecPrivateKey {
 /**
  * Converts an object of type 'CertificateSpecPrivateKey' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecPrivateKey(obj: CertificateSpecPrivateKey | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -546,10 +699,14 @@ export function toJson_CertificateSpecPrivateKey(obj: CertificateSpecPrivateKey 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Defines annotations and labels to be copied to the Certificate's Secret. Labels and annotations on the Secret will be changed as they appear on the SecretTemplate when added or removed. SecretTemplate annotations are added in conjunction with, and cannot overwrite, the base set of annotations cert-manager sets on the Certificate's Secret.
+ * Defines annotations and labels to be copied to the Certificate's Secret.
+ * Labels and annotations on the Secret will be changed as they appear on the
+ * SecretTemplate when added or removed. SecretTemplate annotations are added
+ * in conjunction with, and cannot overwrite, the base set of annotations
+ * cert-manager sets on the Certificate's Secret.
  *
  * @schema CertificateSpecSecretTemplate
  */
@@ -573,7 +730,7 @@ export interface CertificateSpecSecretTemplate {
 /**
  * Converts an object of type 'CertificateSpecSecretTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecSecretTemplate(obj: CertificateSpecSecretTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -583,11 +740,39 @@ export function toJson_CertificateSpecSecretTemplate(obj: CertificateSpecSecretT
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Requested set of X509 certificate subject attributes. More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6
- * The common name attribute is specified separately in the `commonName` field. Cannot be set if the `literalSubject` field is set.
+ * Signature algorithm to use.
+ * Allowed values for RSA keys: SHA256WithRSA, SHA384WithRSA, SHA512WithRSA.
+ * Allowed values for ECDSA keys: ECDSAWithSHA256, ECDSAWithSHA384, ECDSAWithSHA512.
+ * Allowed values for Ed25519 keys: PureEd25519.
+ *
+ * @schema CertificateSpecSignatureAlgorithm
+ */
+export enum CertificateSpecSignatureAlgorithm {
+  /** SHA256WithRSA */
+  SHA256_WITH_RSA = "SHA256WithRSA",
+  /** SHA384WithRSA */
+  SHA384_WITH_RSA = "SHA384WithRSA",
+  /** SHA512WithRSA */
+  SHA512_WITH_RSA = "SHA512WithRSA",
+  /** ECDSAWithSHA256 */
+  ECDSA_WITH_SHA256 = "ECDSAWithSHA256",
+  /** ECDSAWithSHA384 */
+  ECDSA_WITH_SHA384 = "ECDSAWithSHA384",
+  /** ECDSAWithSHA512 */
+  ECDSA_WITH_SHA512 = "ECDSAWithSHA512",
+  /** PureEd25519 */
+  PURE_ED25519 = "PureEd25519",
+}
+
+/**
+ * Requested set of X509 certificate subject attributes.
+ * More info: https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.6
+ *
+ * The common name attribute is specified separately in the `commonName` field.
+ * Cannot be set if the `literalSubject` field is set.
  *
  * @schema CertificateSpecSubject
  */
@@ -653,7 +838,7 @@ export interface CertificateSpecSubject {
 /**
  * Converts an object of type 'CertificateSpecSubject' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecSubject(obj: CertificateSpecSubject | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -669,11 +854,38 @@ export function toJson_CertificateSpecSubject(obj: CertificateSpecSubject | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * KeyUsage specifies valid usage contexts for keys. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3 https://tools.ietf.org/html/rfc5280#section-4.2.1.12
- * Valid KeyUsage values are as follows: "signing", "digital signature", "content commitment", "key encipherment", "key agreement", "data encipherment", "cert sign", "crl sign", "encipher only", "decipher only", "any", "server auth", "client auth", "code signing", "email protection", "s/mime", "ipsec end system", "ipsec tunnel", "ipsec user", "timestamping", "ocsp signing", "microsoft sgc", "netscape sgc"
+ * KeyUsage specifies valid usage contexts for keys.
+ * See:
+ * https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+ * https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+ *
+ * Valid KeyUsage values are as follows:
+ * "signing",
+ * "digital signature",
+ * "content commitment",
+ * "key encipherment",
+ * "key agreement",
+ * "data encipherment",
+ * "cert sign",
+ * "crl sign",
+ * "encipher only",
+ * "decipher only",
+ * "any",
+ * "server auth",
+ * "client auth",
+ * "code signing",
+ * "email protection",
+ * "s/mime",
+ * "ipsec end system",
+ * "ipsec tunnel",
+ * "ipsec user",
+ * "timestamping",
+ * "ocsp signing",
+ * "microsoft sgc",
+ * "netscape sgc"
  *
  * @schema CertificateSpecUsages
  */
@@ -727,7 +939,8 @@ export enum CertificateSpecUsages {
 }
 
 /**
- * Type is the name of the format type that should be written to the Certificate's target Secret.
+ * Type is the name of the format type that should be written to the
+ * Certificate's target Secret.
  *
  * @schema CertificateSpecAdditionalOutputFormatsType
  */
@@ -739,65 +952,124 @@ export enum CertificateSpecAdditionalOutputFormatsType {
 }
 
 /**
- * JKS configures options for storing a JKS keystore in the `spec.secretName` Secret resource.
+ * JKS configures options for storing a JKS keystore in the
+ * `spec.secretName` Secret resource.
  *
  * @schema CertificateSpecKeystoresJks
  */
 export interface CertificateSpecKeystoresJks {
   /**
-   * Create enables JKS keystore creation for the Certificate. If true, a file named `keystore.jks` will be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef`. The keystore file will be updated immediately. If the issuer provided a CA certificate, a file named `truststore.jks` will also be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef` containing the issuing Certificate Authority
+   * Alias specifies the alias of the key in the keystore, required by the JKS format.
+   * If not provided, the default alias `certificate` will be used.
+   *
+   * @schema CertificateSpecKeystoresJks#alias
+   */
+  readonly alias?: string;
+
+  /**
+   * Create enables JKS keystore creation for the Certificate.
+   * If true, a file named `keystore.jks` will be created in the target
+   * Secret resource, encrypted using the password stored in
+   * `passwordSecretRef` or `password`.
+   * The keystore file will be updated immediately.
+   * If the issuer provided a CA certificate, a file named `truststore.jks`
+   * will also be created in the target Secret resource, encrypted using the
+   * password stored in `passwordSecretRef`
+   * containing the issuing Certificate Authority
    *
    * @schema CertificateSpecKeystoresJks#create
    */
   readonly create: boolean;
 
   /**
-   * PasswordSecretRef is a reference to a key in a Secret resource containing the password used to encrypt the JKS keystore.
+   * Password provides a literal password used to encrypt the JKS keystore.
+   * Mutually exclusive with passwordSecretRef.
+   * One of password or passwordSecretRef must provide a password with a non-zero length.
+   *
+   * @schema CertificateSpecKeystoresJks#password
+   */
+  readonly password?: string;
+
+  /**
+   * PasswordSecretRef is a reference to a non-empty key in a Secret resource
+   * containing the password used to encrypt the JKS keystore.
+   * Mutually exclusive with password.
+   * One of password or passwordSecretRef must provide a password with a non-zero length.
    *
    * @schema CertificateSpecKeystoresJks#passwordSecretRef
    */
-  readonly passwordSecretRef: CertificateSpecKeystoresJksPasswordSecretRef;
+  readonly passwordSecretRef?: CertificateSpecKeystoresJksPasswordSecretRef;
 
 }
 
 /**
  * Converts an object of type 'CertificateSpecKeystoresJks' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecKeystoresJks(obj: CertificateSpecKeystoresJks | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alias': obj.alias,
     'create': obj.create,
+    'password': obj.password,
     'passwordSecretRef': toJson_CertificateSpecKeystoresJksPasswordSecretRef(obj.passwordSecretRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PKCS12 configures options for storing a PKCS12 keystore in the `spec.secretName` Secret resource.
+ * PKCS12 configures options for storing a PKCS12 keystore in the
+ * `spec.secretName` Secret resource.
  *
  * @schema CertificateSpecKeystoresPkcs12
  */
 export interface CertificateSpecKeystoresPkcs12 {
   /**
-   * Create enables PKCS12 keystore creation for the Certificate. If true, a file named `keystore.p12` will be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef`. The keystore file will be updated immediately. If the issuer provided a CA certificate, a file named `truststore.p12` will also be created in the target Secret resource, encrypted using the password stored in `passwordSecretRef` containing the issuing Certificate Authority
+   * Create enables PKCS12 keystore creation for the Certificate.
+   * If true, a file named `keystore.p12` will be created in the target
+   * Secret resource, encrypted using the password stored in
+   * `passwordSecretRef` or in `password`.
+   * The keystore file will be updated immediately.
+   * If the issuer provided a CA certificate, a file named `truststore.p12` will
+   * also be created in the target Secret resource, encrypted using the
+   * password stored in `passwordSecretRef` containing the issuing Certificate
+   * Authority
    *
    * @schema CertificateSpecKeystoresPkcs12#create
    */
   readonly create: boolean;
 
   /**
-   * PasswordSecretRef is a reference to a key in a Secret resource containing the password used to encrypt the PKCS12 keystore.
+   * Password provides a literal password used to encrypt the PKCS#12 keystore.
+   * Mutually exclusive with passwordSecretRef.
+   * One of password or passwordSecretRef must provide a password with a non-zero length.
+   *
+   * @schema CertificateSpecKeystoresPkcs12#password
+   */
+  readonly password?: string;
+
+  /**
+   * PasswordSecretRef is a reference to a non-empty key in a Secret resource
+   * containing the password used to encrypt the PKCS#12 keystore.
+   * Mutually exclusive with password.
+   * One of password or passwordSecretRef must provide a password with a non-zero length.
    *
    * @schema CertificateSpecKeystoresPkcs12#passwordSecretRef
    */
-  readonly passwordSecretRef: CertificateSpecKeystoresPkcs12PasswordSecretRef;
+  readonly passwordSecretRef?: CertificateSpecKeystoresPkcs12PasswordSecretRef;
 
   /**
-   * Profile specifies the key and certificate encryption algorithms and the HMAC algorithm used to create the PKCS12 keystore. Default value is `LegacyRC2` for backward compatibility.
-   * If provided, allowed values are: `LegacyRC2`: Deprecated. Not supported by default in OpenSSL 3 or Java 20. `LegacyDES`: Less secure algorithm. Use this option for maximal compatibility. `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms (eg. because of company policy). Please note that the security of the algorithm is not that important in reality, because the unencrypted certificate and private key are also stored in the Secret.
+   * Profile specifies the key and certificate encryption algorithms and the HMAC algorithm
+   * used to create the PKCS12 keystore. Default value is `LegacyRC2` for backward compatibility.
+   *
+   * If provided, allowed values are:
+   * `LegacyRC2`: Deprecated. Not supported by default in OpenSSL 3 or Java 20.
+   * `LegacyDES`: Less secure algorithm. Use this option for maximal compatibility.
+   * `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
+   * (e.g., because of company policy). Please note that the security of the algorithm is not that important
+   * in reality, because the unencrypted certificate and private key are also stored in the Secret.
    *
    * @schema CertificateSpecKeystoresPkcs12#profile
    */
@@ -808,21 +1080,24 @@ export interface CertificateSpecKeystoresPkcs12 {
 /**
  * Converts an object of type 'CertificateSpecKeystoresPkcs12' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecKeystoresPkcs12(obj: CertificateSpecKeystoresPkcs12 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'create': obj.create,
+    'password': obj.password,
     'passwordSecretRef': toJson_CertificateSpecKeystoresPkcs12PasswordSecretRef(obj.passwordSecretRef),
     'profile': obj.profile,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Excluded contains the constraints which must be disallowed. Any name matching a restriction in the excluded field is invalid regardless of information appearing in the permitted
+ * Excluded contains the constraints which must be disallowed. Any name matching a
+ * restriction in the excluded field is invalid regardless
+ * of information appearing in the permitted
  *
  * @schema CertificateSpecNameConstraintsExcluded
  */
@@ -842,7 +1117,8 @@ export interface CertificateSpecNameConstraintsExcluded {
   readonly emailAddresses?: string[];
 
   /**
-   * IPRanges is a list of IP Ranges that are permitted or excluded. This should be a valid CIDR notation.
+   * IPRanges is a list of IP Ranges that are permitted or excluded.
+   * This should be a valid CIDR notation.
    *
    * @schema CertificateSpecNameConstraintsExcluded#ipRanges
    */
@@ -860,7 +1136,7 @@ export interface CertificateSpecNameConstraintsExcluded {
 /**
  * Converts an object of type 'CertificateSpecNameConstraintsExcluded' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecNameConstraintsExcluded(obj: CertificateSpecNameConstraintsExcluded | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -872,7 +1148,7 @@ export function toJson_CertificateSpecNameConstraintsExcluded(obj: CertificateSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Permitted contains the constraints in which the names must be located.
@@ -895,7 +1171,8 @@ export interface CertificateSpecNameConstraintsPermitted {
   readonly emailAddresses?: string[];
 
   /**
-   * IPRanges is a list of IP Ranges that are permitted or excluded. This should be a valid CIDR notation.
+   * IPRanges is a list of IP Ranges that are permitted or excluded.
+   * This should be a valid CIDR notation.
    *
    * @schema CertificateSpecNameConstraintsPermitted#ipRanges
    */
@@ -913,7 +1190,7 @@ export interface CertificateSpecNameConstraintsPermitted {
 /**
  * Converts an object of type 'CertificateSpecNameConstraintsPermitted' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecNameConstraintsPermitted(obj: CertificateSpecNameConstraintsPermitted | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -925,11 +1202,17 @@ export function toJson_CertificateSpecNameConstraintsPermitted(obj: CertificateS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Algorithm is the private key algorithm of the corresponding private key for this certificate.
- * If provided, allowed values are either `RSA`, `ECDSA` or `Ed25519`. If `algorithm` is specified and `size` is not provided, key size of 2048 will be used for `RSA` key algorithm and key size of 256 will be used for `ECDSA` key algorithm. key size is ignored when using the `Ed25519` key algorithm.
+ * Algorithm is the private key algorithm of the corresponding private key
+ * for this certificate.
+ *
+ * If provided, allowed values are either `RSA`, `ECDSA` or `Ed25519`.
+ * If `algorithm` is specified and `size` is not provided,
+ * key size of 2048 will be used for `RSA` key algorithm and
+ * key size of 256 will be used for `ECDSA` key algorithm.
+ * key size is ignored when using the `Ed25519` key algorithm.
  *
  * @schema CertificateSpecPrivateKeyAlgorithm
  */
@@ -943,8 +1226,12 @@ export enum CertificateSpecPrivateKeyAlgorithm {
 }
 
 /**
- * The private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in.
- * If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1 and PKCS#8, respectively. Defaults to `PKCS1` if not specified.
+ * The private key cryptography standards (PKCS) encoding for this
+ * certificate's private key to be encoded in.
+ *
+ * If provided, allowed values are `PKCS1` and `PKCS8` standing for PKCS#1
+ * and PKCS#8, respectively.
+ * Defaults to `PKCS1` if not specified.
  *
  * @default PKCS1` if not specified.
  * @schema CertificateSpecPrivateKeyEncoding
@@ -957,10 +1244,22 @@ export enum CertificateSpecPrivateKeyEncoding {
 }
 
 /**
- * RotationPolicy controls how private keys should be regenerated when a re-issuance is being processed.
- * If set to `Never`, a private key will only be generated if one does not already exist in the target `spec.secretName`. If one does exists but it does not have the correct algorithm or size, a warning will be raised to await user intervention. If set to `Always`, a private key matching the specified requirements will be generated whenever a re-issuance occurs. Default is `Never` for backward compatibility.
+ * RotationPolicy controls how private keys should be regenerated when a
+ * re-issuance is being processed.
  *
- * @default Never` for backward compatibility.
+ * If set to `Never`, a private key will only be generated if one does not
+ * already exist in the target `spec.secretName`. If one does exist but it
+ * does not have the correct algorithm or size, a warning will be raised
+ * to await user intervention.
+ * If set to `Always`, a private key matching the specified requirements
+ * will be generated whenever a re-issuance occurs.
+ * Default is `Always`.
+ * The default was changed from `Never` to `Always` in cert-manager >=v1.18.0.
+ * The new default can be disabled by setting the
+ * `--feature-gates=DefaultPrivateKeyRotationPolicyAlways=false` option on
+ * the controller component.
+ *
+ * @default Always`.
  * @schema CertificateSpecPrivateKeyRotationPolicy
  */
 export enum CertificateSpecPrivateKeyRotationPolicy {
@@ -971,20 +1270,26 @@ export enum CertificateSpecPrivateKeyRotationPolicy {
 }
 
 /**
- * PasswordSecretRef is a reference to a key in a Secret resource containing the password used to encrypt the JKS keystore.
+ * PasswordSecretRef is a reference to a non-empty key in a Secret resource
+ * containing the password used to encrypt the JKS keystore.
+ * Mutually exclusive with password.
+ * One of password or passwordSecretRef must provide a password with a non-zero length.
  *
  * @schema CertificateSpecKeystoresJksPasswordSecretRef
  */
 export interface CertificateSpecKeystoresJksPasswordSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema CertificateSpecKeystoresJksPasswordSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema CertificateSpecKeystoresJksPasswordSecretRef#name
    */
@@ -995,7 +1300,7 @@ export interface CertificateSpecKeystoresJksPasswordSecretRef {
 /**
  * Converts an object of type 'CertificateSpecKeystoresJksPasswordSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecKeystoresJksPasswordSecretRef(obj: CertificateSpecKeystoresJksPasswordSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1005,23 +1310,29 @@ export function toJson_CertificateSpecKeystoresJksPasswordSecretRef(obj: Certifi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PasswordSecretRef is a reference to a key in a Secret resource containing the password used to encrypt the PKCS12 keystore.
+ * PasswordSecretRef is a reference to a non-empty key in a Secret resource
+ * containing the password used to encrypt the PKCS#12 keystore.
+ * Mutually exclusive with password.
+ * One of password or passwordSecretRef must provide a password with a non-zero length.
  *
  * @schema CertificateSpecKeystoresPkcs12PasswordSecretRef
  */
 export interface CertificateSpecKeystoresPkcs12PasswordSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema CertificateSpecKeystoresPkcs12PasswordSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema CertificateSpecKeystoresPkcs12PasswordSecretRef#name
    */
@@ -1032,7 +1343,7 @@ export interface CertificateSpecKeystoresPkcs12PasswordSecretRef {
 /**
  * Converts an object of type 'CertificateSpecKeystoresPkcs12PasswordSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSpecKeystoresPkcs12PasswordSecretRef(obj: CertificateSpecKeystoresPkcs12PasswordSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1042,11 +1353,18 @@ export function toJson_CertificateSpecKeystoresPkcs12PasswordSecretRef(obj: Cert
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Profile specifies the key and certificate encryption algorithms and the HMAC algorithm used to create the PKCS12 keystore. Default value is `LegacyRC2` for backward compatibility.
- * If provided, allowed values are: `LegacyRC2`: Deprecated. Not supported by default in OpenSSL 3 or Java 20. `LegacyDES`: Less secure algorithm. Use this option for maximal compatibility. `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms (eg. because of company policy). Please note that the security of the algorithm is not that important in reality, because the unencrypted certificate and private key are also stored in the Secret.
+ * Profile specifies the key and certificate encryption algorithms and the HMAC algorithm
+ * used to create the PKCS12 keystore. Default value is `LegacyRC2` for backward compatibility.
+ *
+ * If provided, allowed values are:
+ * `LegacyRC2`: Deprecated. Not supported by default in OpenSSL 3 or Java 20.
+ * `LegacyDES`: Less secure algorithm. Use this option for maximal compatibility.
+ * `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
+ * (e.g., because of company policy). Please note that the security of the algorithm is not that important
+ * in reality, because the unencrypted certificate and private key are also stored in the Secret.
  *
  * @schema CertificateSpecKeystoresPkcs12Profile
  */
@@ -1061,9 +1379,15 @@ export enum CertificateSpecKeystoresPkcs12Profile {
 
 
 /**
- * A CertificateRequest is used to request a signed certificate from one of the configured issuers. 
- All fields within the CertificateRequest's `spec` are immutable after creation. A CertificateRequest will either succeed or fail, as denoted by its `Ready` status condition and its `status.failureTime` field. 
- A CertificateRequest is a one-shot resource, meaning it represents a single point in time request for a certificate and cannot be re-used.
+ * A CertificateRequest is used to request a signed certificate from one of the
+configured issuers.
+
+All fields within the CertificateRequest's `spec` are immutable after creation.
+A CertificateRequest will either succeed or fail, as denoted by its `Ready` status
+condition and its `status.failureTime` field.
+
+A CertificateRequest is a one-shot resource, meaning it represents a single
+point in time request for a certificate and cannot be re-used.
  *
  * @schema CertificateRequest
  */
@@ -1117,9 +1441,15 @@ export class CertificateRequest extends ApiObject {
 }
 
 /**
- * A CertificateRequest is used to request a signed certificate from one of the configured issuers.
- * All fields within the CertificateRequest's `spec` are immutable after creation. A CertificateRequest will either succeed or fail, as denoted by its `Ready` status condition and its `status.failureTime` field.
- * A CertificateRequest is a one-shot resource, meaning it represents a single point in time request for a certificate and cannot be re-used.
+ * A CertificateRequest is used to request a signed certificate from one of the
+ * configured issuers.
+ *
+ * All fields within the CertificateRequest's `spec` are immutable after creation.
+ * A CertificateRequest will either succeed or fail, as denoted by its `Ready` status
+ * condition and its `status.failureTime` field.
+ *
+ * A CertificateRequest is a one-shot resource, meaning it represents a single
+ * point in time request for a certificate and cannot be re-used.
  *
  * @schema CertificateRequest
  */
@@ -1130,7 +1460,8 @@ export interface CertificateRequestProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
-   * Specification of the desired state of the CertificateRequest resource. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+   * Specification of the desired state of the CertificateRequest resource.
+   * https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
    *
    * @schema CertificateRequest#spec
    */
@@ -1141,7 +1472,7 @@ export interface CertificateRequestProps {
 /**
  * Converts an object of type 'CertificateRequestProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateRequestProps(obj: CertificateRequestProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1151,46 +1482,60 @@ export function toJson_CertificateRequestProps(obj: CertificateRequestProps | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Specification of the desired state of the CertificateRequest resource. https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+ * Specification of the desired state of the CertificateRequest resource.
+ * https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
  *
  * @schema CertificateRequestSpec
  */
 export interface CertificateRequestSpec {
   /**
-   * Requested 'duration' (i.e. lifetime) of the Certificate. Note that the issuer may choose to ignore the requested duration, just like any other requested attribute.
+   * Requested 'duration' (i.e. lifetime) of the Certificate. Note that the
+   * issuer may choose to ignore the requested duration, just like any other
+   * requested attribute.
    *
    * @schema CertificateRequestSpec#duration
    */
   readonly duration?: string;
 
   /**
-   * Extra contains extra attributes of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+   * Extra contains extra attributes of the user that created the CertificateRequest.
+   * Populated by the cert-manager webhook on creation and immutable.
    *
    * @schema CertificateRequestSpec#extra
    */
   readonly extra?: { [key: string]: string[] };
 
   /**
-   * Groups contains group membership of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+   * Groups contains group membership of the user that created the CertificateRequest.
+   * Populated by the cert-manager webhook on creation and immutable.
    *
    * @schema CertificateRequestSpec#groups
    */
   readonly groups?: string[];
 
   /**
-   * Requested basic constraints isCA value. Note that the issuer may choose to ignore the requested isCA value, just like any other requested attribute.
-   * NOTE: If the CSR in the `Request` field has a BasicConstraints extension, it must have the same isCA value as specified here.
-   * If true, this will automatically add the `cert sign` usage to the list of requested `usages`.
+   * Requested basic constraints isCA value. Note that the issuer may choose
+   * to ignore the requested isCA value, just like any other requested attribute.
+   *
+   * NOTE: If the CSR in the `Request` field has a BasicConstraints extension,
+   * it must have the same isCA value as specified here.
+   *
+   * If true, this will automatically add the `cert sign` usage to the list
+   * of requested `usages`.
    *
    * @schema CertificateRequestSpec#isCA
    */
   readonly isCa?: boolean;
 
   /**
-   * Reference to the issuer responsible for issuing the certificate. If the issuer is namespace-scoped, it must be in the same namespace as the Certificate. If the issuer is cluster-scoped, it can be used from any namespace.
+   * Reference to the issuer responsible for issuing the certificate.
+   * If the issuer is namespace-scoped, it must be in the same namespace
+   * as the Certificate. If the issuer is cluster-scoped, it can be used
+   * from any namespace.
+   *
    * The `name` field of the reference must always be specified.
    *
    * @schema CertificateRequestSpec#issuerRef
@@ -1198,15 +1543,24 @@ export interface CertificateRequestSpec {
   readonly issuerRef: CertificateRequestSpecIssuerRef;
 
   /**
-   * The PEM-encoded X.509 certificate signing request to be submitted to the issuer for signing.
-   * If the CSR has a BasicConstraints extension, its isCA attribute must match the `isCA` value of this CertificateRequest. If the CSR has a KeyUsage extension, its key usages must match the key usages in the `usages` field of this CertificateRequest. If the CSR has a ExtKeyUsage extension, its extended key usages must match the extended key usages in the `usages` field of this CertificateRequest.
+   * The PEM-encoded X.509 certificate signing request to be submitted to the
+   * issuer for signing.
+   *
+   * If the CSR has a BasicConstraints extension, its isCA attribute must
+   * match the `isCA` value of this CertificateRequest.
+   * If the CSR has a KeyUsage extension, its key usages must match the
+   * key usages in the `usages` field of this CertificateRequest.
+   * If the CSR has a ExtKeyUsage extension, its extended key usages
+   * must match the extended key usages in the `usages` field of this
+   * CertificateRequest.
    *
    * @schema CertificateRequestSpec#request
    */
   readonly request: string;
 
   /**
-   * UID contains the uid of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+   * UID contains the uid of the user that created the CertificateRequest.
+   * Populated by the cert-manager webhook on creation and immutable.
    *
    * @schema CertificateRequestSpec#uid
    */
@@ -1214,7 +1568,11 @@ export interface CertificateRequestSpec {
 
   /**
    * Requested key usages and extended key usages.
-   * NOTE: If the CSR in the `Request` field has uses the KeyUsage or ExtKeyUsage extension, these extensions must have the same values as specified here without any additional values.
+   *
+   * NOTE: If the CSR in the `Request` field has uses the KeyUsage or
+   * ExtKeyUsage extension, these extensions must have the same values
+   * as specified here without any additional values.
+   *
    * If unset, defaults to `digital signature` and `key encipherment`.
    *
    * @schema CertificateRequestSpec#usages
@@ -1222,7 +1580,8 @@ export interface CertificateRequestSpec {
   readonly usages?: CertificateRequestSpecUsages[];
 
   /**
-   * Username contains the name of the user that created the CertificateRequest. Populated by the cert-manager webhook on creation and immutable.
+   * Username contains the name of the user that created the CertificateRequest.
+   * Populated by the cert-manager webhook on creation and immutable.
    *
    * @schema CertificateRequestSpec#username
    */
@@ -1233,7 +1592,7 @@ export interface CertificateRequestSpec {
 /**
  * Converts an object of type 'CertificateRequestSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateRequestSpec(obj: CertificateRequestSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1250,10 +1609,14 @@ export function toJson_CertificateRequestSpec(obj: CertificateRequestSpec | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Reference to the issuer responsible for issuing the certificate. If the issuer is namespace-scoped, it must be in the same namespace as the Certificate. If the issuer is cluster-scoped, it can be used from any namespace.
+ * Reference to the issuer responsible for issuing the certificate.
+ * If the issuer is namespace-scoped, it must be in the same namespace
+ * as the Certificate. If the issuer is cluster-scoped, it can be used
+ * from any namespace.
+ *
  * The `name` field of the reference must always be specified.
  *
  * @schema CertificateRequestSpecIssuerRef
@@ -1285,7 +1648,7 @@ export interface CertificateRequestSpecIssuerRef {
 /**
  * Converts an object of type 'CertificateRequestSpecIssuerRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateRequestSpecIssuerRef(obj: CertificateRequestSpecIssuerRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1296,11 +1659,38 @@ export function toJson_CertificateRequestSpecIssuerRef(obj: CertificateRequestSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * KeyUsage specifies valid usage contexts for keys. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3 https://tools.ietf.org/html/rfc5280#section-4.2.1.12
- * Valid KeyUsage values are as follows: "signing", "digital signature", "content commitment", "key encipherment", "key agreement", "data encipherment", "cert sign", "crl sign", "encipher only", "decipher only", "any", "server auth", "client auth", "code signing", "email protection", "s/mime", "ipsec end system", "ipsec tunnel", "ipsec user", "timestamping", "ocsp signing", "microsoft sgc", "netscape sgc"
+ * KeyUsage specifies valid usage contexts for keys.
+ * See:
+ * https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+ * https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+ *
+ * Valid KeyUsage values are as follows:
+ * "signing",
+ * "digital signature",
+ * "content commitment",
+ * "key encipherment",
+ * "key agreement",
+ * "data encipherment",
+ * "cert sign",
+ * "crl sign",
+ * "encipher only",
+ * "decipher only",
+ * "any",
+ * "server auth",
+ * "client auth",
+ * "code signing",
+ * "email protection",
+ * "s/mime",
+ * "ipsec end system",
+ * "ipsec tunnel",
+ * "ipsec user",
+ * "timestamping",
+ * "ocsp signing",
+ * "microsoft sgc",
+ * "netscape sgc"
  *
  * @schema CertificateRequestSpecUsages
  */
@@ -1355,7 +1745,11 @@ export enum CertificateRequestSpecUsages {
 
 
 /**
- * A ClusterIssuer represents a certificate issuing authority which can be referenced as part of `issuerRef` fields. It is similar to an Issuer, however it is cluster-scoped and therefore can be referenced by resources that exist in *any* namespace, not just the same namespace as the referent.
+ * A ClusterIssuer represents a certificate issuing authority which can be
+referenced as part of `issuerRef` fields.
+It is similar to an Issuer, however it is cluster-scoped and therefore can
+be referenced by resources that exist in *any* namespace, not just the same
+namespace as the referent.
  *
  * @schema ClusterIssuer
  */
@@ -1409,7 +1803,11 @@ export class ClusterIssuer extends ApiObject {
 }
 
 /**
- * A ClusterIssuer represents a certificate issuing authority which can be referenced as part of `issuerRef` fields. It is similar to an Issuer, however it is cluster-scoped and therefore can be referenced by resources that exist in *any* namespace, not just the same namespace as the referent.
+ * A ClusterIssuer represents a certificate issuing authority which can be
+ * referenced as part of `issuerRef` fields.
+ * It is similar to an Issuer, however it is cluster-scoped and therefore can
+ * be referenced by resources that exist in *any* namespace, not just the same
+ * namespace as the referent.
  *
  * @schema ClusterIssuer
  */
@@ -1431,7 +1829,7 @@ export interface ClusterIssuerProps {
 /**
  * Converts an object of type 'ClusterIssuerProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerProps(obj: ClusterIssuerProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1441,7 +1839,7 @@ export function toJson_ClusterIssuerProps(obj: ClusterIssuerProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Desired state of the ClusterIssuer resource.
@@ -1450,35 +1848,41 @@ export function toJson_ClusterIssuerProps(obj: ClusterIssuerProps | undefined): 
  */
 export interface ClusterIssuerSpec {
   /**
-   * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+   * ACME configures this issuer to communicate with a RFC8555 (ACME) server
+   * to obtain signed x509 certificates.
    *
    * @schema ClusterIssuerSpec#acme
    */
   readonly acme?: ClusterIssuerSpecAcme;
 
   /**
-   * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+   * CA configures this issuer to sign certificates using a signing CA keypair
+   * stored in a Secret resource.
+   * This is used to build internal PKIs that are managed by cert-manager.
    *
    * @schema ClusterIssuerSpec#ca
    */
   readonly ca?: ClusterIssuerSpecCa;
 
   /**
-   * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+   * SelfSigned configures this issuer to 'self sign' certificates using the
+   * private key used to create the CertificateRequest object.
    *
    * @schema ClusterIssuerSpec#selfSigned
    */
   readonly selfSigned?: ClusterIssuerSpecSelfSigned;
 
   /**
-   * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+   * Vault configures this issuer to sign certificates using a HashiCorp Vault
+   * PKI backend.
    *
    * @schema ClusterIssuerSpec#vault
    */
   readonly vault?: ClusterIssuerSpecVault;
 
   /**
-   * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+   * Venafi configures this issuer to sign certificates using a Venafi TPP
+   * or Venafi Cloud policy zone.
    *
    * @schema ClusterIssuerSpec#venafi
    */
@@ -1489,7 +1893,7 @@ export interface ClusterIssuerSpec {
 /**
  * Converts an object of type 'ClusterIssuerSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpec(obj: ClusterIssuerSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1502,23 +1906,34 @@ export function toJson_ClusterIssuerSpec(obj: ClusterIssuerSpec | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+ * ACME configures this issuer to communicate with a RFC8555 (ACME) server
+ * to obtain signed x509 certificates.
  *
  * @schema ClusterIssuerSpecAcme
  */
 export interface ClusterIssuerSpecAcme {
   /**
-   * Base64-encoded bundle of PEM CAs which can be used to validate the certificate chain presented by the ACME server. Mutually exclusive with SkipTLSVerify; prefer using CABundle to prevent various kinds of security vulnerabilities. If CABundle and SkipTLSVerify are unset, the system certificate bundle inside the container is used to validate the TLS connection.
+   * Base64-encoded bundle of PEM CAs which can be used to validate the certificate
+   * chain presented by the ACME server.
+   * Mutually exclusive with SkipTLSVerify; prefer using CABundle to prevent various
+   * kinds of security vulnerabilities.
+   * If CABundle and SkipTLSVerify are unset, the system certificate bundle inside
+   * the container is used to validate the TLS connection.
    *
    * @schema ClusterIssuerSpecAcme#caBundle
    */
   readonly caBundle?: string;
 
   /**
-   * Enables or disables generating a new ACME account key. If true, the Issuer resource will *not* request a new account but will expect the account key to be supplied via an existing secret. If false, the cert-manager system will generate a new ACME account key for the Issuer. Defaults to false.
+   * Enables or disables generating a new ACME account key.
+   * If true, the Issuer resource will *not* request a new account but will expect
+   * the account key to be supplied via an existing secret.
+   * If false, the cert-manager system will generate a new ACME account key
+   * for the Issuer.
+   * Defaults to false.
    *
    * @default false.
    * @schema ClusterIssuerSpecAcme#disableAccountKeyGeneration
@@ -1526,14 +1941,22 @@ export interface ClusterIssuerSpecAcme {
   readonly disableAccountKeyGeneration?: boolean;
 
   /**
-   * Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
+   * Email is the email address to be associated with the ACME account.
+   * This field is optional, but it is strongly recommended to be set.
+   * It will be used to contact you in case of issues with your account or
+   * certificates, including expiry notification emails.
+   * This field may be updated after the account is initially registered.
    *
    * @schema ClusterIssuerSpecAcme#email
    */
   readonly email?: string;
 
   /**
-   * Enables requesting a Not After date on certificates that matches the duration of the certificate. This is not supported by all ACME servers like Let's Encrypt. If set to true when the ACME server does not support it it will create an error on the Order. Defaults to false.
+   * Enables requesting a Not After date on certificates that matches the
+   * duration of the certificate. This is not supported by all ACME servers
+   * like Let's Encrypt. If set to true when the ACME server does not support
+   * it, it will create an error on the Order.
+   * Defaults to false.
    *
    * @default false.
    * @schema ClusterIssuerSpecAcme#enableDurationFeature
@@ -1541,35 +1964,68 @@ export interface ClusterIssuerSpecAcme {
   readonly enableDurationFeature?: boolean;
 
   /**
-   * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+   * ExternalAccountBinding is a reference to a CA external account of the ACME
+   * server.
+   * If set, upon registration cert-manager will attempt to associate the given
+   * external account credentials with the registered ACME account.
    *
    * @schema ClusterIssuerSpecAcme#externalAccountBinding
    */
   readonly externalAccountBinding?: ClusterIssuerSpecAcmeExternalAccountBinding;
 
   /**
-   * PreferredChain is the chain to use if the ACME server outputs multiple. PreferredChain is no guarantee that this one gets delivered by the ACME endpoint. For example, for Let's Encrypt's DST crosssign you would use: "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA. This value picks the first certificate bundle in the ACME alternative chains that has a certificate with this value as its issuer's CN
+   * PreferredChain is the chain to use if the ACME server outputs multiple.
+   * PreferredChain is no guarantee that this one gets delivered by the ACME
+   * endpoint.
+   * For example, for Let's Encrypt's DST cross-sign you would use:
+   * "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA.
+   * This value picks the first certificate bundle in the combined set of
+   * ACME default and alternative chains that has a root-most certificate with
+   * this value as its issuer's commonname.
    *
    * @schema ClusterIssuerSpecAcme#preferredChain
    */
   readonly preferredChain?: string;
 
   /**
-   * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+   * PrivateKey is the name of a Kubernetes Secret resource that will be used to
+   * store the automatically generated ACME account private key.
+   * Optionally, a `key` may be specified to select a specific entry within
+   * the named Secret resource.
+   * If `key` is not specified, a default of `tls.key` will be used.
    *
    * @schema ClusterIssuerSpecAcme#privateKeySecretRef
    */
   readonly privateKeySecretRef: ClusterIssuerSpecAcmePrivateKeySecretRef;
 
   /**
-   * Server is the URL used to access the ACME server's 'directory' endpoint. For example, for Let's Encrypt's staging endpoint, you would use: "https://acme-staging-v02.api.letsencrypt.org/directory". Only ACME v2 endpoints (i.e. RFC 8555) are supported.
+   * Profile allows requesting a certificate profile from the ACME server.
+   * Supported profiles are listed by the server's ACME directory URL.
+   *
+   * @schema ClusterIssuerSpecAcme#profile
+   */
+  readonly profile?: string;
+
+  /**
+   * Server is the URL used to access the ACME server's 'directory' endpoint.
+   * For example, for Let's Encrypt's staging endpoint, you would use:
+   * "https://acme-staging-v02.api.letsencrypt.org/directory".
+   * Only ACME v2 endpoints (i.e. RFC 8555) are supported.
    *
    * @schema ClusterIssuerSpecAcme#server
    */
   readonly server: string;
 
   /**
-   * INSECURE: Enables or disables validation of the ACME server TLS certificate. If true, requests to the ACME server will not have the TLS certificate chain validated. Mutually exclusive with CABundle; prefer using CABundle to prevent various kinds of security vulnerabilities. Only enable this option in development environments. If CABundle and SkipTLSVerify are unset, the system certificate bundle inside the container is used to validate the TLS connection. Defaults to false.
+   * INSECURE: Enables or disables validation of the ACME server TLS certificate.
+   * If true, requests to the ACME server will not have the TLS certificate chain
+   * validated.
+   * Mutually exclusive with CABundle; prefer using CABundle to prevent various
+   * kinds of security vulnerabilities.
+   * Only enable this option in development environments.
+   * If CABundle and SkipTLSVerify are unset, the system certificate bundle inside
+   * the container is used to validate the TLS connection.
+   * Defaults to false.
    *
    * @default false.
    * @schema ClusterIssuerSpecAcme#skipTLSVerify
@@ -1577,7 +2033,11 @@ export interface ClusterIssuerSpecAcme {
   readonly skipTlsVerify?: boolean;
 
   /**
-   * Solvers is a list of challenge solvers that will be used to solve ACME challenges for the matching domains. Solver configurations must be provided in order to obtain certificates from an ACME server. For more information, see: https://cert-manager.io/docs/configuration/acme/
+   * Solvers is a list of challenge solvers that will be used to solve
+   * ACME challenges for the matching domains.
+   * Solver configurations must be provided in order to obtain certificates
+   * from an ACME server.
+   * For more information, see: https://cert-manager.io/docs/configuration/acme/
    *
    * @schema ClusterIssuerSpecAcme#solvers
    */
@@ -1588,7 +2048,7 @@ export interface ClusterIssuerSpecAcme {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcme' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcme(obj: ClusterIssuerSpecAcme | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1599,6 +2059,7 @@ export function toJson_ClusterIssuerSpecAcme(obj: ClusterIssuerSpecAcme | undefi
     'externalAccountBinding': toJson_ClusterIssuerSpecAcmeExternalAccountBinding(obj.externalAccountBinding),
     'preferredChain': obj.preferredChain,
     'privateKeySecretRef': toJson_ClusterIssuerSpecAcmePrivateKeySecretRef(obj.privateKeySecretRef),
+    'profile': obj.profile,
     'server': obj.server,
     'skipTLSVerify': obj.skipTlsVerify,
     'solvers': obj.solvers?.map(y => toJson_ClusterIssuerSpecAcmeSolvers(y)),
@@ -1606,37 +2067,48 @@ export function toJson_ClusterIssuerSpecAcme(obj: ClusterIssuerSpecAcme | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+ * CA configures this issuer to sign certificates using a signing CA keypair
+ * stored in a Secret resource.
+ * This is used to build internal PKIs that are managed by cert-manager.
  *
  * @schema ClusterIssuerSpecCa
  */
 export interface ClusterIssuerSpecCa {
   /**
-   * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set, certificates will be issued without distribution points set.
+   * The CRL distribution points is an X.509 v3 certificate extension which identifies
+   * the location of the CRL from which the revocation of this certificate can be checked.
+   * If not set, certificates will be issued without distribution points set.
    *
    * @schema ClusterIssuerSpecCa#crlDistributionPoints
    */
   readonly crlDistributionPoints?: string[];
 
   /**
-   * IssuingCertificateURLs is a list of URLs which this issuer should embed into certificates it creates. See https://www.rfc-editor.org/rfc/rfc5280#section-4.2.2.1 for more details. As an example, such a URL might be "http://ca.domain.com/ca.crt".
+   * IssuingCertificateURLs is a list of URLs which this issuer should embed into certificates
+   * it creates. See https://www.rfc-editor.org/rfc/rfc5280#section-4.2.2.1 for more details.
+   * As an example, such a URL might be "http://ca.domain.com/ca.crt".
    *
    * @schema ClusterIssuerSpecCa#issuingCertificateURLs
    */
   readonly issuingCertificateUrLs?: string[];
 
   /**
-   * The OCSP server list is an X.509 v3 extension that defines a list of URLs of OCSP responders. The OCSP responders can be queried for the revocation status of an issued certificate. If not set, the certificate will be issued with no OCSP servers set. For example, an OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
+   * The OCSP server list is an X.509 v3 extension that defines a list of
+   * URLs of OCSP responders. The OCSP responders can be queried for the
+   * revocation status of an issued certificate. If not set, the
+   * certificate will be issued with no OCSP servers set. For example, an
+   * OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
    *
    * @schema ClusterIssuerSpecCa#ocspServers
    */
   readonly ocspServers?: string[];
 
   /**
-   * SecretName is the name of the secret used to sign Certificates issued by this Issuer.
+   * SecretName is the name of the secret used to sign Certificates issued
+   * by this Issuer.
    *
    * @schema ClusterIssuerSpecCa#secretName
    */
@@ -1647,7 +2119,7 @@ export interface ClusterIssuerSpecCa {
 /**
  * Converts an object of type 'ClusterIssuerSpecCa' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecCa(obj: ClusterIssuerSpecCa | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1659,16 +2131,19 @@ export function toJson_ClusterIssuerSpecCa(obj: ClusterIssuerSpecCa | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+ * SelfSigned configures this issuer to 'self sign' certificates using the
+ * private key used to create the CertificateRequest object.
  *
  * @schema ClusterIssuerSpecSelfSigned
  */
 export interface ClusterIssuerSpecSelfSigned {
   /**
-   * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set certificate will be issued without CDP. Values are strings.
+   * The CRL distribution points is an X.509 v3 certificate extension which identifies
+   * the location of the CRL from which the revocation of this certificate can be checked.
+   * If not set certificate will be issued without CDP. Values are strings.
    *
    * @schema ClusterIssuerSpecSelfSigned#crlDistributionPoints
    */
@@ -1679,7 +2154,7 @@ export interface ClusterIssuerSpecSelfSigned {
 /**
  * Converts an object of type 'ClusterIssuerSpecSelfSigned' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecSelfSigned(obj: ClusterIssuerSpecSelfSigned | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1688,10 +2163,11 @@ export function toJson_ClusterIssuerSpecSelfSigned(obj: ClusterIssuerSpecSelfSig
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+ * Vault configures this issuer to sign certificates using a HashiCorp Vault
+ * PKI backend.
  *
  * @schema ClusterIssuerSpecVault
  */
@@ -1704,28 +2180,56 @@ export interface ClusterIssuerSpecVault {
   readonly auth: ClusterIssuerSpecVaultAuth;
 
   /**
-   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate chain presented by Vault. Only used if using HTTPS to connect to Vault and ignored for HTTP connections. Mutually exclusive with CABundleSecretRef. If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in the cert-manager controller container is used to validate the TLS connection.
+   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+   * chain presented by Vault. Only used if using HTTPS to connect to Vault and
+   * ignored for HTTP connections.
+   * Mutually exclusive with CABundleSecretRef.
+   * If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+   * the cert-manager controller container is used to validate the TLS connection.
    *
    * @schema ClusterIssuerSpecVault#caBundle
    */
   readonly caBundle?: string;
 
   /**
-   * Reference to a Secret containing a bundle of PEM-encoded CAs to use when verifying the certificate chain presented by Vault when using HTTPS. Mutually exclusive with CABundle. If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in the cert-manager controller container is used to validate the TLS connection. If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
+   * Reference to a Secret containing a bundle of PEM-encoded CAs to use when
+   * verifying the certificate chain presented by Vault when using HTTPS.
+   * Mutually exclusive with CABundle.
+   * If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+   * the cert-manager controller container is used to validate the TLS connection.
+   * If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
    *
    * @schema ClusterIssuerSpecVault#caBundleSecretRef
    */
   readonly caBundleSecretRef?: ClusterIssuerSpecVaultCaBundleSecretRef;
 
   /**
-   * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+   * Reference to a Secret containing a PEM-encoded Client Certificate to use when the
+   * Vault server requires mTLS.
+   *
+   * @schema ClusterIssuerSpecVault#clientCertSecretRef
+   */
+  readonly clientCertSecretRef?: ClusterIssuerSpecVaultClientCertSecretRef;
+
+  /**
+   * Reference to a Secret containing a PEM-encoded Client Private Key to use when the
+   * Vault server requires mTLS.
+   *
+   * @schema ClusterIssuerSpecVault#clientKeySecretRef
+   */
+  readonly clientKeySecretRef?: ClusterIssuerSpecVaultClientKeySecretRef;
+
+  /**
+   * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1"
+   * More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
    *
    * @schema ClusterIssuerSpecVault#namespace
    */
   readonly namespace?: string;
 
   /**
-   * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name".
+   * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
+   * "my_pki_mount/sign/my-role-name".
    *
    * @schema ClusterIssuerSpecVault#path
    */
@@ -1738,49 +2242,66 @@ export interface ClusterIssuerSpecVault {
    */
   readonly server: string;
 
+  /**
+   * ServerName is used to verify the hostname on the returned certificates
+   * by the Vault server.
+   *
+   * @schema ClusterIssuerSpecVault#serverName
+   */
+  readonly serverName?: string;
+
 }
 
 /**
  * Converts an object of type 'ClusterIssuerSpecVault' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVault(obj: ClusterIssuerSpecVault | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'auth': toJson_ClusterIssuerSpecVaultAuth(obj.auth),
     'caBundle': obj.caBundle,
     'caBundleSecretRef': toJson_ClusterIssuerSpecVaultCaBundleSecretRef(obj.caBundleSecretRef),
+    'clientCertSecretRef': toJson_ClusterIssuerSpecVaultClientCertSecretRef(obj.clientCertSecretRef),
+    'clientKeySecretRef': toJson_ClusterIssuerSpecVaultClientKeySecretRef(obj.clientKeySecretRef),
     'namespace': obj.namespace,
     'path': obj.path,
     'server': obj.server,
+    'serverName': obj.serverName,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+ * Venafi configures this issuer to sign certificates using a Venafi TPP
+ * or Venafi Cloud policy zone.
  *
  * @schema ClusterIssuerSpecVenafi
  */
 export interface ClusterIssuerSpecVenafi {
   /**
-   * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+   * Cloud specifies the Venafi cloud configuration settings.
+   * Only one of TPP or Cloud may be specified.
    *
    * @schema ClusterIssuerSpecVenafi#cloud
    */
   readonly cloud?: ClusterIssuerSpecVenafiCloud;
 
   /**
-   * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+   * TPP specifies Trust Protection Platform configuration settings.
+   * Only one of TPP or Cloud may be specified.
    *
    * @schema ClusterIssuerSpecVenafi#tpp
    */
   readonly tpp?: ClusterIssuerSpecVenafiTpp;
 
   /**
-   * Zone is the Venafi Policy Zone to use for this issuer. All requests made to the Venafi platform will be restricted by the named zone policy. This field is required.
+   * Zone is the Venafi Policy Zone to use for this issuer.
+   * All requests made to the Venafi platform will be restricted by the named
+   * zone policy.
+   * This field is required.
    *
    * @schema ClusterIssuerSpecVenafi#zone
    */
@@ -1791,7 +2312,7 @@ export interface ClusterIssuerSpecVenafi {
 /**
  * Converts an object of type 'ClusterIssuerSpecVenafi' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVenafi(obj: ClusterIssuerSpecVenafi | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1802,16 +2323,21 @@ export function toJson_ClusterIssuerSpecVenafi(obj: ClusterIssuerSpecVenafi | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+ * ExternalAccountBinding is a reference to a CA external account of the ACME
+ * server.
+ * If set, upon registration cert-manager will attempt to associate the given
+ * external account credentials with the registered ACME account.
  *
  * @schema ClusterIssuerSpecAcmeExternalAccountBinding
  */
 export interface ClusterIssuerSpecAcmeExternalAccountBinding {
   /**
-   * Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.
+   * Deprecated: keyAlgorithm field exists for historical compatibility
+   * reasons and should not be used. The algorithm is now hardcoded to HS256
+   * in golang/x/crypto/acme.
    *
    * @schema ClusterIssuerSpecAcmeExternalAccountBinding#keyAlgorithm
    */
@@ -1825,7 +2351,13 @@ export interface ClusterIssuerSpecAcmeExternalAccountBinding {
   readonly keyId: string;
 
   /**
-   * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+   * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes
+   * Secret which holds the symmetric MAC key of the External Account Binding.
+   * The `key` is the index string that is paired with the key data in the
+   * Secret and should not be confused with the key data itself, or indeed with
+   * the External Account Binding keyID above.
+   * The secret key stored in the Secret **must** be un-padded, base64 URL
+   * encoded data.
    *
    * @schema ClusterIssuerSpecAcmeExternalAccountBinding#keySecretRef
    */
@@ -1836,7 +2368,7 @@ export interface ClusterIssuerSpecAcmeExternalAccountBinding {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeExternalAccountBinding' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeExternalAccountBinding(obj: ClusterIssuerSpecAcmeExternalAccountBinding | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1847,23 +2379,30 @@ export function toJson_ClusterIssuerSpecAcmeExternalAccountBinding(obj: ClusterI
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+ * PrivateKey is the name of a Kubernetes Secret resource that will be used to
+ * store the automatically generated ACME account private key.
+ * Optionally, a `key` may be specified to select a specific entry within
+ * the named Secret resource.
+ * If `key` is not specified, a default of `tls.key` will be used.
  *
  * @schema ClusterIssuerSpecAcmePrivateKeySecretRef
  */
 export interface ClusterIssuerSpecAcmePrivateKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmePrivateKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmePrivateKeySecretRef#name
    */
@@ -1874,7 +2413,7 @@ export interface ClusterIssuerSpecAcmePrivateKeySecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmePrivateKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmePrivateKeySecretRef(obj: ClusterIssuerSpecAcmePrivateKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1884,30 +2423,40 @@ export function toJson_ClusterIssuerSpecAcmePrivateKeySecretRef(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * An ACMEChallengeSolver describes how to solve ACME challenges for the issuer it is part of. A selector may be provided to use different solving strategies for different DNS names. Only one of HTTP01 or DNS01 must be provided.
+ * An ACMEChallengeSolver describes how to solve ACME challenges for the issuer it is part of.
+ * A selector may be provided to use different solving strategies for different DNS names.
+ * Only one of HTTP01 or DNS01 must be provided.
  *
  * @schema ClusterIssuerSpecAcmeSolvers
  */
 export interface ClusterIssuerSpecAcmeSolvers {
   /**
-   * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+   * Configures cert-manager to attempt to complete authorizations by
+   * performing the DNS01 challenge flow.
    *
    * @schema ClusterIssuerSpecAcmeSolvers#dns01
    */
   readonly dns01?: ClusterIssuerSpecAcmeSolversDns01;
 
   /**
-   * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+   * Configures cert-manager to attempt to complete authorizations by
+   * performing the HTTP01 challenge flow.
+   * It is not possible to obtain certificates for wildcard domain names
+   * (e.g., `*.example.com`) using the HTTP01 challenge mechanism.
    *
    * @schema ClusterIssuerSpecAcmeSolvers#http01
    */
   readonly http01?: ClusterIssuerSpecAcmeSolversHttp01;
 
   /**
-   * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+   * Selector selects a set of DNSNames on the Certificate resource that
+   * should be solved using this challenge solver.
+   * If not specified, the solver will be treated as the 'default' solver
+   * with the lowest priority, i.e. if any other solver has a more specific
+   * match, it will be used instead.
    *
    * @schema ClusterIssuerSpecAcmeSolvers#selector
    */
@@ -1918,7 +2467,7 @@ export interface ClusterIssuerSpecAcmeSolvers {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolvers' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolvers(obj: ClusterIssuerSpecAcmeSolvers | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1929,7 +2478,7 @@ export function toJson_ClusterIssuerSpecAcmeSolvers(obj: ClusterIssuerSpecAcmeSo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Auth configures how cert-manager authenticates with the Vault server.
@@ -1938,14 +2487,25 @@ export function toJson_ClusterIssuerSpecAcmeSolvers(obj: ClusterIssuerSpecAcmeSo
  */
 export interface ClusterIssuerSpecVaultAuth {
   /**
-   * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+   * AppRole authenticates with Vault using the App Role auth mechanism,
+   * with the role and secret stored in a Kubernetes Secret resource.
    *
    * @schema ClusterIssuerSpecVaultAuth#appRole
    */
   readonly appRole?: ClusterIssuerSpecVaultAuthAppRole;
 
   /**
-   * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+   * ClientCertificate authenticates with Vault by presenting a client
+   * certificate during the request's TLS handshake.
+   * Works only when using HTTPS protocol.
+   *
+   * @schema ClusterIssuerSpecVaultAuth#clientCertificate
+   */
+  readonly clientCertificate?: ClusterIssuerSpecVaultAuthClientCertificate;
+
+  /**
+   * Kubernetes authenticates with Vault by passing the ServiceAccount
+   * token stored in the named Secret resource to the Vault server.
    *
    * @schema ClusterIssuerSpecVaultAuth#kubernetes
    */
@@ -1963,34 +2523,43 @@ export interface ClusterIssuerSpecVaultAuth {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuth' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuth(obj: ClusterIssuerSpecVaultAuth | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'appRole': toJson_ClusterIssuerSpecVaultAuthAppRole(obj.appRole),
+    'clientCertificate': toJson_ClusterIssuerSpecVaultAuthClientCertificate(obj.clientCertificate),
     'kubernetes': toJson_ClusterIssuerSpecVaultAuthKubernetes(obj.kubernetes),
     'tokenSecretRef': toJson_ClusterIssuerSpecVaultAuthTokenSecretRef(obj.tokenSecretRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Reference to a Secret containing a bundle of PEM-encoded CAs to use when verifying the certificate chain presented by Vault when using HTTPS. Mutually exclusive with CABundle. If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in the cert-manager controller container is used to validate the TLS connection. If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
+ * Reference to a Secret containing a bundle of PEM-encoded CAs to use when
+ * verifying the certificate chain presented by Vault when using HTTPS.
+ * Mutually exclusive with CABundle.
+ * If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+ * the cert-manager controller container is used to validate the TLS connection.
+ * If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
  *
  * @schema ClusterIssuerSpecVaultCaBundleSecretRef
  */
 export interface ClusterIssuerSpecVaultCaBundleSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecVaultCaBundleSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecVaultCaBundleSecretRef#name
    */
@@ -2001,7 +2570,7 @@ export interface ClusterIssuerSpecVaultCaBundleSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultCaBundleSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultCaBundleSecretRef(obj: ClusterIssuerSpecVaultCaBundleSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2011,10 +2580,93 @@ export function toJson_ClusterIssuerSpecVaultCaBundleSecretRef(obj: ClusterIssue
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+ * Reference to a Secret containing a PEM-encoded Client Certificate to use when the
+ * Vault server requires mTLS.
+ *
+ * @schema ClusterIssuerSpecVaultClientCertSecretRef
+ */
+export interface ClusterIssuerSpecVaultClientCertSecretRef {
+  /**
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
+   *
+   * @schema ClusterIssuerSpecVaultClientCertSecretRef#key
+   */
+  readonly key?: string;
+
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema ClusterIssuerSpecVaultClientCertSecretRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVaultClientCertSecretRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVaultClientCertSecretRef(obj: ClusterIssuerSpecVaultClientCertSecretRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Reference to a Secret containing a PEM-encoded Client Private Key to use when the
+ * Vault server requires mTLS.
+ *
+ * @schema ClusterIssuerSpecVaultClientKeySecretRef
+ */
+export interface ClusterIssuerSpecVaultClientKeySecretRef {
+  /**
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
+   *
+   * @schema ClusterIssuerSpecVaultClientKeySecretRef#key
+   */
+  readonly key?: string;
+
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema ClusterIssuerSpecVaultClientKeySecretRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVaultClientKeySecretRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVaultClientKeySecretRef(obj: ClusterIssuerSpecVaultClientKeySecretRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Cloud specifies the Venafi cloud configuration settings.
+ * Only one of TPP or Cloud may be specified.
  *
  * @schema ClusterIssuerSpecVenafiCloud
  */
@@ -2027,9 +2679,10 @@ export interface ClusterIssuerSpecVenafiCloud {
   readonly apiTokenSecretRef: ClusterIssuerSpecVenafiCloudApiTokenSecretRef;
 
   /**
-   * URL is the base URL for Venafi Cloud. Defaults to "https://api.venafi.cloud/v1".
+   * URL is the base URL for Venafi Cloud.
+   * Defaults to "https://api.venafi.cloud/".
    *
-   * @default https://api.venafi.cloud/v1".
+   * @default https://api.venafi.cloud/".
    * @schema ClusterIssuerSpecVenafiCloud#url
    */
   readonly url?: string;
@@ -2039,7 +2692,7 @@ export interface ClusterIssuerSpecVenafiCloud {
 /**
  * Converts an object of type 'ClusterIssuerSpecVenafiCloud' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVenafiCloud(obj: ClusterIssuerSpecVenafiCloud | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2049,30 +2702,48 @@ export function toJson_ClusterIssuerSpecVenafiCloud(obj: ClusterIssuerSpecVenafi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+ * TPP specifies Trust Protection Platform configuration settings.
+ * Only one of TPP or Cloud may be specified.
  *
  * @schema ClusterIssuerSpecVenafiTpp
  */
 export interface ClusterIssuerSpecVenafiTpp {
   /**
-   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP. If undefined, the certificate bundle in the cert-manager controller container is used to validate the chain.
+   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+   * chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+   * If undefined, the certificate bundle in the cert-manager controller container
+   * is used to validate the chain.
    *
    * @schema ClusterIssuerSpecVenafiTpp#caBundle
    */
   readonly caBundle?: string;
 
   /**
-   * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+   * Reference to a Secret containing a base64-encoded bundle of PEM CAs
+   * which will be used to validate the certificate chain presented by the TPP server.
+   * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
+   * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
+   * the cert-manager controller container is used to validate the TLS connection.
+   *
+   * @schema ClusterIssuerSpecVenafiTpp#caBundleSecretRef
+   */
+  readonly caBundleSecretRef?: ClusterIssuerSpecVenafiTppCaBundleSecretRef;
+
+  /**
+   * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+   * The secret must contain the key 'access-token' for the Access Token Authentication,
+   * or two keys, 'username' and 'password' for the API Keys Authentication.
    *
    * @schema ClusterIssuerSpecVenafiTpp#credentialsRef
    */
   readonly credentialsRef: ClusterIssuerSpecVenafiTppCredentialsRef;
 
   /**
-   * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance, for example: "https://tpp.example.com/vedsdk".
+   * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance,
+   * for example: "https://tpp.example.com/vedsdk".
    *
    * @schema ClusterIssuerSpecVenafiTpp#url
    */
@@ -2083,21 +2754,24 @@ export interface ClusterIssuerSpecVenafiTpp {
 /**
  * Converts an object of type 'ClusterIssuerSpecVenafiTpp' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVenafiTpp(obj: ClusterIssuerSpecVenafiTpp | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'caBundle': obj.caBundle,
+    'caBundleSecretRef': toJson_ClusterIssuerSpecVenafiTppCaBundleSecretRef(obj.caBundleSecretRef),
     'credentialsRef': toJson_ClusterIssuerSpecVenafiTppCredentialsRef(obj.credentialsRef),
     'url': obj.url,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.
+ * Deprecated: keyAlgorithm field exists for historical compatibility
+ * reasons and should not be used. The algorithm is now hardcoded to HS256
+ * in golang/x/crypto/acme.
  *
  * @schema ClusterIssuerSpecAcmeExternalAccountBindingKeyAlgorithm
  */
@@ -2111,20 +2785,29 @@ export enum ClusterIssuerSpecAcmeExternalAccountBindingKeyAlgorithm {
 }
 
 /**
- * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+ * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes
+ * Secret which holds the symmetric MAC key of the External Account Binding.
+ * The `key` is the index string that is paired with the key data in the
+ * Secret and should not be confused with the key data itself, or indeed with
+ * the External Account Binding keyID above.
+ * The secret key stored in the Secret **must** be un-padded, base64 URL
+ * encoded data.
  *
  * @schema ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef
  */
 export interface ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef#name
    */
@@ -2135,7 +2818,7 @@ export interface ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef(obj: ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2145,16 +2828,18 @@ export function toJson_ClusterIssuerSpecAcmeExternalAccountBindingKeySecretRef(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+ * Configures cert-manager to attempt to complete authorizations by
+ * performing the DNS01 challenge flow.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01
  */
 export interface ClusterIssuerSpecAcmeSolversDns01 {
   /**
-   * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+   * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage
+   * DNS01 challenge records.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01#acmeDNS
    */
@@ -2189,7 +2874,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01 {
   readonly cloudflare?: ClusterIssuerSpecAcmeSolversDns01Cloudflare;
 
   /**
-   * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+   * CNAMEStrategy configures how the DNS01 provider should handle CNAME
+   * records when found in DNS zones.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01#cnameStrategy
    */
@@ -2203,7 +2889,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01 {
   readonly digitalocean?: ClusterIssuerSpecAcmeSolversDns01Digitalocean;
 
   /**
-   * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+   * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/)
+   * to manage DNS01 challenge records.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01#rfc2136
    */
@@ -2217,7 +2904,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01 {
   readonly route53?: ClusterIssuerSpecAcmeSolversDns01Route53;
 
   /**
-   * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+   * Configure an external webhook based DNS01 challenge solver to manage
+   * DNS01 challenge records.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01#webhook
    */
@@ -2228,7 +2916,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01 {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01(obj: ClusterIssuerSpecAcmeSolversDns01 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2246,23 +2934,32 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01(obj: ClusterIssuerSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+ * Configures cert-manager to attempt to complete authorizations by
+ * performing the HTTP01 challenge flow.
+ * It is not possible to obtain certificates for wildcard domain names
+ * (e.g., `*.example.com`) using the HTTP01 challenge mechanism.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01 {
   /**
-   * The Gateway API is a sig-network community API that models service networking in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will create HTTPRoutes with the specified labels in the same namespace as the challenge. This solver is experimental, and fields / behaviour may change in the future.
+   * The Gateway API is a sig-network community API that models service networking
+   * in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will
+   * create HTTPRoutes with the specified labels in the same namespace as the challenge.
+   * This solver is experimental, and fields / behaviour may change in the future.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01#gatewayHTTPRoute
    */
   readonly gatewayHttpRoute?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute;
 
   /**
-   * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+   * The ingress based HTTP01 challenge solver will solve challenges by
+   * creating or modifying Ingress resources in order to route requests for
+   * '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are
+   * provisioned by cert-manager for each Challenge to be completed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01#ingress
    */
@@ -2273,7 +2970,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01 {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01(obj: ClusterIssuerSpecAcmeSolversHttp01 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2283,30 +2980,49 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01(obj: ClusterIssuerSpec
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+ * Selector selects a set of DNSNames on the Certificate resource that
+ * should be solved using this challenge solver.
+ * If not specified, the solver will be treated as the 'default' solver
+ * with the lowest priority, i.e. if any other solver has a more specific
+ * match, it will be used instead.
  *
  * @schema ClusterIssuerSpecAcmeSolversSelector
  */
 export interface ClusterIssuerSpecAcmeSolversSelector {
   /**
-   * List of DNSNames that this solver will be used to solve. If specified and a match is found, a dnsNames selector will take precedence over a dnsZones selector. If multiple solvers match with the same dnsNames value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+   * List of DNSNames that this solver will be used to solve.
+   * If specified and a match is found, a dnsNames selector will take
+   * precedence over a dnsZones selector.
+   * If multiple solvers match with the same dnsNames value, the solver
+   * with the most matching labels in matchLabels will be selected.
+   * If neither has more matches, the solver defined earlier in the list
+   * will be selected.
    *
    * @schema ClusterIssuerSpecAcmeSolversSelector#dnsNames
    */
   readonly dnsNames?: string[];
 
   /**
-   * List of DNSZones that this solver will be used to solve. The most specific DNS zone match specified here will take precedence over other DNS zone matches, so a solver specifying sys.example.com will be selected over one specifying example.com for the domain www.sys.example.com. If multiple solvers match with the same dnsZones value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+   * List of DNSZones that this solver will be used to solve.
+   * The most specific DNS zone match specified here will take precedence
+   * over other DNS zone matches, so a solver specifying sys.example.com
+   * will be selected over one specifying example.com for the domain
+   * www.sys.example.com.
+   * If multiple solvers match with the same dnsZones value, the solver
+   * with the most matching labels in matchLabels will be selected.
+   * If neither has more matches, the solver defined earlier in the list
+   * will be selected.
    *
    * @schema ClusterIssuerSpecAcmeSolversSelector#dnsZones
    */
   readonly dnsZones?: string[];
 
   /**
-   * A label selector that is used to refine the set of certificate's that this challenge solver will apply to.
+   * A label selector that is used to refine the set of certificate's that
+   * this challenge solver will apply to.
    *
    * @schema ClusterIssuerSpecAcmeSolversSelector#matchLabels
    */
@@ -2317,7 +3033,7 @@ export interface ClusterIssuerSpecAcmeSolversSelector {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversSelector(obj: ClusterIssuerSpecAcmeSolversSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2328,30 +3044,36 @@ export function toJson_ClusterIssuerSpecAcmeSolversSelector(obj: ClusterIssuerSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+ * AppRole authenticates with Vault using the App Role auth mechanism,
+ * with the role and secret stored in a Kubernetes Secret resource.
  *
  * @schema ClusterIssuerSpecVaultAuthAppRole
  */
 export interface ClusterIssuerSpecVaultAuthAppRole {
   /**
-   * Path where the App Role authentication backend is mounted in Vault, e.g: "approle"
+   * Path where the App Role authentication backend is mounted in Vault, e.g:
+   * "approle"
    *
    * @schema ClusterIssuerSpecVaultAuthAppRole#path
    */
   readonly path: string;
 
   /**
-   * RoleID configured in the App Role authentication backend when setting up the authentication backend in Vault.
+   * RoleID configured in the App Role authentication backend when setting
+   * up the authentication backend in Vault.
    *
    * @schema ClusterIssuerSpecVaultAuthAppRole#roleId
    */
   readonly roleId: string;
 
   /**
-   * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+   * Reference to a key in a Secret that contains the App Role secret used
+   * to authenticate with Vault.
+   * The `key` field must be specified and denotes which entry within the Secret
+   * resource is used as the app role secret.
    *
    * @schema ClusterIssuerSpecVaultAuthAppRole#secretRef
    */
@@ -2362,7 +3084,7 @@ export interface ClusterIssuerSpecVaultAuthAppRole {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuthAppRole' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuthAppRole(obj: ClusterIssuerSpecVaultAuthAppRole | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2373,37 +3095,101 @@ export function toJson_ClusterIssuerSpecVaultAuthAppRole(obj: ClusterIssuerSpecV
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+ * ClientCertificate authenticates with Vault by presenting a client
+ * certificate during the request's TLS handshake.
+ * Works only when using HTTPS protocol.
+ *
+ * @schema ClusterIssuerSpecVaultAuthClientCertificate
+ */
+export interface ClusterIssuerSpecVaultAuthClientCertificate {
+  /**
+   * The Vault mountPath here is the mount path to use when authenticating with
+   * Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+   * `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+   * default value "/v1/auth/cert" will be used.
+   *
+   * @schema ClusterIssuerSpecVaultAuthClientCertificate#mountPath
+   */
+  readonly mountPath?: string;
+
+  /**
+   * Name of the certificate role to authenticate against.
+   * If not set, matching any certificate role, if available.
+   *
+   * @schema ClusterIssuerSpecVaultAuthClientCertificate#name
+   */
+  readonly name?: string;
+
+  /**
+   * Reference to Kubernetes Secret of type "kubernetes.io/tls" (hence containing
+   * tls.crt and tls.key) used to authenticate to Vault using TLS client
+   * authentication.
+   *
+   * @schema ClusterIssuerSpecVaultAuthClientCertificate#secretName
+   */
+  readonly secretName?: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVaultAuthClientCertificate' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVaultAuthClientCertificate(obj: ClusterIssuerSpecVaultAuthClientCertificate | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'mountPath': obj.mountPath,
+    'name': obj.name,
+    'secretName': obj.secretName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Kubernetes authenticates with Vault by passing the ServiceAccount
+ * token stored in the named Secret resource to the Vault server.
  *
  * @schema ClusterIssuerSpecVaultAuthKubernetes
  */
 export interface ClusterIssuerSpecVaultAuthKubernetes {
   /**
-   * The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used.
+   * The Vault mountPath here is the mount path to use when authenticating with
+   * Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+   * `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+   * default value "/v1/auth/kubernetes" will be used.
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetes#mountPath
    */
   readonly mountPath?: string;
 
   /**
-   * A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies.
+   * A required field containing the Vault Role to assume. A Role binds a
+   * Kubernetes ServiceAccount with a set of Vault policies.
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetes#role
    */
   readonly role: string;
 
   /**
-   * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+   * The required Secret field containing a Kubernetes ServiceAccount JWT used
+   * for authenticating with Vault. Use of 'ambient credentials' is not
+   * supported.
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetes#secretRef
    */
   readonly secretRef?: ClusterIssuerSpecVaultAuthKubernetesSecretRef;
 
   /**
-   * A reference to a service account that will be used to request a bound token (also known as "projected token"). Compared to using "secretRef", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token.
+   * A reference to a service account that will be used to request a bound
+   * token (also known as "projected token"). Compared to using "secretRef",
+   * using this field means that you don't rely on statically bound tokens. To
+   * use this field, you must configure an RBAC rule to let cert-manager
+   * request a token.
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetes#serviceAccountRef
    */
@@ -2414,7 +3200,7 @@ export interface ClusterIssuerSpecVaultAuthKubernetes {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuthKubernetes' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuthKubernetes(obj: ClusterIssuerSpecVaultAuthKubernetes | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2426,7 +3212,7 @@ export function toJson_ClusterIssuerSpecVaultAuthKubernetes(obj: ClusterIssuerSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TokenSecretRef authenticates with Vault by presenting a token.
@@ -2435,14 +3221,17 @@ export function toJson_ClusterIssuerSpecVaultAuthKubernetes(obj: ClusterIssuerSp
  */
 export interface ClusterIssuerSpecVaultAuthTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecVaultAuthTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecVaultAuthTokenSecretRef#name
    */
@@ -2453,7 +3242,7 @@ export interface ClusterIssuerSpecVaultAuthTokenSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuthTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuthTokenSecretRef(obj: ClusterIssuerSpecVaultAuthTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2463,7 +3252,7 @@ export function toJson_ClusterIssuerSpecVaultAuthTokenSecretRef(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
@@ -2472,14 +3261,17 @@ export function toJson_ClusterIssuerSpecVaultAuthTokenSecretRef(obj: ClusterIssu
  */
 export interface ClusterIssuerSpecVenafiCloudApiTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecVenafiCloudApiTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecVenafiCloudApiTokenSecretRef#name
    */
@@ -2490,7 +3282,7 @@ export interface ClusterIssuerSpecVenafiCloudApiTokenSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVenafiCloudApiTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVenafiCloudApiTokenSecretRef(obj: ClusterIssuerSpecVenafiCloudApiTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2500,16 +3292,63 @@ export function toJson_ClusterIssuerSpecVenafiCloudApiTokenSecretRef(obj: Cluste
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+ * Reference to a Secret containing a base64-encoded bundle of PEM CAs
+ * which will be used to validate the certificate chain presented by the TPP server.
+ * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
+ * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
+ * the cert-manager controller container is used to validate the TLS connection.
+ *
+ * @schema ClusterIssuerSpecVenafiTppCaBundleSecretRef
+ */
+export interface ClusterIssuerSpecVenafiTppCaBundleSecretRef {
+  /**
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
+   *
+   * @schema ClusterIssuerSpecVenafiTppCaBundleSecretRef#key
+   */
+  readonly key?: string;
+
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema ClusterIssuerSpecVenafiTppCaBundleSecretRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVenafiTppCaBundleSecretRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVenafiTppCaBundleSecretRef(obj: ClusterIssuerSpecVenafiTppCaBundleSecretRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+ * The secret must contain the key 'access-token' for the Access Token Authentication,
+ * or two keys, 'username' and 'password' for the API Keys Authentication.
  *
  * @schema ClusterIssuerSpecVenafiTppCredentialsRef
  */
 export interface ClusterIssuerSpecVenafiTppCredentialsRef {
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecVenafiTppCredentialsRef#name
    */
@@ -2520,7 +3359,7 @@ export interface ClusterIssuerSpecVenafiTppCredentialsRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVenafiTppCredentialsRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVenafiTppCredentialsRef(obj: ClusterIssuerSpecVenafiTppCredentialsRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2529,16 +3368,18 @@ export function toJson_ClusterIssuerSpecVenafiTppCredentialsRef(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+ * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage
+ * DNS01 challenge records.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AcmeDns
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AcmeDns {
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AcmeDns#accountSecretRef
    */
@@ -2554,7 +3395,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AcmeDns {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AcmeDns' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AcmeDns(obj: ClusterIssuerSpecAcmeSolversDns01AcmeDns | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2564,7 +3405,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AcmeDns(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Akamai DNS zone management API to manage DNS01 challenge records.
@@ -2573,21 +3414,24 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AcmeDns(obj: ClusterIssu
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Akamai {
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Akamai#accessTokenSecretRef
    */
   readonly accessTokenSecretRef: ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef;
 
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Akamai#clientSecretSecretRef
    */
   readonly clientSecretSecretRef: ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef;
 
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Akamai#clientTokenSecretRef
    */
@@ -2603,7 +3447,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Akamai {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Akamai' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Akamai(obj: ClusterIssuerSpecAcmeSolversDns01Akamai | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2615,7 +3459,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Akamai(obj: ClusterIssue
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
@@ -2624,14 +3468,18 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Akamai(obj: ClusterIssue
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AzureDns {
   /**
-   * Auth: Azure Service Principal: The ClientID of the Azure Service Principal used to authenticate with Azure DNS. If set, ClientSecret and TenantID must also be set.
+   * Auth: Azure Service Principal:
+   * The ClientID of the Azure Service Principal used to authenticate with Azure DNS.
+   * If set, ClientSecret and TenantID must also be set.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDns#clientID
    */
   readonly clientId?: string;
 
   /**
-   * Auth: Azure Service Principal: A reference to a Secret containing the password associated with the Service Principal. If set, ClientID and TenantID must also be set.
+   * Auth: Azure Service Principal:
+   * A reference to a Secret containing the password associated with the Service Principal.
+   * If set, ClientID and TenantID must also be set.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDns#clientSecretSecretRef
    */
@@ -2652,7 +3500,9 @@ export interface ClusterIssuerSpecAcmeSolversDns01AzureDns {
   readonly hostedZoneName?: string;
 
   /**
-   * Auth: Azure Workload Identity or Azure Managed Service Identity: Settings to enable Azure Workload Identity or Azure Managed Service Identity If set, ClientID, ClientSecret and TenantID must not be set.
+   * Auth: Azure Workload Identity or Azure Managed Service Identity:
+   * Settings to enable Azure Workload Identity or Azure Managed Service Identity
+   * If set, ClientID, ClientSecret and TenantID must not be set.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDns#managedIdentity
    */
@@ -2673,7 +3523,9 @@ export interface ClusterIssuerSpecAcmeSolversDns01AzureDns {
   readonly subscriptionId: string;
 
   /**
-   * Auth: Azure Service Principal: The TenantID of the Azure Service Principal used to authenticate with Azure DNS. If set, ClientID and ClientSecret must also be set.
+   * Auth: Azure Service Principal:
+   * The TenantID of the Azure Service Principal used to authenticate with Azure DNS.
+   * If set, ClientID and ClientSecret must also be set.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDns#tenantID
    */
@@ -2684,7 +3536,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AzureDns {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AzureDns' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDns(obj: ClusterIssuerSpecAcmeSolversDns01AzureDns | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2700,7 +3552,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDns(obj: ClusterIss
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Google Cloud DNS API to manage DNS01 challenge records.
@@ -2709,7 +3561,9 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDns(obj: ClusterIss
  */
 export interface ClusterIssuerSpecAcmeSolversDns01CloudDns {
   /**
-   * HostedZoneName is an optional field that tells cert-manager in which Cloud DNS zone the challenge record has to be created. If left empty cert-manager will automatically choose a zone.
+   * HostedZoneName is an optional field that tells cert-manager in which
+   * Cloud DNS zone the challenge record has to be created.
+   * If left empty cert-manager will automatically choose a zone.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudDns#hostedZoneName
    */
@@ -2721,7 +3575,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01CloudDns {
   readonly project: string;
 
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudDns#serviceAccountSecretRef
    */
@@ -2732,7 +3587,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01CloudDns {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01CloudDns' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudDns(obj: ClusterIssuerSpecAcmeSolversDns01CloudDns | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2743,7 +3598,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudDns(obj: ClusterIss
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Cloudflare API to manage DNS01 challenge records.
@@ -2752,7 +3607,9 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudDns(obj: ClusterIss
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Cloudflare {
   /**
-   * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+   * API key to use to authenticate with Cloudflare.
+   * Note: using an API token to authenticate is now the recommended method
+   * as it allows greater control of permissions.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Cloudflare#apiKeySecretRef
    */
@@ -2777,7 +3634,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Cloudflare {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Cloudflare' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Cloudflare(obj: ClusterIssuerSpecAcmeSolversDns01Cloudflare | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2788,10 +3645,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Cloudflare(obj: ClusterI
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+ * CNAMEStrategy configures how the DNS01 provider should handle CNAME
+ * records when found in DNS zones.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01CnameStrategy
  */
@@ -2809,7 +3667,8 @@ export enum ClusterIssuerSpecAcmeSolversDns01CnameStrategy {
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Digitalocean {
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Digitalocean#tokenSecretRef
    */
@@ -2820,7 +3679,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Digitalocean {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Digitalocean' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Digitalocean(obj: ClusterIssuerSpecAcmeSolversDns01Digitalocean | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2829,37 +3688,46 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Digitalocean(obj: Cluste
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+ * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/)
+ * to manage DNS01 challenge records.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
   /**
-   * The IP address or hostname of an authoritative DNS server supporting RFC2136 in the form host:port. If the host is an IPv6 address it must be enclosed in square brackets (e.g [2001:db8::1]) ; port is optional. This field is required.
+   * The IP address or hostname of an authoritative DNS server supporting
+   * RFC2136 in the form host:port. If the host is an IPv6 address it must be
+   * enclosed in square brackets (e.g [2001:db8::1]) ; port is optional.
+   * This field is required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136#nameserver
    */
   readonly nameserver: string;
 
   /**
-   * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined. Supported values are (case-insensitive): ``HMACMD5`` (default), ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
+   * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only
+   * when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined.
+   * Supported values are (case-insensitive): ``HMACMD5`` (default),
+   * ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136#tsigAlgorithm
    */
   readonly tsigAlgorithm?: string;
 
   /**
-   * The TSIG Key name configured in the DNS. If ``tsigSecretSecretRef`` is defined, this field is required.
+   * The TSIG Key name configured in the DNS.
+   * If ``tsigSecretSecretRef`` is defined, this field is required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136#tsigKeyName
    */
   readonly tsigKeyName?: string;
 
   /**
-   * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+   * The name of the secret containing the TSIG value.
+   * If ``tsigKeyName`` is defined, this field is required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136#tsigSecretSecretRef
    */
@@ -2870,7 +3738,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Rfc2136' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Rfc2136(obj: ClusterIssuerSpecAcmeSolversDns01Rfc2136 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2882,7 +3750,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Rfc2136(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the AWS Route53 API to manage DNS01 challenge records.
@@ -2891,42 +3759,83 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Rfc2136(obj: ClusterIssu
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
   /**
-   * The AccessKeyID is used for authentication. Cannot be set when SecretAccessKeyID is set. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+   * The AccessKeyID is used for authentication.
+   * Cannot be set when SecretAccessKeyID is set.
+   * If neither the Access Key nor Key ID are set, we fall-back to using env
+   * vars, shared credentials file or AWS Instance metadata,
+   * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#accessKeyID
    */
   readonly accessKeyId?: string;
 
   /**
-   * The SecretAccessKey is used for authentication. If set, pull the AWS access key ID from a key within a Kubernetes Secret. Cannot be set when AccessKeyID is set. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+   * The SecretAccessKey is used for authentication. If set, pull the AWS
+   * access key ID from a key within a Kubernetes Secret.
+   * Cannot be set when AccessKeyID is set.
+   * If neither the Access Key nor Key ID are set, we fall-back to using env
+   * vars, shared credentials file or AWS Instance metadata,
+   * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#accessKeyIDSecretRef
    */
   readonly accessKeyIdSecretRef?: ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef;
 
   /**
-   * If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+   * Auth configures how cert-manager authenticates.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01Route53#auth
+   */
+  readonly auth?: ClusterIssuerSpecAcmeSolversDns01Route53Auth;
+
+  /**
+   * If set, the provider will manage only this zone in Route53 and will not do a lookup using the route53:ListHostedZonesByName api call.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#hostedZoneID
    */
   readonly hostedZoneId?: string;
 
   /**
-   * Always set the region when using AccessKeyID and SecretAccessKey
+   * Override the AWS region.
+   *
+   * Route53 is a global service and does not have regional endpoints but the
+   * region specified here (or via environment variables) is used as a hint to
+   * help compute the correct AWS credential scope and partition when it
+   * connects to Route53. See:
+   * - [Amazon Route 53 endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/r53.html)
+   * - [Global services](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/global-services.html)
+   *
+   * If you omit this region field, cert-manager will use the region from
+   * AWS_REGION and AWS_DEFAULT_REGION environment variables, if they are set
+   * in the cert-manager controller Pod.
+   *
+   * The `region` field is not needed if you use [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html).
+   * Instead an AWS_REGION environment variable is added to the cert-manager controller Pod by:
+   * [Amazon EKS Pod Identity Webhook](https://github.com/aws/amazon-eks-pod-identity-webhook).
+   * In this case this `region` field value is ignored.
+   *
+   * The `region` field is not needed if you use [EKS Pod Identities](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html).
+   * Instead an AWS_REGION environment variable is added to the cert-manager controller Pod by:
+   * [Amazon EKS Pod Identity Agent](https://github.com/aws/eks-pod-identity-agent),
+   * In this case this `region` field value is ignored.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#region
    */
-  readonly region: string;
+  readonly region?: string;
 
   /**
-   * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
+   * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey
+   * or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#role
    */
   readonly role?: string;
 
   /**
-   * The SecretAccessKey is used for authentication. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+   * The SecretAccessKey is used for authentication.
+   * If neither the Access Key nor Key ID are set, we fall-back to using env
+   * vars, shared credentials file or AWS Instance metadata,
+   * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#secretAccessKeySecretRef
    */
@@ -2937,12 +3846,13 @@ export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Route53' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53(obj: ClusterIssuerSpecAcmeSolversDns01Route53 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'accessKeyID': obj.accessKeyId,
     'accessKeyIDSecretRef': toJson_ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef(obj.accessKeyIdSecretRef),
+    'auth': toJson_ClusterIssuerSpecAcmeSolversDns01Route53Auth(obj.auth),
     'hostedZoneID': obj.hostedZoneId,
     'region': obj.region,
     'role': obj.role,
@@ -2951,30 +3861,43 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+ * Configure an external webhook based DNS01 challenge solver to manage
+ * DNS01 challenge records.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Webhook
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Webhook {
   /**
-   * Additional configuration that should be passed to the webhook apiserver when challenges are processed. This can contain arbitrary JSON data. Secret values should not be specified in this stanza. If secret values are needed (e.g. credentials for a DNS service), you should use a SecretKeySelector to reference a Secret resource. For details on the schema of this field, consult the webhook provider implementation's documentation.
+   * Additional configuration that should be passed to the webhook apiserver
+   * when challenges are processed.
+   * This can contain arbitrary JSON data.
+   * Secret values should not be specified in this stanza.
+   * If secret values are needed (e.g., credentials for a DNS service), you
+   * should use a SecretKeySelector to reference a Secret resource.
+   * For details on the schema of this field, consult the webhook provider
+   * implementation's documentation.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Webhook#config
    */
   readonly config?: any;
 
   /**
-   * The API group name that should be used when POSTing ChallengePayload resources to the webhook apiserver. This should be the same as the GroupName specified in the webhook provider implementation.
+   * The API group name that should be used when POSTing ChallengePayload
+   * resources to the webhook apiserver.
+   * This should be the same as the GroupName specified in the webhook
+   * provider implementation.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Webhook#groupName
    */
   readonly groupName: string;
 
   /**
-   * The name of the solver to use, as defined in the webhook provider implementation. This will typically be the name of the provider, e.g. 'cloudflare'.
+   * The name of the solver to use, as defined in the webhook provider
+   * implementation.
+   * This will typically be the name of the provider, e.g., 'cloudflare'.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Webhook#solverName
    */
@@ -2985,7 +3908,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Webhook {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Webhook' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Webhook(obj: ClusterIssuerSpecAcmeSolversDns01Webhook | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2996,30 +3919,46 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Webhook(obj: ClusterIssu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The Gateway API is a sig-network community API that models service networking in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will create HTTPRoutes with the specified labels in the same namespace as the challenge. This solver is experimental, and fields / behaviour may change in the future.
+ * The Gateway API is a sig-network community API that models service networking
+ * in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will
+ * create HTTPRoutes with the specified labels in the same namespace as the challenge.
+ * This solver is experimental, and fields / behaviour may change in the future.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute {
   /**
-   * Custom labels that will be applied to HTTPRoutes created by cert-manager while solving HTTP-01 challenges.
+   * Custom labels that will be applied to HTTPRoutes created by cert-manager
+   * while solving HTTP-01 challenges.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
-   * When solving an HTTP-01 challenge, cert-manager creates an HTTPRoute. cert-manager needs to know which parentRefs should be used when creating the HTTPRoute. Usually, the parentRef references a Gateway. See: https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways
+   * When solving an HTTP-01 challenge, cert-manager creates an HTTPRoute.
+   * cert-manager needs to know which parentRefs should be used when creating
+   * the HTTPRoute. Usually, the parentRef references a Gateway. See:
+   * https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute#parentRefs
    */
   readonly parentRefs?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs[];
 
   /**
-   * Optional service type for Kubernetes solver service. Supported values are NodePort or ClusterIP. If unset, defaults to NodePort.
+   * Optional pod template used to configure the ACME challenge solver pods
+   * used for HTTP01 challenges.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute#podTemplate
+   */
+  readonly podTemplate?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate;
+
+  /**
+   * Optional service type for Kubernetes solver service. Supported values
+   * are NodePort or ClusterIP. If unset, defaults to NodePort.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute#serviceType
    */
@@ -3030,62 +3969,80 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoute | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'labels': ((obj.labels) === undefined) ? undefined : (Object.entries(obj.labels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'parentRefs': obj.parentRefs?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs(y)),
+    'podTemplate': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate(obj.podTemplate),
     'serviceType': obj.serviceType,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+ * The ingress based HTTP01 challenge solver will solve challenges by
+ * creating or modifying Ingress resources in order to route requests for
+ * '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are
+ * provisioned by cert-manager for each Challenge to be completed.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01Ingress {
   /**
-   * This field configures the annotation `kubernetes.io/ingress.class` when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of `class`, `name` or `ingressClassName` may be specified.
+   * This field configures the annotation `kubernetes.io/ingress.class` when
+   * creating Ingress resources to solve ACME challenges that use this
+   * challenge solver. Only one of `class`, `name` or `ingressClassName` may
+   * be specified.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress#class
    */
   readonly class?: string;
 
   /**
-   * This field configures the field `ingressClassName` on the created Ingress resources used to solve ACME challenges that use this challenge solver. This is the recommended way of configuring the ingress class. Only one of `class`, `name` or `ingressClassName` may be specified.
+   * This field configures the field `ingressClassName` on the created Ingress
+   * resources used to solve ACME challenges that use this challenge solver.
+   * This is the recommended way of configuring the ingress class. Only one of
+   * `class`, `name` or `ingressClassName` may be specified.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress#ingressClassName
    */
   readonly ingressClassName?: string;
 
   /**
-   * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges.
+   * Optional ingress template used to configure the ACME challenge solver
+   * ingress used for HTTP01 challenges.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress#ingressTemplate
    */
   readonly ingressTemplate?: ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate;
 
   /**
-   * The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources. Only one of `class`, `name` or `ingressClassName` may be specified.
+   * The name of the ingress resource that should have ACME challenge solving
+   * routes inserted into it in order to solve HTTP01 challenges.
+   * This is typically used in conjunction with ingress controllers like
+   * ingress-gce, which maintains a 1:1 mapping between external IPs and
+   * ingress resources. Only one of `class`, `name` or `ingressClassName` may
+   * be specified.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress#name
    */
   readonly name?: string;
 
   /**
-   * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges.
+   * Optional pod template used to configure the ACME challenge solver pods
+   * used for HTTP01 challenges.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress#podTemplate
    */
   readonly podTemplate?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate;
 
   /**
-   * Optional service type for Kubernetes solver service. Supported values are NodePort or ClusterIP. If unset, defaults to NodePort.
+   * Optional service type for Kubernetes solver service. Supported values
+   * are NodePort or ClusterIP. If unset, defaults to NodePort.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01Ingress#serviceType
    */
@@ -3096,7 +4053,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01Ingress {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01Ingress' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01Ingress(obj: ClusterIssuerSpecAcmeSolversHttp01Ingress | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3110,23 +4067,29 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01Ingress(obj: ClusterIss
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+ * Reference to a key in a Secret that contains the App Role secret used
+ * to authenticate with Vault.
+ * The `key` field must be specified and denotes which entry within the Secret
+ * resource is used as the app role secret.
  *
  * @schema ClusterIssuerSpecVaultAuthAppRoleSecretRef
  */
 export interface ClusterIssuerSpecVaultAuthAppRoleSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecVaultAuthAppRoleSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecVaultAuthAppRoleSecretRef#name
    */
@@ -3137,7 +4100,7 @@ export interface ClusterIssuerSpecVaultAuthAppRoleSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuthAppRoleSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuthAppRoleSecretRef(obj: ClusterIssuerSpecVaultAuthAppRoleSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3147,23 +4110,28 @@ export function toJson_ClusterIssuerSpecVaultAuthAppRoleSecretRef(obj: ClusterIs
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+ * The required Secret field containing a Kubernetes ServiceAccount JWT used
+ * for authenticating with Vault. Use of 'ambient credentials' is not
+ * supported.
  *
  * @schema ClusterIssuerSpecVaultAuthKubernetesSecretRef
  */
 export interface ClusterIssuerSpecVaultAuthKubernetesSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetesSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetesSecretRef#name
    */
@@ -3174,7 +4142,7 @@ export interface ClusterIssuerSpecVaultAuthKubernetesSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuthKubernetesSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuthKubernetesSecretRef(obj: ClusterIssuerSpecVaultAuthKubernetesSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3184,14 +4152,26 @@ export function toJson_ClusterIssuerSpecVaultAuthKubernetesSecretRef(obj: Cluste
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a service account that will be used to request a bound token (also known as "projected token"). Compared to using "secretRef", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token.
+ * A reference to a service account that will be used to request a bound
+ * token (also known as "projected token"). Compared to using "secretRef",
+ * using this field means that you don't rely on statically bound tokens. To
+ * use this field, you must configure an RBAC rule to let cert-manager
+ * request a token.
  *
  * @schema ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef
  */
 export interface ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef {
+  /**
+   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault. The default token
+   * consisting of the issuer's namespace and name is always included.
+   *
+   * @schema ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef#audiences
+   */
+  readonly audiences?: string[];
+
   /**
    * Name of the ServiceAccount used to request a token.
    *
@@ -3204,32 +4184,37 @@ export interface ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef(obj: ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'audiences': obj.audiences?.map(y => y),
     'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef#name
    */
@@ -3240,7 +4225,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3250,23 +4235,27 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef#name
    */
@@ -3277,7 +4266,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3287,23 +4276,27 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef#name
    */
@@ -3314,7 +4307,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3324,23 +4317,27 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AkamaiClientSecretSecret
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef#name
    */
@@ -3351,7 +4348,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3361,23 +4358,28 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AkamaiClientTokenSecretR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Auth: Azure Service Principal: A reference to a Secret containing the password associated with the Service Principal. If set, ClientID and TenantID must also be set.
+ * Auth: Azure Service Principal:
+ * A reference to a Secret containing the password associated with the Service Principal.
+ * If set, ClientID and TenantID must also be set.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef#name
    */
@@ -3388,7 +4390,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef 
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3398,7 +4400,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDnsClientSecretSecr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * name of the Azure environment (default AzurePublicCloud)
@@ -3417,57 +4419,72 @@ export enum ClusterIssuerSpecAcmeSolversDns01AzureDnsEnvironment {
 }
 
 /**
- * Auth: Azure Workload Identity or Azure Managed Service Identity: Settings to enable Azure Workload Identity or Azure Managed Service Identity If set, ClientID, ClientSecret and TenantID must not be set.
+ * Auth: Azure Workload Identity or Azure Managed Service Identity:
+ * Settings to enable Azure Workload Identity or Azure Managed Service Identity
+ * If set, ClientID, ClientSecret and TenantID must not be set.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity
  */
 export interface ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity {
   /**
-   * client ID of the managed identity, can not be used at the same time as resourceID
+   * client ID of the managed identity, cannot be used at the same time as resourceID
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity#clientID
    */
   readonly clientId?: string;
 
   /**
-   * resource ID of the managed identity, can not be used at the same time as clientID Cannot be used for Azure Managed Service Identity
+   * resource ID of the managed identity, cannot be used at the same time as clientID
+   * Cannot be used for Azure Managed Service Identity
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity#resourceID
    */
   readonly resourceId?: string;
+
+  /**
+   * tenant ID of the managed identity, cannot be used at the same time as resourceID
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity#tenantID
+   */
+  readonly tenantId?: string;
 
 }
 
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity(obj: ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'clientID': obj.clientId,
     'resourceID': obj.resourceId,
+    'tenantID': obj.tenantId,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef#name
    */
@@ -3478,7 +4495,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRe
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3488,23 +4505,28 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudDnsServiceAccountSe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+ * API key to use to authenticate with Cloudflare.
+ * Note: using an API token to authenticate is now the recommended method
+ * as it allows greater control of permissions.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef#name
    */
@@ -3515,7 +4537,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef(obj: ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3525,7 +4547,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * API token used to authenticate with Cloudflare.
@@ -3534,14 +4556,17 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudflareApiKeySecretRe
  */
 export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef#name
    */
@@ -3552,7 +4577,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3562,23 +4587,27 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01CloudflareApiTokenSecret
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef#name
    */
@@ -3589,7 +4618,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3599,23 +4628,27 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01DigitaloceanTokenSecretR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+ * The name of the secret containing the TSIG value.
+ * If ``tsigKeyName`` is defined, this field is required.
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef#name
    */
@@ -3626,7 +4659,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3636,23 +4669,31 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The SecretAccessKey is used for authentication. If set, pull the AWS access key ID from a key within a Kubernetes Secret. Cannot be set when AccessKeyID is set. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+ * The SecretAccessKey is used for authentication. If set, pull the AWS
+ * access key ID from a key within a Kubernetes Secret.
+ * Cannot be set when AccessKeyID is set.
+ * If neither the Access Key nor Key ID are set, we fall-back to using env
+ * vars, shared credentials file or AWS Instance metadata,
+ * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef#name
    */
@@ -3663,7 +4704,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef(obj: ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3673,23 +4714,59 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecret
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The SecretAccessKey is used for authentication. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+ * Auth configures how cert-manager authenticates.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversDns01Route53Auth
+ */
+export interface ClusterIssuerSpecAcmeSolversDns01Route53Auth {
+  /**
+   * Kubernetes authenticates with Route53 using AssumeRoleWithWebIdentity
+   * by passing a bound ServiceAccount token.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01Route53Auth#kubernetes
+   */
+  readonly kubernetes: ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Route53Auth' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53Auth(obj: ClusterIssuerSpecAcmeSolversDns01Route53Auth | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'kubernetes': toJson_ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes(obj.kubernetes),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The SecretAccessKey is used for authentication.
+ * If neither the Access Key nor Key ID are set, we fall-back to using env
+ * vars, shared credentials file or AWS Instance metadata,
+ * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef
  */
 export interface ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef#name
    */
@@ -3700,7 +4777,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRe
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef(obj: ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3710,19 +4787,31 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ParentReference identifies an API object (usually a Gateway) that can be considered a parent of this resource (usually a route). There are two kinds of parent resources with "Core" support:
- * * Gateway (Gateway conformance profile) * Service (Mesh conformance profile, experimental, ClusterIP Services only)
- * This API may be extended in the future to support additional kinds of parent resources.
- * The API object must be valid in the cluster; the Group and Kind must be registered in the cluster for this reference to be valid.
+ * ParentReference identifies an API object (usually a Gateway) that can be considered
+ * a parent of this resource (usually a route). There are two kinds of parent resources
+ * with "Core" support:
+ *
+ * * Gateway (Gateway conformance profile)
+ * * Service (Mesh conformance profile, ClusterIP Services only)
+ *
+ * This API may be extended in the future to support additional kinds of parent
+ * resources.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
   /**
-   * Group is the group of the referent. When unspecified, "gateway.networking.k8s.io" is inferred. To set the core API group (such as for a "Service" kind referent), Group must be explicitly set to "" (empty string).
+   * Group is the group of the referent.
+   * When unspecified, "gateway.networking.k8s.io" is inferred.
+   * To set the core API group (such as for a "Service" kind referent),
+   * Group must be explicitly set to "" (empty string).
+   *
    * Support: Core
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#group
@@ -3731,8 +4820,12 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
 
   /**
    * Kind is kind of the referent.
+   *
    * There are two kinds of parent resources with "Core" support:
-   * * Gateway (Gateway conformance profile) * Service (Mesh conformance profile, experimental, ClusterIP Services only)
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
    * Support for other resources is Implementation-Specific.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#kind
@@ -3741,6 +4834,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
 
   /**
    * Name is the name of the referent.
+   *
    * Support: Core
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#name
@@ -3748,10 +4842,27 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
   readonly name: string;
 
   /**
-   * Namespace is the namespace of the referent. When unspecified, this refers to the local namespace of the Route.
-   * Note that there are specific rules for ParentRefs which cross namespace boundaries. Cross-namespace references are only valid if they are explicitly allowed by something in the namespace they are referring to. For example: Gateway has the AllowedRoutes field, and ReferenceGrant provides a generic way to enable any other kind of cross-namespace reference.
-   * <gateway:experimental:description> ParentRefs from a Route to a Service in the same namespace are "producer" routes, which apply default routing rules to inbound connections from any namespace to the Service.
-   * ParentRefs from a Route to a Service in a different namespace are "consumer" routes, and these routing rules are only applied to outbound connections originating from the same namespace as the Route, for which the intended destination of the connections are a Service targeted as a ParentRef of the Route. </gateway:experimental:description>
+   * Namespace is the namespace of the referent. When unspecified, this refers
+   * to the local namespace of the Route.
+   *
+   * Note that there are specific rules for ParentRefs which cross namespace
+   * boundaries. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example:
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable any other kind of cross-namespace reference.
+   *
+   * <gateway:experimental:description>
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   * </gateway:experimental:description>
+   *
    * Support: Core
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#namespace
@@ -3759,23 +4870,65 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
   readonly namespace?: string;
 
   /**
-   * Port is the network port this Route targets. It can be interpreted differently based on the type of parent resource.
-   * When the parent resource is a Gateway, this targets all listeners listening on the specified port that also support this kind of Route(and select this Route). It's not recommended to set `Port` unless the networking behaviors specified in a Route must apply to a specific port as opposed to a listener(s) whose port(s) may be changed. When both Port and SectionName are specified, the name and port of the selected listener must match both specified values.
-   * <gateway:experimental:description> When the parent resource is a Service, this targets a specific port in the Service spec. When both Port (experimental) and SectionName are specified, the name and port of the selected port must match both specified values. </gateway:experimental:description>
-   * Implementations MAY choose to support other parent resources. Implementations supporting other types of parent resources MUST clearly document how/if Port is interpreted.
-   * For the purpose of status, an attachment is considered successful as long as the parent resource accepts it partially. For example, Gateway listeners can restrict which Routes can attach to them by Route kind, namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from the referencing Route, the Route MUST be considered successfully attached. If no Gateway listeners accept attachment from this Route, the Route MUST be considered detached from the Gateway.
+   * Port is the network port this Route targets. It can be interpreted
+   * differently based on the type of parent resource.
+   *
+   * When the parent resource is a Gateway, this targets all listeners
+   * listening on the specified port that also support this kind of Route(and
+   * select this Route). It's not recommended to set `Port` unless the
+   * networking behaviors specified in a Route must apply to a specific port
+   * as opposed to a listener(s) whose port(s) may be changed. When both Port
+   * and SectionName are specified, the name and port of the selected listener
+   * must match both specified values.
+   *
+   * <gateway:experimental:description>
+   * When the parent resource is a Service, this targets a specific port in the
+   * Service spec. When both Port (experimental) and SectionName are specified,
+   * the name and port of the selected port must match both specified values.
+   * </gateway:experimental:description>
+   *
+   * Implementations MAY choose to support other parent resources.
+   * Implementations supporting other types of parent resources MUST clearly
+   * document how/if Port is interpreted.
+   *
+   * For the purpose of status, an attachment is considered successful as
+   * long as the parent resource accepts it partially. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+   * from the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route,
+   * the Route MUST be considered detached from the Gateway.
+   *
    * Support: Extended
-   * <gateway:experimental>
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#port
    */
   readonly port?: number;
 
   /**
-   * SectionName is the name of a section within the target resource. In the following resources, SectionName is interpreted as the following:
-   * * Gateway: Listener Name. When both Port (experimental) and SectionName are specified, the name and port of the selected listener must match both specified values. * Service: Port Name. When both Port (experimental) and SectionName are specified, the name and port of the selected listener must match both specified values. Note that attaching Routes to Services as Parents is part of experimental Mesh support and is not supported for any other purpose.
-   * Implementations MAY choose to support attaching Routes to other resources. If that is the case, they MUST clearly document how SectionName is interpreted.
-   * When unspecified (empty string), this will reference the entire resource. For the purpose of status, an attachment is considered successful if at least one section in the parent resource accepts it. For example, Gateway listeners can restrict which Routes can attach to them by Route kind, namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from the referencing Route, the Route MUST be considered successfully attached. If no Gateway listeners accept attachment from this Route, the Route MUST be considered detached from the Gateway.
+   * SectionName is the name of a section within the target resource. In the
+   * following resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   * * Service: Port name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   *
+   * Implementations MAY choose to support attaching Routes to other resources.
+   * If that is the case, they MUST clearly document how SectionName is
+   * interpreted.
+   *
+   * When unspecified (empty string), this will reference the entire resource.
+   * For the purpose of status, an attachment is considered successful if at
+   * least one section in the parent resource accepts it. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+   * the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route, the
+   * Route MUST be considered detached from the Gateway.
+   *
    * Support: Core
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#sectionName
@@ -3787,7 +4940,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3801,16 +4954,63 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRouteParentR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges.
+ * Optional pod template used to configure the ACME challenge solver pods
+ * used for HTTP01 challenges.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate {
+  /**
+   * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+   * Only the 'labels' and 'annotations' fields may be set.
+   * If labels or annotations overlap with in-built values, the values here
+   * will override the in-built values.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate#metadata
+   */
+  readonly metadata?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata;
+
+  /**
+   * PodSpec defines overrides for the HTTP01 challenge solver pod.
+   * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+   * All other fields will be ignored.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate#spec
+   */
+  readonly spec?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata(obj.metadata),
+    'spec': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Optional ingress template used to configure the ACME challenge solver
+ * ingress used for HTTP01 challenges.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate {
   /**
-   * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+   * ObjectMeta overrides for the ingress used to solve HTTP01 challenges.
+   * Only the 'labels' and 'annotations' fields may be set.
+   * If labels or annotations overlap with in-built values, the values here
+   * will override the in-built values.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate#metadata
    */
@@ -3821,7 +5021,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate(obj: ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3830,23 +5030,29 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplate(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges.
+ * Optional pod template used to configure the ACME challenge solver pods
+ * used for HTTP01 challenges.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate {
   /**
-   * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+   * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+   * Only the 'labels' and 'annotations' fields may be set.
+   * If labels or annotations overlap with in-built values, the values here
+   * will override the in-built values.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate#metadata
    */
   readonly metadata?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata;
 
   /**
-   * PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored.
+   * PodSpec defines overrides for the HTTP01 challenge solver pod.
+   * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+   * All other fields will be ignored.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate#spec
    */
@@ -3857,7 +5063,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3867,10 +5073,166 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplate(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+ * Kubernetes authenticates with Route53 using AssumeRoleWithWebIdentity
+ * by passing a bound ServiceAccount token.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes
+ */
+export interface ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes {
+  /**
+   * A reference to a service account that will be used to request a bound
+   * token (also known as "projected token"). To use this field, you must
+   * configure an RBAC rule to let cert-manager request a token.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes#serviceAccountRef
+   */
+  readonly serviceAccountRef: ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes(obj: ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'serviceAccountRef': toJson_ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef(obj.serviceAccountRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+ * Only the 'labels' and 'annotations' fields may be set.
+ * If labels or annotations overlap with in-built values, the values here
+ * will override the in-built values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata {
+  /**
+   * Annotations that should be added to the created ACME HTTP01 solver pods.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata#annotations
+   */
+  readonly annotations?: { [key: string]: string };
+
+  /**
+   * Labels that should be added to the created ACME HTTP01 solver pods.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata#labels
+   */
+  readonly labels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'annotations': ((obj.annotations) === undefined) ? undefined : (Object.entries(obj.annotations).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'labels': ((obj.labels) === undefined) ? undefined : (Object.entries(obj.labels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * PodSpec defines overrides for the HTTP01 challenge solver pod.
+ * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+ * All other fields will be ignored.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec {
+  /**
+   * If specified, the pod's scheduling constraints
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#affinity
+   */
+  readonly affinity?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity;
+
+  /**
+   * If specified, the pod's imagePullSecrets
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#imagePullSecrets
+   */
+  readonly imagePullSecrets?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets[];
+
+  /**
+   * NodeSelector is a selector which must be true for the pod to fit on a node.
+   * Selector which must match a node's labels for the pod to be scheduled on that node.
+   * More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#nodeSelector
+   */
+  readonly nodeSelector?: { [key: string]: string };
+
+  /**
+   * If specified, the pod's priorityClassName.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#priorityClassName
+   */
+  readonly priorityClassName?: string;
+
+  /**
+   * If specified, the pod's security context
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#securityContext
+   */
+  readonly securityContext?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext;
+
+  /**
+   * If specified, the pod's service account
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#serviceAccountName
+   */
+  readonly serviceAccountName?: string;
+
+  /**
+   * If specified, the pod's tolerations.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#tolerations
+   */
+  readonly tolerations?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'affinity': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity(obj.affinity),
+    'imagePullSecrets': obj.imagePullSecrets?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets(y)),
+    'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'priorityClassName': obj.priorityClassName,
+    'securityContext': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext(obj.securityContext),
+    'serviceAccountName': obj.serviceAccountName,
+    'tolerations': obj.tolerations?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectMeta overrides for the ingress used to solve HTTP01 challenges.
+ * Only the 'labels' and 'annotations' fields may be set.
+ * If labels or annotations overlap with in-built values, the values here
+ * will override the in-built values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata
  */
@@ -3894,7 +5256,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadat
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata(obj: ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3904,16 +5266,19 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressIngressTemplateM
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+ * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+ * Only the 'labels' and 'annotations' fields may be set.
+ * If labels or annotations overlap with in-built values, the values here
+ * will override the in-built values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
   /**
-   * Annotations that should be added to the create ACME HTTP01 solver pods.
+   * Annotations that should be added to the created ACME HTTP01 solver pods.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata#annotations
    */
@@ -3931,7 +5296,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3941,10 +5306,12 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateMetad
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored.
+ * PodSpec defines overrides for the HTTP01 challenge solver pod.
+ * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+ * All other fields will be ignored.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec
  */
@@ -3964,7 +5331,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
   readonly imagePullSecrets?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets[];
 
   /**
-   * NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+   * NodeSelector is a selector which must be true for the pod to fit on a node.
+   * Selector which must match a node's labels for the pod to be scheduled on that node.
+   * More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec#nodeSelector
    */
@@ -3976,6 +5345,13 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec#priorityClassName
    */
   readonly priorityClassName?: string;
+
+  /**
+   * If specified, the pod's security context
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec#securityContext
+   */
+  readonly securityContext?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext;
 
   /**
    * If specified, the pod's service account
@@ -3996,7 +5372,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4004,13 +5380,345 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpec(
     'imagePullSecrets': obj.imagePullSecrets?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets(y)),
     'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'priorityClassName': obj.priorityClassName,
+    'securityContext': toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext(obj.securityContext),
     'serviceAccountName': obj.serviceAccountName,
     'tolerations': obj.tolerations?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A reference to a service account that will be used to request a bound
+ * token (also known as "projected token"). To use this field, you must
+ * configure an RBAC rule to let cert-manager request a token.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef
+ */
+export interface ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef {
+  /**
+   * TokenAudiences is an optional list of audiences to include in the
+   * token passed to AWS. The default token consisting of the issuer's namespace
+   * and name is always included.
+   * If unset the audience defaults to `sts.amazonaws.com`.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef#audiences
+   */
+  readonly audiences?: string[];
+
+  /**
+   * Name of the ServiceAccount used to request a token.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef(obj: ClusterIssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'audiences': obj.audiences?.map(y => y),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * If specified, the pod's scheduling constraints
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity {
+  /**
+   * Describes node affinity scheduling rules for the pod.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity#nodeAffinity
+   */
+  readonly nodeAffinity?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity;
+
+  /**
+   * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity#podAffinity
+   */
+  readonly podAffinity?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity;
+
+  /**
+   * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity#podAntiAffinity
+   */
+  readonly podAntiAffinity?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'nodeAffinity': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity(obj.nodeAffinity),
+    'podAffinity': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity(obj.podAffinity),
+    'podAntiAffinity': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity(obj.podAntiAffinity),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LocalObjectReference contains enough information to let you locate the
+ * referenced object inside the same namespace.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets {
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets#name
+   */
+  readonly name?: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * If specified, the pod's security context
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext {
+  /**
+   * A special supplemental group that applies to all containers in a pod.
+   * Some volume types allow the Kubelet to change the ownership of that volume
+   * to be owned by the pod:
+   *
+   * 1. The owning GID will be the FSGroup
+   * 2. The setgid bit is set (new files created in the volume will be owned by FSGroup)
+   * 3. The permission bits are OR'd with rw-rw----
+   *
+   * If unset, the Kubelet will not modify the ownership and permissions of any volume.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#fsGroup
+   */
+  readonly fsGroup?: number;
+
+  /**
+   * fsGroupChangePolicy defines behavior of changing ownership and permission of the volume
+   * before being exposed inside Pod. This field will only apply to
+   * volume types which support fsGroup based ownership(and permissions).
+   * It will have no effect on ephemeral volume types such as: secret, configmaps
+   * and emptydir.
+   * Valid values are "OnRootMismatch" and "Always". If not specified, "Always" is used.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#fsGroupChangePolicy
+   */
+  readonly fsGroupChangePolicy?: string;
+
+  /**
+   * The GID to run the entrypoint of the container process.
+   * Uses runtime default if unset.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#runAsGroup
+   */
+  readonly runAsGroup?: number;
+
+  /**
+   * Indicates that the container must run as a non-root user.
+   * If true, the Kubelet will validate the image at runtime to ensure that it
+   * does not run as UID 0 (root) and fail to start the container if it does.
+   * If unset or false, no such validation will be performed.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#runAsNonRoot
+   */
+  readonly runAsNonRoot?: boolean;
+
+  /**
+   * The UID to run the entrypoint of the container process.
+   * Defaults to user specified in image metadata if unspecified.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @default user specified in image metadata if unspecified.
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#runAsUser
+   */
+  readonly runAsUser?: number;
+
+  /**
+   * The SELinux context to be applied to all containers.
+   * If unspecified, the container runtime will allocate a random SELinux context for each
+   * container.  May also be set in SecurityContext.  If set in
+   * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+   * takes precedence for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#seLinuxOptions
+   */
+  readonly seLinuxOptions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions;
+
+  /**
+   * The seccomp options to use by the containers in this pod.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#seccompProfile
+   */
+  readonly seccompProfile?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile;
+
+  /**
+   * A list of groups applied to the first process run in each container, in addition
+   * to the container's primary GID, the fsGroup (if specified), and group memberships
+   * defined in the container image for the uid of the container process. If unspecified,
+   * no additional groups are added to any container. Note that group memberships
+   * defined in the container image for the uid of the container process are still effective,
+   * even if they are not included in this list.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#supplementalGroups
+   */
+  readonly supplementalGroups?: number[];
+
+  /**
+   * Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
+   * sysctls (by the container runtime) might fail to launch.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#sysctls
+   */
+  readonly sysctls?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'fsGroup': obj.fsGroup,
+    'fsGroupChangePolicy': obj.fsGroupChangePolicy,
+    'runAsGroup': obj.runAsGroup,
+    'runAsNonRoot': obj.runAsNonRoot,
+    'runAsUser': obj.runAsUser,
+    'seLinuxOptions': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions(obj.seLinuxOptions),
+    'seccompProfile': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile(obj.seccompProfile),
+    'supplementalGroups': obj.supplementalGroups?.map(y => y),
+    'sysctls': obj.sysctls?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The pod this Toleration is attached to tolerates any taint that matches
+ * the triple <key,value,effect> using the matching operator <operator>.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations {
+  /**
+   * Effect indicates the taint effect to match. Empty means match all taint effects.
+   * When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#effect
+   */
+  readonly effect?: string;
+
+  /**
+   * Key is the taint key that the toleration applies to. Empty means match all taint keys.
+   * If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#key
+   */
+  readonly key?: string;
+
+  /**
+   * Operator represents a key's relationship to the value.
+   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Exists is equivalent to wildcard for value, so that a pod can
+   * tolerate all taints of a particular category.
+   *
+   * @default Equal.
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#operator
+   */
+  readonly operator?: string;
+
+  /**
+   * TolerationSeconds represents the period of time the toleration (which must be
+   * of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+   * it is not set, which means tolerate the taint forever (do not evict). Zero and
+   * negative values will be treated as 0 (evict immediately) by the system.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#tolerationSeconds
+   */
+  readonly tolerationSeconds?: number;
+
+  /**
+   * Value is the taint value the toleration matches to.
+   * If the operator is Exists, the value should be empty, otherwise just a regular string.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#value
+   */
+  readonly value?: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'effect': obj.effect,
+    'key': obj.key,
+    'operator': obj.operator,
+    'tolerationSeconds': obj.tolerationSeconds,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If specified, the pod's scheduling constraints
@@ -4044,7 +5752,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4055,16 +5763,21 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace.
+ * LocalObjectReference contains enough information to let you locate the
+ * referenced object inside the same namespace.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets {
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets#name
    */
@@ -4075,7 +5788,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePu
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4084,45 +5797,193 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecI
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+ * If specified, the pod's security context
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext {
+  /**
+   * A special supplemental group that applies to all containers in a pod.
+   * Some volume types allow the Kubelet to change the ownership of that volume
+   * to be owned by the pod:
+   *
+   * 1. The owning GID will be the FSGroup
+   * 2. The setgid bit is set (new files created in the volume will be owned by FSGroup)
+   * 3. The permission bits are OR'd with rw-rw----
+   *
+   * If unset, the Kubelet will not modify the ownership and permissions of any volume.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#fsGroup
+   */
+  readonly fsGroup?: number;
+
+  /**
+   * fsGroupChangePolicy defines behavior of changing ownership and permission of the volume
+   * before being exposed inside Pod. This field will only apply to
+   * volume types which support fsGroup based ownership(and permissions).
+   * It will have no effect on ephemeral volume types such as: secret, configmaps
+   * and emptydir.
+   * Valid values are "OnRootMismatch" and "Always". If not specified, "Always" is used.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#fsGroupChangePolicy
+   */
+  readonly fsGroupChangePolicy?: string;
+
+  /**
+   * The GID to run the entrypoint of the container process.
+   * Uses runtime default if unset.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#runAsGroup
+   */
+  readonly runAsGroup?: number;
+
+  /**
+   * Indicates that the container must run as a non-root user.
+   * If true, the Kubelet will validate the image at runtime to ensure that it
+   * does not run as UID 0 (root) and fail to start the container if it does.
+   * If unset or false, no such validation will be performed.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#runAsNonRoot
+   */
+  readonly runAsNonRoot?: boolean;
+
+  /**
+   * The UID to run the entrypoint of the container process.
+   * Defaults to user specified in image metadata if unspecified.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @default user specified in image metadata if unspecified.
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#runAsUser
+   */
+  readonly runAsUser?: number;
+
+  /**
+   * The SELinux context to be applied to all containers.
+   * If unspecified, the container runtime will allocate a random SELinux context for each
+   * container.  May also be set in SecurityContext.  If set in
+   * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+   * takes precedence for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#seLinuxOptions
+   */
+  readonly seLinuxOptions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions;
+
+  /**
+   * The seccomp options to use by the containers in this pod.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#seccompProfile
+   */
+  readonly seccompProfile?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile;
+
+  /**
+   * A list of groups applied to the first process run in each container, in addition
+   * to the container's primary GID, the fsGroup (if specified), and group memberships
+   * defined in the container image for the uid of the container process. If unspecified,
+   * no additional groups are added to any container. Note that group memberships
+   * defined in the container image for the uid of the container process are still effective,
+   * even if they are not included in this list.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#supplementalGroups
+   */
+  readonly supplementalGroups?: number[];
+
+  /**
+   * Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
+   * sysctls (by the container runtime) might fail to launch.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#sysctls
+   */
+  readonly sysctls?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'fsGroup': obj.fsGroup,
+    'fsGroupChangePolicy': obj.fsGroupChangePolicy,
+    'runAsGroup': obj.runAsGroup,
+    'runAsNonRoot': obj.runAsNonRoot,
+    'runAsUser': obj.runAsUser,
+    'seLinuxOptions': toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions(obj.seLinuxOptions),
+    'seccompProfile': toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile(obj.seccompProfile),
+    'supplementalGroups': obj.supplementalGroups?.map(y => y),
+    'sysctls': obj.sysctls?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The pod this Toleration is attached to tolerates any taint that matches
+ * the triple <key,value,effect> using the matching operator <operator>.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
   /**
-   * Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+   * Effect indicates the taint effect to match. Empty means match all taint effects.
+   * When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#effect
    */
   readonly effect?: string;
 
   /**
-   * Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+   * Key is the taint key that the toleration applies to. Empty means match all taint keys.
+   * If the key is empty, operator must be Exists; this combination means to match all values and all keys.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#key
    */
   readonly key?: string;
 
   /**
-   * Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+   * Operator represents a key's relationship to the value.
+   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Exists is equivalent to wildcard for value, so that a pod can
+   * tolerate all taints of a particular category.
    *
-   * @default Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+   * @default Equal.
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#operator
    */
   readonly operator?: string;
 
   /**
-   * TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+   * TolerationSeconds represents the period of time the toleration (which must be
+   * of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+   * it is not set, which means tolerate the taint forever (do not evict). Zero and
+   * negative values will be treated as 0 (evict immediately) by the system.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#tolerationSeconds
    */
   readonly tolerationSeconds?: number;
 
   /**
-   * Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+   * Value is the taint value the toleration matches to.
+   * If the operator is Exists, the value should be empty, otherwise just a regular string.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#value
    */
@@ -4133,7 +5994,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerat
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4146,7 +6007,299 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecT
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Describes node affinity scheduling rules for the pod.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity {
+  /**
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node matches the corresponding matchExpressions; the
+   * node(s) with the highest sum are the most preferred.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity#preferredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly preferredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
+
+  /**
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to an update), the system
+   * may or may not try to eventually evict the pod from its node.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity#requiredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly requiredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preferredDuringSchedulingIgnoredDuringExecution': obj.preferredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(y)),
+    'requiredDuringSchedulingIgnoredDuringExecution': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj.requiredDuringSchedulingIgnoredDuringExecution),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity {
+  /**
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity#preferredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly preferredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
+
+  /**
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity#requiredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly requiredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preferredDuringSchedulingIgnoredDuringExecution': obj.preferredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(y)),
+    'requiredDuringSchedulingIgnoredDuringExecution': obj.requiredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity {
+  /**
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the anti-affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling anti-affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity#preferredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly preferredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
+
+  /**
+   * If the anti-affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the anti-affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity#requiredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly requiredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preferredDuringSchedulingIgnoredDuringExecution': obj.preferredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(y)),
+    'requiredDuringSchedulingIgnoredDuringExecution': obj.requiredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The SELinux context to be applied to all containers.
+ * If unspecified, the container runtime will allocate a random SELinux context for each
+ * container.  May also be set in SecurityContext.  If set in
+ * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+ * takes precedence for that container.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions {
+  /**
+   * Level is SELinux level label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#level
+   */
+  readonly level?: string;
+
+  /**
+   * Role is a SELinux role label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#role
+   */
+  readonly role?: string;
+
+  /**
+   * Type is a SELinux type label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#type
+   */
+  readonly type?: string;
+
+  /**
+   * User is a SELinux user label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#user
+   */
+  readonly user?: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'level': obj.level,
+    'role': obj.role,
+    'type': obj.type,
+    'user': obj.user,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The seccomp options to use by the containers in this pod.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile {
+  /**
+   * localhostProfile indicates a profile defined in a file on the node should be used.
+   * The profile must be preconfigured on the node to work.
+   * Must be a descending path, relative to the kubelet's configured seccomp profile location.
+   * Must be set if type is "Localhost". Must NOT be set for any other type.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile#localhostProfile
+   */
+  readonly localhostProfile?: string;
+
+  /**
+   * type indicates which kind of seccomp profile will be applied.
+   * Valid options are:
+   *
+   * Localhost - a profile defined in a file on the node should be used.
+   * RuntimeDefault - the container runtime default profile should be used.
+   * Unconfined - no profile should be applied.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile#type
+   */
+  readonly type: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localhostProfile': obj.localhostProfile,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Sysctl defines a kernel parameter to be set
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls {
+  /**
+   * Name of a property to set
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls#name
+   */
+  readonly name: string;
+
+  /**
+   * Value of a property to set
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls#value
+   */
+  readonly value: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -4155,14 +6308,26 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecT
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity {
   /**
-   * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node matches the corresponding matchExpressions; the
+   * node(s) with the highest sum are the most preferred.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity#preferredDuringSchedulingIgnoredDuringExecution
    */
   readonly preferredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
 
   /**
-   * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to an update), the system
+   * may or may not try to eventually evict the pod from its node.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity#requiredDuringSchedulingIgnoredDuringExecution
    */
@@ -4173,7 +6338,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4183,7 +6348,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -4192,14 +6357,28 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity {
   /**
-   * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity#preferredDuringSchedulingIgnoredDuringExecution
    */
   readonly preferredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
 
   /**
-   * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity#requiredDuringSchedulingIgnoredDuringExecution
    */
@@ -4210,7 +6389,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4220,7 +6399,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -4229,14 +6408,28 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity {
   /**
-   * The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the anti-affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling anti-affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity#preferredDuringSchedulingIgnoredDuringExecution
    */
   readonly preferredDuringSchedulingIgnoredDuringExecution?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
 
   /**
-   * If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   * If the anti-affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the anti-affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity#requiredDuringSchedulingIgnoredDuringExecution
    */
@@ -4247,7 +6440,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4257,10 +6450,503 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+ * The SELinux context to be applied to all containers.
+ * If unspecified, the container runtime will allocate a random SELinux context for each
+ * container.  May also be set in SecurityContext.  If set in
+ * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+ * takes precedence for that container.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions {
+  /**
+   * Level is SELinux level label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#level
+   */
+  readonly level?: string;
+
+  /**
+   * Role is a SELinux role label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#role
+   */
+  readonly role?: string;
+
+  /**
+   * Type is a SELinux type label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#type
+   */
+  readonly type?: string;
+
+  /**
+   * User is a SELinux user label that applies to the container.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#user
+   */
+  readonly user?: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'level': obj.level,
+    'role': obj.role,
+    'type': obj.type,
+    'user': obj.user,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The seccomp options to use by the containers in this pod.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile {
+  /**
+   * localhostProfile indicates a profile defined in a file on the node should be used.
+   * The profile must be preconfigured on the node to work.
+   * Must be a descending path, relative to the kubelet's configured seccomp profile location.
+   * Must be set if type is "Localhost". Must NOT be set for any other type.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile#localhostProfile
+   */
+  readonly localhostProfile?: string;
+
+  /**
+   * type indicates which kind of seccomp profile will be applied.
+   * Valid options are:
+   *
+   * Localhost - a profile defined in a file on the node should be used.
+   * RuntimeDefault - the container runtime default profile should be used.
+   * Unconfined - no profile should be applied.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile#type
+   */
+  readonly type: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localhostProfile': obj.localhostProfile,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Sysctl defines a kernel parameter to be set
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls {
+  /**
+   * Name of a property to set
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls#name
+   */
+  readonly name: string;
+
+  /**
+   * Value of a property to set
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls#value
+   */
+  readonly value: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * An empty preferred scheduling term matches all objects with implicit weight 0
+ * (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * A node selector term, associated with the corresponding weight.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution#preference
+   */
+  readonly preference: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference;
+
+  /**
+   * Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
+   */
+  readonly weight: number;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preference': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj.preference),
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * If the affinity requirements specified by this field are not met at
+ * scheduling time, the pod will not be scheduled onto the node.
+ * If the affinity requirements specified by this field cease to be met
+ * at some point during pod execution (e.g. due to an update), the system
+ * may or may not try to eventually evict the pod from its node.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * Required. A list of node selector terms. The terms are ORed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution#nodeSelectorTerms
+   */
+  readonly nodeSelectorTerms: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'nodeSelectorTerms': obj.nodeSelectorTerms?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * Required. A pod affinity term, associated with the corresponding weight.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution#podAffinityTerm
+   */
+  readonly podAffinityTerm: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
+
+  /**
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
+   */
+  readonly weight: number;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'podAffinityTerm': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj.podAffinityTerm),
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
+   */
+  readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
+   */
+  readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * Required. A pod affinity term, associated with the corresponding weight.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution#podAffinityTerm
+   */
+  readonly podAffinityTerm: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
+
+  /**
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
+   */
+  readonly weight: number;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'podAffinityTerm': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj.podAffinityTerm),
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
+   */
+  readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
+   */
+  readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * An empty preferred scheduling term matches all objects with implicit weight 0
+ * (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution
  */
@@ -4284,7 +6970,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4294,10 +6980,14 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+ * If the affinity requirements specified by this field are not met at
+ * scheduling time, the pod will not be scheduled onto the node.
+ * If the affinity requirements specified by this field cease to be met
+ * at some point during pod execution (e.g. due to an update), the system
+ * may or may not try to eventually evict the pod from its node.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution
  */
@@ -4314,7 +7004,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4323,7 +7013,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -4339,7 +7029,8 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly podAffinityTerm: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
 
   /**
-   * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
    */
@@ -4350,7 +7041,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4360,51 +7051,84 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
    */
   readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
    */
   readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
    */
@@ -4415,7 +7139,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4429,7 +7153,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -4445,7 +7169,8 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly podAffinityTerm: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
 
   /**
-   * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
    */
@@ -4456,7 +7181,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4466,51 +7191,84 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
    */
   readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
    */
   readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
    */
@@ -4521,7 +7279,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4535,7 +7293,443 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector term, associated with the corresponding weight.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference {
+  /**
+   * A list of node selector requirements by node's labels.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions[];
+
+  /**
+   * A list of node selector requirements by node's fields.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference#matchFields
+   */
+  readonly matchFields?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(y)),
+    'matchFields': obj.matchFields?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A null or empty node selector term matches no objects. The requirements of
+ * them are ANDed.
+ * The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms {
+  /**
+   * A list of node selector requirements by node's labels.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions[];
+
+  /**
+   * A list of node selector requirements by node's fields.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms#matchFields
+   */
+  readonly matchFields?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(y)),
+    'matchFields': obj.matchFields?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Required. A pod affinity term, associated with the corresponding weight.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
+   */
+  readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
+   */
+  readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Required. A pod affinity term, associated with the corresponding weight.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
+   */
+  readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
+   */
+  readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -4562,7 +7756,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4572,10 +7766,12 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+ * A null or empty node selector term matches no objects. The requirements of
+ * them are ANDed.
+ * The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms
  */
@@ -4599,7 +7795,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4609,7 +7805,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -4618,42 +7814,70 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
    */
   readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
    */
   readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
    */
@@ -4664,7 +7888,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4678,10 +7902,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
  */
@@ -4694,7 +7919,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
    */
@@ -4705,7 +7932,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4715,10 +7942,14 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
  */
@@ -4731,7 +7962,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
    */
@@ -4742,7 +7975,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4752,7 +7985,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -4761,42 +7994,70 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
  */
 export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
    */
   readonly labelSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
    */
   readonly namespaceSelector?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
    */
@@ -4807,7 +8068,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4821,10 +8082,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
  */
@@ -4837,7 +8099,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
    */
@@ -4848,7 +8112,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4858,10 +8122,14 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
  */
@@ -4874,7 +8142,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
    */
@@ -4885,7 +8155,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4895,10 +8165,581 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions
  */
@@ -4911,14 +8752,19 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#values
    */
@@ -4929,7 +8775,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4940,10 +8786,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields
  */
@@ -4956,14 +8803,19 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#values
    */
@@ -4974,7 +8826,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4985,10 +8837,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions
  */
@@ -5001,14 +8854,19 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#values
    */
@@ -5019,7 +8877,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5030,10 +8888,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields
  */
@@ -5046,14 +8905,19 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#values
    */
@@ -5064,7 +8928,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5075,10 +8939,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
  */
@@ -5091,7 +8956,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
    */
@@ -5102,7 +8969,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5112,10 +8979,14 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
  */
@@ -5128,7 +8999,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
    */
@@ -5139,7 +9012,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5149,10 +9022,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
  */
@@ -5165,14 +9039,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
    */
@@ -5183,7 +9061,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5194,10 +9072,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
  */
@@ -5210,14 +9089,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
    */
@@ -5228,7 +9111,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5239,10 +9122,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
  */
@@ -5255,7 +9139,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
    */
@@ -5266,7 +9152,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5276,10 +9162,14 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
  */
@@ -5292,7 +9182,9 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly matchExpressions?: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
    */
@@ -5303,7 +9195,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5313,10 +9205,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
  */
@@ -5329,14 +9222,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
    */
@@ -5347,7 +9244,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5358,10 +9255,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
  */
@@ -5374,14 +9272,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
    */
@@ -5392,7 +9294,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5403,10 +9305,211 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
+ */
+export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
  */
@@ -5419,14 +9522,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
    */
@@ -5437,7 +9544,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5448,10 +9555,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
  */
@@ -5464,14 +9572,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
    */
@@ -5482,7 +9594,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5493,10 +9605,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
  */
@@ -5509,14 +9622,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
    */
@@ -5527,7 +9644,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5538,10 +9655,11 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
  */
@@ -5554,14 +9672,18 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
    */
@@ -5572,7 +9694,7 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinit
 /**
  * Converts an object of type 'ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5583,11 +9705,14 @@ export function toJson_ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
- * An Issuer represents a certificate issuing authority which can be referenced as part of `issuerRef` fields. It is scoped to a single namespace and can therefore only be referenced by resources within the same namespace.
+ * An Issuer represents a certificate issuing authority which can be
+referenced as part of `issuerRef` fields.
+It is scoped to a single namespace and can therefore only be referenced by
+resources within the same namespace.
  *
  * @schema Issuer
  */
@@ -5641,7 +9766,10 @@ export class Issuer extends ApiObject {
 }
 
 /**
- * An Issuer represents a certificate issuing authority which can be referenced as part of `issuerRef` fields. It is scoped to a single namespace and can therefore only be referenced by resources within the same namespace.
+ * An Issuer represents a certificate issuing authority which can be
+ * referenced as part of `issuerRef` fields.
+ * It is scoped to a single namespace and can therefore only be referenced by
+ * resources within the same namespace.
  *
  * @schema Issuer
  */
@@ -5663,7 +9791,7 @@ export interface IssuerProps {
 /**
  * Converts an object of type 'IssuerProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerProps(obj: IssuerProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5673,7 +9801,7 @@ export function toJson_IssuerProps(obj: IssuerProps | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Desired state of the Issuer resource.
@@ -5682,35 +9810,41 @@ export function toJson_IssuerProps(obj: IssuerProps | undefined): Record<string,
  */
 export interface IssuerSpec {
   /**
-   * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+   * ACME configures this issuer to communicate with a RFC8555 (ACME) server
+   * to obtain signed x509 certificates.
    *
    * @schema IssuerSpec#acme
    */
   readonly acme?: IssuerSpecAcme;
 
   /**
-   * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+   * CA configures this issuer to sign certificates using a signing CA keypair
+   * stored in a Secret resource.
+   * This is used to build internal PKIs that are managed by cert-manager.
    *
    * @schema IssuerSpec#ca
    */
   readonly ca?: IssuerSpecCa;
 
   /**
-   * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+   * SelfSigned configures this issuer to 'self sign' certificates using the
+   * private key used to create the CertificateRequest object.
    *
    * @schema IssuerSpec#selfSigned
    */
   readonly selfSigned?: IssuerSpecSelfSigned;
 
   /**
-   * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+   * Vault configures this issuer to sign certificates using a HashiCorp Vault
+   * PKI backend.
    *
    * @schema IssuerSpec#vault
    */
   readonly vault?: IssuerSpecVault;
 
   /**
-   * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+   * Venafi configures this issuer to sign certificates using a Venafi TPP
+   * or Venafi Cloud policy zone.
    *
    * @schema IssuerSpec#venafi
    */
@@ -5721,7 +9855,7 @@ export interface IssuerSpec {
 /**
  * Converts an object of type 'IssuerSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpec(obj: IssuerSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5734,23 +9868,34 @@ export function toJson_IssuerSpec(obj: IssuerSpec | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ACME configures this issuer to communicate with a RFC8555 (ACME) server to obtain signed x509 certificates.
+ * ACME configures this issuer to communicate with a RFC8555 (ACME) server
+ * to obtain signed x509 certificates.
  *
  * @schema IssuerSpecAcme
  */
 export interface IssuerSpecAcme {
   /**
-   * Base64-encoded bundle of PEM CAs which can be used to validate the certificate chain presented by the ACME server. Mutually exclusive with SkipTLSVerify; prefer using CABundle to prevent various kinds of security vulnerabilities. If CABundle and SkipTLSVerify are unset, the system certificate bundle inside the container is used to validate the TLS connection.
+   * Base64-encoded bundle of PEM CAs which can be used to validate the certificate
+   * chain presented by the ACME server.
+   * Mutually exclusive with SkipTLSVerify; prefer using CABundle to prevent various
+   * kinds of security vulnerabilities.
+   * If CABundle and SkipTLSVerify are unset, the system certificate bundle inside
+   * the container is used to validate the TLS connection.
    *
    * @schema IssuerSpecAcme#caBundle
    */
   readonly caBundle?: string;
 
   /**
-   * Enables or disables generating a new ACME account key. If true, the Issuer resource will *not* request a new account but will expect the account key to be supplied via an existing secret. If false, the cert-manager system will generate a new ACME account key for the Issuer. Defaults to false.
+   * Enables or disables generating a new ACME account key.
+   * If true, the Issuer resource will *not* request a new account but will expect
+   * the account key to be supplied via an existing secret.
+   * If false, the cert-manager system will generate a new ACME account key
+   * for the Issuer.
+   * Defaults to false.
    *
    * @default false.
    * @schema IssuerSpecAcme#disableAccountKeyGeneration
@@ -5758,14 +9903,22 @@ export interface IssuerSpecAcme {
   readonly disableAccountKeyGeneration?: boolean;
 
   /**
-   * Email is the email address to be associated with the ACME account. This field is optional, but it is strongly recommended to be set. It will be used to contact you in case of issues with your account or certificates, including expiry notification emails. This field may be updated after the account is initially registered.
+   * Email is the email address to be associated with the ACME account.
+   * This field is optional, but it is strongly recommended to be set.
+   * It will be used to contact you in case of issues with your account or
+   * certificates, including expiry notification emails.
+   * This field may be updated after the account is initially registered.
    *
    * @schema IssuerSpecAcme#email
    */
   readonly email?: string;
 
   /**
-   * Enables requesting a Not After date on certificates that matches the duration of the certificate. This is not supported by all ACME servers like Let's Encrypt. If set to true when the ACME server does not support it it will create an error on the Order. Defaults to false.
+   * Enables requesting a Not After date on certificates that matches the
+   * duration of the certificate. This is not supported by all ACME servers
+   * like Let's Encrypt. If set to true when the ACME server does not support
+   * it, it will create an error on the Order.
+   * Defaults to false.
    *
    * @default false.
    * @schema IssuerSpecAcme#enableDurationFeature
@@ -5773,35 +9926,68 @@ export interface IssuerSpecAcme {
   readonly enableDurationFeature?: boolean;
 
   /**
-   * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+   * ExternalAccountBinding is a reference to a CA external account of the ACME
+   * server.
+   * If set, upon registration cert-manager will attempt to associate the given
+   * external account credentials with the registered ACME account.
    *
    * @schema IssuerSpecAcme#externalAccountBinding
    */
   readonly externalAccountBinding?: IssuerSpecAcmeExternalAccountBinding;
 
   /**
-   * PreferredChain is the chain to use if the ACME server outputs multiple. PreferredChain is no guarantee that this one gets delivered by the ACME endpoint. For example, for Let's Encrypt's DST crosssign you would use: "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA. This value picks the first certificate bundle in the ACME alternative chains that has a certificate with this value as its issuer's CN
+   * PreferredChain is the chain to use if the ACME server outputs multiple.
+   * PreferredChain is no guarantee that this one gets delivered by the ACME
+   * endpoint.
+   * For example, for Let's Encrypt's DST cross-sign you would use:
+   * "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA.
+   * This value picks the first certificate bundle in the combined set of
+   * ACME default and alternative chains that has a root-most certificate with
+   * this value as its issuer's commonname.
    *
    * @schema IssuerSpecAcme#preferredChain
    */
   readonly preferredChain?: string;
 
   /**
-   * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+   * PrivateKey is the name of a Kubernetes Secret resource that will be used to
+   * store the automatically generated ACME account private key.
+   * Optionally, a `key` may be specified to select a specific entry within
+   * the named Secret resource.
+   * If `key` is not specified, a default of `tls.key` will be used.
    *
    * @schema IssuerSpecAcme#privateKeySecretRef
    */
   readonly privateKeySecretRef: IssuerSpecAcmePrivateKeySecretRef;
 
   /**
-   * Server is the URL used to access the ACME server's 'directory' endpoint. For example, for Let's Encrypt's staging endpoint, you would use: "https://acme-staging-v02.api.letsencrypt.org/directory". Only ACME v2 endpoints (i.e. RFC 8555) are supported.
+   * Profile allows requesting a certificate profile from the ACME server.
+   * Supported profiles are listed by the server's ACME directory URL.
+   *
+   * @schema IssuerSpecAcme#profile
+   */
+  readonly profile?: string;
+
+  /**
+   * Server is the URL used to access the ACME server's 'directory' endpoint.
+   * For example, for Let's Encrypt's staging endpoint, you would use:
+   * "https://acme-staging-v02.api.letsencrypt.org/directory".
+   * Only ACME v2 endpoints (i.e. RFC 8555) are supported.
    *
    * @schema IssuerSpecAcme#server
    */
   readonly server: string;
 
   /**
-   * INSECURE: Enables or disables validation of the ACME server TLS certificate. If true, requests to the ACME server will not have the TLS certificate chain validated. Mutually exclusive with CABundle; prefer using CABundle to prevent various kinds of security vulnerabilities. Only enable this option in development environments. If CABundle and SkipTLSVerify are unset, the system certificate bundle inside the container is used to validate the TLS connection. Defaults to false.
+   * INSECURE: Enables or disables validation of the ACME server TLS certificate.
+   * If true, requests to the ACME server will not have the TLS certificate chain
+   * validated.
+   * Mutually exclusive with CABundle; prefer using CABundle to prevent various
+   * kinds of security vulnerabilities.
+   * Only enable this option in development environments.
+   * If CABundle and SkipTLSVerify are unset, the system certificate bundle inside
+   * the container is used to validate the TLS connection.
+   * Defaults to false.
    *
    * @default false.
    * @schema IssuerSpecAcme#skipTLSVerify
@@ -5809,7 +9995,11 @@ export interface IssuerSpecAcme {
   readonly skipTlsVerify?: boolean;
 
   /**
-   * Solvers is a list of challenge solvers that will be used to solve ACME challenges for the matching domains. Solver configurations must be provided in order to obtain certificates from an ACME server. For more information, see: https://cert-manager.io/docs/configuration/acme/
+   * Solvers is a list of challenge solvers that will be used to solve
+   * ACME challenges for the matching domains.
+   * Solver configurations must be provided in order to obtain certificates
+   * from an ACME server.
+   * For more information, see: https://cert-manager.io/docs/configuration/acme/
    *
    * @schema IssuerSpecAcme#solvers
    */
@@ -5820,7 +10010,7 @@ export interface IssuerSpecAcme {
 /**
  * Converts an object of type 'IssuerSpecAcme' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcme(obj: IssuerSpecAcme | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5831,6 +10021,7 @@ export function toJson_IssuerSpecAcme(obj: IssuerSpecAcme | undefined): Record<s
     'externalAccountBinding': toJson_IssuerSpecAcmeExternalAccountBinding(obj.externalAccountBinding),
     'preferredChain': obj.preferredChain,
     'privateKeySecretRef': toJson_IssuerSpecAcmePrivateKeySecretRef(obj.privateKeySecretRef),
+    'profile': obj.profile,
     'server': obj.server,
     'skipTLSVerify': obj.skipTlsVerify,
     'solvers': obj.solvers?.map(y => toJson_IssuerSpecAcmeSolvers(y)),
@@ -5838,37 +10029,48 @@ export function toJson_IssuerSpecAcme(obj: IssuerSpecAcme | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CA configures this issuer to sign certificates using a signing CA keypair stored in a Secret resource. This is used to build internal PKIs that are managed by cert-manager.
+ * CA configures this issuer to sign certificates using a signing CA keypair
+ * stored in a Secret resource.
+ * This is used to build internal PKIs that are managed by cert-manager.
  *
  * @schema IssuerSpecCa
  */
 export interface IssuerSpecCa {
   /**
-   * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set, certificates will be issued without distribution points set.
+   * The CRL distribution points is an X.509 v3 certificate extension which identifies
+   * the location of the CRL from which the revocation of this certificate can be checked.
+   * If not set, certificates will be issued without distribution points set.
    *
    * @schema IssuerSpecCa#crlDistributionPoints
    */
   readonly crlDistributionPoints?: string[];
 
   /**
-   * IssuingCertificateURLs is a list of URLs which this issuer should embed into certificates it creates. See https://www.rfc-editor.org/rfc/rfc5280#section-4.2.2.1 for more details. As an example, such a URL might be "http://ca.domain.com/ca.crt".
+   * IssuingCertificateURLs is a list of URLs which this issuer should embed into certificates
+   * it creates. See https://www.rfc-editor.org/rfc/rfc5280#section-4.2.2.1 for more details.
+   * As an example, such a URL might be "http://ca.domain.com/ca.crt".
    *
    * @schema IssuerSpecCa#issuingCertificateURLs
    */
   readonly issuingCertificateUrLs?: string[];
 
   /**
-   * The OCSP server list is an X.509 v3 extension that defines a list of URLs of OCSP responders. The OCSP responders can be queried for the revocation status of an issued certificate. If not set, the certificate will be issued with no OCSP servers set. For example, an OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
+   * The OCSP server list is an X.509 v3 extension that defines a list of
+   * URLs of OCSP responders. The OCSP responders can be queried for the
+   * revocation status of an issued certificate. If not set, the
+   * certificate will be issued with no OCSP servers set. For example, an
+   * OCSP server URL could be "http://ocsp.int-x3.letsencrypt.org".
    *
    * @schema IssuerSpecCa#ocspServers
    */
   readonly ocspServers?: string[];
 
   /**
-   * SecretName is the name of the secret used to sign Certificates issued by this Issuer.
+   * SecretName is the name of the secret used to sign Certificates issued
+   * by this Issuer.
    *
    * @schema IssuerSpecCa#secretName
    */
@@ -5879,7 +10081,7 @@ export interface IssuerSpecCa {
 /**
  * Converts an object of type 'IssuerSpecCa' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecCa(obj: IssuerSpecCa | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5891,16 +10093,19 @@ export function toJson_IssuerSpecCa(obj: IssuerSpecCa | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * SelfSigned configures this issuer to 'self sign' certificates using the private key used to create the CertificateRequest object.
+ * SelfSigned configures this issuer to 'self sign' certificates using the
+ * private key used to create the CertificateRequest object.
  *
  * @schema IssuerSpecSelfSigned
  */
 export interface IssuerSpecSelfSigned {
   /**
-   * The CRL distribution points is an X.509 v3 certificate extension which identifies the location of the CRL from which the revocation of this certificate can be checked. If not set certificate will be issued without CDP. Values are strings.
+   * The CRL distribution points is an X.509 v3 certificate extension which identifies
+   * the location of the CRL from which the revocation of this certificate can be checked.
+   * If not set certificate will be issued without CDP. Values are strings.
    *
    * @schema IssuerSpecSelfSigned#crlDistributionPoints
    */
@@ -5911,7 +10116,7 @@ export interface IssuerSpecSelfSigned {
 /**
  * Converts an object of type 'IssuerSpecSelfSigned' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecSelfSigned(obj: IssuerSpecSelfSigned | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5920,10 +10125,11 @@ export function toJson_IssuerSpecSelfSigned(obj: IssuerSpecSelfSigned | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Vault configures this issuer to sign certificates using a HashiCorp Vault PKI backend.
+ * Vault configures this issuer to sign certificates using a HashiCorp Vault
+ * PKI backend.
  *
  * @schema IssuerSpecVault
  */
@@ -5936,28 +10142,56 @@ export interface IssuerSpecVault {
   readonly auth: IssuerSpecVaultAuth;
 
   /**
-   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate chain presented by Vault. Only used if using HTTPS to connect to Vault and ignored for HTTP connections. Mutually exclusive with CABundleSecretRef. If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in the cert-manager controller container is used to validate the TLS connection.
+   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+   * chain presented by Vault. Only used if using HTTPS to connect to Vault and
+   * ignored for HTTP connections.
+   * Mutually exclusive with CABundleSecretRef.
+   * If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+   * the cert-manager controller container is used to validate the TLS connection.
    *
    * @schema IssuerSpecVault#caBundle
    */
   readonly caBundle?: string;
 
   /**
-   * Reference to a Secret containing a bundle of PEM-encoded CAs to use when verifying the certificate chain presented by Vault when using HTTPS. Mutually exclusive with CABundle. If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in the cert-manager controller container is used to validate the TLS connection. If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
+   * Reference to a Secret containing a bundle of PEM-encoded CAs to use when
+   * verifying the certificate chain presented by Vault when using HTTPS.
+   * Mutually exclusive with CABundle.
+   * If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+   * the cert-manager controller container is used to validate the TLS connection.
+   * If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
    *
    * @schema IssuerSpecVault#caBundleSecretRef
    */
   readonly caBundleSecretRef?: IssuerSpecVaultCaBundleSecretRef;
 
   /**
-   * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1" More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
+   * Reference to a Secret containing a PEM-encoded Client Certificate to use when the
+   * Vault server requires mTLS.
+   *
+   * @schema IssuerSpecVault#clientCertSecretRef
+   */
+  readonly clientCertSecretRef?: IssuerSpecVaultClientCertSecretRef;
+
+  /**
+   * Reference to a Secret containing a PEM-encoded Client Private Key to use when the
+   * Vault server requires mTLS.
+   *
+   * @schema IssuerSpecVault#clientKeySecretRef
+   */
+  readonly clientKeySecretRef?: IssuerSpecVaultClientKeySecretRef;
+
+  /**
+   * Name of the vault namespace. Namespaces is a set of features within Vault Enterprise that allows Vault environments to support Secure Multi-tenancy. e.g: "ns1"
+   * More about namespaces can be found here https://www.vaultproject.io/docs/enterprise/namespaces
    *
    * @schema IssuerSpecVault#namespace
    */
   readonly namespace?: string;
 
   /**
-   * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g: "my_pki_mount/sign/my-role-name".
+   * Path is the mount path of the Vault PKI backend's `sign` endpoint, e.g:
+   * "my_pki_mount/sign/my-role-name".
    *
    * @schema IssuerSpecVault#path
    */
@@ -5970,49 +10204,66 @@ export interface IssuerSpecVault {
    */
   readonly server: string;
 
+  /**
+   * ServerName is used to verify the hostname on the returned certificates
+   * by the Vault server.
+   *
+   * @schema IssuerSpecVault#serverName
+   */
+  readonly serverName?: string;
+
 }
 
 /**
  * Converts an object of type 'IssuerSpecVault' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVault(obj: IssuerSpecVault | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'auth': toJson_IssuerSpecVaultAuth(obj.auth),
     'caBundle': obj.caBundle,
     'caBundleSecretRef': toJson_IssuerSpecVaultCaBundleSecretRef(obj.caBundleSecretRef),
+    'clientCertSecretRef': toJson_IssuerSpecVaultClientCertSecretRef(obj.clientCertSecretRef),
+    'clientKeySecretRef': toJson_IssuerSpecVaultClientKeySecretRef(obj.clientKeySecretRef),
     'namespace': obj.namespace,
     'path': obj.path,
     'server': obj.server,
+    'serverName': obj.serverName,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Venafi configures this issuer to sign certificates using a Venafi TPP or Venafi Cloud policy zone.
+ * Venafi configures this issuer to sign certificates using a Venafi TPP
+ * or Venafi Cloud policy zone.
  *
  * @schema IssuerSpecVenafi
  */
 export interface IssuerSpecVenafi {
   /**
-   * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+   * Cloud specifies the Venafi cloud configuration settings.
+   * Only one of TPP or Cloud may be specified.
    *
    * @schema IssuerSpecVenafi#cloud
    */
   readonly cloud?: IssuerSpecVenafiCloud;
 
   /**
-   * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+   * TPP specifies Trust Protection Platform configuration settings.
+   * Only one of TPP or Cloud may be specified.
    *
    * @schema IssuerSpecVenafi#tpp
    */
   readonly tpp?: IssuerSpecVenafiTpp;
 
   /**
-   * Zone is the Venafi Policy Zone to use for this issuer. All requests made to the Venafi platform will be restricted by the named zone policy. This field is required.
+   * Zone is the Venafi Policy Zone to use for this issuer.
+   * All requests made to the Venafi platform will be restricted by the named
+   * zone policy.
+   * This field is required.
    *
    * @schema IssuerSpecVenafi#zone
    */
@@ -6023,7 +10274,7 @@ export interface IssuerSpecVenafi {
 /**
  * Converts an object of type 'IssuerSpecVenafi' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVenafi(obj: IssuerSpecVenafi | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6034,16 +10285,21 @@ export function toJson_IssuerSpecVenafi(obj: IssuerSpecVenafi | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ExternalAccountBinding is a reference to a CA external account of the ACME server. If set, upon registration cert-manager will attempt to associate the given external account credentials with the registered ACME account.
+ * ExternalAccountBinding is a reference to a CA external account of the ACME
+ * server.
+ * If set, upon registration cert-manager will attempt to associate the given
+ * external account credentials with the registered ACME account.
  *
  * @schema IssuerSpecAcmeExternalAccountBinding
  */
 export interface IssuerSpecAcmeExternalAccountBinding {
   /**
-   * Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.
+   * Deprecated: keyAlgorithm field exists for historical compatibility
+   * reasons and should not be used. The algorithm is now hardcoded to HS256
+   * in golang/x/crypto/acme.
    *
    * @schema IssuerSpecAcmeExternalAccountBinding#keyAlgorithm
    */
@@ -6057,7 +10313,13 @@ export interface IssuerSpecAcmeExternalAccountBinding {
   readonly keyId: string;
 
   /**
-   * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+   * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes
+   * Secret which holds the symmetric MAC key of the External Account Binding.
+   * The `key` is the index string that is paired with the key data in the
+   * Secret and should not be confused with the key data itself, or indeed with
+   * the External Account Binding keyID above.
+   * The secret key stored in the Secret **must** be un-padded, base64 URL
+   * encoded data.
    *
    * @schema IssuerSpecAcmeExternalAccountBinding#keySecretRef
    */
@@ -6068,7 +10330,7 @@ export interface IssuerSpecAcmeExternalAccountBinding {
 /**
  * Converts an object of type 'IssuerSpecAcmeExternalAccountBinding' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeExternalAccountBinding(obj: IssuerSpecAcmeExternalAccountBinding | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6079,23 +10341,30 @@ export function toJson_IssuerSpecAcmeExternalAccountBinding(obj: IssuerSpecAcmeE
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PrivateKey is the name of a Kubernetes Secret resource that will be used to store the automatically generated ACME account private key. Optionally, a `key` may be specified to select a specific entry within the named Secret resource. If `key` is not specified, a default of `tls.key` will be used.
+ * PrivateKey is the name of a Kubernetes Secret resource that will be used to
+ * store the automatically generated ACME account private key.
+ * Optionally, a `key` may be specified to select a specific entry within
+ * the named Secret resource.
+ * If `key` is not specified, a default of `tls.key` will be used.
  *
  * @schema IssuerSpecAcmePrivateKeySecretRef
  */
 export interface IssuerSpecAcmePrivateKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmePrivateKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmePrivateKeySecretRef#name
    */
@@ -6106,7 +10375,7 @@ export interface IssuerSpecAcmePrivateKeySecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmePrivateKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmePrivateKeySecretRef(obj: IssuerSpecAcmePrivateKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6116,30 +10385,40 @@ export function toJson_IssuerSpecAcmePrivateKeySecretRef(obj: IssuerSpecAcmePriv
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * An ACMEChallengeSolver describes how to solve ACME challenges for the issuer it is part of. A selector may be provided to use different solving strategies for different DNS names. Only one of HTTP01 or DNS01 must be provided.
+ * An ACMEChallengeSolver describes how to solve ACME challenges for the issuer it is part of.
+ * A selector may be provided to use different solving strategies for different DNS names.
+ * Only one of HTTP01 or DNS01 must be provided.
  *
  * @schema IssuerSpecAcmeSolvers
  */
 export interface IssuerSpecAcmeSolvers {
   /**
-   * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+   * Configures cert-manager to attempt to complete authorizations by
+   * performing the DNS01 challenge flow.
    *
    * @schema IssuerSpecAcmeSolvers#dns01
    */
   readonly dns01?: IssuerSpecAcmeSolversDns01;
 
   /**
-   * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+   * Configures cert-manager to attempt to complete authorizations by
+   * performing the HTTP01 challenge flow.
+   * It is not possible to obtain certificates for wildcard domain names
+   * (e.g., `*.example.com`) using the HTTP01 challenge mechanism.
    *
    * @schema IssuerSpecAcmeSolvers#http01
    */
   readonly http01?: IssuerSpecAcmeSolversHttp01;
 
   /**
-   * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+   * Selector selects a set of DNSNames on the Certificate resource that
+   * should be solved using this challenge solver.
+   * If not specified, the solver will be treated as the 'default' solver
+   * with the lowest priority, i.e. if any other solver has a more specific
+   * match, it will be used instead.
    *
    * @schema IssuerSpecAcmeSolvers#selector
    */
@@ -6150,7 +10429,7 @@ export interface IssuerSpecAcmeSolvers {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolvers' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolvers(obj: IssuerSpecAcmeSolvers | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6161,7 +10440,7 @@ export function toJson_IssuerSpecAcmeSolvers(obj: IssuerSpecAcmeSolvers | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Auth configures how cert-manager authenticates with the Vault server.
@@ -6170,14 +10449,25 @@ export function toJson_IssuerSpecAcmeSolvers(obj: IssuerSpecAcmeSolvers | undefi
  */
 export interface IssuerSpecVaultAuth {
   /**
-   * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+   * AppRole authenticates with Vault using the App Role auth mechanism,
+   * with the role and secret stored in a Kubernetes Secret resource.
    *
    * @schema IssuerSpecVaultAuth#appRole
    */
   readonly appRole?: IssuerSpecVaultAuthAppRole;
 
   /**
-   * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+   * ClientCertificate authenticates with Vault by presenting a client
+   * certificate during the request's TLS handshake.
+   * Works only when using HTTPS protocol.
+   *
+   * @schema IssuerSpecVaultAuth#clientCertificate
+   */
+  readonly clientCertificate?: IssuerSpecVaultAuthClientCertificate;
+
+  /**
+   * Kubernetes authenticates with Vault by passing the ServiceAccount
+   * token stored in the named Secret resource to the Vault server.
    *
    * @schema IssuerSpecVaultAuth#kubernetes
    */
@@ -6195,34 +10485,43 @@ export interface IssuerSpecVaultAuth {
 /**
  * Converts an object of type 'IssuerSpecVaultAuth' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuth(obj: IssuerSpecVaultAuth | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'appRole': toJson_IssuerSpecVaultAuthAppRole(obj.appRole),
+    'clientCertificate': toJson_IssuerSpecVaultAuthClientCertificate(obj.clientCertificate),
     'kubernetes': toJson_IssuerSpecVaultAuthKubernetes(obj.kubernetes),
     'tokenSecretRef': toJson_IssuerSpecVaultAuthTokenSecretRef(obj.tokenSecretRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Reference to a Secret containing a bundle of PEM-encoded CAs to use when verifying the certificate chain presented by Vault when using HTTPS. Mutually exclusive with CABundle. If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in the cert-manager controller container is used to validate the TLS connection. If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
+ * Reference to a Secret containing a bundle of PEM-encoded CAs to use when
+ * verifying the certificate chain presented by Vault when using HTTPS.
+ * Mutually exclusive with CABundle.
+ * If neither CABundle nor CABundleSecretRef are defined, the certificate bundle in
+ * the cert-manager controller container is used to validate the TLS connection.
+ * If no key for the Secret is specified, cert-manager will default to 'ca.crt'.
  *
  * @schema IssuerSpecVaultCaBundleSecretRef
  */
 export interface IssuerSpecVaultCaBundleSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecVaultCaBundleSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecVaultCaBundleSecretRef#name
    */
@@ -6233,7 +10532,7 @@ export interface IssuerSpecVaultCaBundleSecretRef {
 /**
  * Converts an object of type 'IssuerSpecVaultCaBundleSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultCaBundleSecretRef(obj: IssuerSpecVaultCaBundleSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6243,10 +10542,93 @@ export function toJson_IssuerSpecVaultCaBundleSecretRef(obj: IssuerSpecVaultCaBu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Cloud specifies the Venafi cloud configuration settings. Only one of TPP or Cloud may be specified.
+ * Reference to a Secret containing a PEM-encoded Client Certificate to use when the
+ * Vault server requires mTLS.
+ *
+ * @schema IssuerSpecVaultClientCertSecretRef
+ */
+export interface IssuerSpecVaultClientCertSecretRef {
+  /**
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
+   *
+   * @schema IssuerSpecVaultClientCertSecretRef#key
+   */
+  readonly key?: string;
+
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema IssuerSpecVaultClientCertSecretRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVaultClientCertSecretRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVaultClientCertSecretRef(obj: IssuerSpecVaultClientCertSecretRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Reference to a Secret containing a PEM-encoded Client Private Key to use when the
+ * Vault server requires mTLS.
+ *
+ * @schema IssuerSpecVaultClientKeySecretRef
+ */
+export interface IssuerSpecVaultClientKeySecretRef {
+  /**
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
+   *
+   * @schema IssuerSpecVaultClientKeySecretRef#key
+   */
+  readonly key?: string;
+
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema IssuerSpecVaultClientKeySecretRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVaultClientKeySecretRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVaultClientKeySecretRef(obj: IssuerSpecVaultClientKeySecretRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Cloud specifies the Venafi cloud configuration settings.
+ * Only one of TPP or Cloud may be specified.
  *
  * @schema IssuerSpecVenafiCloud
  */
@@ -6259,9 +10641,10 @@ export interface IssuerSpecVenafiCloud {
   readonly apiTokenSecretRef: IssuerSpecVenafiCloudApiTokenSecretRef;
 
   /**
-   * URL is the base URL for Venafi Cloud. Defaults to "https://api.venafi.cloud/v1".
+   * URL is the base URL for Venafi Cloud.
+   * Defaults to "https://api.venafi.cloud/".
    *
-   * @default https://api.venafi.cloud/v1".
+   * @default https://api.venafi.cloud/".
    * @schema IssuerSpecVenafiCloud#url
    */
   readonly url?: string;
@@ -6271,7 +10654,7 @@ export interface IssuerSpecVenafiCloud {
 /**
  * Converts an object of type 'IssuerSpecVenafiCloud' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVenafiCloud(obj: IssuerSpecVenafiCloud | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6281,30 +10664,48 @@ export function toJson_IssuerSpecVenafiCloud(obj: IssuerSpecVenafiCloud | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * TPP specifies Trust Protection Platform configuration settings. Only one of TPP or Cloud may be specified.
+ * TPP specifies Trust Protection Platform configuration settings.
+ * Only one of TPP or Cloud may be specified.
  *
  * @schema IssuerSpecVenafiTpp
  */
 export interface IssuerSpecVenafiTpp {
   /**
-   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP. If undefined, the certificate bundle in the cert-manager controller container is used to validate the chain.
+   * Base64-encoded bundle of PEM CAs which will be used to validate the certificate
+   * chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+   * If undefined, the certificate bundle in the cert-manager controller container
+   * is used to validate the chain.
    *
    * @schema IssuerSpecVenafiTpp#caBundle
    */
   readonly caBundle?: string;
 
   /**
-   * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+   * Reference to a Secret containing a base64-encoded bundle of PEM CAs
+   * which will be used to validate the certificate chain presented by the TPP server.
+   * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
+   * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
+   * the cert-manager controller container is used to validate the TLS connection.
+   *
+   * @schema IssuerSpecVenafiTpp#caBundleSecretRef
+   */
+  readonly caBundleSecretRef?: IssuerSpecVenafiTppCaBundleSecretRef;
+
+  /**
+   * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+   * The secret must contain the key 'access-token' for the Access Token Authentication,
+   * or two keys, 'username' and 'password' for the API Keys Authentication.
    *
    * @schema IssuerSpecVenafiTpp#credentialsRef
    */
   readonly credentialsRef: IssuerSpecVenafiTppCredentialsRef;
 
   /**
-   * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance, for example: "https://tpp.example.com/vedsdk".
+   * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance,
+   * for example: "https://tpp.example.com/vedsdk".
    *
    * @schema IssuerSpecVenafiTpp#url
    */
@@ -6315,21 +10716,24 @@ export interface IssuerSpecVenafiTpp {
 /**
  * Converts an object of type 'IssuerSpecVenafiTpp' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVenafiTpp(obj: IssuerSpecVenafiTpp | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'caBundle': obj.caBundle,
+    'caBundleSecretRef': toJson_IssuerSpecVenafiTppCaBundleSecretRef(obj.caBundleSecretRef),
     'credentialsRef': toJson_IssuerSpecVenafiTppCredentialsRef(obj.credentialsRef),
     'url': obj.url,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Deprecated: keyAlgorithm field exists for historical compatibility reasons and should not be used. The algorithm is now hardcoded to HS256 in golang/x/crypto/acme.
+ * Deprecated: keyAlgorithm field exists for historical compatibility
+ * reasons and should not be used. The algorithm is now hardcoded to HS256
+ * in golang/x/crypto/acme.
  *
  * @schema IssuerSpecAcmeExternalAccountBindingKeyAlgorithm
  */
@@ -6343,20 +10747,29 @@ export enum IssuerSpecAcmeExternalAccountBindingKeyAlgorithm {
 }
 
 /**
- * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes Secret which holds the symmetric MAC key of the External Account Binding. The `key` is the index string that is paired with the key data in the Secret and should not be confused with the key data itself, or indeed with the External Account Binding keyID above. The secret key stored in the Secret **must** be un-padded, base64 URL encoded data.
+ * keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes
+ * Secret which holds the symmetric MAC key of the External Account Binding.
+ * The `key` is the index string that is paired with the key data in the
+ * Secret and should not be confused with the key data itself, or indeed with
+ * the External Account Binding keyID above.
+ * The secret key stored in the Secret **must** be un-padded, base64 URL
+ * encoded data.
  *
  * @schema IssuerSpecAcmeExternalAccountBindingKeySecretRef
  */
 export interface IssuerSpecAcmeExternalAccountBindingKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeExternalAccountBindingKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeExternalAccountBindingKeySecretRef#name
    */
@@ -6367,7 +10780,7 @@ export interface IssuerSpecAcmeExternalAccountBindingKeySecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeExternalAccountBindingKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeExternalAccountBindingKeySecretRef(obj: IssuerSpecAcmeExternalAccountBindingKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6377,16 +10790,18 @@ export function toJson_IssuerSpecAcmeExternalAccountBindingKeySecretRef(obj: Iss
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Configures cert-manager to attempt to complete authorizations by performing the DNS01 challenge flow.
+ * Configures cert-manager to attempt to complete authorizations by
+ * performing the DNS01 challenge flow.
  *
  * @schema IssuerSpecAcmeSolversDns01
  */
 export interface IssuerSpecAcmeSolversDns01 {
   /**
-   * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+   * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage
+   * DNS01 challenge records.
    *
    * @schema IssuerSpecAcmeSolversDns01#acmeDNS
    */
@@ -6421,7 +10836,8 @@ export interface IssuerSpecAcmeSolversDns01 {
   readonly cloudflare?: IssuerSpecAcmeSolversDns01Cloudflare;
 
   /**
-   * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+   * CNAMEStrategy configures how the DNS01 provider should handle CNAME
+   * records when found in DNS zones.
    *
    * @schema IssuerSpecAcmeSolversDns01#cnameStrategy
    */
@@ -6435,7 +10851,8 @@ export interface IssuerSpecAcmeSolversDns01 {
   readonly digitalocean?: IssuerSpecAcmeSolversDns01Digitalocean;
 
   /**
-   * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+   * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/)
+   * to manage DNS01 challenge records.
    *
    * @schema IssuerSpecAcmeSolversDns01#rfc2136
    */
@@ -6449,7 +10866,8 @@ export interface IssuerSpecAcmeSolversDns01 {
   readonly route53?: IssuerSpecAcmeSolversDns01Route53;
 
   /**
-   * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+   * Configure an external webhook based DNS01 challenge solver to manage
+   * DNS01 challenge records.
    *
    * @schema IssuerSpecAcmeSolversDns01#webhook
    */
@@ -6460,7 +10878,7 @@ export interface IssuerSpecAcmeSolversDns01 {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01(obj: IssuerSpecAcmeSolversDns01 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6478,23 +10896,32 @@ export function toJson_IssuerSpecAcmeSolversDns01(obj: IssuerSpecAcmeSolversDns0
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Configures cert-manager to attempt to complete authorizations by performing the HTTP01 challenge flow. It is not possible to obtain certificates for wildcard domain names (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+ * Configures cert-manager to attempt to complete authorizations by
+ * performing the HTTP01 challenge flow.
+ * It is not possible to obtain certificates for wildcard domain names
+ * (e.g., `*.example.com`) using the HTTP01 challenge mechanism.
  *
  * @schema IssuerSpecAcmeSolversHttp01
  */
 export interface IssuerSpecAcmeSolversHttp01 {
   /**
-   * The Gateway API is a sig-network community API that models service networking in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will create HTTPRoutes with the specified labels in the same namespace as the challenge. This solver is experimental, and fields / behaviour may change in the future.
+   * The Gateway API is a sig-network community API that models service networking
+   * in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will
+   * create HTTPRoutes with the specified labels in the same namespace as the challenge.
+   * This solver is experimental, and fields / behaviour may change in the future.
    *
    * @schema IssuerSpecAcmeSolversHttp01#gatewayHTTPRoute
    */
   readonly gatewayHttpRoute?: IssuerSpecAcmeSolversHttp01GatewayHttpRoute;
 
   /**
-   * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+   * The ingress based HTTP01 challenge solver will solve challenges by
+   * creating or modifying Ingress resources in order to route requests for
+   * '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are
+   * provisioned by cert-manager for each Challenge to be completed.
    *
    * @schema IssuerSpecAcmeSolversHttp01#ingress
    */
@@ -6505,7 +10932,7 @@ export interface IssuerSpecAcmeSolversHttp01 {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01(obj: IssuerSpecAcmeSolversHttp01 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6515,30 +10942,49 @@ export function toJson_IssuerSpecAcmeSolversHttp01(obj: IssuerSpecAcmeSolversHtt
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Selector selects a set of DNSNames on the Certificate resource that should be solved using this challenge solver. If not specified, the solver will be treated as the 'default' solver with the lowest priority, i.e. if any other solver has a more specific match, it will be used instead.
+ * Selector selects a set of DNSNames on the Certificate resource that
+ * should be solved using this challenge solver.
+ * If not specified, the solver will be treated as the 'default' solver
+ * with the lowest priority, i.e. if any other solver has a more specific
+ * match, it will be used instead.
  *
  * @schema IssuerSpecAcmeSolversSelector
  */
 export interface IssuerSpecAcmeSolversSelector {
   /**
-   * List of DNSNames that this solver will be used to solve. If specified and a match is found, a dnsNames selector will take precedence over a dnsZones selector. If multiple solvers match with the same dnsNames value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+   * List of DNSNames that this solver will be used to solve.
+   * If specified and a match is found, a dnsNames selector will take
+   * precedence over a dnsZones selector.
+   * If multiple solvers match with the same dnsNames value, the solver
+   * with the most matching labels in matchLabels will be selected.
+   * If neither has more matches, the solver defined earlier in the list
+   * will be selected.
    *
    * @schema IssuerSpecAcmeSolversSelector#dnsNames
    */
   readonly dnsNames?: string[];
 
   /**
-   * List of DNSZones that this solver will be used to solve. The most specific DNS zone match specified here will take precedence over other DNS zone matches, so a solver specifying sys.example.com will be selected over one specifying example.com for the domain www.sys.example.com. If multiple solvers match with the same dnsZones value, the solver with the most matching labels in matchLabels will be selected. If neither has more matches, the solver defined earlier in the list will be selected.
+   * List of DNSZones that this solver will be used to solve.
+   * The most specific DNS zone match specified here will take precedence
+   * over other DNS zone matches, so a solver specifying sys.example.com
+   * will be selected over one specifying example.com for the domain
+   * www.sys.example.com.
+   * If multiple solvers match with the same dnsZones value, the solver
+   * with the most matching labels in matchLabels will be selected.
+   * If neither has more matches, the solver defined earlier in the list
+   * will be selected.
    *
    * @schema IssuerSpecAcmeSolversSelector#dnsZones
    */
   readonly dnsZones?: string[];
 
   /**
-   * A label selector that is used to refine the set of certificate's that this challenge solver will apply to.
+   * A label selector that is used to refine the set of certificate's that
+   * this challenge solver will apply to.
    *
    * @schema IssuerSpecAcmeSolversSelector#matchLabels
    */
@@ -6549,7 +10995,7 @@ export interface IssuerSpecAcmeSolversSelector {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversSelector(obj: IssuerSpecAcmeSolversSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6560,30 +11006,36 @@ export function toJson_IssuerSpecAcmeSolversSelector(obj: IssuerSpecAcmeSolversS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * AppRole authenticates with Vault using the App Role auth mechanism, with the role and secret stored in a Kubernetes Secret resource.
+ * AppRole authenticates with Vault using the App Role auth mechanism,
+ * with the role and secret stored in a Kubernetes Secret resource.
  *
  * @schema IssuerSpecVaultAuthAppRole
  */
 export interface IssuerSpecVaultAuthAppRole {
   /**
-   * Path where the App Role authentication backend is mounted in Vault, e.g: "approle"
+   * Path where the App Role authentication backend is mounted in Vault, e.g:
+   * "approle"
    *
    * @schema IssuerSpecVaultAuthAppRole#path
    */
   readonly path: string;
 
   /**
-   * RoleID configured in the App Role authentication backend when setting up the authentication backend in Vault.
+   * RoleID configured in the App Role authentication backend when setting
+   * up the authentication backend in Vault.
    *
    * @schema IssuerSpecVaultAuthAppRole#roleId
    */
   readonly roleId: string;
 
   /**
-   * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+   * Reference to a key in a Secret that contains the App Role secret used
+   * to authenticate with Vault.
+   * The `key` field must be specified and denotes which entry within the Secret
+   * resource is used as the app role secret.
    *
    * @schema IssuerSpecVaultAuthAppRole#secretRef
    */
@@ -6594,7 +11046,7 @@ export interface IssuerSpecVaultAuthAppRole {
 /**
  * Converts an object of type 'IssuerSpecVaultAuthAppRole' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuthAppRole(obj: IssuerSpecVaultAuthAppRole | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6605,37 +11057,101 @@ export function toJson_IssuerSpecVaultAuthAppRole(obj: IssuerSpecVaultAuthAppRol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Kubernetes authenticates with Vault by passing the ServiceAccount token stored in the named Secret resource to the Vault server.
+ * ClientCertificate authenticates with Vault by presenting a client
+ * certificate during the request's TLS handshake.
+ * Works only when using HTTPS protocol.
+ *
+ * @schema IssuerSpecVaultAuthClientCertificate
+ */
+export interface IssuerSpecVaultAuthClientCertificate {
+  /**
+   * The Vault mountPath here is the mount path to use when authenticating with
+   * Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+   * `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+   * default value "/v1/auth/cert" will be used.
+   *
+   * @schema IssuerSpecVaultAuthClientCertificate#mountPath
+   */
+  readonly mountPath?: string;
+
+  /**
+   * Name of the certificate role to authenticate against.
+   * If not set, matching any certificate role, if available.
+   *
+   * @schema IssuerSpecVaultAuthClientCertificate#name
+   */
+  readonly name?: string;
+
+  /**
+   * Reference to Kubernetes Secret of type "kubernetes.io/tls" (hence containing
+   * tls.crt and tls.key) used to authenticate to Vault using TLS client
+   * authentication.
+   *
+   * @schema IssuerSpecVaultAuthClientCertificate#secretName
+   */
+  readonly secretName?: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVaultAuthClientCertificate' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVaultAuthClientCertificate(obj: IssuerSpecVaultAuthClientCertificate | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'mountPath': obj.mountPath,
+    'name': obj.name,
+    'secretName': obj.secretName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Kubernetes authenticates with Vault by passing the ServiceAccount
+ * token stored in the named Secret resource to the Vault server.
  *
  * @schema IssuerSpecVaultAuthKubernetes
  */
 export interface IssuerSpecVaultAuthKubernetes {
   /**
-   * The Vault mountPath here is the mount path to use when authenticating with Vault. For example, setting a value to `/v1/auth/foo`, will use the path `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the default value "/v1/auth/kubernetes" will be used.
+   * The Vault mountPath here is the mount path to use when authenticating with
+   * Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+   * `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+   * default value "/v1/auth/kubernetes" will be used.
    *
    * @schema IssuerSpecVaultAuthKubernetes#mountPath
    */
   readonly mountPath?: string;
 
   /**
-   * A required field containing the Vault Role to assume. A Role binds a Kubernetes ServiceAccount with a set of Vault policies.
+   * A required field containing the Vault Role to assume. A Role binds a
+   * Kubernetes ServiceAccount with a set of Vault policies.
    *
    * @schema IssuerSpecVaultAuthKubernetes#role
    */
   readonly role: string;
 
   /**
-   * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+   * The required Secret field containing a Kubernetes ServiceAccount JWT used
+   * for authenticating with Vault. Use of 'ambient credentials' is not
+   * supported.
    *
    * @schema IssuerSpecVaultAuthKubernetes#secretRef
    */
   readonly secretRef?: IssuerSpecVaultAuthKubernetesSecretRef;
 
   /**
-   * A reference to a service account that will be used to request a bound token (also known as "projected token"). Compared to using "secretRef", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token.
+   * A reference to a service account that will be used to request a bound
+   * token (also known as "projected token"). Compared to using "secretRef",
+   * using this field means that you don't rely on statically bound tokens. To
+   * use this field, you must configure an RBAC rule to let cert-manager
+   * request a token.
    *
    * @schema IssuerSpecVaultAuthKubernetes#serviceAccountRef
    */
@@ -6646,7 +11162,7 @@ export interface IssuerSpecVaultAuthKubernetes {
 /**
  * Converts an object of type 'IssuerSpecVaultAuthKubernetes' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuthKubernetes(obj: IssuerSpecVaultAuthKubernetes | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6658,7 +11174,7 @@ export function toJson_IssuerSpecVaultAuthKubernetes(obj: IssuerSpecVaultAuthKub
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TokenSecretRef authenticates with Vault by presenting a token.
@@ -6667,14 +11183,17 @@ export function toJson_IssuerSpecVaultAuthKubernetes(obj: IssuerSpecVaultAuthKub
  */
 export interface IssuerSpecVaultAuthTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecVaultAuthTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecVaultAuthTokenSecretRef#name
    */
@@ -6685,7 +11204,7 @@ export interface IssuerSpecVaultAuthTokenSecretRef {
 /**
  * Converts an object of type 'IssuerSpecVaultAuthTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuthTokenSecretRef(obj: IssuerSpecVaultAuthTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6695,7 +11214,7 @@ export function toJson_IssuerSpecVaultAuthTokenSecretRef(obj: IssuerSpecVaultAut
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
@@ -6704,14 +11223,17 @@ export function toJson_IssuerSpecVaultAuthTokenSecretRef(obj: IssuerSpecVaultAut
  */
 export interface IssuerSpecVenafiCloudApiTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecVenafiCloudApiTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecVenafiCloudApiTokenSecretRef#name
    */
@@ -6722,7 +11244,7 @@ export interface IssuerSpecVenafiCloudApiTokenSecretRef {
 /**
  * Converts an object of type 'IssuerSpecVenafiCloudApiTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVenafiCloudApiTokenSecretRef(obj: IssuerSpecVenafiCloudApiTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6732,16 +11254,63 @@ export function toJson_IssuerSpecVenafiCloudApiTokenSecretRef(obj: IssuerSpecVen
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CredentialsRef is a reference to a Secret containing the username and password for the TPP server. The secret must contain two keys, 'username' and 'password'.
+ * Reference to a Secret containing a base64-encoded bundle of PEM CAs
+ * which will be used to validate the certificate chain presented by the TPP server.
+ * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
+ * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
+ * the cert-manager controller container is used to validate the TLS connection.
+ *
+ * @schema IssuerSpecVenafiTppCaBundleSecretRef
+ */
+export interface IssuerSpecVenafiTppCaBundleSecretRef {
+  /**
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
+   *
+   * @schema IssuerSpecVenafiTppCaBundleSecretRef#key
+   */
+  readonly key?: string;
+
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema IssuerSpecVenafiTppCaBundleSecretRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVenafiTppCaBundleSecretRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVenafiTppCaBundleSecretRef(obj: IssuerSpecVenafiTppCaBundleSecretRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+ * The secret must contain the key 'access-token' for the Access Token Authentication,
+ * or two keys, 'username' and 'password' for the API Keys Authentication.
  *
  * @schema IssuerSpecVenafiTppCredentialsRef
  */
 export interface IssuerSpecVenafiTppCredentialsRef {
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecVenafiTppCredentialsRef#name
    */
@@ -6752,7 +11321,7 @@ export interface IssuerSpecVenafiTppCredentialsRef {
 /**
  * Converts an object of type 'IssuerSpecVenafiTppCredentialsRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVenafiTppCredentialsRef(obj: IssuerSpecVenafiTppCredentialsRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6761,16 +11330,18 @@ export function toJson_IssuerSpecVenafiTppCredentialsRef(obj: IssuerSpecVenafiTp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage DNS01 challenge records.
+ * Use the 'ACME DNS' (https://github.com/joohoi/acme-dns) API to manage
+ * DNS01 challenge records.
  *
  * @schema IssuerSpecAcmeSolversDns01AcmeDns
  */
 export interface IssuerSpecAcmeSolversDns01AcmeDns {
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema IssuerSpecAcmeSolversDns01AcmeDns#accountSecretRef
    */
@@ -6786,7 +11357,7 @@ export interface IssuerSpecAcmeSolversDns01AcmeDns {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AcmeDns' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AcmeDns(obj: IssuerSpecAcmeSolversDns01AcmeDns | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6796,7 +11367,7 @@ export function toJson_IssuerSpecAcmeSolversDns01AcmeDns(obj: IssuerSpecAcmeSolv
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Akamai DNS zone management API to manage DNS01 challenge records.
@@ -6805,21 +11376,24 @@ export function toJson_IssuerSpecAcmeSolversDns01AcmeDns(obj: IssuerSpecAcmeSolv
  */
 export interface IssuerSpecAcmeSolversDns01Akamai {
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema IssuerSpecAcmeSolversDns01Akamai#accessTokenSecretRef
    */
   readonly accessTokenSecretRef: IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef;
 
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema IssuerSpecAcmeSolversDns01Akamai#clientSecretSecretRef
    */
   readonly clientSecretSecretRef: IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef;
 
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema IssuerSpecAcmeSolversDns01Akamai#clientTokenSecretRef
    */
@@ -6835,7 +11409,7 @@ export interface IssuerSpecAcmeSolversDns01Akamai {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Akamai' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Akamai(obj: IssuerSpecAcmeSolversDns01Akamai | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6847,7 +11421,7 @@ export function toJson_IssuerSpecAcmeSolversDns01Akamai(obj: IssuerSpecAcmeSolve
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Microsoft Azure DNS API to manage DNS01 challenge records.
@@ -6856,14 +11430,18 @@ export function toJson_IssuerSpecAcmeSolversDns01Akamai(obj: IssuerSpecAcmeSolve
  */
 export interface IssuerSpecAcmeSolversDns01AzureDns {
   /**
-   * Auth: Azure Service Principal: The ClientID of the Azure Service Principal used to authenticate with Azure DNS. If set, ClientSecret and TenantID must also be set.
+   * Auth: Azure Service Principal:
+   * The ClientID of the Azure Service Principal used to authenticate with Azure DNS.
+   * If set, ClientSecret and TenantID must also be set.
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDns#clientID
    */
   readonly clientId?: string;
 
   /**
-   * Auth: Azure Service Principal: A reference to a Secret containing the password associated with the Service Principal. If set, ClientID and TenantID must also be set.
+   * Auth: Azure Service Principal:
+   * A reference to a Secret containing the password associated with the Service Principal.
+   * If set, ClientID and TenantID must also be set.
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDns#clientSecretSecretRef
    */
@@ -6884,7 +11462,9 @@ export interface IssuerSpecAcmeSolversDns01AzureDns {
   readonly hostedZoneName?: string;
 
   /**
-   * Auth: Azure Workload Identity or Azure Managed Service Identity: Settings to enable Azure Workload Identity or Azure Managed Service Identity If set, ClientID, ClientSecret and TenantID must not be set.
+   * Auth: Azure Workload Identity or Azure Managed Service Identity:
+   * Settings to enable Azure Workload Identity or Azure Managed Service Identity
+   * If set, ClientID, ClientSecret and TenantID must not be set.
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDns#managedIdentity
    */
@@ -6905,7 +11485,9 @@ export interface IssuerSpecAcmeSolversDns01AzureDns {
   readonly subscriptionId: string;
 
   /**
-   * Auth: Azure Service Principal: The TenantID of the Azure Service Principal used to authenticate with Azure DNS. If set, ClientID and ClientSecret must also be set.
+   * Auth: Azure Service Principal:
+   * The TenantID of the Azure Service Principal used to authenticate with Azure DNS.
+   * If set, ClientID and ClientSecret must also be set.
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDns#tenantID
    */
@@ -6916,7 +11498,7 @@ export interface IssuerSpecAcmeSolversDns01AzureDns {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AzureDns' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AzureDns(obj: IssuerSpecAcmeSolversDns01AzureDns | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6932,7 +11514,7 @@ export function toJson_IssuerSpecAcmeSolversDns01AzureDns(obj: IssuerSpecAcmeSol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Google Cloud DNS API to manage DNS01 challenge records.
@@ -6941,7 +11523,9 @@ export function toJson_IssuerSpecAcmeSolversDns01AzureDns(obj: IssuerSpecAcmeSol
  */
 export interface IssuerSpecAcmeSolversDns01CloudDns {
   /**
-   * HostedZoneName is an optional field that tells cert-manager in which Cloud DNS zone the challenge record has to be created. If left empty cert-manager will automatically choose a zone.
+   * HostedZoneName is an optional field that tells cert-manager in which
+   * Cloud DNS zone the challenge record has to be created.
+   * If left empty cert-manager will automatically choose a zone.
    *
    * @schema IssuerSpecAcmeSolversDns01CloudDns#hostedZoneName
    */
@@ -6953,7 +11537,8 @@ export interface IssuerSpecAcmeSolversDns01CloudDns {
   readonly project: string;
 
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema IssuerSpecAcmeSolversDns01CloudDns#serviceAccountSecretRef
    */
@@ -6964,7 +11549,7 @@ export interface IssuerSpecAcmeSolversDns01CloudDns {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01CloudDns' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01CloudDns(obj: IssuerSpecAcmeSolversDns01CloudDns | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6975,7 +11560,7 @@ export function toJson_IssuerSpecAcmeSolversDns01CloudDns(obj: IssuerSpecAcmeSol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the Cloudflare API to manage DNS01 challenge records.
@@ -6984,7 +11569,9 @@ export function toJson_IssuerSpecAcmeSolversDns01CloudDns(obj: IssuerSpecAcmeSol
  */
 export interface IssuerSpecAcmeSolversDns01Cloudflare {
   /**
-   * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+   * API key to use to authenticate with Cloudflare.
+   * Note: using an API token to authenticate is now the recommended method
+   * as it allows greater control of permissions.
    *
    * @schema IssuerSpecAcmeSolversDns01Cloudflare#apiKeySecretRef
    */
@@ -7009,7 +11596,7 @@ export interface IssuerSpecAcmeSolversDns01Cloudflare {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Cloudflare' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Cloudflare(obj: IssuerSpecAcmeSolversDns01Cloudflare | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7020,10 +11607,11 @@ export function toJson_IssuerSpecAcmeSolversDns01Cloudflare(obj: IssuerSpecAcmeS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CNAMEStrategy configures how the DNS01 provider should handle CNAME records when found in DNS zones.
+ * CNAMEStrategy configures how the DNS01 provider should handle CNAME
+ * records when found in DNS zones.
  *
  * @schema IssuerSpecAcmeSolversDns01CnameStrategy
  */
@@ -7041,7 +11629,8 @@ export enum IssuerSpecAcmeSolversDns01CnameStrategy {
  */
 export interface IssuerSpecAcmeSolversDns01Digitalocean {
   /**
-   * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+   * A reference to a specific 'key' within a Secret resource.
+   * In some instances, `key` is a required field.
    *
    * @schema IssuerSpecAcmeSolversDns01Digitalocean#tokenSecretRef
    */
@@ -7052,7 +11641,7 @@ export interface IssuerSpecAcmeSolversDns01Digitalocean {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Digitalocean' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Digitalocean(obj: IssuerSpecAcmeSolversDns01Digitalocean | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7061,37 +11650,46 @@ export function toJson_IssuerSpecAcmeSolversDns01Digitalocean(obj: IssuerSpecAcm
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/) to manage DNS01 challenge records.
+ * Use RFC2136 ("Dynamic Updates in the Domain Name System") (https://datatracker.ietf.org/doc/rfc2136/)
+ * to manage DNS01 challenge records.
  *
  * @schema IssuerSpecAcmeSolversDns01Rfc2136
  */
 export interface IssuerSpecAcmeSolversDns01Rfc2136 {
   /**
-   * The IP address or hostname of an authoritative DNS server supporting RFC2136 in the form host:port. If the host is an IPv6 address it must be enclosed in square brackets (e.g [2001:db8::1]) ; port is optional. This field is required.
+   * The IP address or hostname of an authoritative DNS server supporting
+   * RFC2136 in the form host:port. If the host is an IPv6 address it must be
+   * enclosed in square brackets (e.g [2001:db8::1]) ; port is optional.
+   * This field is required.
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136#nameserver
    */
   readonly nameserver: string;
 
   /**
-   * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined. Supported values are (case-insensitive): ``HMACMD5`` (default), ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
+   * The TSIG Algorithm configured in the DNS supporting RFC2136. Used only
+   * when ``tsigSecretSecretRef`` and ``tsigKeyName`` are defined.
+   * Supported values are (case-insensitive): ``HMACMD5`` (default),
+   * ``HMACSHA1``, ``HMACSHA256`` or ``HMACSHA512``.
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136#tsigAlgorithm
    */
   readonly tsigAlgorithm?: string;
 
   /**
-   * The TSIG Key name configured in the DNS. If ``tsigSecretSecretRef`` is defined, this field is required.
+   * The TSIG Key name configured in the DNS.
+   * If ``tsigSecretSecretRef`` is defined, this field is required.
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136#tsigKeyName
    */
   readonly tsigKeyName?: string;
 
   /**
-   * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+   * The name of the secret containing the TSIG value.
+   * If ``tsigKeyName`` is defined, this field is required.
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136#tsigSecretSecretRef
    */
@@ -7102,7 +11700,7 @@ export interface IssuerSpecAcmeSolversDns01Rfc2136 {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Rfc2136' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Rfc2136(obj: IssuerSpecAcmeSolversDns01Rfc2136 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7114,7 +11712,7 @@ export function toJson_IssuerSpecAcmeSolversDns01Rfc2136(obj: IssuerSpecAcmeSolv
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Use the AWS Route53 API to manage DNS01 challenge records.
@@ -7123,42 +11721,83 @@ export function toJson_IssuerSpecAcmeSolversDns01Rfc2136(obj: IssuerSpecAcmeSolv
  */
 export interface IssuerSpecAcmeSolversDns01Route53 {
   /**
-   * The AccessKeyID is used for authentication. Cannot be set when SecretAccessKeyID is set. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+   * The AccessKeyID is used for authentication.
+   * Cannot be set when SecretAccessKeyID is set.
+   * If neither the Access Key nor Key ID are set, we fall-back to using env
+   * vars, shared credentials file or AWS Instance metadata,
+   * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#accessKeyID
    */
   readonly accessKeyId?: string;
 
   /**
-   * The SecretAccessKey is used for authentication. If set, pull the AWS access key ID from a key within a Kubernetes Secret. Cannot be set when AccessKeyID is set. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+   * The SecretAccessKey is used for authentication. If set, pull the AWS
+   * access key ID from a key within a Kubernetes Secret.
+   * Cannot be set when AccessKeyID is set.
+   * If neither the Access Key nor Key ID are set, we fall-back to using env
+   * vars, shared credentials file or AWS Instance metadata,
+   * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#accessKeyIDSecretRef
    */
   readonly accessKeyIdSecretRef?: IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef;
 
   /**
-   * If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+   * Auth configures how cert-manager authenticates.
+   *
+   * @schema IssuerSpecAcmeSolversDns01Route53#auth
+   */
+  readonly auth?: IssuerSpecAcmeSolversDns01Route53Auth;
+
+  /**
+   * If set, the provider will manage only this zone in Route53 and will not do a lookup using the route53:ListHostedZonesByName api call.
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#hostedZoneID
    */
   readonly hostedZoneId?: string;
 
   /**
-   * Always set the region when using AccessKeyID and SecretAccessKey
+   * Override the AWS region.
+   *
+   * Route53 is a global service and does not have regional endpoints but the
+   * region specified here (or via environment variables) is used as a hint to
+   * help compute the correct AWS credential scope and partition when it
+   * connects to Route53. See:
+   * - [Amazon Route 53 endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/r53.html)
+   * - [Global services](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/global-services.html)
+   *
+   * If you omit this region field, cert-manager will use the region from
+   * AWS_REGION and AWS_DEFAULT_REGION environment variables, if they are set
+   * in the cert-manager controller Pod.
+   *
+   * The `region` field is not needed if you use [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html).
+   * Instead an AWS_REGION environment variable is added to the cert-manager controller Pod by:
+   * [Amazon EKS Pod Identity Webhook](https://github.com/aws/amazon-eks-pod-identity-webhook).
+   * In this case this `region` field value is ignored.
+   *
+   * The `region` field is not needed if you use [EKS Pod Identities](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html).
+   * Instead an AWS_REGION environment variable is added to the cert-manager controller Pod by:
+   * [Amazon EKS Pod Identity Agent](https://github.com/aws/eks-pod-identity-agent),
+   * In this case this `region` field value is ignored.
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#region
    */
-  readonly region: string;
+  readonly region?: string;
 
   /**
-   * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
+   * Role is a Role ARN which the Route53 provider will assume using either the explicit credentials AccessKeyID/SecretAccessKey
+   * or the inferred credentials from environment variables, shared credentials file or AWS Instance metadata
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#role
    */
   readonly role?: string;
 
   /**
-   * The SecretAccessKey is used for authentication. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+   * The SecretAccessKey is used for authentication.
+   * If neither the Access Key nor Key ID are set, we fall-back to using env
+   * vars, shared credentials file or AWS Instance metadata,
+   * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#secretAccessKeySecretRef
    */
@@ -7169,12 +11808,13 @@ export interface IssuerSpecAcmeSolversDns01Route53 {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Route53' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Route53(obj: IssuerSpecAcmeSolversDns01Route53 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'accessKeyID': obj.accessKeyId,
     'accessKeyIDSecretRef': toJson_IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef(obj.accessKeyIdSecretRef),
+    'auth': toJson_IssuerSpecAcmeSolversDns01Route53Auth(obj.auth),
     'hostedZoneID': obj.hostedZoneId,
     'region': obj.region,
     'role': obj.role,
@@ -7183,30 +11823,43 @@ export function toJson_IssuerSpecAcmeSolversDns01Route53(obj: IssuerSpecAcmeSolv
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Configure an external webhook based DNS01 challenge solver to manage DNS01 challenge records.
+ * Configure an external webhook based DNS01 challenge solver to manage
+ * DNS01 challenge records.
  *
  * @schema IssuerSpecAcmeSolversDns01Webhook
  */
 export interface IssuerSpecAcmeSolversDns01Webhook {
   /**
-   * Additional configuration that should be passed to the webhook apiserver when challenges are processed. This can contain arbitrary JSON data. Secret values should not be specified in this stanza. If secret values are needed (e.g. credentials for a DNS service), you should use a SecretKeySelector to reference a Secret resource. For details on the schema of this field, consult the webhook provider implementation's documentation.
+   * Additional configuration that should be passed to the webhook apiserver
+   * when challenges are processed.
+   * This can contain arbitrary JSON data.
+   * Secret values should not be specified in this stanza.
+   * If secret values are needed (e.g., credentials for a DNS service), you
+   * should use a SecretKeySelector to reference a Secret resource.
+   * For details on the schema of this field, consult the webhook provider
+   * implementation's documentation.
    *
    * @schema IssuerSpecAcmeSolversDns01Webhook#config
    */
   readonly config?: any;
 
   /**
-   * The API group name that should be used when POSTing ChallengePayload resources to the webhook apiserver. This should be the same as the GroupName specified in the webhook provider implementation.
+   * The API group name that should be used when POSTing ChallengePayload
+   * resources to the webhook apiserver.
+   * This should be the same as the GroupName specified in the webhook
+   * provider implementation.
    *
    * @schema IssuerSpecAcmeSolversDns01Webhook#groupName
    */
   readonly groupName: string;
 
   /**
-   * The name of the solver to use, as defined in the webhook provider implementation. This will typically be the name of the provider, e.g. 'cloudflare'.
+   * The name of the solver to use, as defined in the webhook provider
+   * implementation.
+   * This will typically be the name of the provider, e.g., 'cloudflare'.
    *
    * @schema IssuerSpecAcmeSolversDns01Webhook#solverName
    */
@@ -7217,7 +11870,7 @@ export interface IssuerSpecAcmeSolversDns01Webhook {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Webhook' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Webhook(obj: IssuerSpecAcmeSolversDns01Webhook | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7228,30 +11881,46 @@ export function toJson_IssuerSpecAcmeSolversDns01Webhook(obj: IssuerSpecAcmeSolv
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The Gateway API is a sig-network community API that models service networking in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will create HTTPRoutes with the specified labels in the same namespace as the challenge. This solver is experimental, and fields / behaviour may change in the future.
+ * The Gateway API is a sig-network community API that models service networking
+ * in Kubernetes (https://gateway-api.sigs.k8s.io/). The Gateway solver will
+ * create HTTPRoutes with the specified labels in the same namespace as the challenge.
+ * This solver is experimental, and fields / behaviour may change in the future.
  *
  * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoute
  */
 export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoute {
   /**
-   * Custom labels that will be applied to HTTPRoutes created by cert-manager while solving HTTP-01 challenges.
+   * Custom labels that will be applied to HTTPRoutes created by cert-manager
+   * while solving HTTP-01 challenges.
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoute#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
-   * When solving an HTTP-01 challenge, cert-manager creates an HTTPRoute. cert-manager needs to know which parentRefs should be used when creating the HTTPRoute. Usually, the parentRef references a Gateway. See: https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways
+   * When solving an HTTP-01 challenge, cert-manager creates an HTTPRoute.
+   * cert-manager needs to know which parentRefs should be used when creating
+   * the HTTPRoute. Usually, the parentRef references a Gateway. See:
+   * https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoute#parentRefs
    */
   readonly parentRefs?: IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs[];
 
   /**
-   * Optional service type for Kubernetes solver service. Supported values are NodePort or ClusterIP. If unset, defaults to NodePort.
+   * Optional pod template used to configure the ACME challenge solver pods
+   * used for HTTP01 challenges.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoute#podTemplate
+   */
+  readonly podTemplate?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate;
+
+  /**
+   * Optional service type for Kubernetes solver service. Supported values
+   * are NodePort or ClusterIP. If unset, defaults to NodePort.
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoute#serviceType
    */
@@ -7262,62 +11931,80 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoute {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoute' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoute(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoute | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'labels': ((obj.labels) === undefined) ? undefined : (Object.entries(obj.labels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'parentRefs': obj.parentRefs?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs(y)),
+    'podTemplate': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate(obj.podTemplate),
     'serviceType': obj.serviceType,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The ingress based HTTP01 challenge solver will solve challenges by creating or modifying Ingress resources in order to route requests for '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are provisioned by cert-manager for each Challenge to be completed.
+ * The ingress based HTTP01 challenge solver will solve challenges by
+ * creating or modifying Ingress resources in order to route requests for
+ * '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are
+ * provisioned by cert-manager for each Challenge to be completed.
  *
  * @schema IssuerSpecAcmeSolversHttp01Ingress
  */
 export interface IssuerSpecAcmeSolversHttp01Ingress {
   /**
-   * This field configures the annotation `kubernetes.io/ingress.class` when creating Ingress resources to solve ACME challenges that use this challenge solver. Only one of `class`, `name` or `ingressClassName` may be specified.
+   * This field configures the annotation `kubernetes.io/ingress.class` when
+   * creating Ingress resources to solve ACME challenges that use this
+   * challenge solver. Only one of `class`, `name` or `ingressClassName` may
+   * be specified.
    *
    * @schema IssuerSpecAcmeSolversHttp01Ingress#class
    */
   readonly class?: string;
 
   /**
-   * This field configures the field `ingressClassName` on the created Ingress resources used to solve ACME challenges that use this challenge solver. This is the recommended way of configuring the ingress class. Only one of `class`, `name` or `ingressClassName` may be specified.
+   * This field configures the field `ingressClassName` on the created Ingress
+   * resources used to solve ACME challenges that use this challenge solver.
+   * This is the recommended way of configuring the ingress class. Only one of
+   * `class`, `name` or `ingressClassName` may be specified.
    *
    * @schema IssuerSpecAcmeSolversHttp01Ingress#ingressClassName
    */
   readonly ingressClassName?: string;
 
   /**
-   * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges.
+   * Optional ingress template used to configure the ACME challenge solver
+   * ingress used for HTTP01 challenges.
    *
    * @schema IssuerSpecAcmeSolversHttp01Ingress#ingressTemplate
    */
   readonly ingressTemplate?: IssuerSpecAcmeSolversHttp01IngressIngressTemplate;
 
   /**
-   * The name of the ingress resource that should have ACME challenge solving routes inserted into it in order to solve HTTP01 challenges. This is typically used in conjunction with ingress controllers like ingress-gce, which maintains a 1:1 mapping between external IPs and ingress resources. Only one of `class`, `name` or `ingressClassName` may be specified.
+   * The name of the ingress resource that should have ACME challenge solving
+   * routes inserted into it in order to solve HTTP01 challenges.
+   * This is typically used in conjunction with ingress controllers like
+   * ingress-gce, which maintains a 1:1 mapping between external IPs and
+   * ingress resources. Only one of `class`, `name` or `ingressClassName` may
+   * be specified.
    *
    * @schema IssuerSpecAcmeSolversHttp01Ingress#name
    */
   readonly name?: string;
 
   /**
-   * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges.
+   * Optional pod template used to configure the ACME challenge solver pods
+   * used for HTTP01 challenges.
    *
    * @schema IssuerSpecAcmeSolversHttp01Ingress#podTemplate
    */
   readonly podTemplate?: IssuerSpecAcmeSolversHttp01IngressPodTemplate;
 
   /**
-   * Optional service type for Kubernetes solver service. Supported values are NodePort or ClusterIP. If unset, defaults to NodePort.
+   * Optional service type for Kubernetes solver service. Supported values
+   * are NodePort or ClusterIP. If unset, defaults to NodePort.
    *
    * @schema IssuerSpecAcmeSolversHttp01Ingress#serviceType
    */
@@ -7328,7 +12015,7 @@ export interface IssuerSpecAcmeSolversHttp01Ingress {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01Ingress' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01Ingress(obj: IssuerSpecAcmeSolversHttp01Ingress | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7342,23 +12029,29 @@ export function toJson_IssuerSpecAcmeSolversHttp01Ingress(obj: IssuerSpecAcmeSol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Reference to a key in a Secret that contains the App Role secret used to authenticate with Vault. The `key` field must be specified and denotes which entry within the Secret resource is used as the app role secret.
+ * Reference to a key in a Secret that contains the App Role secret used
+ * to authenticate with Vault.
+ * The `key` field must be specified and denotes which entry within the Secret
+ * resource is used as the app role secret.
  *
  * @schema IssuerSpecVaultAuthAppRoleSecretRef
  */
 export interface IssuerSpecVaultAuthAppRoleSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecVaultAuthAppRoleSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecVaultAuthAppRoleSecretRef#name
    */
@@ -7369,7 +12062,7 @@ export interface IssuerSpecVaultAuthAppRoleSecretRef {
 /**
  * Converts an object of type 'IssuerSpecVaultAuthAppRoleSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuthAppRoleSecretRef(obj: IssuerSpecVaultAuthAppRoleSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7379,23 +12072,28 @@ export function toJson_IssuerSpecVaultAuthAppRoleSecretRef(obj: IssuerSpecVaultA
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The required Secret field containing a Kubernetes ServiceAccount JWT used for authenticating with Vault. Use of 'ambient credentials' is not supported.
+ * The required Secret field containing a Kubernetes ServiceAccount JWT used
+ * for authenticating with Vault. Use of 'ambient credentials' is not
+ * supported.
  *
  * @schema IssuerSpecVaultAuthKubernetesSecretRef
  */
 export interface IssuerSpecVaultAuthKubernetesSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecVaultAuthKubernetesSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecVaultAuthKubernetesSecretRef#name
    */
@@ -7406,7 +12104,7 @@ export interface IssuerSpecVaultAuthKubernetesSecretRef {
 /**
  * Converts an object of type 'IssuerSpecVaultAuthKubernetesSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuthKubernetesSecretRef(obj: IssuerSpecVaultAuthKubernetesSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7416,14 +12114,26 @@ export function toJson_IssuerSpecVaultAuthKubernetesSecretRef(obj: IssuerSpecVau
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a service account that will be used to request a bound token (also known as "projected token"). Compared to using "secretRef", using this field means that you don't rely on statically bound tokens. To use this field, you must configure an RBAC rule to let cert-manager request a token.
+ * A reference to a service account that will be used to request a bound
+ * token (also known as "projected token"). Compared to using "secretRef",
+ * using this field means that you don't rely on statically bound tokens. To
+ * use this field, you must configure an RBAC rule to let cert-manager
+ * request a token.
  *
  * @schema IssuerSpecVaultAuthKubernetesServiceAccountRef
  */
 export interface IssuerSpecVaultAuthKubernetesServiceAccountRef {
+  /**
+   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault. The default token
+   * consisting of the issuer's namespace and name is always included.
+   *
+   * @schema IssuerSpecVaultAuthKubernetesServiceAccountRef#audiences
+   */
+  readonly audiences?: string[];
+
   /**
    * Name of the ServiceAccount used to request a token.
    *
@@ -7436,32 +12146,37 @@ export interface IssuerSpecVaultAuthKubernetesServiceAccountRef {
 /**
  * Converts an object of type 'IssuerSpecVaultAuthKubernetesServiceAccountRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecVaultAuthKubernetesServiceAccountRef(obj: IssuerSpecVaultAuthKubernetesServiceAccountRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'audiences': obj.audiences?.map(y => y),
     'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef#name
    */
@@ -7472,7 +12187,7 @@ export interface IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef(obj: IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7482,23 +12197,27 @@ export function toJson_IssuerSpecAcmeSolversDns01AcmeDnsAccountSecretRef(obj: Is
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef#name
    */
@@ -7509,7 +12228,7 @@ export interface IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef(obj: IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7519,23 +12238,27 @@ export function toJson_IssuerSpecAcmeSolversDns01AkamaiAccessTokenSecretRef(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef#name
    */
@@ -7546,7 +12269,7 @@ export interface IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef(obj: IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7556,23 +12279,27 @@ export function toJson_IssuerSpecAcmeSolversDns01AkamaiClientSecretSecretRef(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef#name
    */
@@ -7583,7 +12310,7 @@ export interface IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef(obj: IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7593,23 +12320,28 @@ export function toJson_IssuerSpecAcmeSolversDns01AkamaiClientTokenSecretRef(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Auth: Azure Service Principal: A reference to a Secret containing the password associated with the Service Principal. If set, ClientID and TenantID must also be set.
+ * Auth: Azure Service Principal:
+ * A reference to a Secret containing the password associated with the Service Principal.
+ * If set, ClientID and TenantID must also be set.
  *
  * @schema IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef#name
    */
@@ -7620,7 +12352,7 @@ export interface IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef(obj: IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7630,7 +12362,7 @@ export function toJson_IssuerSpecAcmeSolversDns01AzureDnsClientSecretSecretRef(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * name of the Azure environment (default AzurePublicCloud)
@@ -7649,57 +12381,72 @@ export enum IssuerSpecAcmeSolversDns01AzureDnsEnvironment {
 }
 
 /**
- * Auth: Azure Workload Identity or Azure Managed Service Identity: Settings to enable Azure Workload Identity or Azure Managed Service Identity If set, ClientID, ClientSecret and TenantID must not be set.
+ * Auth: Azure Workload Identity or Azure Managed Service Identity:
+ * Settings to enable Azure Workload Identity or Azure Managed Service Identity
+ * If set, ClientID, ClientSecret and TenantID must not be set.
  *
  * @schema IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity
  */
 export interface IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity {
   /**
-   * client ID of the managed identity, can not be used at the same time as resourceID
+   * client ID of the managed identity, cannot be used at the same time as resourceID
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity#clientID
    */
   readonly clientId?: string;
 
   /**
-   * resource ID of the managed identity, can not be used at the same time as clientID Cannot be used for Azure Managed Service Identity
+   * resource ID of the managed identity, cannot be used at the same time as clientID
+   * Cannot be used for Azure Managed Service Identity
    *
    * @schema IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity#resourceID
    */
   readonly resourceId?: string;
+
+  /**
+   * tenant ID of the managed identity, cannot be used at the same time as resourceID
+   *
+   * @schema IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity#tenantID
+   */
+  readonly tenantId?: string;
 
 }
 
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity(obj: IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'clientID': obj.clientId,
     'resourceID': obj.resourceId,
+    'tenantID': obj.tenantId,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef#name
    */
@@ -7710,7 +12457,7 @@ export interface IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef(obj: IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7720,23 +12467,28 @@ export function toJson_IssuerSpecAcmeSolversDns01CloudDnsServiceAccountSecretRef
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * API key to use to authenticate with Cloudflare. Note: using an API token to authenticate is now the recommended method as it allows greater control of permissions.
+ * API key to use to authenticate with Cloudflare.
+ * Note: using an API token to authenticate is now the recommended method
+ * as it allows greater control of permissions.
  *
  * @schema IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef
  */
 export interface IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef#name
    */
@@ -7747,7 +12499,7 @@ export interface IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef(obj: IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7757,7 +12509,7 @@ export function toJson_IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef(obj: 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * API token used to authenticate with Cloudflare.
@@ -7766,14 +12518,17 @@ export function toJson_IssuerSpecAcmeSolversDns01CloudflareApiKeySecretRef(obj: 
  */
 export interface IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef#name
    */
@@ -7784,7 +12539,7 @@ export interface IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef(obj: IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7794,23 +12549,27 @@ export function toJson_IssuerSpecAcmeSolversDns01CloudflareApiTokenSecretRef(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A reference to a specific 'key' within a Secret resource. In some instances, `key` is a required field.
+ * A reference to a specific 'key' within a Secret resource.
+ * In some instances, `key` is a required field.
  *
  * @schema IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef#name
    */
@@ -7821,7 +12580,7 @@ export interface IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef(obj: IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7831,23 +12590,27 @@ export function toJson_IssuerSpecAcmeSolversDns01DigitaloceanTokenSecretRef(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The name of the secret containing the TSIG value. If ``tsigKeyName`` is defined, this field is required.
+ * The name of the secret containing the TSIG value.
+ * If ``tsigKeyName`` is defined, this field is required.
  *
  * @schema IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef#name
    */
@@ -7858,7 +12621,7 @@ export interface IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef(obj: IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7868,23 +12631,31 @@ export function toJson_IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The SecretAccessKey is used for authentication. If set, pull the AWS access key ID from a key within a Kubernetes Secret. Cannot be set when AccessKeyID is set. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+ * The SecretAccessKey is used for authentication. If set, pull the AWS
+ * access key ID from a key within a Kubernetes Secret.
+ * Cannot be set when AccessKeyID is set.
+ * If neither the Access Key nor Key ID are set, we fall-back to using env
+ * vars, shared credentials file or AWS Instance metadata,
+ * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef
  */
 export interface IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef#name
    */
@@ -7895,7 +12666,7 @@ export interface IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef(obj: IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7905,23 +12676,59 @@ export function toJson_IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The SecretAccessKey is used for authentication. If neither the Access Key nor Key ID are set, we fall-back to using env vars, shared credentials file or AWS Instance metadata, see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
+ * Auth configures how cert-manager authenticates.
+ *
+ * @schema IssuerSpecAcmeSolversDns01Route53Auth
+ */
+export interface IssuerSpecAcmeSolversDns01Route53Auth {
+  /**
+   * Kubernetes authenticates with Route53 using AssumeRoleWithWebIdentity
+   * by passing a bound ServiceAccount token.
+   *
+   * @schema IssuerSpecAcmeSolversDns01Route53Auth#kubernetes
+   */
+  readonly kubernetes: IssuerSpecAcmeSolversDns01Route53AuthKubernetes;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversDns01Route53Auth' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversDns01Route53Auth(obj: IssuerSpecAcmeSolversDns01Route53Auth | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'kubernetes': toJson_IssuerSpecAcmeSolversDns01Route53AuthKubernetes(obj.kubernetes),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The SecretAccessKey is used for authentication.
+ * If neither the Access Key nor Key ID are set, we fall-back to using env
+ * vars, shared credentials file or AWS Instance metadata,
+ * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef
  */
 export interface IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
   /**
-   * The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be defaulted, in others it may be required.
+   * The key of the entry in the Secret resource's `data` field to be used.
+   * Some instances of this field may be defaulted, in others it may be
+   * required.
    *
    * @schema IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef#key
    */
   readonly key?: string;
 
   /**
-   * Name of the resource being referred to. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef#name
    */
@@ -7932,7 +12739,7 @@ export interface IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef(obj: IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7942,19 +12749,31 @@ export function toJson_IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ParentReference identifies an API object (usually a Gateway) that can be considered a parent of this resource (usually a route). There are two kinds of parent resources with "Core" support:
- * * Gateway (Gateway conformance profile) * Service (Mesh conformance profile, experimental, ClusterIP Services only)
- * This API may be extended in the future to support additional kinds of parent resources.
- * The API object must be valid in the cluster; the Group and Kind must be registered in the cluster for this reference to be valid.
+ * ParentReference identifies an API object (usually a Gateway) that can be considered
+ * a parent of this resource (usually a route). There are two kinds of parent resources
+ * with "Core" support:
+ *
+ * * Gateway (Gateway conformance profile)
+ * * Service (Mesh conformance profile, ClusterIP Services only)
+ *
+ * This API may be extended in the future to support additional kinds of parent
+ * resources.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
  *
  * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs
  */
 export interface IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
   /**
-   * Group is the group of the referent. When unspecified, "gateway.networking.k8s.io" is inferred. To set the core API group (such as for a "Service" kind referent), Group must be explicitly set to "" (empty string).
+   * Group is the group of the referent.
+   * When unspecified, "gateway.networking.k8s.io" is inferred.
+   * To set the core API group (such as for a "Service" kind referent),
+   * Group must be explicitly set to "" (empty string).
+   *
    * Support: Core
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#group
@@ -7963,8 +12782,12 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
 
   /**
    * Kind is kind of the referent.
+   *
    * There are two kinds of parent resources with "Core" support:
-   * * Gateway (Gateway conformance profile) * Service (Mesh conformance profile, experimental, ClusterIP Services only)
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
    * Support for other resources is Implementation-Specific.
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#kind
@@ -7973,6 +12796,7 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
 
   /**
    * Name is the name of the referent.
+   *
    * Support: Core
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#name
@@ -7980,10 +12804,27 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
   readonly name: string;
 
   /**
-   * Namespace is the namespace of the referent. When unspecified, this refers to the local namespace of the Route.
-   * Note that there are specific rules for ParentRefs which cross namespace boundaries. Cross-namespace references are only valid if they are explicitly allowed by something in the namespace they are referring to. For example: Gateway has the AllowedRoutes field, and ReferenceGrant provides a generic way to enable any other kind of cross-namespace reference.
-   * <gateway:experimental:description> ParentRefs from a Route to a Service in the same namespace are "producer" routes, which apply default routing rules to inbound connections from any namespace to the Service.
-   * ParentRefs from a Route to a Service in a different namespace are "consumer" routes, and these routing rules are only applied to outbound connections originating from the same namespace as the Route, for which the intended destination of the connections are a Service targeted as a ParentRef of the Route. </gateway:experimental:description>
+   * Namespace is the namespace of the referent. When unspecified, this refers
+   * to the local namespace of the Route.
+   *
+   * Note that there are specific rules for ParentRefs which cross namespace
+   * boundaries. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example:
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable any other kind of cross-namespace reference.
+   *
+   * <gateway:experimental:description>
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   * </gateway:experimental:description>
+   *
    * Support: Core
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#namespace
@@ -7991,23 +12832,65 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
   readonly namespace?: string;
 
   /**
-   * Port is the network port this Route targets. It can be interpreted differently based on the type of parent resource.
-   * When the parent resource is a Gateway, this targets all listeners listening on the specified port that also support this kind of Route(and select this Route). It's not recommended to set `Port` unless the networking behaviors specified in a Route must apply to a specific port as opposed to a listener(s) whose port(s) may be changed. When both Port and SectionName are specified, the name and port of the selected listener must match both specified values.
-   * <gateway:experimental:description> When the parent resource is a Service, this targets a specific port in the Service spec. When both Port (experimental) and SectionName are specified, the name and port of the selected port must match both specified values. </gateway:experimental:description>
-   * Implementations MAY choose to support other parent resources. Implementations supporting other types of parent resources MUST clearly document how/if Port is interpreted.
-   * For the purpose of status, an attachment is considered successful as long as the parent resource accepts it partially. For example, Gateway listeners can restrict which Routes can attach to them by Route kind, namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from the referencing Route, the Route MUST be considered successfully attached. If no Gateway listeners accept attachment from this Route, the Route MUST be considered detached from the Gateway.
+   * Port is the network port this Route targets. It can be interpreted
+   * differently based on the type of parent resource.
+   *
+   * When the parent resource is a Gateway, this targets all listeners
+   * listening on the specified port that also support this kind of Route(and
+   * select this Route). It's not recommended to set `Port` unless the
+   * networking behaviors specified in a Route must apply to a specific port
+   * as opposed to a listener(s) whose port(s) may be changed. When both Port
+   * and SectionName are specified, the name and port of the selected listener
+   * must match both specified values.
+   *
+   * <gateway:experimental:description>
+   * When the parent resource is a Service, this targets a specific port in the
+   * Service spec. When both Port (experimental) and SectionName are specified,
+   * the name and port of the selected port must match both specified values.
+   * </gateway:experimental:description>
+   *
+   * Implementations MAY choose to support other parent resources.
+   * Implementations supporting other types of parent resources MUST clearly
+   * document how/if Port is interpreted.
+   *
+   * For the purpose of status, an attachment is considered successful as
+   * long as the parent resource accepts it partially. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+   * from the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route,
+   * the Route MUST be considered detached from the Gateway.
+   *
    * Support: Extended
-   * <gateway:experimental>
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#port
    */
   readonly port?: number;
 
   /**
-   * SectionName is the name of a section within the target resource. In the following resources, SectionName is interpreted as the following:
-   * * Gateway: Listener Name. When both Port (experimental) and SectionName are specified, the name and port of the selected listener must match both specified values. * Service: Port Name. When both Port (experimental) and SectionName are specified, the name and port of the selected listener must match both specified values. Note that attaching Routes to Services as Parents is part of experimental Mesh support and is not supported for any other purpose.
-   * Implementations MAY choose to support attaching Routes to other resources. If that is the case, they MUST clearly document how SectionName is interpreted.
-   * When unspecified (empty string), this will reference the entire resource. For the purpose of status, an attachment is considered successful if at least one section in the parent resource accepts it. For example, Gateway listeners can restrict which Routes can attach to them by Route kind, namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from the referencing Route, the Route MUST be considered successfully attached. If no Gateway listeners accept attachment from this Route, the Route MUST be considered detached from the Gateway.
+   * SectionName is the name of a section within the target resource. In the
+   * following resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   * * Service: Port name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   *
+   * Implementations MAY choose to support attaching Routes to other resources.
+   * If that is the case, they MUST clearly document how SectionName is
+   * interpreted.
+   *
+   * When unspecified (empty string), this will reference the entire resource.
+   * For the purpose of status, an attachment is considered successful if at
+   * least one section in the parent resource accepts it. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+   * the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route, the
+   * Route MUST be considered detached from the Gateway.
+   *
    * Support: Core
    *
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs#sectionName
@@ -8019,7 +12902,7 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8033,16 +12916,63 @@ export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRouteParentRefs(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Optional ingress template used to configure the ACME challenge solver ingress used for HTTP01 challenges.
+ * Optional pod template used to configure the ACME challenge solver pods
+ * used for HTTP01 challenges.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate {
+  /**
+   * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+   * Only the 'labels' and 'annotations' fields may be set.
+   * If labels or annotations overlap with in-built values, the values here
+   * will override the in-built values.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate#metadata
+   */
+  readonly metadata?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata;
+
+  /**
+   * PodSpec defines overrides for the HTTP01 challenge solver pod.
+   * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+   * All other fields will be ignored.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate#spec
+   */
+  readonly spec?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplate | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata(obj.metadata),
+    'spec': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Optional ingress template used to configure the ACME challenge solver
+ * ingress used for HTTP01 challenges.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressIngressTemplate
  */
 export interface IssuerSpecAcmeSolversHttp01IngressIngressTemplate {
   /**
-   * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+   * ObjectMeta overrides for the ingress used to solve HTTP01 challenges.
+   * Only the 'labels' and 'annotations' fields may be set.
+   * If labels or annotations overlap with in-built values, the values here
+   * will override the in-built values.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressIngressTemplate#metadata
    */
@@ -8053,7 +12983,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressIngressTemplate {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressIngressTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressIngressTemplate(obj: IssuerSpecAcmeSolversHttp01IngressIngressTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8062,23 +12992,29 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressIngressTemplate(obj: Is
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Optional pod template used to configure the ACME challenge solver pods used for HTTP01 challenges.
+ * Optional pod template used to configure the ACME challenge solver pods
+ * used for HTTP01 challenges.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplate
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplate {
   /**
-   * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+   * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+   * Only the 'labels' and 'annotations' fields may be set.
+   * If labels or annotations overlap with in-built values, the values here
+   * will override the in-built values.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplate#metadata
    */
   readonly metadata?: IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata;
 
   /**
-   * PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored.
+   * PodSpec defines overrides for the HTTP01 challenge solver pod.
+   * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+   * All other fields will be ignored.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplate#spec
    */
@@ -8089,7 +13025,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplate {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplate(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8099,10 +13035,166 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplate(obj: Issuer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ObjectMeta overrides for the ingress used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+ * Kubernetes authenticates with Route53 using AssumeRoleWithWebIdentity
+ * by passing a bound ServiceAccount token.
+ *
+ * @schema IssuerSpecAcmeSolversDns01Route53AuthKubernetes
+ */
+export interface IssuerSpecAcmeSolversDns01Route53AuthKubernetes {
+  /**
+   * A reference to a service account that will be used to request a bound
+   * token (also known as "projected token"). To use this field, you must
+   * configure an RBAC rule to let cert-manager request a token.
+   *
+   * @schema IssuerSpecAcmeSolversDns01Route53AuthKubernetes#serviceAccountRef
+   */
+  readonly serviceAccountRef: IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversDns01Route53AuthKubernetes' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversDns01Route53AuthKubernetes(obj: IssuerSpecAcmeSolversDns01Route53AuthKubernetes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'serviceAccountRef': toJson_IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef(obj.serviceAccountRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+ * Only the 'labels' and 'annotations' fields may be set.
+ * If labels or annotations overlap with in-built values, the values here
+ * will override the in-built values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata {
+  /**
+   * Annotations that should be added to the created ACME HTTP01 solver pods.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata#annotations
+   */
+  readonly annotations?: { [key: string]: string };
+
+  /**
+   * Labels that should be added to the created ACME HTTP01 solver pods.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata#labels
+   */
+  readonly labels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateMetadata | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'annotations': ((obj.annotations) === undefined) ? undefined : (Object.entries(obj.annotations).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'labels': ((obj.labels) === undefined) ? undefined : (Object.entries(obj.labels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * PodSpec defines overrides for the HTTP01 challenge solver pod.
+ * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+ * All other fields will be ignored.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec {
+  /**
+   * If specified, the pod's scheduling constraints
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#affinity
+   */
+  readonly affinity?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity;
+
+  /**
+   * If specified, the pod's imagePullSecrets
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#imagePullSecrets
+   */
+  readonly imagePullSecrets?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets[];
+
+  /**
+   * NodeSelector is a selector which must be true for the pod to fit on a node.
+   * Selector which must match a node's labels for the pod to be scheduled on that node.
+   * More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#nodeSelector
+   */
+  readonly nodeSelector?: { [key: string]: string };
+
+  /**
+   * If specified, the pod's priorityClassName.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#priorityClassName
+   */
+  readonly priorityClassName?: string;
+
+  /**
+   * If specified, the pod's security context
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#securityContext
+   */
+  readonly securityContext?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext;
+
+  /**
+   * If specified, the pod's service account
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#serviceAccountName
+   */
+  readonly serviceAccountName?: string;
+
+  /**
+   * If specified, the pod's tolerations.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec#tolerations
+   */
+  readonly tolerations?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'affinity': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity(obj.affinity),
+    'imagePullSecrets': obj.imagePullSecrets?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets(y)),
+    'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'priorityClassName': obj.priorityClassName,
+    'securityContext': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext(obj.securityContext),
+    'serviceAccountName': obj.serviceAccountName,
+    'tolerations': obj.tolerations?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectMeta overrides for the ingress used to solve HTTP01 challenges.
+ * Only the 'labels' and 'annotations' fields may be set.
+ * If labels or annotations overlap with in-built values, the values here
+ * will override the in-built values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata
  */
@@ -8126,7 +13218,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata(obj: IssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8136,16 +13228,19 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressIngressTemplateMetadata
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ObjectMeta overrides for the pod used to solve HTTP01 challenges. Only the 'labels' and 'annotations' fields may be set. If labels or annotations overlap with in-built values, the values here will override the in-built values.
+ * ObjectMeta overrides for the pod used to solve HTTP01 challenges.
+ * Only the 'labels' and 'annotations' fields may be set.
+ * If labels or annotations overlap with in-built values, the values here
+ * will override the in-built values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
   /**
-   * Annotations that should be added to the create ACME HTTP01 solver pods.
+   * Annotations that should be added to the created ACME HTTP01 solver pods.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata#annotations
    */
@@ -8163,7 +13258,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8173,10 +13268,12 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateMetadata(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PodSpec defines overrides for the HTTP01 challenge solver pod. Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields. All other fields will be ignored.
+ * PodSpec defines overrides for the HTTP01 challenge solver pod.
+ * Check ACMEChallengeSolverHTTP01IngressPodSpec to find out currently supported fields.
+ * All other fields will be ignored.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec
  */
@@ -8196,7 +13293,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
   readonly imagePullSecrets?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets[];
 
   /**
-   * NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+   * NodeSelector is a selector which must be true for the pod to fit on a node.
+   * Selector which must match a node's labels for the pod to be scheduled on that node.
+   * More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec#nodeSelector
    */
@@ -8208,6 +13307,13 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec#priorityClassName
    */
   readonly priorityClassName?: string;
+
+  /**
+   * If specified, the pod's security context
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec#securityContext
+   */
+  readonly securityContext?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext;
 
   /**
    * If specified, the pod's service account
@@ -8228,7 +13334,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8236,13 +13342,345 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpec(obj: Is
     'imagePullSecrets': obj.imagePullSecrets?.map(y => toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets(y)),
     'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'priorityClassName': obj.priorityClassName,
+    'securityContext': toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext(obj.securityContext),
     'serviceAccountName': obj.serviceAccountName,
     'tolerations': obj.tolerations?.map(y => toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A reference to a service account that will be used to request a bound
+ * token (also known as "projected token"). To use this field, you must
+ * configure an RBAC rule to let cert-manager request a token.
+ *
+ * @schema IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef
+ */
+export interface IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef {
+  /**
+   * TokenAudiences is an optional list of audiences to include in the
+   * token passed to AWS. The default token consisting of the issuer's namespace
+   * and name is always included.
+   * If unset the audience defaults to `sts.amazonaws.com`.
+   *
+   * @schema IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef#audiences
+   */
+  readonly audiences?: string[];
+
+  /**
+   * Name of the ServiceAccount used to request a token.
+   *
+   * @schema IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef(obj: IssuerSpecAcmeSolversDns01Route53AuthKubernetesServiceAccountRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'audiences': obj.audiences?.map(y => y),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * If specified, the pod's scheduling constraints
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity {
+  /**
+   * Describes node affinity scheduling rules for the pod.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity#nodeAffinity
+   */
+  readonly nodeAffinity?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity;
+
+  /**
+   * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity#podAffinity
+   */
+  readonly podAffinity?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity;
+
+  /**
+   * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity#podAntiAffinity
+   */
+  readonly podAntiAffinity?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'nodeAffinity': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity(obj.nodeAffinity),
+    'podAffinity': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity(obj.podAffinity),
+    'podAntiAffinity': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity(obj.podAntiAffinity),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LocalObjectReference contains enough information to let you locate the
+ * referenced object inside the same namespace.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets {
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets#name
+   */
+  readonly name?: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecImagePullSecrets | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * If specified, the pod's security context
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext {
+  /**
+   * A special supplemental group that applies to all containers in a pod.
+   * Some volume types allow the Kubelet to change the ownership of that volume
+   * to be owned by the pod:
+   *
+   * 1. The owning GID will be the FSGroup
+   * 2. The setgid bit is set (new files created in the volume will be owned by FSGroup)
+   * 3. The permission bits are OR'd with rw-rw----
+   *
+   * If unset, the Kubelet will not modify the ownership and permissions of any volume.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#fsGroup
+   */
+  readonly fsGroup?: number;
+
+  /**
+   * fsGroupChangePolicy defines behavior of changing ownership and permission of the volume
+   * before being exposed inside Pod. This field will only apply to
+   * volume types which support fsGroup based ownership(and permissions).
+   * It will have no effect on ephemeral volume types such as: secret, configmaps
+   * and emptydir.
+   * Valid values are "OnRootMismatch" and "Always". If not specified, "Always" is used.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#fsGroupChangePolicy
+   */
+  readonly fsGroupChangePolicy?: string;
+
+  /**
+   * The GID to run the entrypoint of the container process.
+   * Uses runtime default if unset.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#runAsGroup
+   */
+  readonly runAsGroup?: number;
+
+  /**
+   * Indicates that the container must run as a non-root user.
+   * If true, the Kubelet will validate the image at runtime to ensure that it
+   * does not run as UID 0 (root) and fail to start the container if it does.
+   * If unset or false, no such validation will be performed.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#runAsNonRoot
+   */
+  readonly runAsNonRoot?: boolean;
+
+  /**
+   * The UID to run the entrypoint of the container process.
+   * Defaults to user specified in image metadata if unspecified.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @default user specified in image metadata if unspecified.
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#runAsUser
+   */
+  readonly runAsUser?: number;
+
+  /**
+   * The SELinux context to be applied to all containers.
+   * If unspecified, the container runtime will allocate a random SELinux context for each
+   * container.  May also be set in SecurityContext.  If set in
+   * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+   * takes precedence for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#seLinuxOptions
+   */
+  readonly seLinuxOptions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions;
+
+  /**
+   * The seccomp options to use by the containers in this pod.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#seccompProfile
+   */
+  readonly seccompProfile?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile;
+
+  /**
+   * A list of groups applied to the first process run in each container, in addition
+   * to the container's primary GID, the fsGroup (if specified), and group memberships
+   * defined in the container image for the uid of the container process. If unspecified,
+   * no additional groups are added to any container. Note that group memberships
+   * defined in the container image for the uid of the container process are still effective,
+   * even if they are not included in this list.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#supplementalGroups
+   */
+  readonly supplementalGroups?: number[];
+
+  /**
+   * Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
+   * sysctls (by the container runtime) might fail to launch.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext#sysctls
+   */
+  readonly sysctls?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContext | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'fsGroup': obj.fsGroup,
+    'fsGroupChangePolicy': obj.fsGroupChangePolicy,
+    'runAsGroup': obj.runAsGroup,
+    'runAsNonRoot': obj.runAsNonRoot,
+    'runAsUser': obj.runAsUser,
+    'seLinuxOptions': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions(obj.seLinuxOptions),
+    'seccompProfile': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile(obj.seccompProfile),
+    'supplementalGroups': obj.supplementalGroups?.map(y => y),
+    'sysctls': obj.sysctls?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The pod this Toleration is attached to tolerates any taint that matches
+ * the triple <key,value,effect> using the matching operator <operator>.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations {
+  /**
+   * Effect indicates the taint effect to match. Empty means match all taint effects.
+   * When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#effect
+   */
+  readonly effect?: string;
+
+  /**
+   * Key is the taint key that the toleration applies to. Empty means match all taint keys.
+   * If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#key
+   */
+  readonly key?: string;
+
+  /**
+   * Operator represents a key's relationship to the value.
+   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Exists is equivalent to wildcard for value, so that a pod can
+   * tolerate all taints of a particular category.
+   *
+   * @default Equal.
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#operator
+   */
+  readonly operator?: string;
+
+  /**
+   * TolerationSeconds represents the period of time the toleration (which must be
+   * of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+   * it is not set, which means tolerate the taint forever (do not evict). Zero and
+   * negative values will be treated as 0 (evict immediately) by the system.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#tolerationSeconds
+   */
+  readonly tolerationSeconds?: number;
+
+  /**
+   * Value is the taint value the toleration matches to.
+   * If the operator is Exists, the value should be empty, otherwise just a regular string.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#value
+   */
+  readonly value?: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'effect': obj.effect,
+    'key': obj.key,
+    'operator': obj.operator,
+    'tolerationSeconds': obj.tolerationSeconds,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If specified, the pod's scheduling constraints
@@ -8276,7 +13714,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8287,16 +13725,21 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace.
+ * LocalObjectReference contains enough information to let you locate the
+ * referenced object inside the same namespace.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets {
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets#name
    */
@@ -8307,7 +13750,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecre
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePullSecrets | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8316,45 +13759,193 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecImagePul
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+ * If specified, the pod's security context
+ *
+ * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext
+ */
+export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext {
+  /**
+   * A special supplemental group that applies to all containers in a pod.
+   * Some volume types allow the Kubelet to change the ownership of that volume
+   * to be owned by the pod:
+   *
+   * 1. The owning GID will be the FSGroup
+   * 2. The setgid bit is set (new files created in the volume will be owned by FSGroup)
+   * 3. The permission bits are OR'd with rw-rw----
+   *
+   * If unset, the Kubelet will not modify the ownership and permissions of any volume.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#fsGroup
+   */
+  readonly fsGroup?: number;
+
+  /**
+   * fsGroupChangePolicy defines behavior of changing ownership and permission of the volume
+   * before being exposed inside Pod. This field will only apply to
+   * volume types which support fsGroup based ownership(and permissions).
+   * It will have no effect on ephemeral volume types such as: secret, configmaps
+   * and emptydir.
+   * Valid values are "OnRootMismatch" and "Always". If not specified, "Always" is used.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#fsGroupChangePolicy
+   */
+  readonly fsGroupChangePolicy?: string;
+
+  /**
+   * The GID to run the entrypoint of the container process.
+   * Uses runtime default if unset.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#runAsGroup
+   */
+  readonly runAsGroup?: number;
+
+  /**
+   * Indicates that the container must run as a non-root user.
+   * If true, the Kubelet will validate the image at runtime to ensure that it
+   * does not run as UID 0 (root) and fail to start the container if it does.
+   * If unset or false, no such validation will be performed.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#runAsNonRoot
+   */
+  readonly runAsNonRoot?: boolean;
+
+  /**
+   * The UID to run the entrypoint of the container process.
+   * Defaults to user specified in image metadata if unspecified.
+   * May also be set in SecurityContext.  If set in both SecurityContext and
+   * PodSecurityContext, the value specified in SecurityContext takes precedence
+   * for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @default user specified in image metadata if unspecified.
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#runAsUser
+   */
+  readonly runAsUser?: number;
+
+  /**
+   * The SELinux context to be applied to all containers.
+   * If unspecified, the container runtime will allocate a random SELinux context for each
+   * container.  May also be set in SecurityContext.  If set in
+   * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+   * takes precedence for that container.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#seLinuxOptions
+   */
+  readonly seLinuxOptions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions;
+
+  /**
+   * The seccomp options to use by the containers in this pod.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#seccompProfile
+   */
+  readonly seccompProfile?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile;
+
+  /**
+   * A list of groups applied to the first process run in each container, in addition
+   * to the container's primary GID, the fsGroup (if specified), and group memberships
+   * defined in the container image for the uid of the container process. If unspecified,
+   * no additional groups are added to any container. Note that group memberships
+   * defined in the container image for the uid of the container process are still effective,
+   * even if they are not included in this list.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#supplementalGroups
+   */
+  readonly supplementalGroups?: number[];
+
+  /**
+   * Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
+   * sysctls (by the container runtime) might fail to launch.
+   * Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext#sysctls
+   */
+  readonly sysctls?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContext | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'fsGroup': obj.fsGroup,
+    'fsGroupChangePolicy': obj.fsGroupChangePolicy,
+    'runAsGroup': obj.runAsGroup,
+    'runAsNonRoot': obj.runAsNonRoot,
+    'runAsUser': obj.runAsUser,
+    'seLinuxOptions': toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions(obj.seLinuxOptions),
+    'seccompProfile': toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile(obj.seccompProfile),
+    'supplementalGroups': obj.supplementalGroups?.map(y => y),
+    'sysctls': obj.sysctls?.map(y => toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The pod this Toleration is attached to tolerates any taint that matches
+ * the triple <key,value,effect> using the matching operator <operator>.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
   /**
-   * Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+   * Effect indicates the taint effect to match. Empty means match all taint effects.
+   * When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#effect
    */
   readonly effect?: string;
 
   /**
-   * Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+   * Key is the taint key that the toleration applies to. Empty means match all taint keys.
+   * If the key is empty, operator must be Exists; this combination means to match all values and all keys.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#key
    */
   readonly key?: string;
 
   /**
-   * Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+   * Operator represents a key's relationship to the value.
+   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Exists is equivalent to wildcard for value, so that a pod can
+   * tolerate all taints of a particular category.
    *
-   * @default Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+   * @default Equal.
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#operator
    */
   readonly operator?: string;
 
   /**
-   * TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+   * TolerationSeconds represents the period of time the toleration (which must be
+   * of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+   * it is not set, which means tolerate the taint forever (do not evict). Zero and
+   * negative values will be treated as 0 (evict immediately) by the system.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#tolerationSeconds
    */
   readonly tolerationSeconds?: number;
 
   /**
-   * Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+   * Value is the taint value the toleration matches to.
+   * If the operator is Exists, the value should be empty, otherwise just a regular string.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#value
    */
@@ -8365,7 +13956,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8378,7 +13969,299 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerati
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Describes node affinity scheduling rules for the pod.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity {
+  /**
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node matches the corresponding matchExpressions; the
+   * node(s) with the highest sum are the most preferred.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity#preferredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly preferredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
+
+  /**
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to an update), the system
+   * may or may not try to eventually evict the pod from its node.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity#requiredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly requiredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preferredDuringSchedulingIgnoredDuringExecution': obj.preferredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(y)),
+    'requiredDuringSchedulingIgnoredDuringExecution': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj.requiredDuringSchedulingIgnoredDuringExecution),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity {
+  /**
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity#preferredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly preferredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
+
+  /**
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity#requiredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly requiredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preferredDuringSchedulingIgnoredDuringExecution': obj.preferredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(y)),
+    'requiredDuringSchedulingIgnoredDuringExecution': obj.requiredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity {
+  /**
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the anti-affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling anti-affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity#preferredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly preferredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
+
+  /**
+   * If the anti-affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the anti-affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity#requiredDuringSchedulingIgnoredDuringExecution
+   */
+  readonly requiredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preferredDuringSchedulingIgnoredDuringExecution': obj.preferredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(y)),
+    'requiredDuringSchedulingIgnoredDuringExecution': obj.requiredDuringSchedulingIgnoredDuringExecution?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The SELinux context to be applied to all containers.
+ * If unspecified, the container runtime will allocate a random SELinux context for each
+ * container.  May also be set in SecurityContext.  If set in
+ * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+ * takes precedence for that container.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions {
+  /**
+   * Level is SELinux level label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#level
+   */
+  readonly level?: string;
+
+  /**
+   * Role is a SELinux role label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#role
+   */
+  readonly role?: string;
+
+  /**
+   * Type is a SELinux type label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#type
+   */
+  readonly type?: string;
+
+  /**
+   * User is a SELinux user label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions#user
+   */
+  readonly user?: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'level': obj.level,
+    'role': obj.role,
+    'type': obj.type,
+    'user': obj.user,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The seccomp options to use by the containers in this pod.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile {
+  /**
+   * localhostProfile indicates a profile defined in a file on the node should be used.
+   * The profile must be preconfigured on the node to work.
+   * Must be a descending path, relative to the kubelet's configured seccomp profile location.
+   * Must be set if type is "Localhost". Must NOT be set for any other type.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile#localhostProfile
+   */
+  readonly localhostProfile?: string;
+
+  /**
+   * type indicates which kind of seccomp profile will be applied.
+   * Valid options are:
+   *
+   * Localhost - a profile defined in a file on the node should be used.
+   * RuntimeDefault - the container runtime default profile should be used.
+   * Unconfined - no profile should be applied.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile#type
+   */
+  readonly type: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localhostProfile': obj.localhostProfile,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Sysctl defines a kernel parameter to be set
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls {
+  /**
+   * Name of a property to set
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls#name
+   */
+  readonly name: string;
+
+  /**
+   * Value of a property to set
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls#value
+   */
+  readonly value: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecSecurityContextSysctls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -8387,14 +14270,26 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerati
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity {
   /**
-   * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node matches the corresponding matchExpressions; the
+   * node(s) with the highest sum are the most preferred.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity#preferredDuringSchedulingIgnoredDuringExecution
    */
   readonly preferredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
 
   /**
-   * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to an update), the system
+   * may or may not try to eventually evict the pod from its node.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity#requiredDuringSchedulingIgnoredDuringExecution
    */
@@ -8405,7 +14300,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8415,7 +14310,7 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -8424,14 +14319,28 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity {
   /**
-   * The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity#preferredDuringSchedulingIgnoredDuringExecution
    */
   readonly preferredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
 
   /**
-   * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   * If the affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity#requiredDuringSchedulingIgnoredDuringExecution
    */
@@ -8442,7 +14351,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8452,7 +14361,7 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -8461,14 +14370,28 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity {
   /**
-   * The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.
+   * The scheduler will prefer to schedule pods to nodes that satisfy
+   * the anti-affinity expressions specified by this field, but it may choose
+   * a node that violates one or more of the expressions. The node that is
+   * most preferred is the one with the greatest sum of weights, i.e.
+   * for each node that meets all of the scheduling requirements (resource
+   * request, requiredDuringScheduling anti-affinity expressions, etc.),
+   * compute a sum by iterating through the elements of this field and adding
+   * "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+   * node(s) with the highest sum are the most preferred.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity#preferredDuringSchedulingIgnoredDuringExecution
    */
   readonly preferredDuringSchedulingIgnoredDuringExecution?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution[];
 
   /**
-   * If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.
+   * If the anti-affinity requirements specified by this field are not met at
+   * scheduling time, the pod will not be scheduled onto the node.
+   * If the anti-affinity requirements specified by this field cease to be met
+   * at some point during pod execution (e.g. due to a pod label update), the
+   * system may or may not try to eventually evict the pod from its node.
+   * When there are multiple elements, the lists of nodes corresponding to each
+   * podAffinityTerm are intersected, i.e. all terms must be satisfied.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity#requiredDuringSchedulingIgnoredDuringExecution
    */
@@ -8479,7 +14402,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8489,10 +14412,503 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+ * The SELinux context to be applied to all containers.
+ * If unspecified, the container runtime will allocate a random SELinux context for each
+ * container.  May also be set in SecurityContext.  If set in
+ * both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+ * takes precedence for that container.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions
+ */
+export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions {
+  /**
+   * Level is SELinux level label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#level
+   */
+  readonly level?: string;
+
+  /**
+   * Role is a SELinux role label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#role
+   */
+  readonly role?: string;
+
+  /**
+   * Type is a SELinux type label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#type
+   */
+  readonly type?: string;
+
+  /**
+   * User is a SELinux user label that applies to the container.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions#user
+   */
+  readonly user?: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'level': obj.level,
+    'role': obj.role,
+    'type': obj.type,
+    'user': obj.user,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The seccomp options to use by the containers in this pod.
+ * Note that this field cannot be set when spec.os.name is windows.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile
+ */
+export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile {
+  /**
+   * localhostProfile indicates a profile defined in a file on the node should be used.
+   * The profile must be preconfigured on the node to work.
+   * Must be a descending path, relative to the kubelet's configured seccomp profile location.
+   * Must be set if type is "Localhost". Must NOT be set for any other type.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile#localhostProfile
+   */
+  readonly localhostProfile?: string;
+
+  /**
+   * type indicates which kind of seccomp profile will be applied.
+   * Valid options are:
+   *
+   * Localhost - a profile defined in a file on the node should be used.
+   * RuntimeDefault - the container runtime default profile should be used.
+   * Unconfined - no profile should be applied.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile#type
+   */
+  readonly type: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localhostProfile': obj.localhostProfile,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Sysctl defines a kernel parameter to be set
+ *
+ * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls
+ */
+export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls {
+  /**
+   * Name of a property to set
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls#name
+   */
+  readonly name: string;
+
+  /**
+   * Value of a property to set
+   *
+   * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls#value
+   */
+  readonly value: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecSecurityContextSysctls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * An empty preferred scheduling term matches all objects with implicit weight 0
+ * (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * A node selector term, associated with the corresponding weight.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution#preference
+   */
+  readonly preference: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference;
+
+  /**
+   * Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
+   */
+  readonly weight: number;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'preference': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj.preference),
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * If the affinity requirements specified by this field are not met at
+ * scheduling time, the pod will not be scheduled onto the node.
+ * If the affinity requirements specified by this field cease to be met
+ * at some point during pod execution (e.g. due to an update), the system
+ * may or may not try to eventually evict the pod from its node.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * Required. A list of node selector terms. The terms are ORed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution#nodeSelectorTerms
+   */
+  readonly nodeSelectorTerms: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'nodeSelectorTerms': obj.nodeSelectorTerms?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * Required. A pod affinity term, associated with the corresponding weight.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution#podAffinityTerm
+   */
+  readonly podAffinityTerm: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
+
+  /**
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
+   */
+  readonly weight: number;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'podAffinityTerm': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj.podAffinityTerm),
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
+   */
+  readonly labelSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
+   */
+  readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * Required. A pod affinity term, associated with the corresponding weight.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution#podAffinityTerm
+   */
+  readonly podAffinityTerm: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
+
+  /**
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
+   */
+  readonly weight: number;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'podAffinityTerm': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj.podAffinityTerm),
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
+   */
+  readonly labelSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
+   */
+  readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * An empty preferred scheduling term matches all objects with implicit weight 0
+ * (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution
  */
@@ -8516,7 +14932,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8526,10 +14942,14 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.
+ * If the affinity requirements specified by this field are not met at
+ * scheduling time, the pod will not be scheduled onto the node.
+ * If the affinity requirements specified by this field cease to be met
+ * at some point during pod execution (e.g. due to an update), the system
+ * may or may not try to eventually evict the pod from its node.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution
  */
@@ -8546,7 +14966,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8555,7 +14975,7 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -8571,7 +14991,8 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly podAffinityTerm: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
 
   /**
-   * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
    */
@@ -8582,7 +15003,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8592,51 +15013,84 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
    */
   readonly labelSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
    */
   readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
    */
@@ -8647,7 +15101,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8661,7 +15115,7 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -8677,7 +15131,8 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly podAffinityTerm: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm;
 
   /**
-   * weight associated with matching the corresponding podAffinityTerm, in the range 1-100.
+   * weight associated with matching the corresponding podAffinityTerm,
+   * in the range 1-100.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution#weight
    */
@@ -8688,7 +15143,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8698,51 +15153,84 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
+ * Defines a set of pods (namely those matching the labelSelector
+ * relative to the given namespace(s)) that this pod should be
+ * co-located (affinity) or not co-located (anti-affinity) with,
+ * where co-located is defined as running on a node whose value of
+ * the label with key <topologyKey> matches that of any node on which
+ * a pod of the set of pods is running
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#labelSelector
    */
   readonly labelSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaceSelector
    */
   readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution#topologyKey
    */
@@ -8753,7 +15241,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8767,7 +15255,443 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector term, associated with the corresponding weight.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference {
+  /**
+   * A list of node selector requirements by node's labels.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions[];
+
+  /**
+   * A list of node selector requirements by node's fields.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference#matchFields
+   */
+  readonly matchFields?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(y)),
+    'matchFields': obj.matchFields?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A null or empty node selector term matches no objects. The requirements of
+ * them are ANDed.
+ * The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms {
+  /**
+   * A list of node selector requirements by node's labels.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions[];
+
+  /**
+   * A list of node selector requirements by node's fields.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms#matchFields
+   */
+  readonly matchFields?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(y)),
+    'matchFields': obj.matchFields?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Required. A pod affinity term, associated with the corresponding weight.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
+   */
+  readonly labelSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
+   */
+  readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Required. A pod affinity term, associated with the corresponding weight.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
+  /**
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
+   */
+  readonly labelSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
+
+  /**
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
+   */
+  readonly matchLabelKeys?: string[];
+
+  /**
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
+   */
+  readonly mismatchLabelKeys?: string[];
+
+  /**
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
+   */
+  readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
+
+  /**
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
+   */
+  readonly namespaces?: string[];
+
+  /**
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
+   */
+  readonly topologyKey: string;
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'labelSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj.labelSelector),
+    'matchLabelKeys': obj.matchLabelKeys?.map(y => y),
+    'mismatchLabelKeys': obj.mismatchLabelKeys?.map(y => y),
+    'namespaceSelector': toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj.namespaceSelector),
+    'namespaces': obj.namespaces?.map(y => y),
+    'topologyKey': obj.topologyKey,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -8794,7 +15718,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8804,10 +15728,12 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+ * A null or empty node selector term matches no objects. The requirements of
+ * them are ANDed.
+ * The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms
  */
@@ -8831,7 +15757,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8841,7 +15767,7 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -8850,42 +15776,70 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
    */
   readonly labelSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
    */
   readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
    */
@@ -8896,7 +15850,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8910,10 +15864,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
  */
@@ -8926,7 +15881,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
    */
@@ -8937,7 +15894,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8947,10 +15904,14 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
  */
@@ -8963,7 +15924,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
    */
@@ -8974,7 +15937,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8984,7 +15947,7 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -8993,42 +15956,70 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
  */
 export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm {
   /**
-   * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+   * A label query over a set of resources, in this case pods.
+   * If it's null, this PodAffinityTerm matches with no Pods.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#labelSelector
    */
   readonly labelSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+   * Also, matchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will
+   * be taken into consideration. The keys are used to lookup values from the
+   * incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+   * to select the group of existing pods which pods will be taken into consideration
+   * for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+   * pod labels will be ignored. The default value is empty.
+   * The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+   * Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+   * This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#mismatchLabelKeys
    */
   readonly mismatchLabelKeys?: string[];
 
   /**
-   * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+   * A label query over the set of namespaces that the term applies to.
+   * The term is applied to the union of the namespaces selected by this field
+   * and the ones listed in the namespaces field.
+   * null selector and null or empty namespaces list means "this pod's namespace".
+   * An empty selector ({}) matches all namespaces.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaceSelector
    */
   readonly namespaceSelector?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector;
 
   /**
-   * namespaces specifies a static list of namespace names that the term applies to. The term is applied to the union of the namespaces listed in this field and the ones selected by namespaceSelector. null or empty namespaces list and null namespaceSelector means "this pod's namespace".
+   * namespaces specifies a static list of namespace names that the term applies to.
+   * The term is applied to the union of the namespaces listed in this field
+   * and the ones selected by namespaceSelector.
+   * null or empty namespaces list and null namespaceSelector means "this pod's namespace".
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#namespaces
    */
   readonly namespaces?: string[];
 
   /**
-   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. Empty topologyKey is not allowed.
+   * This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+   * the labelSelector in the specified namespaces, where co-located is defined as running on a node
+   * whose value of the label with key topologyKey matches that of any node on which any of the
+   * selected pods is running.
+   * Empty topologyKey is not allowed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm#topologyKey
    */
@@ -9039,7 +16030,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9053,10 +16044,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector
  */
@@ -9069,7 +16061,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector#matchLabels
    */
@@ -9080,7 +16074,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9090,10 +16084,14 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector
  */
@@ -9106,7 +16104,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector#matchLabels
    */
@@ -9117,7 +16117,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9127,10 +16127,581 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions
  */
@@ -9143,14 +16714,19 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions#values
    */
@@ -9161,7 +16737,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9172,10 +16748,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields
  */
@@ -9188,14 +16765,19 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields#values
    */
@@ -9206,7 +16788,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9217,10 +16799,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions
  */
@@ -9233,14 +16816,19 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions#values
    */
@@ -9251,7 +16839,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9262,10 +16850,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A node selector requirement is a selector that contains values, a key, and an operator
+ * that relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields
  */
@@ -9278,14 +16867,19 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
   readonly key: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#operator
    */
   readonly operator: string;
 
   /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * An array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. If the operator is Gt or Lt, the values
+   * array must have a single element, which will be interpreted as an integer.
+   * This array is replaced during a strategic merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields#values
    */
@@ -9296,7 +16890,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAf
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9307,10 +16901,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
  */
@@ -9323,7 +16918,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
    */
@@ -9334,7 +16931,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9344,10 +16941,14 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
  */
@@ -9360,7 +16961,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
    */
@@ -9371,7 +16974,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9381,10 +16984,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
  */
@@ -9397,14 +17001,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
    */
@@ -9415,7 +17023,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9426,10 +17034,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
  */
@@ -9442,14 +17051,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
    */
@@ -9460,7 +17073,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9471,10 +17084,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over a set of resources, in this case pods. If it's null, this PodAffinityTerm matches with no Pods.
+ * A label query over a set of resources, in this case pods.
+ * If it's null, this PodAffinityTerm matches with no Pods.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector
  */
@@ -9487,7 +17101,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector#matchLabels
    */
@@ -9498,7 +17114,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9508,10 +17124,14 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label query over the set of namespaces that the term applies to. The term is applied to the union of the namespaces selected by this field and the ones listed in the namespaces field. null selector and null or empty namespaces list means "this pod's namespace". An empty selector ({}) matches all namespaces.
+ * A label query over the set of namespaces that the term applies to.
+ * The term is applied to the union of the namespaces selected by this field
+ * and the ones listed in the namespaces field.
+ * null selector and null or empty namespaces list means "this pod's namespace".
+ * An empty selector ({}) matches all namespaces.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector
  */
@@ -9524,7 +17144,9 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly matchExpressions?: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions[];
 
   /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector#matchLabels
    */
@@ -9535,7 +17157,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9545,10 +17167,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions
  */
@@ -9561,14 +17184,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions#values
    */
@@ -9579,7 +17206,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9590,10 +17217,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions
  */
@@ -9606,14 +17234,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions#values
    */
@@ -9624,7 +17256,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9635,10 +17267,211 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
+ */
+export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
  */
@@ -9651,14 +17484,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
    */
@@ -9669,7 +17506,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9680,10 +17517,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
  */
@@ -9696,14 +17534,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
    */
@@ -9714,7 +17556,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAff
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9725,10 +17567,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions
  */
@@ -9741,14 +17584,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions#values
    */
@@ -9759,7 +17606,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9770,10 +17617,11 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
  *
  * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions
  */
@@ -9786,14 +17634,18 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
   readonly key: string;
 
   /**
-   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#operator
    */
   readonly operator: string;
 
   /**
-   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
    *
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions#values
    */
@@ -9804,7 +17656,7 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAnt
 /**
  * Converts an object of type 'IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9815,5 +17667,5 @@ export function toJson_IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 

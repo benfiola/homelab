@@ -13,7 +13,7 @@ import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 const appData = {
   chart: "trust-manager",
   repo: "https://charts.jetstack.io",
-  version: "v0.10.0",
+  version: "v0.18.0",
 };
 
 const manifests: ManifestsCallback = async (app) => {

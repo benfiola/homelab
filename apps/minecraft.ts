@@ -3,15 +3,14 @@ import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { codeblock } from "../utils/codeblock";
-import { createDeployment } from "../utils/createDeployment";
 import { createMinioBucket } from "../utils/createMinioBucket";
 import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
-import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
+import { createStatefulSet } from "../utils/createStatefulSet";
 import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getMinioUrl } from "../utils/getMinioUrl";
@@ -75,13 +74,6 @@ const manifests: ManifestsCallback = async (app) => {
     name: "minecraft",
   });
 
-  const dataVolume = createPersistentVolumeClaim(chart, "pvc", {
-    name: "minecraft-data",
-    size: "10Gi",
-  });
-
-  await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
-
   const minecraftVersion = "1.21.1";
   const mods = [
     `DistantHorizons-2.3.0-b-dev-${minecraftVersion}-fabric-neoforge.jar`,
@@ -94,7 +86,7 @@ const manifests: ManifestsCallback = async (app) => {
       return `curl -o /minecraft/mods/${m} -fsSL ${url}`;
     })
     .join("\n");
-  const deployment = createDeployment(chart, "deployment", {
+  const statefulSet = createStatefulSet(chart, "deployment", {
     initContainers: [
       {
         image: "alpine/curl",
@@ -135,12 +127,13 @@ const manifests: ManifestsCallback = async (app) => {
     name: "minecraft",
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
-    updateStrategy: "Recreate",
-    volumes: {
-      data: dataVolume,
+    volumeClaimTemplates: {
+      data: "10Gi",
     },
     user: 1000,
   });
+
+  await createVolumeBackupConfig(chart, { pvc: "data-0", user: 1000 });
 
   new Service(chart, "service", {
     metadata: {
@@ -151,7 +144,7 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       type: "LoadBalancer",
       ports: [{ port: 25565 }],
-      selector: getPodLabels(deployment.name),
+      selector: getPodLabels(statefulSet.name),
     },
   });
 
@@ -177,7 +170,7 @@ const manifests: ManifestsCallback = async (app) => {
         {
           type: "LoadBalancer",
           ports: [{ port: 25565 }],
-          selector: getPodLabels(deployment.name),
+          selector: getPodLabels(statefulSet.name),
         },
       ],
       ttl: "168h",

@@ -19,22 +19,22 @@ const appData = {
   operator: {
     chart: "operator",
     repo: "https://operator.min.io",
-    version: "5.0.15",
+    version: "5.0.18",
   },
   tenant: {
     chart: "tenant",
     repo: "https://operator.min.io",
-    version: "5.0.15",
+    version: "5.0.18",
   },
   operatorExtCrds: {
     chart: "crds",
     repo: "http://benfiola.github.io/minio-operator-ext/charts",
-    version: "2.2.0",
+    version: "3.1.0",
   },
   operatorExt: {
     chart: "operator",
     repo: "http://benfiola.github.io/minio-operator-ext/charts",
-    version: "2.2.2",
+    version: "3.1.0",
   },
 };
 

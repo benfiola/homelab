@@ -13,7 +13,7 @@ import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 const appData = {
   chart: "cert-manager",
   repo: "https://charts.jetstack.io",
-  version: "v1.14.5",
+  version: "v1.18.1",
 };
 
 const manifests: ManifestsCallback = async (app) => {
@@ -66,8 +66,6 @@ const manifests: ManifestsCallback = async (app) => {
       nameOverride: "cert-manager",
       // give all resources a static prefix
       fullnameOverride: "cert-manager",
-      // technically deprecated - but required to render the crds (in conjunction with crds.enabled)
-      installCRDs: true,
     },
   });
 
@@ -88,8 +86,6 @@ const resources: ResourcesCallback = async (path) => {
     ...getHelmTemplateCommand(appData),
     "--set",
     "crds.enabled=true",
-    "--set",
-    "installCRDs=true",
   ]);
   await writeFile(path, manifest);
 };

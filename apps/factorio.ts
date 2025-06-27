@@ -2,11 +2,10 @@ import { Chart } from "cdk8s";
 import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { ConfigMap, Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
-import { createDeployment } from "../utils/createDeployment";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
-import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
+import { createStatefulSet } from "../utils/createStatefulSet";
 import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getPodLabels } from "../utils/getPodLabels";
@@ -52,11 +51,6 @@ const manifests: ManifestsCallback = async (app) => {
   const serviceAccount = createServiceAccount(chart, "service-account", {
     access: {},
     name: "factorio",
-  });
-
-  const dataVolume = createPersistentVolumeClaim(chart, "pvc", {
-    name: "factorio-data",
-    size: "10Gi",
   });
 
   const mods = [
@@ -110,7 +104,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  const deployment = createDeployment(chart, "deployment", {
+  const deployment = createStatefulSet(chart, "deployment", {
     initContainers: [
       {
         image: "ubuntu:latest",
@@ -130,7 +124,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "factoriotools/factorio:2.0.28",
+        image: "factoriotools/factorio:2.0.58",
         mounts: {
           data: "/factorio",
         },
@@ -145,15 +139,16 @@ const manifests: ManifestsCallback = async (app) => {
     name: "factorio",
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
-    updateStrategy: "Recreate",
     user: 845,
     volumes: {
-      data: dataVolume,
       modlist: modList,
+    },
+    volumeClaimTemplates: {
+      data: "10Gi",
     },
   });
 
-  await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 845 });
+  await createVolumeBackupConfig(chart, { pvc: "data-0", user: 845 });
 
   new Service(chart, "service", {
     metadata: {

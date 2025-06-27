@@ -16,7 +16,7 @@ import { temporaryDirectory } from "../utils/temporaryDirectory";
 const appData = {
   chart: "volsync",
   repo: "https://backube.github.io/helm-charts",
-  version: "0.11.0",
+  version: "0.12.1",
 };
 
 const manifests: ManifestsCallback = async (app) => {

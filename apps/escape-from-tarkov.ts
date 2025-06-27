@@ -2,15 +2,14 @@ import { Chart } from "cdk8s";
 import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
-import { createDeployment } from "../utils/createDeployment";
 import { createMinioBucket } from "../utils/createMinioBucket";
 import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
-import { createPersistentVolumeClaim } from "../utils/createPersistentVolumeClaim";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
+import { createStatefulSet } from "../utils/createStatefulSet";
 import { createVolumeBackupConfig } from "../utils/createVolumeBackupConfig";
 import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getMinioUrl } from "../utils/getMinioUrl";
@@ -107,18 +106,6 @@ const manifests: ManifestsCallback = async (app) => {
     name: "escape-from-tarkov",
   });
 
-  const cacheVolume = createPersistentVolumeClaim(chart, "pvc-cache", {
-    name: "escape-from-tarkov-cache",
-    size: "2Gi",
-  });
-
-  const dataVolume = createPersistentVolumeClaim(chart, "pvc-data", {
-    name: "escape-from-tarkov-data",
-    size: "1Gi",
-  });
-
-  await createVolumeBackupConfig(chart, { pvc: dataVolume.name, user: 1000 });
-
   const configPatches = {
     "SPT_Data/Server/configs/insurance.json": [
       { op: "replace", path: "/runIntervalSeconds", value: 60 },
@@ -180,7 +167,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  const deployment = createDeployment(chart, "deployment", {
+  const statefulSet = createStatefulSet(chart, "deployment", {
     containers: [
       {
         envFrom: [serverSecret],
@@ -213,13 +200,14 @@ const manifests: ManifestsCallback = async (app) => {
     name: "escape-from-tarkov",
     namespace: chart.namespace,
     serviceAccount: serviceAccount.name,
-    updateStrategy: "Recreate",
     user: 1000,
-    volumes: {
-      cache: cacheVolume,
-      data: dataVolume,
+    volumeClaimTemplates: {
+      cache: "2Gi",
+      data: "1Gi",
     },
   });
+
+  await createVolumeBackupConfig(chart, { pvc: "data-0", user: 1000 });
 
   new Service(chart, "service", {
     metadata: {
@@ -244,7 +232,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
         { name: "fika-p2p", port: 26969, protocol: "UDP" },
       ],
-      selector: getPodLabels(deployment.name),
+      selector: getPodLabels(statefulSet.name),
     },
   });
 
@@ -278,7 +266,7 @@ const manifests: ManifestsCallback = async (app) => {
               protocol: "UDP",
             },
           ],
-          selector: getPodLabels(deployment.name),
+          selector: getPodLabels(statefulSet.name),
         },
       ],
       ttl: "168h",

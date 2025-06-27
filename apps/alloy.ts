@@ -7,7 +7,7 @@ import { getPodRequests } from "../utils/getPodRequests";
 
 const appData = {
   chart: "alloy",
-  version: "0.10.1",
+  version: "1.1.1",
   repo: "https://grafana.github.io/helm-charts",
 };
 

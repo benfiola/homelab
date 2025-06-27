@@ -10,7 +10,7 @@ import {
 import { createNetworkPolicy } from "../utils/createNetworkPolicy";
 
 const appData = {
-  version: "2.6.0",
+  version: "2.9.0",
 };
 
 const manifests: ManifestsCallback = async (app) => {

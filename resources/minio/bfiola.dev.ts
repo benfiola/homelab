@@ -80,7 +80,7 @@ export interface MinioBucketProps {
 /**
  * Converts an object of type 'MinioBucketProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioBucketProps(obj: MinioBucketProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -90,7 +90,7 @@ export function toJson_MinioBucketProps(obj: MinioBucketProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioBucketSpec defines the desired state of MinioBucket
@@ -102,6 +102,11 @@ export interface MinioBucketSpec {
    * @schema MinioBucketSpec#deletionPolicy
    */
   readonly deletionPolicy: string;
+
+  /**
+   * @schema MinioBucketSpec#migrate
+   */
+  readonly migrate?: boolean;
 
   /**
    * @schema MinioBucketSpec#name
@@ -120,18 +125,19 @@ export interface MinioBucketSpec {
 /**
  * Converts an object of type 'MinioBucketSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioBucketSpec(obj: MinioBucketSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'deletionPolicy': obj.deletionPolicy,
+    'migrate': obj.migrate,
     'name': obj.name,
     'tenantRef': toJson_MinioBucketSpecTenantRef(obj.tenantRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceRef defines a reference to another kubernetes resource
@@ -154,7 +160,7 @@ export interface MinioBucketSpecTenantRef {
 /**
  * Converts an object of type 'MinioBucketSpecTenantRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioBucketSpecTenantRef(obj: MinioBucketSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -164,7 +170,7 @@ export function toJson_MinioBucketSpecTenantRef(obj: MinioBucketSpecTenantRef | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -244,7 +250,7 @@ export interface MinioGroupProps {
 /**
  * Converts an object of type 'MinioGroupProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioGroupProps(obj: MinioGroupProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -254,7 +260,7 @@ export function toJson_MinioGroupProps(obj: MinioGroupProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioGroupSpec defines the desired state of MinioGroup
@@ -262,6 +268,11 @@ export function toJson_MinioGroupProps(obj: MinioGroupProps | undefined): Record
  * @schema MinioGroupSpec
  */
 export interface MinioGroupSpec {
+  /**
+   * @schema MinioGroupSpec#migrate
+   */
+  readonly migrate?: boolean;
+
   /**
    * @schema MinioGroupSpec#name
    */
@@ -279,17 +290,18 @@ export interface MinioGroupSpec {
 /**
  * Converts an object of type 'MinioGroupSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioGroupSpec(obj: MinioGroupSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'migrate': obj.migrate,
     'name': obj.name,
     'tenantRef': toJson_MinioGroupSpecTenantRef(obj.tenantRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceRef defines a reference to another kubernetes resource
@@ -312,7 +324,7 @@ export interface MinioGroupSpecTenantRef {
 /**
  * Converts an object of type 'MinioGroupSpecTenantRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioGroupSpecTenantRef(obj: MinioGroupSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -322,7 +334,7 @@ export function toJson_MinioGroupSpecTenantRef(obj: MinioGroupSpecTenantRef | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -402,7 +414,7 @@ export interface MinioGroupBindingProps {
 /**
  * Converts an object of type 'MinioGroupBindingProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioGroupBindingProps(obj: MinioGroupBindingProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -412,7 +424,7 @@ export function toJson_MinioGroupBindingProps(obj: MinioGroupBindingProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioGroupBindingSpec defines the desired state of MinioGroupBinding
@@ -424,6 +436,11 @@ export interface MinioGroupBindingSpec {
    * @schema MinioGroupBindingSpec#group
    */
   readonly group: string;
+
+  /**
+   * @schema MinioGroupBindingSpec#migrate
+   */
+  readonly migrate?: boolean;
 
   /**
    * ResourceRef defines a reference to another kubernetes resource
@@ -442,18 +459,19 @@ export interface MinioGroupBindingSpec {
 /**
  * Converts an object of type 'MinioGroupBindingSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioGroupBindingSpec(obj: MinioGroupBindingSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'group': obj.group,
+    'migrate': obj.migrate,
     'tenantRef': toJson_MinioGroupBindingSpecTenantRef(obj.tenantRef),
     'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceRef defines a reference to another kubernetes resource
@@ -476,7 +494,7 @@ export interface MinioGroupBindingSpecTenantRef {
 /**
  * Converts an object of type 'MinioGroupBindingSpecTenantRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioGroupBindingSpecTenantRef(obj: MinioGroupBindingSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -486,7 +504,7 @@ export function toJson_MinioGroupBindingSpecTenantRef(obj: MinioGroupBindingSpec
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -566,7 +584,7 @@ export interface MinioPolicyProps {
 /**
  * Converts an object of type 'MinioPolicyProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicyProps(obj: MinioPolicyProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -576,7 +594,7 @@ export function toJson_MinioPolicyProps(obj: MinioPolicyProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioPolicySpec defines the desired state of MinioPolicy
@@ -584,6 +602,11 @@ export function toJson_MinioPolicyProps(obj: MinioPolicyProps | undefined): Reco
  * @schema MinioPolicySpec
  */
 export interface MinioPolicySpec {
+  /**
+   * @schema MinioPolicySpec#migrate
+   */
+  readonly migrate?: boolean;
+
   /**
    * @schema MinioPolicySpec#name
    */
@@ -611,10 +634,11 @@ export interface MinioPolicySpec {
 /**
  * Converts an object of type 'MinioPolicySpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicySpec(obj: MinioPolicySpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'migrate': obj.migrate,
     'name': obj.name,
     'statement': obj.statement?.map(y => toJson_MinioPolicySpecStatement(y)),
     'tenantRef': toJson_MinioPolicySpecTenantRef(obj.tenantRef),
@@ -623,7 +647,7 @@ export function toJson_MinioPolicySpec(obj: MinioPolicySpec | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioPolicyStatement defines a single statement within a MinioPolicy
@@ -651,7 +675,7 @@ export interface MinioPolicySpecStatement {
 /**
  * Converts an object of type 'MinioPolicySpecStatement' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicySpecStatement(obj: MinioPolicySpecStatement | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -662,7 +686,7 @@ export function toJson_MinioPolicySpecStatement(obj: MinioPolicySpecStatement | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceRef defines a reference to another kubernetes resource
@@ -685,7 +709,7 @@ export interface MinioPolicySpecTenantRef {
 /**
  * Converts an object of type 'MinioPolicySpecTenantRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicySpecTenantRef(obj: MinioPolicySpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -695,7 +719,7 @@ export function toJson_MinioPolicySpecTenantRef(obj: MinioPolicySpecTenantRef | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -775,7 +799,7 @@ export interface MinioPolicyBindingProps {
 /**
  * Converts an object of type 'MinioPolicyBindingProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicyBindingProps(obj: MinioPolicyBindingProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -785,7 +809,7 @@ export function toJson_MinioPolicyBindingProps(obj: MinioPolicyBindingProps | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioPolicyBindingSpec defines the desired state of MinioPolicyBinding
@@ -797,6 +821,11 @@ export interface MinioPolicyBindingSpec {
    * @schema MinioPolicyBindingSpec#group
    */
   readonly group?: MinioPolicyBindingSpecGroup;
+
+  /**
+   * @schema MinioPolicyBindingSpec#migrate
+   */
+  readonly migrate?: boolean;
 
   /**
    * @schema MinioPolicyBindingSpec#policy
@@ -820,11 +849,12 @@ export interface MinioPolicyBindingSpec {
 /**
  * Converts an object of type 'MinioPolicyBindingSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicyBindingSpec(obj: MinioPolicyBindingSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'group': toJson_MinioPolicyBindingSpecGroup(obj.group),
+    'migrate': obj.migrate,
     'policy': obj.policy,
     'tenantRef': toJson_MinioPolicyBindingSpecTenantRef(obj.tenantRef),
     'user': toJson_MinioPolicyBindingSpecUser(obj.user),
@@ -832,7 +862,7 @@ export function toJson_MinioPolicyBindingSpec(obj: MinioPolicyBindingSpec | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema MinioPolicyBindingSpecGroup
@@ -853,7 +883,7 @@ export interface MinioPolicyBindingSpecGroup {
 /**
  * Converts an object of type 'MinioPolicyBindingSpecGroup' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicyBindingSpecGroup(obj: MinioPolicyBindingSpecGroup | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -863,7 +893,7 @@ export function toJson_MinioPolicyBindingSpecGroup(obj: MinioPolicyBindingSpecGr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceRef defines a reference to another kubernetes resource
@@ -886,7 +916,7 @@ export interface MinioPolicyBindingSpecTenantRef {
 /**
  * Converts an object of type 'MinioPolicyBindingSpecTenantRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicyBindingSpecTenantRef(obj: MinioPolicyBindingSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -896,7 +926,7 @@ export function toJson_MinioPolicyBindingSpecTenantRef(obj: MinioPolicyBindingSp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema MinioPolicyBindingSpecUser
@@ -917,7 +947,7 @@ export interface MinioPolicyBindingSpecUser {
 /**
  * Converts an object of type 'MinioPolicyBindingSpecUser' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioPolicyBindingSpecUser(obj: MinioPolicyBindingSpecUser | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -927,7 +957,7 @@ export function toJson_MinioPolicyBindingSpecUser(obj: MinioPolicyBindingSpecUse
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -1007,7 +1037,7 @@ export interface MinioUserProps {
 /**
  * Converts an object of type 'MinioUserProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioUserProps(obj: MinioUserProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1017,7 +1047,7 @@ export function toJson_MinioUserProps(obj: MinioUserProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MinioUserSpec defines the desired state of MinioUser
@@ -1029,6 +1059,11 @@ export interface MinioUserSpec {
    * @schema MinioUserSpec#accessKey
    */
   readonly accessKey: string;
+
+  /**
+   * @schema MinioUserSpec#migrate
+   */
+  readonly migrate?: boolean;
 
   /**
    * ResourceKeyRef defines a reference to a key of another kubernetes resource
@@ -1049,18 +1084,19 @@ export interface MinioUserSpec {
 /**
  * Converts an object of type 'MinioUserSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioUserSpec(obj: MinioUserSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'accessKey': obj.accessKey,
+    'migrate': obj.migrate,
     'secretKeyRef': toJson_MinioUserSpecSecretKeyRef(obj.secretKeyRef),
     'tenantRef': toJson_MinioUserSpecTenantRef(obj.tenantRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceKeyRef defines a reference to a key of another kubernetes resource
@@ -1088,7 +1124,7 @@ export interface MinioUserSpecSecretKeyRef {
 /**
  * Converts an object of type 'MinioUserSpecSecretKeyRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioUserSpecSecretKeyRef(obj: MinioUserSpecSecretKeyRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1099,7 +1135,7 @@ export function toJson_MinioUserSpecSecretKeyRef(obj: MinioUserSpecSecretKeyRef 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceRef defines a reference to another kubernetes resource
@@ -1122,7 +1158,7 @@ export interface MinioUserSpecTenantRef {
 /**
  * Converts an object of type 'MinioUserSpecTenantRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinioUserSpecTenantRef(obj: MinioUserSpecTenantRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1132,5 +1168,5 @@ export function toJson_MinioUserSpecTenantRef(obj: MinioUserSpecTenantRef | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 

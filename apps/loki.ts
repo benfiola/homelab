@@ -13,7 +13,7 @@ import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
   chart: "loki",
-  version: "6.23.0",
+  version: "6.30.1",
   repo: "https://grafana.github.io/helm-charts",
 };
 

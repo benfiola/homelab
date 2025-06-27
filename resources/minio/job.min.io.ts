@@ -76,7 +76,7 @@ export interface MinIoJobProps {
 /**
  * Converts an object of type 'MinIoJobProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinIoJobProps(obj: MinIoJobProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -86,7 +86,7 @@ export function toJson_MinIoJobProps(obj: MinIoJobProps | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema MinIoJobSpec
@@ -127,7 +127,7 @@ export interface MinIoJobSpec {
 /**
  * Converts an object of type 'MinIoJobSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinIoJobSpec(obj: MinIoJobSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -141,7 +141,7 @@ export function toJson_MinIoJobSpec(obj: MinIoJobSpec | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema MinIoJobSpecCommands
@@ -172,7 +172,7 @@ export interface MinIoJobSpecCommands {
 /**
  * Converts an object of type 'MinIoJobSpecCommands' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinIoJobSpecCommands(obj: MinIoJobSpecCommands | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -184,7 +184,7 @@ export function toJson_MinIoJobSpecCommands(obj: MinIoJobSpecCommands | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema MinIoJobSpecExecution
@@ -225,7 +225,7 @@ export interface MinIoJobSpecTenant {
 /**
  * Converts an object of type 'MinIoJobSpecTenant' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MinIoJobSpecTenant(obj: MinIoJobSpecTenant | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -235,5 +235,5 @@ export function toJson_MinIoJobSpecTenant(obj: MinIoJobSpecTenant | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 

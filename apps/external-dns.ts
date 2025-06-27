@@ -8,7 +8,7 @@ import { createServiceAccount } from "../utils/createServiceAccount";
 import { parseEnv } from "../utils/parseEnv";
 
 const appData = {
-  version: "0.14.2",
+  version: "0.18.0",
   webhookVersion: "2.0.1",
 };
 

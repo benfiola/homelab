@@ -13,7 +13,7 @@ import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 const appData = {
   chart: "snapshot-controller",
   repo: "https://piraeus.io/helm-charts/",
-  version: "3.0.6",
+  version: "4.1.0",
 };
 
 const manifests: ManifestsCallback = async (app) => {

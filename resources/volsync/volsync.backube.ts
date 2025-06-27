@@ -83,7 +83,7 @@ export interface ReplicationDestinationProps {
 /**
  * Converts an object of type 'ReplicationDestinationProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationProps(obj: ReplicationDestinationProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -93,7 +93,7 @@ export function toJson_ReplicationDestinationProps(obj: ReplicationDestinationPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * spec is the desired state of the ReplicationDestination, including the
@@ -159,7 +159,7 @@ export interface ReplicationDestinationSpec {
 /**
  * Converts an object of type 'ReplicationDestinationSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpec(obj: ReplicationDestinationSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -174,7 +174,7 @@ export function toJson_ReplicationDestinationSpec(obj: ReplicationDestinationSpe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * external defines the configuration when using an external replication
@@ -205,7 +205,7 @@ export interface ReplicationDestinationSpecExternal {
 /**
  * Converts an object of type 'ReplicationDestinationSpecExternal' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecExternal(obj: ReplicationDestinationSpecExternal | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -215,7 +215,7 @@ export function toJson_ReplicationDestinationSpecExternal(obj: ReplicationDestin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * rclone defines the configuration when using Rclone-based replication.
@@ -363,7 +363,7 @@ export interface ReplicationDestinationSpecRclone {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRclone' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRclone(obj: ReplicationDestinationSpecRclone | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -387,7 +387,7 @@ export function toJson_ReplicationDestinationSpecRclone(obj: ReplicationDestinat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * restic defines the configuration when using Restic-based replication.
@@ -578,7 +578,7 @@ export interface ReplicationDestinationSpecRestic {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRestic' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRestic(obj: ReplicationDestinationSpecRestic | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -607,7 +607,7 @@ export function toJson_ReplicationDestinationSpecRestic(obj: ReplicationDestinat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * rsync defines the configuration when using Rsync-based replication.
@@ -777,7 +777,7 @@ export interface ReplicationDestinationSpecRsync {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsync' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsync(obj: ReplicationDestinationSpecRsync | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -803,7 +803,7 @@ export function toJson_ReplicationDestinationSpecRsync(obj: ReplicationDestinati
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * rsyncTLS defines the configuration when using Rsync-based replication over TLS.
@@ -957,7 +957,7 @@ export interface ReplicationDestinationSpecRsyncTls {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTls(obj: ReplicationDestinationSpecRsyncTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -981,7 +981,7 @@ export function toJson_ReplicationDestinationSpecRsyncTls(obj: ReplicationDestin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * trigger determines if/when the destination should attempt to synchronize
@@ -1017,7 +1017,7 @@ export interface ReplicationDestinationSpecTrigger {
 /**
  * Converts an object of type 'ReplicationDestinationSpecTrigger' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecTrigger(obj: ReplicationDestinationSpecTrigger | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1027,7 +1027,7 @@ export function toJson_ReplicationDestinationSpecTrigger(obj: ReplicationDestina
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * capacity is the size of the destination volume to create.
@@ -1096,7 +1096,7 @@ export interface ReplicationDestinationSpecRcloneCustomCa {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneCustomCa' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneCustomCa(obj: ReplicationDestinationSpecRcloneCustomCa | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1107,7 +1107,7 @@ export function toJson_ReplicationDestinationSpecRcloneCustomCa(obj: Replication
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverAffinity allows specifying the PodAffinity that will be used by the data mover
@@ -1141,7 +1141,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinity(obj: ReplicationDestinationSpecRcloneMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1152,7 +1152,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinity(obj: Replic
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -1200,7 +1200,7 @@ export interface ReplicationDestinationSpecRcloneMoverResources {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverResources(obj: ReplicationDestinationSpecRcloneMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1211,7 +1211,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverResources(obj: Repli
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -1364,7 +1364,7 @@ export interface ReplicationDestinationSpecRcloneMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContext(obj: ReplicationDestinationSpecRcloneMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1384,7 +1384,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContext(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * cacheCapacity can be used to set the size of the restic metadata cache volume
@@ -1469,7 +1469,7 @@ export interface ReplicationDestinationSpecResticCustomCa {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticCustomCa' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticCustomCa(obj: ReplicationDestinationSpecResticCustomCa | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1480,7 +1480,7 @@ export function toJson_ReplicationDestinationSpecResticCustomCa(obj: Replication
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverAffinity allows specifying the PodAffinity that will be used by the data mover
@@ -1514,7 +1514,7 @@ export interface ReplicationDestinationSpecResticMoverAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinity(obj: ReplicationDestinationSpecResticMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1525,7 +1525,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinity(obj: Replic
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -1573,7 +1573,7 @@ export interface ReplicationDestinationSpecResticMoverResources {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverResources(obj: ReplicationDestinationSpecResticMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1584,7 +1584,7 @@ export function toJson_ReplicationDestinationSpecResticMoverResources(obj: Repli
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -1737,7 +1737,7 @@ export interface ReplicationDestinationSpecResticMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverSecurityContext(obj: ReplicationDestinationSpecResticMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1757,7 +1757,7 @@ export function toJson_ReplicationDestinationSpecResticMoverSecurityContext(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * capacity is the size of the destination volume to create.
@@ -1838,7 +1838,7 @@ export interface ReplicationDestinationSpecRsyncMoverResources {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncMoverResources(obj: ReplicationDestinationSpecRsyncMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1849,7 +1849,7 @@ export function toJson_ReplicationDestinationSpecRsyncMoverResources(obj: Replic
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * capacity is the size of the destination volume to create.
@@ -1916,7 +1916,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinity(obj: ReplicationDestinationSpecRsyncTlsMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1927,7 +1927,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinity(obj: Repl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -1975,7 +1975,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverResources {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverResources(obj: ReplicationDestinationSpecRsyncTlsMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -1986,7 +1986,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverResources(obj: Rep
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -2139,7 +2139,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContext(obj: ReplicationDestinationSpecRsyncTlsMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2159,7 +2159,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContext(ob
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -2198,7 +2198,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2208,7 +2208,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -2249,7 +2249,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinity(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2259,7 +2259,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinity(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -2300,7 +2300,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinity(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2310,7 +2310,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -2341,7 +2341,7 @@ export interface ReplicationDestinationSpecRcloneMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverResourcesClaims(obj: ReplicationDestinationSpecRcloneMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2351,7 +2351,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverResourcesClaims(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationDestinationSpecRcloneMoverResourcesLimits
@@ -2414,7 +2414,7 @@ export interface ReplicationDestinationSpecRcloneMoverSecurityContextAppArmorPro
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextAppArmorProfile(obj: ReplicationDestinationSpecRcloneMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2424,7 +2424,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextAppAr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -2470,7 +2470,7 @@ export interface ReplicationDestinationSpecRcloneMoverSecurityContextSeLinuxOpti
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextSeLinuxOptions(obj: ReplicationDestinationSpecRcloneMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2482,7 +2482,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextSeLin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -2518,7 +2518,7 @@ export interface ReplicationDestinationSpecRcloneMoverSecurityContextSeccompProf
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextSeccompProfile(obj: ReplicationDestinationSpecRcloneMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2528,7 +2528,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextSecco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -2555,7 +2555,7 @@ export interface ReplicationDestinationSpecRcloneMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextSysctls(obj: ReplicationDestinationSpecRcloneMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2565,7 +2565,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextSysct
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -2618,7 +2618,7 @@ export interface ReplicationDestinationSpecRcloneMoverSecurityContextWindowsOpti
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextWindowsOptions(obj: ReplicationDestinationSpecRcloneMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2630,7 +2630,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverSecurityContextWindo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -2669,7 +2669,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2679,7 +2679,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -2720,7 +2720,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinity(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2730,7 +2730,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinity(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -2771,7 +2771,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinity(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2781,7 +2781,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -2812,7 +2812,7 @@ export interface ReplicationDestinationSpecResticMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverResourcesClaims(obj: ReplicationDestinationSpecResticMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2822,7 +2822,7 @@ export function toJson_ReplicationDestinationSpecResticMoverResourcesClaims(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationDestinationSpecResticMoverResourcesLimits
@@ -2885,7 +2885,7 @@ export interface ReplicationDestinationSpecResticMoverSecurityContextAppArmorPro
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverSecurityContextAppArmorProfile(obj: ReplicationDestinationSpecResticMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2895,7 +2895,7 @@ export function toJson_ReplicationDestinationSpecResticMoverSecurityContextAppAr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -2941,7 +2941,7 @@ export interface ReplicationDestinationSpecResticMoverSecurityContextSeLinuxOpti
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverSecurityContextSeLinuxOptions(obj: ReplicationDestinationSpecResticMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2953,7 +2953,7 @@ export function toJson_ReplicationDestinationSpecResticMoverSecurityContextSeLin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -2989,7 +2989,7 @@ export interface ReplicationDestinationSpecResticMoverSecurityContextSeccompProf
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverSecurityContextSeccompProfile(obj: ReplicationDestinationSpecResticMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -2999,7 +2999,7 @@ export function toJson_ReplicationDestinationSpecResticMoverSecurityContextSecco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -3026,7 +3026,7 @@ export interface ReplicationDestinationSpecResticMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverSecurityContextSysctls(obj: ReplicationDestinationSpecResticMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3036,7 +3036,7 @@ export function toJson_ReplicationDestinationSpecResticMoverSecurityContextSysct
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -3089,7 +3089,7 @@ export interface ReplicationDestinationSpecResticMoverSecurityContextWindowsOpti
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverSecurityContextWindowsOptions(obj: ReplicationDestinationSpecResticMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3101,7 +3101,7 @@ export function toJson_ReplicationDestinationSpecResticMoverSecurityContextWindo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -3132,7 +3132,7 @@ export interface ReplicationDestinationSpecRsyncMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncMoverResourcesClaims(obj: ReplicationDestinationSpecRsyncMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3142,7 +3142,7 @@ export function toJson_ReplicationDestinationSpecRsyncMoverResourcesClaims(obj: 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationDestinationSpecRsyncMoverResourcesLimits
@@ -3209,7 +3209,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinity(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3219,7 +3219,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -3260,7 +3260,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinity(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3270,7 +3270,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -3311,7 +3311,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinity 
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinity(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3321,7 +3321,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -3352,7 +3352,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverResourcesClaims(obj: ReplicationDestinationSpecRsyncTlsMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3362,7 +3362,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverResourcesClaims(ob
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationDestinationSpecRsyncTlsMoverResourcesLimits
@@ -3425,7 +3425,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverSecurityContextAppArmorP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextAppArmorProfile(obj: ReplicationDestinationSpecRsyncTlsMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3435,7 +3435,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextApp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -3481,7 +3481,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeLinuxOp
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeLinuxOptions(obj: ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3493,7 +3493,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeL
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -3529,7 +3529,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeccompPr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeccompProfile(obj: ReplicationDestinationSpecRsyncTlsMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3539,7 +3539,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextSec
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -3566,7 +3566,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextSysctls(obj: ReplicationDestinationSpecRsyncTlsMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3576,7 +3576,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextSys
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -3629,7 +3629,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverSecurityContextWindowsOp
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextWindowsOptions(obj: ReplicationDestinationSpecRsyncTlsMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3641,7 +3641,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverSecurityContextWin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -3669,7 +3669,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3679,7 +3679,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -3703,7 +3703,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3712,7 +3712,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -3740,7 +3740,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3750,7 +3750,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -3838,7 +3838,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3852,7 +3852,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -3880,7 +3880,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3890,7 +3890,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -3978,7 +3978,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -3992,7 +3992,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -4020,7 +4020,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4030,7 +4030,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -4054,7 +4054,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4063,7 +4063,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -4091,7 +4091,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4101,7 +4101,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -4189,7 +4189,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4203,7 +4203,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -4231,7 +4231,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4241,7 +4241,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -4329,7 +4329,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4343,7 +4343,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -4371,7 +4371,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPref
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4381,7 +4381,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -4405,7 +4405,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequ
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4414,7 +4414,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -4442,7 +4442,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPrefe
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4452,7 +4452,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -4540,7 +4540,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequi
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4554,7 +4554,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -4582,7 +4582,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4592,7 +4592,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -4680,7 +4680,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityR
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4694,7 +4694,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -4721,7 +4721,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4731,7 +4731,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -4760,7 +4760,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4770,7 +4770,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -4853,7 +4853,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4867,7 +4867,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -4897,7 +4897,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4907,7 +4907,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -4940,7 +4940,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -4950,7 +4950,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -5033,7 +5033,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5047,7 +5047,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -5077,7 +5077,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5087,7 +5087,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -5120,7 +5120,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5130,7 +5130,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -5157,7 +5157,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5167,7 +5167,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -5196,7 +5196,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5206,7 +5206,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -5289,7 +5289,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5303,7 +5303,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -5333,7 +5333,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5343,7 +5343,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -5376,7 +5376,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5386,7 +5386,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -5469,7 +5469,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5483,7 +5483,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -5513,7 +5513,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5523,7 +5523,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -5556,7 +5556,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5566,7 +5566,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -5593,7 +5593,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPref
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5603,7 +5603,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -5632,7 +5632,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequ
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5642,7 +5642,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -5725,7 +5725,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPrefe
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5739,7 +5739,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -5769,7 +5769,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequi
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5779,7 +5779,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -5812,7 +5812,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequi
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5822,7 +5822,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -5905,7 +5905,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5919,7 +5919,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -5949,7 +5949,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityR
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -5959,7 +5959,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -5992,7 +5992,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityR
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6002,7 +6002,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6042,7 +6042,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6053,7 +6053,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6093,7 +6093,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6104,7 +6104,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6144,7 +6144,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6155,7 +6155,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6195,7 +6195,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationDestinationSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6206,7 +6206,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -6236,7 +6236,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6246,7 +6246,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -6279,7 +6279,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6289,7 +6289,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -6328,7 +6328,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6339,7 +6339,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -6378,7 +6378,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6389,7 +6389,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -6419,7 +6419,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6429,7 +6429,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -6462,7 +6462,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6472,7 +6472,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -6511,7 +6511,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6522,7 +6522,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -6561,7 +6561,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6572,7 +6572,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6612,7 +6612,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6623,7 +6623,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6663,7 +6663,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityPrefer
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6674,7 +6674,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6714,7 +6714,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6725,7 +6725,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -6765,7 +6765,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequir
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationDestinationSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6776,7 +6776,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityNodeAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -6806,7 +6806,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6816,7 +6816,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -6849,7 +6849,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6859,7 +6859,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -6898,7 +6898,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6909,7 +6909,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -6948,7 +6948,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityRequire
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6959,7 +6959,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -6989,7 +6989,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -6999,7 +6999,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -7032,7 +7032,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7042,7 +7042,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7081,7 +7081,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7092,7 +7092,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7131,7 +7131,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityReq
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7142,7 +7142,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -7182,7 +7182,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPref
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7193,7 +7193,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -7233,7 +7233,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPref
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7244,7 +7244,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -7284,7 +7284,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequ
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7295,7 +7295,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -7335,7 +7335,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequ
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7346,7 +7346,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityNodeAffini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -7376,7 +7376,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPrefe
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7386,7 +7386,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -7419,7 +7419,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPrefe
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7429,7 +7429,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7468,7 +7468,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequi
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7479,7 +7479,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7518,7 +7518,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequi
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7529,7 +7529,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -7559,7 +7559,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7569,7 +7569,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -7602,7 +7602,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7612,7 +7612,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7651,7 +7651,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityR
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7662,7 +7662,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7701,7 +7701,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityR
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7712,7 +7712,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7751,7 +7751,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7762,7 +7762,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7801,7 +7801,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7812,7 +7812,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7851,7 +7851,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7862,7 +7862,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7901,7 +7901,7 @@ export interface ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7912,7 +7912,7 @@ export function toJson_ReplicationDestinationSpecRcloneMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -7951,7 +7951,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7962,7 +7962,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8001,7 +8001,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferr
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8012,7 +8012,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAffinityP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8051,7 +8051,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8062,7 +8062,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8101,7 +8101,7 @@ export interface ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPre
 /**
  * Converts an object of type 'ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8112,7 +8112,7 @@ export function toJson_ReplicationDestinationSpecResticMoverAffinityPodAntiAffin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8151,7 +8151,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPrefe
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8162,7 +8162,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8201,7 +8201,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPrefe
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8212,7 +8212,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8251,7 +8251,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8262,7 +8262,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -8301,7 +8301,7 @@ export interface ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityP
 /**
  * Converts an object of type 'ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8312,7 +8312,7 @@ export function toJson_ReplicationDestinationSpecRsyncTlsMoverAffinityPodAntiAff
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 
 /**
@@ -8395,7 +8395,7 @@ export interface ReplicationSourceProps {
 /**
  * Converts an object of type 'ReplicationSourceProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceProps(obj: ReplicationSourceProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8405,7 +8405,7 @@ export function toJson_ReplicationSourceProps(obj: ReplicationSourceProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * spec is the desired state of the ReplicationSource, including the
@@ -8485,7 +8485,7 @@ export interface ReplicationSourceSpec {
 /**
  * Converts an object of type 'ReplicationSourceSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpec(obj: ReplicationSourceSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8502,7 +8502,7 @@ export function toJson_ReplicationSourceSpec(obj: ReplicationSourceSpec | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * external defines the configuration when using an external replication
@@ -8533,7 +8533,7 @@ export interface ReplicationSourceSpecExternal {
 /**
  * Converts an object of type 'ReplicationSourceSpecExternal' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecExternal(obj: ReplicationSourceSpecExternal | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8543,7 +8543,7 @@ export function toJson_ReplicationSourceSpecExternal(obj: ReplicationSourceSpecE
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * rclone defines the configuration when using Rclone-based replication.
@@ -8666,7 +8666,7 @@ export interface ReplicationSourceSpecRclone {
 /**
  * Converts an object of type 'ReplicationSourceSpecRclone' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRclone(obj: ReplicationSourceSpecRclone | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8688,7 +8688,7 @@ export function toJson_ReplicationSourceSpecRclone(obj: ReplicationSourceSpecRcl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * restic defines the configuration when using Restic-based replication.
@@ -8847,7 +8847,7 @@ export interface ReplicationSourceSpecRestic {
 /**
  * Converts an object of type 'ReplicationSourceSpecRestic' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRestic(obj: ReplicationSourceSpecRestic | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8873,7 +8873,7 @@ export function toJson_ReplicationSourceSpecRestic(obj: ReplicationSourceSpecRes
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * rsync defines the configuration when using Rsync-based replication.
@@ -9000,7 +9000,7 @@ export interface ReplicationSourceSpecRsync {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsync' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsync(obj: ReplicationSourceSpecRsync | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9022,7 +9022,7 @@ export function toJson_ReplicationSourceSpecRsync(obj: ReplicationSourceSpecRsyn
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * rsyncTLS defines the configuration when using Rsync-based replication over TLS.
@@ -9140,7 +9140,7 @@ export interface ReplicationSourceSpecRsyncTls {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTls(obj: ReplicationSourceSpecRsyncTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9161,7 +9161,7 @@ export function toJson_ReplicationSourceSpecRsyncTls(obj: ReplicationSourceSpecR
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * syncthing defines the configuration when using Syncthing-based replication.
@@ -9253,7 +9253,7 @@ export interface ReplicationSourceSpecSyncthing {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthing' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthing(obj: ReplicationSourceSpecSyncthing | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9271,7 +9271,7 @@ export function toJson_ReplicationSourceSpecSyncthing(obj: ReplicationSourceSpec
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * trigger determines when the latest state of the volume will be captured
@@ -9307,7 +9307,7 @@ export interface ReplicationSourceSpecTrigger {
 /**
  * Converts an object of type 'ReplicationSourceSpecTrigger' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecTrigger(obj: ReplicationSourceSpecTrigger | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9317,7 +9317,7 @@ export function toJson_ReplicationSourceSpecTrigger(obj: ReplicationSourceSpecTr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * capacity can be used to override the capacity of the PiT image.
@@ -9386,7 +9386,7 @@ export interface ReplicationSourceSpecRcloneCustomCa {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneCustomCa' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneCustomCa(obj: ReplicationSourceSpecRcloneCustomCa | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9397,7 +9397,7 @@ export function toJson_ReplicationSourceSpecRcloneCustomCa(obj: ReplicationSourc
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverAffinity allows specifying the PodAffinity that will be used by the data mover
@@ -9431,7 +9431,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinity(obj: ReplicationSourceSpecRcloneMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9442,7 +9442,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinity(obj: Replication
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -9490,7 +9490,7 @@ export interface ReplicationSourceSpecRcloneMoverResources {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverResources(obj: ReplicationSourceSpecRcloneMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9501,7 +9501,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverResources(obj: Replicatio
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -9654,7 +9654,7 @@ export interface ReplicationSourceSpecRcloneMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverSecurityContext(obj: ReplicationSourceSpecRcloneMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9674,7 +9674,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverSecurityContext(obj: Repl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * cacheCapacity can be used to set the size of the restic metadata cache volume
@@ -9759,7 +9759,7 @@ export interface ReplicationSourceSpecResticCustomCa {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticCustomCa' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticCustomCa(obj: ReplicationSourceSpecResticCustomCa | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9770,7 +9770,7 @@ export function toJson_ReplicationSourceSpecResticCustomCa(obj: ReplicationSourc
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverAffinity allows specifying the PodAffinity that will be used by the data mover
@@ -9804,7 +9804,7 @@ export interface ReplicationSourceSpecResticMoverAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinity(obj: ReplicationSourceSpecResticMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9815,7 +9815,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinity(obj: Replication
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -9863,7 +9863,7 @@ export interface ReplicationSourceSpecResticMoverResources {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverResources(obj: ReplicationSourceSpecResticMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9874,7 +9874,7 @@ export function toJson_ReplicationSourceSpecResticMoverResources(obj: Replicatio
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -10027,7 +10027,7 @@ export interface ReplicationSourceSpecResticMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverSecurityContext(obj: ReplicationSourceSpecResticMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10047,7 +10047,7 @@ export function toJson_ReplicationSourceSpecResticMoverSecurityContext(obj: Repl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResticRetainPolicy define the retain policy
@@ -10109,7 +10109,7 @@ export interface ReplicationSourceSpecResticRetain {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticRetain' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticRetain(obj: ReplicationSourceSpecResticRetain | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10124,7 +10124,7 @@ export function toJson_ReplicationSourceSpecResticRetain(obj: ReplicationSourceS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * capacity can be used to override the capacity of the PiT image.
@@ -10205,7 +10205,7 @@ export interface ReplicationSourceSpecRsyncMoverResources {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncMoverResources(obj: ReplicationSourceSpecRsyncMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10216,7 +10216,7 @@ export function toJson_ReplicationSourceSpecRsyncMoverResources(obj: Replication
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * capacity can be used to override the capacity of the PiT image.
@@ -10283,7 +10283,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinity(obj: ReplicationSourceSpecRsyncTlsMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10294,7 +10294,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinity(obj: Replicati
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -10342,7 +10342,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverResources {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverResources(obj: ReplicationSourceSpecRsyncTlsMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10353,7 +10353,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverResources(obj: Replicat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -10506,7 +10506,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContext(obj: ReplicationSourceSpecRsyncTlsMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10526,7 +10526,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContext(obj: Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Used to set the size of the Syncthing config volume.
@@ -10576,7 +10576,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinity(obj: ReplicationSourceSpecSyncthingMoverAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10587,7 +10587,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinity(obj: Replicat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Resources represents compute resources required by the data mover container.
@@ -10635,7 +10635,7 @@ export interface ReplicationSourceSpecSyncthingMoverResources {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverResources(obj: ReplicationSourceSpecSyncthingMoverResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10646,7 +10646,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverResources(obj: Replica
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MoverSecurityContext allows specifying the PodSecurityContext that will
@@ -10799,7 +10799,7 @@ export interface ReplicationSourceSpecSyncthingMoverSecurityContext {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContext(obj: ReplicationSourceSpecSyncthingMoverSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10819,7 +10819,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContext(obj: R
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SyncthingPeer Defines the necessary information needed by VolSync
@@ -10858,7 +10858,7 @@ export interface ReplicationSourceSpecSyncthingPeers {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingPeers' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingPeers(obj: ReplicationSourceSpecSyncthingPeers | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10869,7 +10869,7 @@ export function toJson_ReplicationSourceSpecSyncthingPeers(obj: ReplicationSourc
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -10908,7 +10908,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinity(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10918,7 +10918,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinity(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -10959,7 +10959,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinity(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10969,7 +10969,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinity(obj: 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -11010,7 +11010,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinity(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11020,7 +11020,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinity(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -11051,7 +11051,7 @@ export interface ReplicationSourceSpecRcloneMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverResourcesClaims(obj: ReplicationSourceSpecRcloneMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11061,7 +11061,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverResourcesClaims(obj: Repl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationSourceSpecRcloneMoverResourcesLimits
@@ -11124,7 +11124,7 @@ export interface ReplicationSourceSpecRcloneMoverSecurityContextAppArmorProfile 
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextAppArmorProfile(obj: ReplicationSourceSpecRcloneMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11134,7 +11134,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextAppArmorPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -11180,7 +11180,7 @@ export interface ReplicationSourceSpecRcloneMoverSecurityContextSeLinuxOptions {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextSeLinuxOptions(obj: ReplicationSourceSpecRcloneMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11192,7 +11192,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextSeLinuxOpt
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -11228,7 +11228,7 @@ export interface ReplicationSourceSpecRcloneMoverSecurityContextSeccompProfile {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextSeccompProfile(obj: ReplicationSourceSpecRcloneMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11238,7 +11238,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextSeccompPro
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -11265,7 +11265,7 @@ export interface ReplicationSourceSpecRcloneMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextSysctls(obj: ReplicationSourceSpecRcloneMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11275,7 +11275,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextSysctls(ob
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -11328,7 +11328,7 @@ export interface ReplicationSourceSpecRcloneMoverSecurityContextWindowsOptions {
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextWindowsOptions(obj: ReplicationSourceSpecRcloneMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11340,7 +11340,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverSecurityContextWindowsOpt
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -11379,7 +11379,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinity(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11389,7 +11389,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinity(obj:
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -11430,7 +11430,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinity(obj: ReplicationSourceSpecResticMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11440,7 +11440,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinity(obj: 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -11481,7 +11481,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinity(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11491,7 +11491,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinity(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -11522,7 +11522,7 @@ export interface ReplicationSourceSpecResticMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverResourcesClaims(obj: ReplicationSourceSpecResticMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11532,7 +11532,7 @@ export function toJson_ReplicationSourceSpecResticMoverResourcesClaims(obj: Repl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationSourceSpecResticMoverResourcesLimits
@@ -11595,7 +11595,7 @@ export interface ReplicationSourceSpecResticMoverSecurityContextAppArmorProfile 
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverSecurityContextAppArmorProfile(obj: ReplicationSourceSpecResticMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11605,7 +11605,7 @@ export function toJson_ReplicationSourceSpecResticMoverSecurityContextAppArmorPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -11651,7 +11651,7 @@ export interface ReplicationSourceSpecResticMoverSecurityContextSeLinuxOptions {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverSecurityContextSeLinuxOptions(obj: ReplicationSourceSpecResticMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11663,7 +11663,7 @@ export function toJson_ReplicationSourceSpecResticMoverSecurityContextSeLinuxOpt
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -11699,7 +11699,7 @@ export interface ReplicationSourceSpecResticMoverSecurityContextSeccompProfile {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverSecurityContextSeccompProfile(obj: ReplicationSourceSpecResticMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11709,7 +11709,7 @@ export function toJson_ReplicationSourceSpecResticMoverSecurityContextSeccompPro
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -11736,7 +11736,7 @@ export interface ReplicationSourceSpecResticMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverSecurityContextSysctls(obj: ReplicationSourceSpecResticMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11746,7 +11746,7 @@ export function toJson_ReplicationSourceSpecResticMoverSecurityContextSysctls(ob
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -11799,7 +11799,7 @@ export interface ReplicationSourceSpecResticMoverSecurityContextWindowsOptions {
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverSecurityContextWindowsOptions(obj: ReplicationSourceSpecResticMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11811,7 +11811,7 @@ export function toJson_ReplicationSourceSpecResticMoverSecurityContextWindowsOpt
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -11842,7 +11842,7 @@ export interface ReplicationSourceSpecRsyncMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncMoverResourcesClaims(obj: ReplicationSourceSpecRsyncMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11852,7 +11852,7 @@ export function toJson_ReplicationSourceSpecRsyncMoverResourcesClaims(obj: Repli
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationSourceSpecRsyncMoverResourcesLimits
@@ -11919,7 +11919,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinity(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11929,7 +11929,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinity(ob
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -11970,7 +11970,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinity(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11980,7 +11980,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinity(obj
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -12021,7 +12021,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12031,7 +12031,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -12062,7 +12062,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverResourcesClaims(obj: ReplicationSourceSpecRsyncTlsMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12072,7 +12072,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverResourcesClaims(obj: Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationSourceSpecRsyncTlsMoverResourcesLimits
@@ -12135,7 +12135,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverSecurityContextAppArmorProfil
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextAppArmorProfile(obj: ReplicationSourceSpecRsyncTlsMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12145,7 +12145,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextAppArmor
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -12191,7 +12191,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverSecurityContextSeLinuxOptions
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextSeLinuxOptions(obj: ReplicationSourceSpecRsyncTlsMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12203,7 +12203,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextSeLinuxO
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -12239,7 +12239,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverSecurityContextSeccompProfile
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextSeccompProfile(obj: ReplicationSourceSpecRsyncTlsMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12249,7 +12249,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextSeccompP
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -12276,7 +12276,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextSysctls(obj: ReplicationSourceSpecRsyncTlsMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12286,7 +12286,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextSysctls(
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -12339,7 +12339,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverSecurityContextWindowsOptions
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextWindowsOptions(obj: ReplicationSourceSpecRsyncTlsMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12351,7 +12351,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverSecurityContextWindowsO
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes node affinity scheduling rules for the pod.
@@ -12390,7 +12390,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinity(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12400,7 +12400,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinity(o
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
@@ -12441,7 +12441,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinity(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12451,7 +12451,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinity(ob
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
@@ -12492,7 +12492,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinity {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinity(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12502,7 +12502,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaim references one entry in PodSpec.ResourceClaims.
@@ -12533,7 +12533,7 @@ export interface ReplicationSourceSpecSyncthingMoverResourcesClaims {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverResourcesClaims' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverResourcesClaims(obj: ReplicationSourceSpecSyncthingMoverResourcesClaims | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12543,7 +12543,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverResourcesClaims(obj: R
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema ReplicationSourceSpecSyncthingMoverResourcesLimits
@@ -12606,7 +12606,7 @@ export interface ReplicationSourceSpecSyncthingMoverSecurityContextAppArmorProfi
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverSecurityContextAppArmorProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextAppArmorProfile(obj: ReplicationSourceSpecSyncthingMoverSecurityContextAppArmorProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12616,7 +12616,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextAppArmo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The SELinux context to be applied to all containers.
@@ -12662,7 +12662,7 @@ export interface ReplicationSourceSpecSyncthingMoverSecurityContextSeLinuxOption
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverSecurityContextSeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextSeLinuxOptions(obj: ReplicationSourceSpecSyncthingMoverSecurityContextSeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12674,7 +12674,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextSeLinux
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The seccomp options to use by the containers in this pod.
@@ -12710,7 +12710,7 @@ export interface ReplicationSourceSpecSyncthingMoverSecurityContextSeccompProfil
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverSecurityContextSeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextSeccompProfile(obj: ReplicationSourceSpecSyncthingMoverSecurityContextSeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12720,7 +12720,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextSeccomp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -12747,7 +12747,7 @@ export interface ReplicationSourceSpecSyncthingMoverSecurityContextSysctls {
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverSecurityContextSysctls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextSysctls(obj: ReplicationSourceSpecSyncthingMoverSecurityContextSysctls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12757,7 +12757,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextSysctls
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The Windows specific settings applied to all containers.
@@ -12810,7 +12810,7 @@ export interface ReplicationSourceSpecSyncthingMoverSecurityContextWindowsOption
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverSecurityContextWindowsOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextWindowsOptions(obj: ReplicationSourceSpecSyncthingMoverSecurityContextWindowsOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12822,7 +12822,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverSecurityContextWindows
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -12850,7 +12850,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12860,7 +12860,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -12884,7 +12884,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12893,7 +12893,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -12921,7 +12921,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12931,7 +12931,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -13019,7 +13019,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13033,7 +13033,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -13061,7 +13061,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13071,7 +13071,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -13159,7 +13159,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13173,7 +13173,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -13201,7 +13201,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13211,7 +13211,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -13235,7 +13235,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13244,7 +13244,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -13272,7 +13272,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13282,7 +13282,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -13370,7 +13370,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13384,7 +13384,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -13412,7 +13412,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13422,7 +13422,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -13510,7 +13510,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13524,7 +13524,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -13552,7 +13552,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13562,7 +13562,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -13586,7 +13586,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13595,7 +13595,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -13623,7 +13623,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13633,7 +13633,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPref
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -13721,7 +13721,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13735,7 +13735,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequ
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -13763,7 +13763,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPrefer
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13773,7 +13773,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -13861,7 +13861,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequir
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13875,7 +13875,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0
@@ -13903,7 +13903,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13913,7 +13913,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * If the affinity requirements specified by this field are not met at
@@ -13937,7 +13937,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13946,7 +13946,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -13974,7 +13974,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13984,7 +13984,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -14072,7 +14072,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14086,7 +14086,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -14114,7 +14114,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPrefe
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14124,7 +14124,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector
@@ -14212,7 +14212,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequi
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecution | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14226,7 +14226,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -14253,7 +14253,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14263,7 +14263,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -14292,7 +14292,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14302,7 +14302,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -14385,7 +14385,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14399,7 +14399,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -14429,7 +14429,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14439,7 +14439,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -14472,7 +14472,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14482,7 +14482,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -14565,7 +14565,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14579,7 +14579,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -14609,7 +14609,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14619,7 +14619,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -14652,7 +14652,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14662,7 +14662,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -14689,7 +14689,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14699,7 +14699,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -14728,7 +14728,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14738,7 +14738,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -14821,7 +14821,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14835,7 +14835,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -14865,7 +14865,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14875,7 +14875,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -14908,7 +14908,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14918,7 +14918,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -15001,7 +15001,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15015,7 +15015,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -15045,7 +15045,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15055,7 +15055,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -15088,7 +15088,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15098,7 +15098,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -15125,7 +15125,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15135,7 +15135,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -15164,7 +15164,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15174,7 +15174,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -15257,7 +15257,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15271,7 +15271,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPref
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -15301,7 +15301,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15311,7 +15311,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequ
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -15344,7 +15344,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15354,7 +15354,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequ
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -15437,7 +15437,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPrefer
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15451,7 +15451,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -15481,7 +15481,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequir
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15491,7 +15491,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -15524,7 +15524,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequir
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15534,7 +15534,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector term, associated with the corresponding weight.
@@ -15561,7 +15561,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15571,7 +15571,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A null or empty node selector term matches no objects. The requirements of
@@ -15600,7 +15600,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTerms | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15610,7 +15610,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -15693,7 +15693,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15707,7 +15707,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -15737,7 +15737,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15747,7 +15747,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -15780,7 +15780,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15790,7 +15790,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Required. A pod affinity term, associated with the corresponding weight.
@@ -15873,7 +15873,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPrefe
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15887,7 +15887,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -15917,7 +15917,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequi
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15927,7 +15927,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -15960,7 +15960,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequi
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15970,7 +15970,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16010,7 +16010,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16021,7 +16021,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16061,7 +16061,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16072,7 +16072,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16112,7 +16112,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16123,7 +16123,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16163,7 +16163,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16174,7 +16174,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -16204,7 +16204,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16214,7 +16214,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -16247,7 +16247,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16257,7 +16257,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -16296,7 +16296,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16307,7 +16307,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -16346,7 +16346,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16357,7 +16357,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -16387,7 +16387,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16397,7 +16397,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -16430,7 +16430,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16440,7 +16440,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -16479,7 +16479,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16490,7 +16490,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -16529,7 +16529,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16540,7 +16540,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16580,7 +16580,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16591,7 +16591,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16631,7 +16631,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16642,7 +16642,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityPrefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16682,7 +16682,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16693,7 +16693,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -16733,7 +16733,7 @@ export interface ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationSourceSpecResticMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16744,7 +16744,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityNodeAffinityRequi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -16774,7 +16774,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16784,7 +16784,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -16817,7 +16817,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16827,7 +16827,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -16866,7 +16866,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16877,7 +16877,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -16916,7 +16916,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuri
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16927,7 +16927,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityRequir
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -16957,7 +16957,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16967,7 +16967,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -17000,7 +17000,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17010,7 +17010,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -17049,7 +17049,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17060,7 +17060,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -17099,7 +17099,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17110,7 +17110,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17150,7 +17150,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17161,7 +17161,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17201,7 +17201,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17212,7 +17212,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17252,7 +17252,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17263,7 +17263,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17303,7 +17303,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17314,7 +17314,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityNodeAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -17344,7 +17344,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17354,7 +17354,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPref
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -17387,7 +17387,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17397,7 +17397,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPref
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -17436,7 +17436,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17447,7 +17447,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequ
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -17486,7 +17486,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDu
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17497,7 +17497,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityRequ
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -17527,7 +17527,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPrefer
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17537,7 +17537,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -17570,7 +17570,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPrefer
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17580,7 +17580,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -17619,7 +17619,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequir
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17630,7 +17630,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -17669,7 +17669,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequir
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17680,7 +17680,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17720,7 +17720,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17731,7 +17731,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17771,7 +17771,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPreferredDuringSchedulingIgnoredDuringExecutionPreferenceMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17782,7 +17782,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17822,7 +17822,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17833,7 +17833,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A node selector requirement is a selector that contains values, a key, and an operator
@@ -17873,7 +17873,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequired
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields(obj: ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRequiredDuringSchedulingIgnoredDuringExecutionNodeSelectorTermsMatchFields | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17884,7 +17884,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityNodeAffinityRe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -17914,7 +17914,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17924,7 +17924,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -17957,7 +17957,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17967,7 +17967,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18006,7 +18006,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18017,7 +18017,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18056,7 +18056,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredD
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18067,7 +18067,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over a set of resources, in this case pods.
@@ -18097,7 +18097,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPrefe
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18107,7 +18107,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label query over the set of namespaces that the term applies to.
@@ -18140,7 +18140,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPrefe
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18150,7 +18150,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18189,7 +18189,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequi
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18200,7 +18200,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18239,7 +18239,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequi
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityRequiredDuringSchedulingIgnoredDuringExecutionNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18250,7 +18250,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18289,7 +18289,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18300,7 +18300,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18339,7 +18339,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18350,7 +18350,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18389,7 +18389,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18400,7 +18400,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18439,7 +18439,7 @@ export interface ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18450,7 +18450,7 @@ export function toJson_ReplicationSourceSpecRcloneMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18489,7 +18489,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18500,7 +18500,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18539,7 +18539,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDur
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18550,7 +18550,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAffinityPrefer
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18589,7 +18589,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18600,7 +18600,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18639,7 +18639,7 @@ export interface ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferre
 /**
  * Converts an object of type 'ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18650,7 +18650,7 @@ export function toJson_ReplicationSourceSpecResticMoverAffinityPodAntiAffinityPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18689,7 +18689,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18700,7 +18700,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPref
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18739,7 +18739,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredD
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18750,7 +18750,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAffinityPref
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18789,7 +18789,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPrefer
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18800,7 +18800,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18839,7 +18839,7 @@ export interface ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPrefer
 /**
  * Converts an object of type 'ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18850,7 +18850,7 @@ export function toJson_ReplicationSourceSpecRsyncTlsMoverAffinityPodAntiAffinity
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18889,7 +18889,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18900,7 +18900,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18939,7 +18939,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferred
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18950,7 +18950,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAffinityPre
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18989,7 +18989,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPrefe
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermLabelSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19000,7 +19000,7 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -19039,7 +19039,7 @@ export interface ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPrefe
 /**
  * Converts an object of type 'ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions(obj: ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinityPreferredDuringSchedulingIgnoredDuringExecutionPodAffinityTermNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19050,5 +19050,5 @@ export function toJson_ReplicationSourceSpecSyncthingMoverAffinityPodAntiAffinit
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
