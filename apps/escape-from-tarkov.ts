@@ -164,6 +164,8 @@ const manifests: ManifestsCallback = async (app) => {
       DATA_DIRS: dataDirs.join(","),
       MOD_URLS: modUrls.join(","),
       SPT_VERSION: "3.10.5",
+      SQUASHFS_NO_XATTRS: "1",
+      CMD_NO_TRUNCATE: "1",
     },
   });
 
@@ -171,7 +173,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         envFrom: [serverSecret],
-        image: "benfiola/single-player-tarkov:0.7.5-rc.1",
+        image: "benfiola/single-player-tarkov:0.7.5-alpha.1-testing",
         mounts: {
           cache: "/cache",
           data: "/data",
