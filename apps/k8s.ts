@@ -1,7 +1,7 @@
 import { CliContext, ResourcesCallback } from "../utils/CliContext";
 import { exec } from "../utils/exec";
 
-const version = "1.29.0";
+const version = "1.32.0";
 
 const resources: ResourcesCallback = async (directory) => {
   await exec([

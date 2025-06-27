@@ -3,8 +3,8 @@
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",
     "@types/node": "^18",
-    "cdk8s": "^2.68.69",
-    "cdk8s-cli": "^2.198.119",
+    "cdk8s": "^2.69.74",
+    "cdk8s-cli": "^2.200.112",
     "commander": "^12.0.0",
     "constructs": "^10.3.0",
     "deepmerge-ts": "^7.1.5",

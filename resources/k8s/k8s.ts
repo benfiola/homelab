@@ -111,6 +111,226 @@ export class MutatingWebhookConfigurationList extends ApiObject {
 }
 
 /**
+ * ValidatingAdmissionPolicy describes the definition of an admission validation policy that accepts or rejects an object without changing it.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy
+ */
+export class ValidatingAdmissionPolicy extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicy',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ValidatingAdmissionPolicyProps = {}): any {
+    return {
+      ...ValidatingAdmissionPolicy.GVK,
+      ...toJson_ValidatingAdmissionPolicyProps(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyProps = {}) {
+    super(scope, id, {
+      ...ValidatingAdmissionPolicy.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ValidatingAdmissionPolicy.GVK,
+      ...toJson_ValidatingAdmissionPolicyProps(resolved),
+    };
+  }
+}
+
+/**
+ * ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources. ValidatingAdmissionPolicyBinding and parameter CRDs together define how cluster administrators configure policies for clusters.
+
+For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding.
+
+The CEL expressions of a policy must have a computed CEL cost below the maximum CEL budget. Each evaluation of the policy is given an independent CEL cost budget. Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding
+ */
+export class ValidatingAdmissionPolicyBinding extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicyBinding',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ValidatingAdmissionPolicyBindingProps = {}): any {
+    return {
+      ...ValidatingAdmissionPolicyBinding.GVK,
+      ...toJson_ValidatingAdmissionPolicyBindingProps(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyBindingProps = {}) {
+    super(scope, id, {
+      ...ValidatingAdmissionPolicyBinding.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ValidatingAdmissionPolicyBinding.GVK,
+      ...toJson_ValidatingAdmissionPolicyBindingProps(resolved),
+    };
+  }
+}
+
+/**
+ * ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList
+ */
+export class ValidatingAdmissionPolicyBindingList extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicyBindingList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ValidatingAdmissionPolicyBindingListProps): any {
+    return {
+      ...ValidatingAdmissionPolicyBindingList.GVK,
+      ...toJson_ValidatingAdmissionPolicyBindingListProps(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyBindingListProps) {
+    super(scope, id, {
+      ...ValidatingAdmissionPolicyBindingList.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ValidatingAdmissionPolicyBindingList.GVK,
+      ...toJson_ValidatingAdmissionPolicyBindingListProps(resolved),
+    };
+  }
+}
+
+/**
+ * ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList
+ */
+export class ValidatingAdmissionPolicyList extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicyList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ValidatingAdmissionPolicyListProps): any {
+    return {
+      ...ValidatingAdmissionPolicyList.GVK,
+      ...toJson_ValidatingAdmissionPolicyListProps(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyListProps) {
+    super(scope, id, {
+      ...ValidatingAdmissionPolicyList.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ValidatingAdmissionPolicyList.GVK,
+      ...toJson_ValidatingAdmissionPolicyListProps(resolved),
+    };
+  }
+}
+
+/**
  * ValidatingWebhookConfiguration describes the configuration of and admission webhook that accept or reject and object without changing it.
  *
  * @schema io.k8s.api.admissionregistration.v1.ValidatingWebhookConfiguration
@@ -219,42 +439,42 @@ export class ValidatingWebhookConfigurationList extends ApiObject {
 }
 
 /**
- * ValidatingAdmissionPolicy describes the definition of an admission validation policy that accepts or rejects an object without changing it.
+ * MutatingAdmissionPolicy describes the definition of an admission mutation policy that mutates the object coming into admission chain.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy
  */
-export class ValidatingAdmissionPolicyV1Alpha1 extends ApiObject {
+export class MutatingAdmissionPolicyV1Alpha1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy"
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy"
    */
   public static readonly GVK: GroupVersionKind = {
     apiVersion: 'admissionregistration.k8s.io/v1alpha1',
-    kind: 'ValidatingAdmissionPolicy',
+    kind: 'MutatingAdmissionPolicy',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy".
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ValidatingAdmissionPolicyV1Alpha1Props = {}): any {
+  public static manifest(props: MutatingAdmissionPolicyV1Alpha1Props = {}): any {
     return {
-      ...ValidatingAdmissionPolicyV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyV1Alpha1Props(props),
+      ...MutatingAdmissionPolicyV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyV1Alpha1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy" API object
+   * Defines a "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyV1Alpha1Props = {}) {
+  public constructor(scope: Construct, id: string, props: MutatingAdmissionPolicyV1Alpha1Props = {}) {
     super(scope, id, {
-      ...ValidatingAdmissionPolicyV1Alpha1.GVK,
+      ...MutatingAdmissionPolicyV1Alpha1.GVK,
       ...props,
     });
   }
@@ -266,53 +486,53 @@ export class ValidatingAdmissionPolicyV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ValidatingAdmissionPolicyV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyV1Alpha1Props(resolved),
+      ...MutatingAdmissionPolicyV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyV1Alpha1Props(resolved),
     };
   }
 }
 
 /**
- * ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources. ValidatingAdmissionPolicyBinding and parameter CRDs together define how cluster administrators configure policies for clusters.
+ * MutatingAdmissionPolicyBinding binds the MutatingAdmissionPolicy with parametrized resources. MutatingAdmissionPolicyBinding and the optional parameter resource together define how cluster administrators configure policies for clusters.
 
-For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding.
+For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding. Each evaluation is constrained by a [runtime cost budget](https://kubernetes.io/docs/reference/using-api/cel/#runtime-cost-budget).
 
-The CEL expressions of a policy must have a computed CEL cost below the maximum CEL budget. Each evaluation of the policy is given an independent CEL cost budget. Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
+Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding
  */
-export class ValidatingAdmissionPolicyBindingV1Alpha1 extends ApiObject {
+export class MutatingAdmissionPolicyBindingV1Alpha1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding"
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding"
    */
   public static readonly GVK: GroupVersionKind = {
     apiVersion: 'admissionregistration.k8s.io/v1alpha1',
-    kind: 'ValidatingAdmissionPolicyBinding',
+    kind: 'MutatingAdmissionPolicyBinding',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding".
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ValidatingAdmissionPolicyBindingV1Alpha1Props = {}): any {
+  public static manifest(props: MutatingAdmissionPolicyBindingV1Alpha1Props = {}): any {
     return {
-      ...ValidatingAdmissionPolicyBindingV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyBindingV1Alpha1Props(props),
+      ...MutatingAdmissionPolicyBindingV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyBindingV1Alpha1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding" API object
+   * Defines a "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyBindingV1Alpha1Props = {}) {
+  public constructor(scope: Construct, id: string, props: MutatingAdmissionPolicyBindingV1Alpha1Props = {}) {
     super(scope, id, {
-      ...ValidatingAdmissionPolicyBindingV1Alpha1.GVK,
+      ...MutatingAdmissionPolicyBindingV1Alpha1.GVK,
       ...props,
     });
   }
@@ -324,49 +544,49 @@ export class ValidatingAdmissionPolicyBindingV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ValidatingAdmissionPolicyBindingV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyBindingV1Alpha1Props(resolved),
+      ...MutatingAdmissionPolicyBindingV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyBindingV1Alpha1Props(resolved),
     };
   }
 }
 
 /**
- * ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
+ * MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList
  */
-export class ValidatingAdmissionPolicyBindingListV1Alpha1 extends ApiObject {
+export class MutatingAdmissionPolicyBindingListV1Alpha1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList"
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList"
    */
   public static readonly GVK: GroupVersionKind = {
     apiVersion: 'admissionregistration.k8s.io/v1alpha1',
-    kind: 'ValidatingAdmissionPolicyBindingList',
+    kind: 'MutatingAdmissionPolicyBindingList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList".
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ValidatingAdmissionPolicyBindingListV1Alpha1Props = {}): any {
+  public static manifest(props: MutatingAdmissionPolicyBindingListV1Alpha1Props): any {
     return {
-      ...ValidatingAdmissionPolicyBindingListV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyBindingListV1Alpha1Props(props),
+      ...MutatingAdmissionPolicyBindingListV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyBindingListV1Alpha1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList" API object
+   * Defines a "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyBindingListV1Alpha1Props = {}) {
+  public constructor(scope: Construct, id: string, props: MutatingAdmissionPolicyBindingListV1Alpha1Props) {
     super(scope, id, {
-      ...ValidatingAdmissionPolicyBindingListV1Alpha1.GVK,
+      ...MutatingAdmissionPolicyBindingListV1Alpha1.GVK,
       ...props,
     });
   }
@@ -378,49 +598,49 @@ export class ValidatingAdmissionPolicyBindingListV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ValidatingAdmissionPolicyBindingListV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyBindingListV1Alpha1Props(resolved),
+      ...MutatingAdmissionPolicyBindingListV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyBindingListV1Alpha1Props(resolved),
     };
   }
 }
 
 /**
- * ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
+ * MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList
  */
-export class ValidatingAdmissionPolicyListV1Alpha1 extends ApiObject {
+export class MutatingAdmissionPolicyListV1Alpha1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList"
+   * Returns the apiVersion and kind for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList"
    */
   public static readonly GVK: GroupVersionKind = {
     apiVersion: 'admissionregistration.k8s.io/v1alpha1',
-    kind: 'ValidatingAdmissionPolicyList',
+    kind: 'MutatingAdmissionPolicyList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList".
+   * Renders a Kubernetes manifest for "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ValidatingAdmissionPolicyListV1Alpha1Props = {}): any {
+  public static manifest(props: MutatingAdmissionPolicyListV1Alpha1Props): any {
     return {
-      ...ValidatingAdmissionPolicyListV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyListV1Alpha1Props(props),
+      ...MutatingAdmissionPolicyListV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyListV1Alpha1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList" API object
+   * Defines a "io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyListV1Alpha1Props = {}) {
+  public constructor(scope: Construct, id: string, props: MutatingAdmissionPolicyListV1Alpha1Props) {
     super(scope, id, {
-      ...ValidatingAdmissionPolicyListV1Alpha1.GVK,
+      ...MutatingAdmissionPolicyListV1Alpha1.GVK,
       ...props,
     });
   }
@@ -432,8 +652,8 @@ export class ValidatingAdmissionPolicyListV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ValidatingAdmissionPolicyListV1Alpha1.GVK,
-      ...toJson_ValidatingAdmissionPolicyListV1Alpha1Props(resolved),
+      ...MutatingAdmissionPolicyListV1Alpha1.GVK,
+      ...toJson_MutatingAdmissionPolicyListV1Alpha1Props(resolved),
     };
   }
 }
@@ -571,7 +791,7 @@ export class ValidatingAdmissionPolicyBindingListV1Beta1 extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: ValidatingAdmissionPolicyBindingListV1Beta1Props = {}): any {
+  public static manifest(props: ValidatingAdmissionPolicyBindingListV1Beta1Props): any {
     return {
       ...ValidatingAdmissionPolicyBindingListV1Beta1.GVK,
       ...toJson_ValidatingAdmissionPolicyBindingListV1Beta1Props(props),
@@ -584,7 +804,7 @@ export class ValidatingAdmissionPolicyBindingListV1Beta1 extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyBindingListV1Beta1Props = {}) {
+  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyBindingListV1Beta1Props) {
     super(scope, id, {
       ...ValidatingAdmissionPolicyBindingListV1Beta1.GVK,
       ...props,
@@ -625,7 +845,7 @@ export class ValidatingAdmissionPolicyListV1Beta1 extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: ValidatingAdmissionPolicyListV1Beta1Props = {}): any {
+  public static manifest(props: ValidatingAdmissionPolicyListV1Beta1Props): any {
     return {
       ...ValidatingAdmissionPolicyListV1Beta1.GVK,
       ...toJson_ValidatingAdmissionPolicyListV1Beta1Props(props),
@@ -638,7 +858,7 @@ export class ValidatingAdmissionPolicyListV1Beta1 extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyListV1Beta1Props = {}) {
+  public constructor(scope: Construct, id: string, props: ValidatingAdmissionPolicyListV1Beta1Props) {
     super(scope, id, {
       ...ValidatingAdmissionPolicyListV1Beta1.GVK,
       ...props,
@@ -1468,60 +1688,6 @@ export class TokenReview extends ApiObject {
     return {
       ...TokenReview.GVK,
       ...toJson_TokenReviewProps(resolved),
-    };
-  }
-}
-
-/**
- * SelfSubjectReview contains the user information that the kube-apiserver has about the user making this request. When using impersonation, users will receive the user info of the user being impersonated.  If impersonation or request header authentication is used, any extra keys will have their case ignored and returned as lowercase.
- *
- * @schema io.k8s.api.authentication.v1alpha1.SelfSubjectReview
- */
-export class SelfSubjectReviewV1Alpha1 extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "io.k8s.api.authentication.v1alpha1.SelfSubjectReview"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'authentication.k8s.io/v1alpha1',
-    kind: 'SelfSubjectReview',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "io.k8s.api.authentication.v1alpha1.SelfSubjectReview".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: SelfSubjectReviewV1Alpha1Props = {}): any {
-    return {
-      ...SelfSubjectReviewV1Alpha1.GVK,
-      ...toJson_SelfSubjectReviewV1Alpha1Props(props),
-    };
-  }
-
-  /**
-   * Defines a "io.k8s.api.authentication.v1alpha1.SelfSubjectReview" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: SelfSubjectReviewV1Alpha1Props = {}) {
-    super(scope, id, {
-      ...SelfSubjectReviewV1Alpha1.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...SelfSubjectReviewV1Alpha1.GVK,
-      ...toJson_SelfSubjectReviewV1Alpha1Props(resolved),
     };
   }
 }
@@ -2617,7 +2783,115 @@ export class LeaseList extends ApiObject {
 }
 
 /**
- * Binding ties one object to another; for example, a pod is bound to a node by a scheduler. Deprecated in 1.7, please use the bindings subresource of pods instead.
+ * LeaseCandidate defines a candidate for a Lease object. Candidates are created such that coordinated leader election will pick the best leader from the list of candidates.
+ *
+ * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidate
+ */
+export class LeaseCandidateV1Alpha2 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.coordination.v1alpha2.LeaseCandidate"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'coordination.k8s.io/v1alpha2',
+    kind: 'LeaseCandidate',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.coordination.v1alpha2.LeaseCandidate".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: LeaseCandidateV1Alpha2Props = {}): any {
+    return {
+      ...LeaseCandidateV1Alpha2.GVK,
+      ...toJson_LeaseCandidateV1Alpha2Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.coordination.v1alpha2.LeaseCandidate" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: LeaseCandidateV1Alpha2Props = {}) {
+    super(scope, id, {
+      ...LeaseCandidateV1Alpha2.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...LeaseCandidateV1Alpha2.GVK,
+      ...toJson_LeaseCandidateV1Alpha2Props(resolved),
+    };
+  }
+}
+
+/**
+ * LeaseCandidateList is a list of Lease objects.
+ *
+ * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateList
+ */
+export class LeaseCandidateListV1Alpha2 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.coordination.v1alpha2.LeaseCandidateList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'coordination.k8s.io/v1alpha2',
+    kind: 'LeaseCandidateList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.coordination.v1alpha2.LeaseCandidateList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: LeaseCandidateListV1Alpha2Props): any {
+    return {
+      ...LeaseCandidateListV1Alpha2.GVK,
+      ...toJson_LeaseCandidateListV1Alpha2Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.coordination.v1alpha2.LeaseCandidateList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: LeaseCandidateListV1Alpha2Props) {
+    super(scope, id, {
+      ...LeaseCandidateListV1Alpha2.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...LeaseCandidateListV1Alpha2.GVK,
+      ...toJson_LeaseCandidateListV1Alpha2Props(resolved),
+    };
+  }
+}
+
+/**
+ * Binding ties one object to another; for example, a pod is bound to a node by a scheduler.
  *
  * @schema io.k8s.api.core.v1.Binding
  */
@@ -4735,222 +5009,6 @@ export class PriorityLevelConfigurationList extends ApiObject {
 }
 
 /**
- * FlowSchema defines the schema of a group of flows. Note that a flow is made up of a set of inbound API requests with similar attributes and is identified by a pair of strings: the name of the FlowSchema and a "flow distinguisher".
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchema
- */
-export class FlowSchemaV1Beta3 extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "io.k8s.api.flowcontrol.v1beta3.FlowSchema"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'flowcontrol.apiserver.k8s.io/v1beta3',
-    kind: 'FlowSchema',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "io.k8s.api.flowcontrol.v1beta3.FlowSchema".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: FlowSchemaV1Beta3Props = {}): any {
-    return {
-      ...FlowSchemaV1Beta3.GVK,
-      ...toJson_FlowSchemaV1Beta3Props(props),
-    };
-  }
-
-  /**
-   * Defines a "io.k8s.api.flowcontrol.v1beta3.FlowSchema" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: FlowSchemaV1Beta3Props = {}) {
-    super(scope, id, {
-      ...FlowSchemaV1Beta3.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...FlowSchemaV1Beta3.GVK,
-      ...toJson_FlowSchemaV1Beta3Props(resolved),
-    };
-  }
-}
-
-/**
- * FlowSchemaList is a list of FlowSchema objects.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaList
- */
-export class FlowSchemaListV1Beta3 extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "io.k8s.api.flowcontrol.v1beta3.FlowSchemaList"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'flowcontrol.apiserver.k8s.io/v1beta3',
-    kind: 'FlowSchemaList',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "io.k8s.api.flowcontrol.v1beta3.FlowSchemaList".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: FlowSchemaListV1Beta3Props): any {
-    return {
-      ...FlowSchemaListV1Beta3.GVK,
-      ...toJson_FlowSchemaListV1Beta3Props(props),
-    };
-  }
-
-  /**
-   * Defines a "io.k8s.api.flowcontrol.v1beta3.FlowSchemaList" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: FlowSchemaListV1Beta3Props) {
-    super(scope, id, {
-      ...FlowSchemaListV1Beta3.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...FlowSchemaListV1Beta3.GVK,
-      ...toJson_FlowSchemaListV1Beta3Props(resolved),
-    };
-  }
-}
-
-/**
- * PriorityLevelConfiguration represents the configuration of a priority level.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration
- */
-export class PriorityLevelConfigurationV1Beta3 extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'flowcontrol.apiserver.k8s.io/v1beta3',
-    kind: 'PriorityLevelConfiguration',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: PriorityLevelConfigurationV1Beta3Props = {}): any {
-    return {
-      ...PriorityLevelConfigurationV1Beta3.GVK,
-      ...toJson_PriorityLevelConfigurationV1Beta3Props(props),
-    };
-  }
-
-  /**
-   * Defines a "io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: PriorityLevelConfigurationV1Beta3Props = {}) {
-    super(scope, id, {
-      ...PriorityLevelConfigurationV1Beta3.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...PriorityLevelConfigurationV1Beta3.GVK,
-      ...toJson_PriorityLevelConfigurationV1Beta3Props(resolved),
-    };
-  }
-}
-
-/**
- * PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList
- */
-export class PriorityLevelConfigurationListV1Beta3 extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'flowcontrol.apiserver.k8s.io/v1beta3',
-    kind: 'PriorityLevelConfigurationList',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: PriorityLevelConfigurationListV1Beta3Props): any {
-    return {
-      ...PriorityLevelConfigurationListV1Beta3.GVK,
-      ...toJson_PriorityLevelConfigurationListV1Beta3Props(props),
-    };
-  }
-
-  /**
-   * Defines a "io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: PriorityLevelConfigurationListV1Beta3Props) {
-    super(scope, id, {
-      ...PriorityLevelConfigurationListV1Beta3.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...PriorityLevelConfigurationListV1Beta3.GVK,
-      ...toJson_PriorityLevelConfigurationListV1Beta3Props(resolved),
-    };
-  }
-}
-
-/**
  * Ingress is a collection of rules that allow inbound connections to reach the endpoints defined by a backend. An Ingress can be configured to give services externally-reachable urls, load balance traffic, terminate SSL, offer name based virtual hosting etc.
  *
  * @schema io.k8s.api.networking.v1.Ingress
@@ -5277,40 +5335,40 @@ export class NetworkPolicyList extends ApiObject {
 /**
  * IPAddress represents a single IP of a single IP Family. The object is designed to be used by APIs that operate on IP addresses. The object is used by the Service core API for allocation of IP addresses. An IP address can be represented in different formats, to guarantee the uniqueness of the IP, the name of the object is the IP address in canonical format, four decimal digits separated by dots suppressing leading zeros for IPv4 and the representation defined by RFC 5952 for IPv6. Valid: 192.168.1.5 or 2001:db8::1 or 2001:db8:aaaa:bbbb:cccc:dddd:eeee:1 Invalid: 10.01.2.3 or 2001:db8:0:0:0::1
  *
- * @schema io.k8s.api.networking.v1alpha1.IPAddress
+ * @schema io.k8s.api.networking.v1beta1.IPAddress
  */
-export class IpAddressV1Alpha1 extends ApiObject {
+export class IpAddressV1Beta1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.networking.v1alpha1.IPAddress"
+   * Returns the apiVersion and kind for "io.k8s.api.networking.v1beta1.IPAddress"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'networking.k8s.io/v1alpha1',
+    apiVersion: 'networking.k8s.io/v1beta1',
     kind: 'IPAddress',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1alpha1.IPAddress".
+   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1beta1.IPAddress".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: IpAddressV1Alpha1Props = {}): any {
+  public static manifest(props: IpAddressV1Beta1Props = {}): any {
     return {
-      ...IpAddressV1Alpha1.GVK,
-      ...toJson_IpAddressV1Alpha1Props(props),
+      ...IpAddressV1Beta1.GVK,
+      ...toJson_IpAddressV1Beta1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.networking.v1alpha1.IPAddress" API object
+   * Defines a "io.k8s.api.networking.v1beta1.IPAddress" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: IpAddressV1Alpha1Props = {}) {
+  public constructor(scope: Construct, id: string, props: IpAddressV1Beta1Props = {}) {
     super(scope, id, {
-      ...IpAddressV1Alpha1.GVK,
+      ...IpAddressV1Beta1.GVK,
       ...props,
     });
   }
@@ -5322,8 +5380,8 @@ export class IpAddressV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...IpAddressV1Alpha1.GVK,
-      ...toJson_IpAddressV1Alpha1Props(resolved),
+      ...IpAddressV1Beta1.GVK,
+      ...toJson_IpAddressV1Beta1Props(resolved),
     };
   }
 }
@@ -5331,40 +5389,40 @@ export class IpAddressV1Alpha1 extends ApiObject {
 /**
  * IPAddressList contains a list of IPAddress.
  *
- * @schema io.k8s.api.networking.v1alpha1.IPAddressList
+ * @schema io.k8s.api.networking.v1beta1.IPAddressList
  */
-export class IpAddressListV1Alpha1 extends ApiObject {
+export class IpAddressListV1Beta1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.networking.v1alpha1.IPAddressList"
+   * Returns the apiVersion and kind for "io.k8s.api.networking.v1beta1.IPAddressList"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'networking.k8s.io/v1alpha1',
+    apiVersion: 'networking.k8s.io/v1beta1',
     kind: 'IPAddressList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1alpha1.IPAddressList".
+   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1beta1.IPAddressList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: IpAddressListV1Alpha1Props): any {
+  public static manifest(props: IpAddressListV1Beta1Props): any {
     return {
-      ...IpAddressListV1Alpha1.GVK,
-      ...toJson_IpAddressListV1Alpha1Props(props),
+      ...IpAddressListV1Beta1.GVK,
+      ...toJson_IpAddressListV1Beta1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.networking.v1alpha1.IPAddressList" API object
+   * Defines a "io.k8s.api.networking.v1beta1.IPAddressList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: IpAddressListV1Alpha1Props) {
+  public constructor(scope: Construct, id: string, props: IpAddressListV1Beta1Props) {
     super(scope, id, {
-      ...IpAddressListV1Alpha1.GVK,
+      ...IpAddressListV1Beta1.GVK,
       ...props,
     });
   }
@@ -5376,8 +5434,8 @@ export class IpAddressListV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...IpAddressListV1Alpha1.GVK,
-      ...toJson_IpAddressListV1Alpha1Props(resolved),
+      ...IpAddressListV1Beta1.GVK,
+      ...toJson_IpAddressListV1Beta1Props(resolved),
     };
   }
 }
@@ -5385,40 +5443,40 @@ export class IpAddressListV1Alpha1 extends ApiObject {
 /**
  * ServiceCIDR defines a range of IP addresses using CIDR format (e.g. 192.168.0.0/24 or 2001:db2::/64). This range is used to allocate ClusterIPs to Service objects.
  *
- * @schema io.k8s.api.networking.v1alpha1.ServiceCIDR
+ * @schema io.k8s.api.networking.v1beta1.ServiceCIDR
  */
-export class ServiceCidrv1Alpha1 extends ApiObject {
+export class ServiceCidrv1Beta1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.networking.v1alpha1.ServiceCIDR"
+   * Returns the apiVersion and kind for "io.k8s.api.networking.v1beta1.ServiceCIDR"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'networking.k8s.io/v1alpha1',
+    apiVersion: 'networking.k8s.io/v1beta1',
     kind: 'ServiceCIDR',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1alpha1.ServiceCIDR".
+   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1beta1.ServiceCIDR".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ServiceCidrv1Alpha1Props = {}): any {
+  public static manifest(props: ServiceCidrv1Beta1Props = {}): any {
     return {
-      ...ServiceCidrv1Alpha1.GVK,
-      ...toJson_ServiceCidrv1Alpha1Props(props),
+      ...ServiceCidrv1Beta1.GVK,
+      ...toJson_ServiceCidrv1Beta1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.networking.v1alpha1.ServiceCIDR" API object
+   * Defines a "io.k8s.api.networking.v1beta1.ServiceCIDR" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ServiceCidrv1Alpha1Props = {}) {
+  public constructor(scope: Construct, id: string, props: ServiceCidrv1Beta1Props = {}) {
     super(scope, id, {
-      ...ServiceCidrv1Alpha1.GVK,
+      ...ServiceCidrv1Beta1.GVK,
       ...props,
     });
   }
@@ -5430,8 +5488,8 @@ export class ServiceCidrv1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ServiceCidrv1Alpha1.GVK,
-      ...toJson_ServiceCidrv1Alpha1Props(resolved),
+      ...ServiceCidrv1Beta1.GVK,
+      ...toJson_ServiceCidrv1Beta1Props(resolved),
     };
   }
 }
@@ -5439,40 +5497,40 @@ export class ServiceCidrv1Alpha1 extends ApiObject {
 /**
  * ServiceCIDRList contains a list of ServiceCIDR objects.
  *
- * @schema io.k8s.api.networking.v1alpha1.ServiceCIDRList
+ * @schema io.k8s.api.networking.v1beta1.ServiceCIDRList
  */
-export class ServiceCidrListV1Alpha1 extends ApiObject {
+export class ServiceCidrListV1Beta1 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.networking.v1alpha1.ServiceCIDRList"
+   * Returns the apiVersion and kind for "io.k8s.api.networking.v1beta1.ServiceCIDRList"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'networking.k8s.io/v1alpha1',
+    apiVersion: 'networking.k8s.io/v1beta1',
     kind: 'ServiceCIDRList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1alpha1.ServiceCIDRList".
+   * Renders a Kubernetes manifest for "io.k8s.api.networking.v1beta1.ServiceCIDRList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ServiceCidrListV1Alpha1Props): any {
+  public static manifest(props: ServiceCidrListV1Beta1Props): any {
     return {
-      ...ServiceCidrListV1Alpha1.GVK,
-      ...toJson_ServiceCidrListV1Alpha1Props(props),
+      ...ServiceCidrListV1Beta1.GVK,
+      ...toJson_ServiceCidrListV1Beta1Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.networking.v1alpha1.ServiceCIDRList" API object
+   * Defines a "io.k8s.api.networking.v1beta1.ServiceCIDRList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ServiceCidrListV1Alpha1Props) {
+  public constructor(scope: Construct, id: string, props: ServiceCidrListV1Beta1Props) {
     super(scope, id, {
-      ...ServiceCidrListV1Alpha1.GVK,
+      ...ServiceCidrListV1Beta1.GVK,
       ...props,
     });
   }
@@ -5484,8 +5542,8 @@ export class ServiceCidrListV1Alpha1 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ServiceCidrListV1Alpha1.GVK,
-      ...toJson_ServiceCidrListV1Alpha1Props(resolved),
+      ...ServiceCidrListV1Beta1.GVK,
+      ...toJson_ServiceCidrListV1Beta1Props(resolved),
     };
   }
 }
@@ -6193,44 +6251,44 @@ export class RoleList extends ApiObject {
 }
 
 /**
- * PodSchedulingContext objects hold information that is needed to schedule a Pod with ResourceClaims that use "WaitForFirstConsumer" allocation mode.
+ * DeviceClass is a vendor- or admin-provided resource that contains device configuration and selectors. It can be referenced in the device requests of a claim to apply these presets. Cluster scoped.
 
 This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContext
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClass
  */
-export class PodSchedulingContextV1Alpha2 extends ApiObject {
+export class DeviceClassV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.PodSchedulingContext"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.DeviceClass"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
-    kind: 'PodSchedulingContext',
+    apiVersion: 'resource.k8s.io/v1alpha3',
+    kind: 'DeviceClass',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.PodSchedulingContext".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.DeviceClass".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: PodSchedulingContextV1Alpha2Props): any {
+  public static manifest(props: DeviceClassV1Alpha3Props): any {
     return {
-      ...PodSchedulingContextV1Alpha2.GVK,
-      ...toJson_PodSchedulingContextV1Alpha2Props(props),
+      ...DeviceClassV1Alpha3.GVK,
+      ...toJson_DeviceClassV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.PodSchedulingContext" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.DeviceClass" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: PodSchedulingContextV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: DeviceClassV1Alpha3Props) {
     super(scope, id, {
-      ...PodSchedulingContextV1Alpha2.GVK,
+      ...DeviceClassV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6242,49 +6300,49 @@ export class PodSchedulingContextV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...PodSchedulingContextV1Alpha2.GVK,
-      ...toJson_PodSchedulingContextV1Alpha2Props(resolved),
+      ...DeviceClassV1Alpha3.GVK,
+      ...toJson_DeviceClassV1Alpha3Props(resolved),
     };
   }
 }
 
 /**
- * PodSchedulingContextList is a collection of Pod scheduling objects.
+ * DeviceClassList is a collection of classes.
  *
- * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextList
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClassList
  */
-export class PodSchedulingContextListV1Alpha2 extends ApiObject {
+export class DeviceClassListV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.PodSchedulingContextList"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.DeviceClassList"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
-    kind: 'PodSchedulingContextList',
+    apiVersion: 'resource.k8s.io/v1alpha3',
+    kind: 'DeviceClassList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.PodSchedulingContextList".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.DeviceClassList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: PodSchedulingContextListV1Alpha2Props): any {
+  public static manifest(props: DeviceClassListV1Alpha3Props): any {
     return {
-      ...PodSchedulingContextListV1Alpha2.GVK,
-      ...toJson_PodSchedulingContextListV1Alpha2Props(props),
+      ...DeviceClassListV1Alpha3.GVK,
+      ...toJson_DeviceClassListV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.PodSchedulingContextList" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.DeviceClassList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: PodSchedulingContextListV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: DeviceClassListV1Alpha3Props) {
     super(scope, id, {
-      ...PodSchedulingContextListV1Alpha2.GVK,
+      ...DeviceClassListV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6296,51 +6354,51 @@ export class PodSchedulingContextListV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...PodSchedulingContextListV1Alpha2.GVK,
-      ...toJson_PodSchedulingContextListV1Alpha2Props(resolved),
+      ...DeviceClassListV1Alpha3.GVK,
+      ...toJson_DeviceClassListV1Alpha3Props(resolved),
     };
   }
 }
 
 /**
- * ResourceClaim describes which resources are needed by a resource consumer. Its status tracks whether the resource has been allocated and what the resulting attributes are.
+ * ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
 
 This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaim
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaim
  */
-export class ResourceClaimV1Alpha2 extends ApiObject {
+export class ResourceClaimV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.ResourceClaim"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.ResourceClaim"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
+    apiVersion: 'resource.k8s.io/v1alpha3',
     kind: 'ResourceClaim',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.ResourceClaim".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.ResourceClaim".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ResourceClaimV1Alpha2Props): any {
+  public static manifest(props: ResourceClaimV1Alpha3Props): any {
     return {
-      ...ResourceClaimV1Alpha2.GVK,
-      ...toJson_ResourceClaimV1Alpha2Props(props),
+      ...ResourceClaimV1Alpha3.GVK,
+      ...toJson_ResourceClaimV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.ResourceClaim" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.ResourceClaim" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ResourceClaimV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: ResourceClaimV1Alpha3Props) {
     super(scope, id, {
-      ...ResourceClaimV1Alpha2.GVK,
+      ...ResourceClaimV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6352,8 +6410,8 @@ export class ResourceClaimV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ResourceClaimV1Alpha2.GVK,
-      ...toJson_ResourceClaimV1Alpha2Props(resolved),
+      ...ResourceClaimV1Alpha3.GVK,
+      ...toJson_ResourceClaimV1Alpha3Props(resolved),
     };
   }
 }
@@ -6361,40 +6419,40 @@ export class ResourceClaimV1Alpha2 extends ApiObject {
 /**
  * ResourceClaimList is a collection of claims.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimList
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimList
  */
-export class ResourceClaimListV1Alpha2 extends ApiObject {
+export class ResourceClaimListV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.ResourceClaimList"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.ResourceClaimList"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
+    apiVersion: 'resource.k8s.io/v1alpha3',
     kind: 'ResourceClaimList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.ResourceClaimList".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.ResourceClaimList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ResourceClaimListV1Alpha2Props): any {
+  public static manifest(props: ResourceClaimListV1Alpha3Props): any {
     return {
-      ...ResourceClaimListV1Alpha2.GVK,
-      ...toJson_ResourceClaimListV1Alpha2Props(props),
+      ...ResourceClaimListV1Alpha3.GVK,
+      ...toJson_ResourceClaimListV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.ResourceClaimList" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.ResourceClaimList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ResourceClaimListV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: ResourceClaimListV1Alpha3Props) {
     super(scope, id, {
-      ...ResourceClaimListV1Alpha2.GVK,
+      ...ResourceClaimListV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6406,49 +6464,51 @@ export class ResourceClaimListV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ResourceClaimListV1Alpha2.GVK,
-      ...toJson_ResourceClaimListV1Alpha2Props(resolved),
+      ...ResourceClaimListV1Alpha3.GVK,
+      ...toJson_ResourceClaimListV1Alpha3Props(resolved),
     };
   }
 }
 
 /**
  * ResourceClaimTemplate is used to produce ResourceClaim objects.
+
+This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplate
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplate
  */
-export class ResourceClaimTemplateV1Alpha2 extends ApiObject {
+export class ResourceClaimTemplateV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.ResourceClaimTemplate"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.ResourceClaimTemplate"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
+    apiVersion: 'resource.k8s.io/v1alpha3',
     kind: 'ResourceClaimTemplate',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.ResourceClaimTemplate".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.ResourceClaimTemplate".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ResourceClaimTemplateV1Alpha2Props): any {
+  public static manifest(props: ResourceClaimTemplateV1Alpha3Props): any {
     return {
-      ...ResourceClaimTemplateV1Alpha2.GVK,
-      ...toJson_ResourceClaimTemplateV1Alpha2Props(props),
+      ...ResourceClaimTemplateV1Alpha3.GVK,
+      ...toJson_ResourceClaimTemplateV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.ResourceClaimTemplate" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.ResourceClaimTemplate" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ResourceClaimTemplateV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: ResourceClaimTemplateV1Alpha3Props) {
     super(scope, id, {
-      ...ResourceClaimTemplateV1Alpha2.GVK,
+      ...ResourceClaimTemplateV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6460,8 +6520,8 @@ export class ResourceClaimTemplateV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ResourceClaimTemplateV1Alpha2.GVK,
-      ...toJson_ResourceClaimTemplateV1Alpha2Props(resolved),
+      ...ResourceClaimTemplateV1Alpha3.GVK,
+      ...toJson_ResourceClaimTemplateV1Alpha3Props(resolved),
     };
   }
 }
@@ -6469,40 +6529,40 @@ export class ResourceClaimTemplateV1Alpha2 extends ApiObject {
 /**
  * ResourceClaimTemplateList is a collection of claim templates.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList
  */
-export class ResourceClaimTemplateListV1Alpha2 extends ApiObject {
+export class ResourceClaimTemplateListV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
+    apiVersion: 'resource.k8s.io/v1alpha3',
     kind: 'ResourceClaimTemplateList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ResourceClaimTemplateListV1Alpha2Props): any {
+  public static manifest(props: ResourceClaimTemplateListV1Alpha3Props): any {
     return {
-      ...ResourceClaimTemplateListV1Alpha2.GVK,
-      ...toJson_ResourceClaimTemplateListV1Alpha2Props(props),
+      ...ResourceClaimTemplateListV1Alpha3.GVK,
+      ...toJson_ResourceClaimTemplateListV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ResourceClaimTemplateListV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: ResourceClaimTemplateListV1Alpha3Props) {
     super(scope, id, {
-      ...ResourceClaimTemplateListV1Alpha2.GVK,
+      ...ResourceClaimTemplateListV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6514,51 +6574,59 @@ export class ResourceClaimTemplateListV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ResourceClaimTemplateListV1Alpha2.GVK,
-      ...toJson_ResourceClaimTemplateListV1Alpha2Props(resolved),
+      ...ResourceClaimTemplateListV1Alpha3.GVK,
+      ...toJson_ResourceClaimTemplateListV1Alpha3Props(resolved),
     };
   }
 }
 
 /**
- * ResourceClass is used by administrators to influence how resources are allocated.
+ * ResourceSlice represents one or more resources in a pool of similar resources, managed by a common driver. A pool may span more than one ResourceSlice, and exactly how many ResourceSlices comprise a pool is determined by the driver.
+
+At the moment, the only supported resources are devices with attributes and capacities. Each device in a given pool, regardless of how many ResourceSlices, must have a unique name. The ResourceSlice in which a device gets published may change over time. The unique identifier for a device is the tuple <driver name>, <pool name>, <device name>.
+
+Whenever a driver needs to update a pool, it increments the pool.Spec.Pool.Generation number and updates all ResourceSlices with that new number and new resource definitions. A consumer must only use ResourceSlices with the highest generation number and ignore all others.
+
+When allocating all resources in a pool matching certain criteria or when looking for the best solution among several different alternatives, a consumer should check the number of ResourceSlices in a pool (included in each ResourceSlice) to determine whether its view of a pool is complete and if not, should wait until the driver has completed updating the pool.
+
+For resources that are not local to a node, the node name is not set. Instead, the driver may use a node selector to specify where the devices are available.
 
 This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClass
+ * @schema io.k8s.api.resource.v1alpha3.ResourceSlice
  */
-export class ResourceClassV1Alpha2 extends ApiObject {
+export class ResourceSliceV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.ResourceClass"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.ResourceSlice"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
-    kind: 'ResourceClass',
+    apiVersion: 'resource.k8s.io/v1alpha3',
+    kind: 'ResourceSlice',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.ResourceClass".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.ResourceSlice".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ResourceClassV1Alpha2Props): any {
+  public static manifest(props: ResourceSliceV1Alpha3Props): any {
     return {
-      ...ResourceClassV1Alpha2.GVK,
-      ...toJson_ResourceClassV1Alpha2Props(props),
+      ...ResourceSliceV1Alpha3.GVK,
+      ...toJson_ResourceSliceV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.ResourceClass" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.ResourceSlice" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ResourceClassV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: ResourceSliceV1Alpha3Props) {
     super(scope, id, {
-      ...ResourceClassV1Alpha2.GVK,
+      ...ResourceSliceV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6570,49 +6638,49 @@ export class ResourceClassV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ResourceClassV1Alpha2.GVK,
-      ...toJson_ResourceClassV1Alpha2Props(resolved),
+      ...ResourceSliceV1Alpha3.GVK,
+      ...toJson_ResourceSliceV1Alpha3Props(resolved),
     };
   }
 }
 
 /**
- * ResourceClassList is a collection of classes.
+ * ResourceSliceList is a collection of ResourceSlices.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClassList
+ * @schema io.k8s.api.resource.v1alpha3.ResourceSliceList
  */
-export class ResourceClassListV1Alpha2 extends ApiObject {
+export class ResourceSliceListV1Alpha3 extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha2.ResourceClassList"
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1alpha3.ResourceSliceList"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'resource.k8s.io/v1alpha2',
-    kind: 'ResourceClassList',
+    apiVersion: 'resource.k8s.io/v1alpha3',
+    kind: 'ResourceSliceList',
   }
 
   /**
-   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha2.ResourceClassList".
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1alpha3.ResourceSliceList".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: ResourceClassListV1Alpha2Props): any {
+  public static manifest(props: ResourceSliceListV1Alpha3Props): any {
     return {
-      ...ResourceClassListV1Alpha2.GVK,
-      ...toJson_ResourceClassListV1Alpha2Props(props),
+      ...ResourceSliceListV1Alpha3.GVK,
+      ...toJson_ResourceSliceListV1Alpha3Props(props),
     };
   }
 
   /**
-   * Defines a "io.k8s.api.resource.v1alpha2.ResourceClassList" API object
+   * Defines a "io.k8s.api.resource.v1alpha3.ResourceSliceList" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ResourceClassListV1Alpha2Props) {
+  public constructor(scope: Construct, id: string, props: ResourceSliceListV1Alpha3Props) {
     super(scope, id, {
-      ...ResourceClassListV1Alpha2.GVK,
+      ...ResourceSliceListV1Alpha3.GVK,
       ...props,
     });
   }
@@ -6624,8 +6692,456 @@ export class ResourceClassListV1Alpha2 extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...ResourceClassListV1Alpha2.GVK,
-      ...toJson_ResourceClassListV1Alpha2Props(resolved),
+      ...ResourceSliceListV1Alpha3.GVK,
+      ...toJson_ResourceSliceListV1Alpha3Props(resolved),
+    };
+  }
+}
+
+/**
+ * DeviceClass is a vendor- or admin-provided resource that contains device configuration and selectors. It can be referenced in the device requests of a claim to apply these presets. Cluster scoped.
+
+This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClass
+ */
+export class DeviceClassV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.DeviceClass"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'DeviceClass',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.DeviceClass".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: DeviceClassV1Beta1Props): any {
+    return {
+      ...DeviceClassV1Beta1.GVK,
+      ...toJson_DeviceClassV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.DeviceClass" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: DeviceClassV1Beta1Props) {
+    super(scope, id, {
+      ...DeviceClassV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...DeviceClassV1Beta1.GVK,
+      ...toJson_DeviceClassV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * DeviceClassList is a collection of classes.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClassList
+ */
+export class DeviceClassListV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.DeviceClassList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'DeviceClassList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.DeviceClassList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: DeviceClassListV1Beta1Props): any {
+    return {
+      ...DeviceClassListV1Beta1.GVK,
+      ...toJson_DeviceClassListV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.DeviceClassList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: DeviceClassListV1Beta1Props) {
+    super(scope, id, {
+      ...DeviceClassListV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...DeviceClassListV1Beta1.GVK,
+      ...toJson_DeviceClassListV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
+
+This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaim
+ */
+export class ResourceClaimV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.ResourceClaim"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'ResourceClaim',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.ResourceClaim".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ResourceClaimV1Beta1Props): any {
+    return {
+      ...ResourceClaimV1Beta1.GVK,
+      ...toJson_ResourceClaimV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.ResourceClaim" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ResourceClaimV1Beta1Props) {
+    super(scope, id, {
+      ...ResourceClaimV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ResourceClaimV1Beta1.GVK,
+      ...toJson_ResourceClaimV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ResourceClaimList is a collection of claims.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimList
+ */
+export class ResourceClaimListV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.ResourceClaimList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'ResourceClaimList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.ResourceClaimList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ResourceClaimListV1Beta1Props): any {
+    return {
+      ...ResourceClaimListV1Beta1.GVK,
+      ...toJson_ResourceClaimListV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.ResourceClaimList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ResourceClaimListV1Beta1Props) {
+    super(scope, id, {
+      ...ResourceClaimListV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ResourceClaimListV1Beta1.GVK,
+      ...toJson_ResourceClaimListV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ResourceClaimTemplate is used to produce ResourceClaim objects.
+
+This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplate
+ */
+export class ResourceClaimTemplateV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.ResourceClaimTemplate"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'ResourceClaimTemplate',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.ResourceClaimTemplate".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ResourceClaimTemplateV1Beta1Props): any {
+    return {
+      ...ResourceClaimTemplateV1Beta1.GVK,
+      ...toJson_ResourceClaimTemplateV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.ResourceClaimTemplate" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ResourceClaimTemplateV1Beta1Props) {
+    super(scope, id, {
+      ...ResourceClaimTemplateV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ResourceClaimTemplateV1Beta1.GVK,
+      ...toJson_ResourceClaimTemplateV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ResourceClaimTemplateList is a collection of claim templates.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateList
+ */
+export class ResourceClaimTemplateListV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.ResourceClaimTemplateList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'ResourceClaimTemplateList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.ResourceClaimTemplateList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ResourceClaimTemplateListV1Beta1Props): any {
+    return {
+      ...ResourceClaimTemplateListV1Beta1.GVK,
+      ...toJson_ResourceClaimTemplateListV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.ResourceClaimTemplateList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ResourceClaimTemplateListV1Beta1Props) {
+    super(scope, id, {
+      ...ResourceClaimTemplateListV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ResourceClaimTemplateListV1Beta1.GVK,
+      ...toJson_ResourceClaimTemplateListV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ResourceSlice represents one or more resources in a pool of similar resources, managed by a common driver. A pool may span more than one ResourceSlice, and exactly how many ResourceSlices comprise a pool is determined by the driver.
+
+At the moment, the only supported resources are devices with attributes and capacities. Each device in a given pool, regardless of how many ResourceSlices, must have a unique name. The ResourceSlice in which a device gets published may change over time. The unique identifier for a device is the tuple <driver name>, <pool name>, <device name>.
+
+Whenever a driver needs to update a pool, it increments the pool.Spec.Pool.Generation number and updates all ResourceSlices with that new number and new resource definitions. A consumer must only use ResourceSlices with the highest generation number and ignore all others.
+
+When allocating all resources in a pool matching certain criteria or when looking for the best solution among several different alternatives, a consumer should check the number of ResourceSlices in a pool (included in each ResourceSlice) to determine whether its view of a pool is complete and if not, should wait until the driver has completed updating the pool.
+
+For resources that are not local to a node, the node name is not set. Instead, the driver may use a node selector to specify where the devices are available.
+
+This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceSlice
+ */
+export class ResourceSliceV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.ResourceSlice"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'ResourceSlice',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.ResourceSlice".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ResourceSliceV1Beta1Props): any {
+    return {
+      ...ResourceSliceV1Beta1.GVK,
+      ...toJson_ResourceSliceV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.ResourceSlice" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ResourceSliceV1Beta1Props) {
+    super(scope, id, {
+      ...ResourceSliceV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ResourceSliceV1Beta1.GVK,
+      ...toJson_ResourceSliceV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ResourceSliceList is a collection of ResourceSlices.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceSliceList
+ */
+export class ResourceSliceListV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.resource.v1beta1.ResourceSliceList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'resource.k8s.io/v1beta1',
+    kind: 'ResourceSliceList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.resource.v1beta1.ResourceSliceList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ResourceSliceListV1Beta1Props): any {
+    return {
+      ...ResourceSliceListV1Beta1.GVK,
+      ...toJson_ResourceSliceListV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.resource.v1beta1.ResourceSliceList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ResourceSliceListV1Beta1Props) {
+    super(scope, id, {
+      ...ResourceSliceListV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ResourceSliceListV1Beta1.GVK,
+      ...toJson_ResourceSliceListV1Beta1Props(resolved),
     };
   }
 }
@@ -7399,6 +7915,222 @@ export class VolumeAttributesClassListV1Alpha1 extends ApiObject {
 }
 
 /**
+ * VolumeAttributesClass represents a specification of mutable volume attributes defined by the CSI driver. The class can be specified during dynamic provisioning of PersistentVolumeClaims, and changed in the PersistentVolumeClaim spec after provisioning.
+ *
+ * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClass
+ */
+export class VolumeAttributesClassV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.storage.v1beta1.VolumeAttributesClass"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'storage.k8s.io/v1beta1',
+    kind: 'VolumeAttributesClass',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.storage.v1beta1.VolumeAttributesClass".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: VolumeAttributesClassV1Beta1Props): any {
+    return {
+      ...VolumeAttributesClassV1Beta1.GVK,
+      ...toJson_VolumeAttributesClassV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.storage.v1beta1.VolumeAttributesClass" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: VolumeAttributesClassV1Beta1Props) {
+    super(scope, id, {
+      ...VolumeAttributesClassV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...VolumeAttributesClassV1Beta1.GVK,
+      ...toJson_VolumeAttributesClassV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * VolumeAttributesClassList is a collection of VolumeAttributesClass objects.
+ *
+ * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClassList
+ */
+export class VolumeAttributesClassListV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.storage.v1beta1.VolumeAttributesClassList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'storage.k8s.io/v1beta1',
+    kind: 'VolumeAttributesClassList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.storage.v1beta1.VolumeAttributesClassList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: VolumeAttributesClassListV1Beta1Props): any {
+    return {
+      ...VolumeAttributesClassListV1Beta1.GVK,
+      ...toJson_VolumeAttributesClassListV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.storage.v1beta1.VolumeAttributesClassList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: VolumeAttributesClassListV1Beta1Props) {
+    super(scope, id, {
+      ...VolumeAttributesClassListV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...VolumeAttributesClassListV1Beta1.GVK,
+      ...toJson_VolumeAttributesClassListV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * StorageVersionMigration represents a migration of stored data to the latest storage version.
+ *
+ * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration
+ */
+export class StorageVersionMigrationV1Alpha1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'storagemigration.k8s.io/v1alpha1',
+    kind: 'StorageVersionMigration',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: StorageVersionMigrationV1Alpha1Props = {}): any {
+    return {
+      ...StorageVersionMigrationV1Alpha1.GVK,
+      ...toJson_StorageVersionMigrationV1Alpha1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: StorageVersionMigrationV1Alpha1Props = {}) {
+    super(scope, id, {
+      ...StorageVersionMigrationV1Alpha1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...StorageVersionMigrationV1Alpha1.GVK,
+      ...toJson_StorageVersionMigrationV1Alpha1Props(resolved),
+    };
+  }
+}
+
+/**
+ * StorageVersionMigrationList is a collection of storage version migrations.
+ *
+ * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList
+ */
+export class StorageVersionMigrationListV1Alpha1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'storagemigration.k8s.io/v1alpha1',
+    kind: 'StorageVersionMigrationList',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: StorageVersionMigrationListV1Alpha1Props): any {
+    return {
+      ...StorageVersionMigrationListV1Alpha1.GVK,
+      ...toJson_StorageVersionMigrationListV1Alpha1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: StorageVersionMigrationListV1Alpha1Props) {
+    super(scope, id, {
+      ...StorageVersionMigrationListV1Alpha1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...StorageVersionMigrationListV1Alpha1.GVK,
+      ...toJson_StorageVersionMigrationListV1Alpha1Props(resolved),
+    };
+  }
+}
+
+/**
  * CustomResourceDefinition represents a resource that should be exposed on the API server.  Its name MUST be in the format <.spec.name>.<.spec.group>.
  *
  * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinition
@@ -7693,7 +8425,7 @@ export interface MutatingWebhookConfigurationProps {
 /**
  * Converts an object of type 'MutatingWebhookConfigurationProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MutatingWebhookConfigurationProps(obj: MutatingWebhookConfigurationProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7703,7 +8435,7 @@ export function toJson_MutatingWebhookConfigurationProps(obj: MutatingWebhookCon
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MutatingWebhookConfigurationList is a list of MutatingWebhookConfiguration.
@@ -7730,7 +8462,7 @@ export interface MutatingWebhookConfigurationListProps {
 /**
  * Converts an object of type 'MutatingWebhookConfigurationListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MutatingWebhookConfigurationListProps(obj: MutatingWebhookConfigurationListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7740,7 +8472,159 @@ export function toJson_MutatingWebhookConfigurationListProps(obj: MutatingWebhoo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ValidatingAdmissionPolicy describes the definition of an admission validation policy that accepts or rejects an object without changing it.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy
+ */
+export interface ValidatingAdmissionPolicyProps {
+  /**
+   * Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Specification of the desired behavior of the ValidatingAdmissionPolicy.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicy#spec
+   */
+  readonly spec?: ValidatingAdmissionPolicySpec;
+
+}
+
+/**
+ * Converts an object of type 'ValidatingAdmissionPolicyProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ValidatingAdmissionPolicyProps(obj: ValidatingAdmissionPolicyProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_ValidatingAdmissionPolicySpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources. ValidatingAdmissionPolicyBinding and parameter CRDs together define how cluster administrators configure policies for clusters.
+ *
+ * For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding.
+ *
+ * The CEL expressions of a policy must have a computed CEL cost below the maximum CEL budget. Each evaluation of the policy is given an independent CEL cost budget. Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding
+ */
+export interface ValidatingAdmissionPolicyBindingProps {
+  /**
+   * Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Specification of the desired behavior of the ValidatingAdmissionPolicyBinding.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBinding#spec
+   */
+  readonly spec?: ValidatingAdmissionPolicyBindingSpec;
+
+}
+
+/**
+ * Converts an object of type 'ValidatingAdmissionPolicyBindingProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ValidatingAdmissionPolicyBindingProps(obj: ValidatingAdmissionPolicyBindingProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_ValidatingAdmissionPolicyBindingSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList
+ */
+export interface ValidatingAdmissionPolicyBindingListProps {
+  /**
+   * Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * List of PolicyBinding.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingList#items
+   */
+  readonly items: ValidatingAdmissionPolicyBinding[];
+
+}
+
+/**
+ * Converts an object of type 'ValidatingAdmissionPolicyBindingListProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ValidatingAdmissionPolicyBindingListProps(obj: ValidatingAdmissionPolicyBindingListProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList
+ */
+export interface ValidatingAdmissionPolicyListProps {
+  /**
+   * Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * List of ValidatingAdmissionPolicy.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyList#items
+   */
+  readonly items: ValidatingAdmissionPolicy[];
+
+}
+
+/**
+ * Converts an object of type 'ValidatingAdmissionPolicyListProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ValidatingAdmissionPolicyListProps(obj: ValidatingAdmissionPolicyListProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingWebhookConfiguration describes the configuration of and admission webhook that accept or reject and object without changing it.
@@ -7767,7 +8651,7 @@ export interface ValidatingWebhookConfigurationProps {
 /**
  * Converts an object of type 'ValidatingWebhookConfigurationProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingWebhookConfigurationProps(obj: ValidatingWebhookConfigurationProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7777,7 +8661,7 @@ export function toJson_ValidatingWebhookConfigurationProps(obj: ValidatingWebhoo
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingWebhookConfigurationList is a list of ValidatingWebhookConfiguration.
@@ -7804,7 +8688,7 @@ export interface ValidatingWebhookConfigurationListProps {
 /**
  * Converts an object of type 'ValidatingWebhookConfigurationListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingWebhookConfigurationListProps(obj: ValidatingWebhookConfigurationListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -7814,113 +8698,113 @@ export function toJson_ValidatingWebhookConfigurationListProps(obj: ValidatingWe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ValidatingAdmissionPolicy describes the definition of an admission validation policy that accepts or rejects an object without changing it.
+ * MutatingAdmissionPolicy describes the definition of an admission mutation policy that mutates the object coming into admission chain.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy
  */
-export interface ValidatingAdmissionPolicyV1Alpha1Props {
+export interface MutatingAdmissionPolicyV1Alpha1Props {
   /**
    * Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy#metadata
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
-   * Specification of the desired behavior of the ValidatingAdmissionPolicy.
+   * Specification of the desired behavior of the MutatingAdmissionPolicy.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicy#spec
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicy#spec
    */
-  readonly spec?: ValidatingAdmissionPolicySpecV1Alpha1;
+  readonly spec?: MutatingAdmissionPolicySpecV1Alpha1;
 
 }
 
 /**
- * Converts an object of type 'ValidatingAdmissionPolicyV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'MutatingAdmissionPolicyV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidatingAdmissionPolicyV1Alpha1Props(obj: ValidatingAdmissionPolicyV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutatingAdmissionPolicyV1Alpha1Props(obj: MutatingAdmissionPolicyV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_ValidatingAdmissionPolicySpecV1Alpha1(obj.spec),
+    'spec': toJson_MutatingAdmissionPolicySpecV1Alpha1(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources. ValidatingAdmissionPolicyBinding and parameter CRDs together define how cluster administrators configure policies for clusters.
+ * MutatingAdmissionPolicyBinding binds the MutatingAdmissionPolicy with parametrized resources. MutatingAdmissionPolicyBinding and the optional parameter resource together define how cluster administrators configure policies for clusters.
  *
- * For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding.
+ * For a given admission request, each binding will cause its policy to be evaluated N times, where N is 1 for policies/bindings that don't use params, otherwise N is the number of parameters selected by the binding. Each evaluation is constrained by a [runtime cost budget](https://kubernetes.io/docs/reference/using-api/cel/#runtime-cost-budget).
  *
- * The CEL expressions of a policy must have a computed CEL cost below the maximum CEL budget. Each evaluation of the policy is given an independent CEL cost budget. Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
+ * Adding/removing policies, bindings, or params can not affect whether a given (policy, binding, param) combination is within its own CEL budget.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding
  */
-export interface ValidatingAdmissionPolicyBindingV1Alpha1Props {
+export interface MutatingAdmissionPolicyBindingV1Alpha1Props {
   /**
    * Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding#metadata
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
-   * Specification of the desired behavior of the ValidatingAdmissionPolicyBinding.
+   * Specification of the desired behavior of the MutatingAdmissionPolicyBinding.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBinding#spec
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBinding#spec
    */
-  readonly spec?: ValidatingAdmissionPolicyBindingSpecV1Alpha1;
+  readonly spec?: MutatingAdmissionPolicyBindingSpecV1Alpha1;
 
 }
 
 /**
- * Converts an object of type 'ValidatingAdmissionPolicyBindingV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'MutatingAdmissionPolicyBindingV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidatingAdmissionPolicyBindingV1Alpha1Props(obj: ValidatingAdmissionPolicyBindingV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutatingAdmissionPolicyBindingV1Alpha1Props(obj: MutatingAdmissionPolicyBindingV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_ValidatingAdmissionPolicyBindingSpecV1Alpha1(obj.spec),
+    'spec': toJson_MutatingAdmissionPolicyBindingSpecV1Alpha1(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
+ * MutatingAdmissionPolicyBindingList is a list of MutatingAdmissionPolicyBinding.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList
  */
-export interface ValidatingAdmissionPolicyBindingListV1Alpha1Props {
+export interface MutatingAdmissionPolicyBindingListV1Alpha1Props {
   /**
    * Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList#metadata
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * List of PolicyBinding.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingList#items
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingList#items
    */
-  readonly items?: ValidatingAdmissionPolicyBindingV1Alpha1[];
+  readonly items: MutatingAdmissionPolicyBindingV1Alpha1[];
 
 }
 
 /**
- * Converts an object of type 'ValidatingAdmissionPolicyBindingListV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'MutatingAdmissionPolicyBindingListV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidatingAdmissionPolicyBindingListV1Alpha1Props(obj: ValidatingAdmissionPolicyBindingListV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutatingAdmissionPolicyBindingListV1Alpha1Props(obj: MutatingAdmissionPolicyBindingListV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -7929,35 +8813,35 @@ export function toJson_ValidatingAdmissionPolicyBindingListV1Alpha1Props(obj: Va
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
+ * MutatingAdmissionPolicyList is a list of MutatingAdmissionPolicy.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList
  */
-export interface ValidatingAdmissionPolicyListV1Alpha1Props {
+export interface MutatingAdmissionPolicyListV1Alpha1Props {
   /**
    * Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList#metadata
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * List of ValidatingAdmissionPolicy.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyList#items
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyList#items
    */
-  readonly items?: ValidatingAdmissionPolicyV1Alpha1[];
+  readonly items: MutatingAdmissionPolicyV1Alpha1[];
 
 }
 
 /**
- * Converts an object of type 'ValidatingAdmissionPolicyListV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'MutatingAdmissionPolicyListV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidatingAdmissionPolicyListV1Alpha1Props(obj: ValidatingAdmissionPolicyListV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutatingAdmissionPolicyListV1Alpha1Props(obj: MutatingAdmissionPolicyListV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -7966,7 +8850,7 @@ export function toJson_ValidatingAdmissionPolicyListV1Alpha1Props(obj: Validatin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingAdmissionPolicy describes the definition of an admission validation policy that accepts or rejects an object without changing it.
@@ -7993,7 +8877,7 @@ export interface ValidatingAdmissionPolicyV1Beta1Props {
 /**
  * Converts an object of type 'ValidatingAdmissionPolicyV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingAdmissionPolicyV1Beta1Props(obj: ValidatingAdmissionPolicyV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8003,7 +8887,7 @@ export function toJson_ValidatingAdmissionPolicyV1Beta1Props(obj: ValidatingAdmi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingAdmissionPolicyBinding binds the ValidatingAdmissionPolicy with paramerized resources. ValidatingAdmissionPolicyBinding and parameter CRDs together define how cluster administrators configure policies for clusters.
@@ -8034,7 +8918,7 @@ export interface ValidatingAdmissionPolicyBindingV1Beta1Props {
 /**
  * Converts an object of type 'ValidatingAdmissionPolicyBindingV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingAdmissionPolicyBindingV1Beta1Props(obj: ValidatingAdmissionPolicyBindingV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8044,7 +8928,7 @@ export function toJson_ValidatingAdmissionPolicyBindingV1Beta1Props(obj: Validat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingAdmissionPolicyBindingList is a list of ValidatingAdmissionPolicyBinding.
@@ -8064,14 +8948,14 @@ export interface ValidatingAdmissionPolicyBindingListV1Beta1Props {
    *
    * @schema io.k8s.api.admissionregistration.v1beta1.ValidatingAdmissionPolicyBindingList#items
    */
-  readonly items?: ValidatingAdmissionPolicyBindingV1Beta1[];
+  readonly items: ValidatingAdmissionPolicyBindingV1Beta1[];
 
 }
 
 /**
  * Converts an object of type 'ValidatingAdmissionPolicyBindingListV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingAdmissionPolicyBindingListV1Beta1Props(obj: ValidatingAdmissionPolicyBindingListV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8081,7 +8965,7 @@ export function toJson_ValidatingAdmissionPolicyBindingListV1Beta1Props(obj: Val
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingAdmissionPolicyList is a list of ValidatingAdmissionPolicy.
@@ -8101,14 +8985,14 @@ export interface ValidatingAdmissionPolicyListV1Beta1Props {
    *
    * @schema io.k8s.api.admissionregistration.v1beta1.ValidatingAdmissionPolicyList#items
    */
-  readonly items?: ValidatingAdmissionPolicyV1Beta1[];
+  readonly items: ValidatingAdmissionPolicyV1Beta1[];
 
 }
 
 /**
  * Converts an object of type 'ValidatingAdmissionPolicyListV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingAdmissionPolicyListV1Beta1Props(obj: ValidatingAdmissionPolicyListV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8118,7 +9002,7 @@ export function toJson_ValidatingAdmissionPolicyListV1Beta1Props(obj: Validating
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Storage version of a specific resource.
@@ -8145,7 +9029,7 @@ export interface StorageVersionV1Alpha1Props {
 /**
  * Converts an object of type 'StorageVersionV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StorageVersionV1Alpha1Props(obj: StorageVersionV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8155,7 +9039,7 @@ export function toJson_StorageVersionV1Alpha1Props(obj: StorageVersionV1Alpha1Pr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A list of StorageVersions.
@@ -8182,7 +9066,7 @@ export interface StorageVersionListV1Alpha1Props {
 /**
  * Converts an object of type 'StorageVersionListV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StorageVersionListV1Alpha1Props(obj: StorageVersionListV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8192,7 +9076,7 @@ export function toJson_StorageVersionListV1Alpha1Props(obj: StorageVersionListV1
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ControllerRevision implements an immutable snapshot of state data. Clients are responsible for serializing and deserializing the objects that contain their internal state. Once a ControllerRevision has been successfully created, it can not be updated. The API Server will fail validation of all requests that attempt to mutate the Data field. ControllerRevisions may, however, be deleted. Note that, due to its use by both the DaemonSet and StatefulSet controllers for update and rollback, this object is beta. However, it may be subject to name and representation changes in future releases, and clients should not depend on its stability. It is primarily for internal use by controllers.
@@ -8226,7 +9110,7 @@ export interface ControllerRevisionProps {
 /**
  * Converts an object of type 'ControllerRevisionProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ControllerRevisionProps(obj: ControllerRevisionProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8237,7 +9121,7 @@ export function toJson_ControllerRevisionProps(obj: ControllerRevisionProps | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ControllerRevisionList is a resource containing a list of ControllerRevision objects.
@@ -8264,7 +9148,7 @@ export interface ControllerRevisionListProps {
 /**
  * Converts an object of type 'ControllerRevisionListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ControllerRevisionListProps(obj: ControllerRevisionListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8274,7 +9158,7 @@ export function toJson_ControllerRevisionListProps(obj: ControllerRevisionListPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DaemonSet represents the configuration of a daemon set.
@@ -8301,7 +9185,7 @@ export interface DaemonSetProps {
 /**
  * Converts an object of type 'DaemonSetProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DaemonSetProps(obj: DaemonSetProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8311,7 +9195,7 @@ export function toJson_DaemonSetProps(obj: DaemonSetProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DaemonSetList is a collection of daemon sets.
@@ -8338,7 +9222,7 @@ export interface DaemonSetListProps {
 /**
  * Converts an object of type 'DaemonSetListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DaemonSetListProps(obj: DaemonSetListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8348,7 +9232,7 @@ export function toJson_DaemonSetListProps(obj: DaemonSetListProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Deployment enables declarative updates for Pods and ReplicaSets.
@@ -8375,7 +9259,7 @@ export interface DeploymentProps {
 /**
  * Converts an object of type 'DeploymentProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DeploymentProps(obj: DeploymentProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8385,7 +9269,7 @@ export function toJson_DeploymentProps(obj: DeploymentProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DeploymentList is a list of Deployments.
@@ -8412,7 +9296,7 @@ export interface DeploymentListProps {
 /**
  * Converts an object of type 'DeploymentListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DeploymentListProps(obj: DeploymentListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8422,7 +9306,7 @@ export function toJson_DeploymentListProps(obj: DeploymentListProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ReplicaSet ensures that a specified number of pod replicas are running at any given time.
@@ -8449,7 +9333,7 @@ export interface ReplicaSetProps {
 /**
  * Converts an object of type 'ReplicaSetProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicaSetProps(obj: ReplicaSetProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8459,7 +9343,7 @@ export function toJson_ReplicaSetProps(obj: ReplicaSetProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ReplicaSetList is a collection of ReplicaSets.
@@ -8486,7 +9370,7 @@ export interface ReplicaSetListProps {
 /**
  * Converts an object of type 'ReplicaSetListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicaSetListProps(obj: ReplicaSetListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8496,7 +9380,7 @@ export function toJson_ReplicaSetListProps(obj: ReplicaSetListProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatefulSet represents a set of pods with consistent identities. Identities are defined as:
@@ -8527,7 +9411,7 @@ export interface StatefulSetProps {
 /**
  * Converts an object of type 'StatefulSetProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatefulSetProps(obj: StatefulSetProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8537,7 +9421,7 @@ export function toJson_StatefulSetProps(obj: StatefulSetProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatefulSetList is a collection of StatefulSets.
@@ -8564,7 +9448,7 @@ export interface StatefulSetListProps {
 /**
  * Converts an object of type 'StatefulSetListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatefulSetListProps(obj: StatefulSetListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8574,7 +9458,7 @@ export function toJson_StatefulSetListProps(obj: StatefulSetListProps | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelfSubjectReview contains the user information that the kube-apiserver has about the user making this request. When using impersonation, users will receive the user info of the user being impersonated.  If impersonation or request header authentication is used, any extra keys will have their case ignored and returned as lowercase.
@@ -8594,7 +9478,7 @@ export interface SelfSubjectReviewProps {
 /**
  * Converts an object of type 'SelfSubjectReviewProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SelfSubjectReviewProps(obj: SelfSubjectReviewProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8603,7 +9487,7 @@ export function toJson_SelfSubjectReviewProps(obj: SelfSubjectReviewProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TokenRequest requests a token for a given service account.
@@ -8630,7 +9514,7 @@ export interface TokenRequestProps {
 /**
  * Converts an object of type 'TokenRequestProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TokenRequestProps(obj: TokenRequestProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8640,7 +9524,7 @@ export function toJson_TokenRequestProps(obj: TokenRequestProps | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TokenReview attempts to authenticate a token to a known user. Note: TokenReview requests may be cached by the webhook token authenticator plugin in the kube-apiserver.
@@ -8667,7 +9551,7 @@ export interface TokenReviewProps {
 /**
  * Converts an object of type 'TokenReviewProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TokenReviewProps(obj: TokenReviewProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8677,36 +9561,7 @@ export function toJson_TokenReviewProps(obj: TokenReviewProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * SelfSubjectReview contains the user information that the kube-apiserver has about the user making this request. When using impersonation, users will receive the user info of the user being impersonated.  If impersonation or request header authentication is used, any extra keys will have their case ignored and returned as lowercase.
- *
- * @schema io.k8s.api.authentication.v1alpha1.SelfSubjectReview
- */
-export interface SelfSubjectReviewV1Alpha1Props {
-  /**
-   * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-   *
-   * @schema io.k8s.api.authentication.v1alpha1.SelfSubjectReview#metadata
-   */
-  readonly metadata?: ObjectMeta;
-
-}
-
-/**
- * Converts an object of type 'SelfSubjectReviewV1Alpha1Props' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_SelfSubjectReviewV1Alpha1Props(obj: SelfSubjectReviewV1Alpha1Props | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': toJson_ObjectMeta(obj.metadata),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelfSubjectReview contains the user information that the kube-apiserver has about the user making this request. When using impersonation, users will receive the user info of the user being impersonated.  If impersonation or request header authentication is used, any extra keys will have their case ignored and returned as lowercase.
@@ -8726,7 +9581,7 @@ export interface SelfSubjectReviewV1Beta1Props {
 /**
  * Converts an object of type 'SelfSubjectReviewV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SelfSubjectReviewV1Beta1Props(obj: SelfSubjectReviewV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8735,7 +9590,7 @@ export function toJson_SelfSubjectReviewV1Beta1Props(obj: SelfSubjectReviewV1Bet
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LocalSubjectAccessReview checks whether or not a user or group can perform an action in a given namespace. Having a namespace scoped resource makes it much easier to grant namespace scoped policy that includes permissions checking.
@@ -8762,7 +9617,7 @@ export interface LocalSubjectAccessReviewProps {
 /**
  * Converts an object of type 'LocalSubjectAccessReviewProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LocalSubjectAccessReviewProps(obj: LocalSubjectAccessReviewProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8772,7 +9627,7 @@ export function toJson_LocalSubjectAccessReviewProps(obj: LocalSubjectAccessRevi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelfSubjectAccessReview checks whether or the current user can perform an action.  Not filling in a spec.namespace means "in all namespaces".  Self is a special case, because users should always be able to check whether they can perform an action
@@ -8799,7 +9654,7 @@ export interface SelfSubjectAccessReviewProps {
 /**
  * Converts an object of type 'SelfSubjectAccessReviewProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SelfSubjectAccessReviewProps(obj: SelfSubjectAccessReviewProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8809,7 +9664,7 @@ export function toJson_SelfSubjectAccessReviewProps(obj: SelfSubjectAccessReview
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelfSubjectRulesReview enumerates the set of actions the current user can perform within a namespace. The returned list of actions may be incomplete depending on the server's authorization mode, and any errors experienced during the evaluation. SelfSubjectRulesReview should be used by UIs to show/hide actions, or to quickly let an end user reason about their permissions. It should NOT Be used by external systems to drive authorization decisions as this raises confused deputy, cache lifetime/revocation, and correctness concerns. SubjectAccessReview, and LocalAccessReview are the correct way to defer authorization decisions to the API server.
@@ -8836,7 +9691,7 @@ export interface SelfSubjectRulesReviewProps {
 /**
  * Converts an object of type 'SelfSubjectRulesReviewProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SelfSubjectRulesReviewProps(obj: SelfSubjectRulesReviewProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8846,7 +9701,7 @@ export function toJson_SelfSubjectRulesReviewProps(obj: SelfSubjectRulesReviewPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SubjectAccessReview checks whether or not a user or group can perform an action.
@@ -8873,7 +9728,7 @@ export interface SubjectAccessReviewProps {
 /**
  * Converts an object of type 'SubjectAccessReviewProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SubjectAccessReviewProps(obj: SubjectAccessReviewProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8883,7 +9738,7 @@ export function toJson_SubjectAccessReviewProps(obj: SubjectAccessReviewProps | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * configuration of a horizontal pod autoscaler.
@@ -8910,7 +9765,7 @@ export interface HorizontalPodAutoscalerProps {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerProps(obj: HorizontalPodAutoscalerProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8920,7 +9775,7 @@ export function toJson_HorizontalPodAutoscalerProps(obj: HorizontalPodAutoscaler
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * list of horizontal pod autoscaler objects.
@@ -8947,7 +9802,7 @@ export interface HorizontalPodAutoscalerListProps {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerListProps(obj: HorizontalPodAutoscalerListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8957,7 +9812,7 @@ export function toJson_HorizontalPodAutoscalerListProps(obj: HorizontalPodAutosc
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Scale represents a scaling request for a resource.
@@ -8984,7 +9839,7 @@ export interface ScaleProps {
 /**
  * Converts an object of type 'ScaleProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ScaleProps(obj: ScaleProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -8994,7 +9849,7 @@ export function toJson_ScaleProps(obj: ScaleProps | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HorizontalPodAutoscaler is the configuration for a horizontal pod autoscaler, which automatically manages the replica count of any resource implementing the scale subresource based on the metrics specified.
@@ -9021,7 +9876,7 @@ export interface HorizontalPodAutoscalerV2Props {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerV2Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerV2Props(obj: HorizontalPodAutoscalerV2Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9031,7 +9886,7 @@ export function toJson_HorizontalPodAutoscalerV2Props(obj: HorizontalPodAutoscal
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HorizontalPodAutoscalerList is a list of horizontal pod autoscaler objects.
@@ -9058,7 +9913,7 @@ export interface HorizontalPodAutoscalerListV2Props {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerListV2Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerListV2Props(obj: HorizontalPodAutoscalerListV2Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9068,7 +9923,7 @@ export function toJson_HorizontalPodAutoscalerListV2Props(obj: HorizontalPodAuto
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CronJob represents the configuration of a single cron job.
@@ -9095,7 +9950,7 @@ export interface CronJobProps {
 /**
  * Converts an object of type 'CronJobProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CronJobProps(obj: CronJobProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9105,7 +9960,7 @@ export function toJson_CronJobProps(obj: CronJobProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CronJobList is a collection of cron jobs.
@@ -9132,7 +9987,7 @@ export interface CronJobListProps {
 /**
  * Converts an object of type 'CronJobListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CronJobListProps(obj: CronJobListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9142,7 +9997,7 @@ export function toJson_CronJobListProps(obj: CronJobListProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Job represents the configuration of a single job.
@@ -9169,7 +10024,7 @@ export interface JobProps {
 /**
  * Converts an object of type 'JobProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_JobProps(obj: JobProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9179,7 +10034,7 @@ export function toJson_JobProps(obj: JobProps | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * JobList is a collection of jobs.
@@ -9206,7 +10061,7 @@ export interface JobListProps {
 /**
  * Converts an object of type 'JobListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_JobListProps(obj: JobListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9216,7 +10071,7 @@ export function toJson_JobListProps(obj: JobListProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertificateSigningRequest objects provide a mechanism to obtain x509 certificates by submitting a certificate signing request, and having it asynchronously approved and issued.
@@ -9247,7 +10102,7 @@ export interface CertificateSigningRequestProps {
 /**
  * Converts an object of type 'CertificateSigningRequestProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSigningRequestProps(obj: CertificateSigningRequestProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9257,7 +10112,7 @@ export function toJson_CertificateSigningRequestProps(obj: CertificateSigningReq
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertificateSigningRequestList is a collection of CertificateSigningRequest objects
@@ -9282,7 +10137,7 @@ export interface CertificateSigningRequestListProps {
 /**
  * Converts an object of type 'CertificateSigningRequestListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSigningRequestListProps(obj: CertificateSigningRequestListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9292,7 +10147,7 @@ export function toJson_CertificateSigningRequestListProps(obj: CertificateSignin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterTrustBundle is a cluster-scoped container for X.509 trust anchors (root certificates).
@@ -9323,7 +10178,7 @@ export interface ClusterTrustBundleV1Alpha1Props {
 /**
  * Converts an object of type 'ClusterTrustBundleV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterTrustBundleV1Alpha1Props(obj: ClusterTrustBundleV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9333,7 +10188,7 @@ export function toJson_ClusterTrustBundleV1Alpha1Props(obj: ClusterTrustBundleV1
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterTrustBundleList is a collection of ClusterTrustBundle objects
@@ -9360,7 +10215,7 @@ export interface ClusterTrustBundleListV1Alpha1Props {
 /**
  * Converts an object of type 'ClusterTrustBundleListV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterTrustBundleListV1Alpha1Props(obj: ClusterTrustBundleListV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9370,7 +10225,7 @@ export function toJson_ClusterTrustBundleListV1Alpha1Props(obj: ClusterTrustBund
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Lease defines a lease concept.
@@ -9397,7 +10252,7 @@ export interface LeaseProps {
 /**
  * Converts an object of type 'LeaseProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LeaseProps(obj: LeaseProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9407,7 +10262,7 @@ export function toJson_LeaseProps(obj: LeaseProps | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LeaseList is a list of Lease objects.
@@ -9434,7 +10289,7 @@ export interface LeaseListProps {
 /**
  * Converts an object of type 'LeaseListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LeaseListProps(obj: LeaseListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9444,10 +10299,84 @@ export function toJson_LeaseListProps(obj: LeaseListProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Binding ties one object to another; for example, a pod is bound to a node by a scheduler. Deprecated in 1.7, please use the bindings subresource of pods instead.
+ * LeaseCandidate defines a candidate for a Lease object. Candidates are created such that coordinated leader election will pick the best leader from the list of candidates.
+ *
+ * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidate
+ */
+export interface LeaseCandidateV1Alpha2Props {
+  /**
+   * More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidate#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * spec contains the specification of the Lease. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidate#spec
+   */
+  readonly spec?: LeaseCandidateSpecV1Alpha2;
+
+}
+
+/**
+ * Converts an object of type 'LeaseCandidateV1Alpha2Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_LeaseCandidateV1Alpha2Props(obj: LeaseCandidateV1Alpha2Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_LeaseCandidateSpecV1Alpha2(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LeaseCandidateList is a list of Lease objects.
+ *
+ * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateList
+ */
+export interface LeaseCandidateListV1Alpha2Props {
+  /**
+   * Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * items is a list of schema objects.
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateList#items
+   */
+  readonly items: LeaseCandidateV1Alpha2[];
+
+}
+
+/**
+ * Converts an object of type 'LeaseCandidateListV1Alpha2Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_LeaseCandidateListV1Alpha2Props(obj: LeaseCandidateListV1Alpha2Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Binding ties one object to another; for example, a pod is bound to a node by a scheduler.
  *
  * @schema io.k8s.api.core.v1.Binding
  */
@@ -9471,7 +10400,7 @@ export interface BindingProps {
 /**
  * Converts an object of type 'BindingProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_BindingProps(obj: BindingProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9481,7 +10410,7 @@ export function toJson_BindingProps(obj: BindingProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ComponentStatus (and ComponentStatusList) holds the cluster validation info. Deprecated: This API is deprecated in v1.19+
@@ -9508,7 +10437,7 @@ export interface ComponentStatusProps {
 /**
  * Converts an object of type 'ComponentStatusProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ComponentStatusProps(obj: ComponentStatusProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9518,7 +10447,7 @@ export function toJson_ComponentStatusProps(obj: ComponentStatusProps | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Status of all the conditions for the component as a list of ComponentStatus objects. Deprecated: This API is deprecated in v1.19+
@@ -9545,7 +10474,7 @@ export interface ComponentStatusListProps {
 /**
  * Converts an object of type 'ComponentStatusListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ComponentStatusListProps(obj: ComponentStatusListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9555,7 +10484,7 @@ export function toJson_ComponentStatusListProps(obj: ComponentStatusListProps | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ConfigMap holds configuration data for pods to consume.
@@ -9596,7 +10525,7 @@ export interface ConfigMapProps {
 /**
  * Converts an object of type 'ConfigMapProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapProps(obj: ConfigMapProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9608,7 +10537,7 @@ export function toJson_ConfigMapProps(obj: ConfigMapProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ConfigMapList is a resource containing a list of ConfigMap objects.
@@ -9635,7 +10564,7 @@ export interface ConfigMapListProps {
 /**
  * Converts an object of type 'ConfigMapListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapListProps(obj: ConfigMapListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9645,7 +10574,7 @@ export function toJson_ConfigMapListProps(obj: ConfigMapListProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Endpoints is a collection of endpoints that implement the actual service. Example:
@@ -9684,7 +10613,7 @@ export interface EndpointsProps {
 /**
  * Converts an object of type 'EndpointsProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointsProps(obj: EndpointsProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9694,7 +10623,7 @@ export function toJson_EndpointsProps(obj: EndpointsProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointsList is a list of endpoints.
@@ -9721,7 +10650,7 @@ export interface EndpointsListProps {
 /**
  * Converts an object of type 'EndpointsListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointsListProps(obj: EndpointsListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9731,7 +10660,7 @@ export function toJson_EndpointsListProps(obj: EndpointsListProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Event is a report of an event somewhere in the cluster. It generally denotes some state change in the system. Events have a limited retention time and triggers and messages may evolve with time.  Event consumers should not rely on the timing of an event with a given Reason reflecting a consistent underlying trigger, or the continued existence of events with that Reason.  Events should be treated as informative, best-effort, supplemental data.
@@ -9849,7 +10778,7 @@ export interface EventProps {
 /**
  * Converts an object of type 'EventProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EventProps(obj: EventProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9872,7 +10801,7 @@ export function toJson_EventProps(obj: EventProps | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EventList is a list of Event objects.
@@ -9899,7 +10828,7 @@ export interface EventListProps {
 /**
  * Converts an object of type 'EventListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EventListProps(obj: EventListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9909,7 +10838,7 @@ export function toJson_EventListProps(obj: EventListProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LimitRange sets resource usage limits for each kind of resource in a Namespace.
@@ -9936,7 +10865,7 @@ export interface LimitRangeProps {
 /**
  * Converts an object of type 'LimitRangeProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LimitRangeProps(obj: LimitRangeProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9946,7 +10875,7 @@ export function toJson_LimitRangeProps(obj: LimitRangeProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LimitRangeList is a list of LimitRange items.
@@ -9973,7 +10902,7 @@ export interface LimitRangeListProps {
 /**
  * Converts an object of type 'LimitRangeListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LimitRangeListProps(obj: LimitRangeListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -9983,7 +10912,7 @@ export function toJson_LimitRangeListProps(obj: LimitRangeListProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Namespace provides a scope for Names. Use of multiple namespaces is optional.
@@ -10010,7 +10939,7 @@ export interface NamespaceProps {
 /**
  * Converts an object of type 'NamespaceProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NamespaceProps(obj: NamespaceProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10020,7 +10949,7 @@ export function toJson_NamespaceProps(obj: NamespaceProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NamespaceList is a list of Namespaces.
@@ -10047,7 +10976,7 @@ export interface NamespaceListProps {
 /**
  * Converts an object of type 'NamespaceListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NamespaceListProps(obj: NamespaceListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10057,7 +10986,7 @@ export function toJson_NamespaceListProps(obj: NamespaceListProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Node is a worker node in Kubernetes. Each node will have a unique identifier in the cache (i.e. in etcd).
@@ -10084,7 +11013,7 @@ export interface NodeProps {
 /**
  * Converts an object of type 'NodeProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NodeProps(obj: NodeProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10094,7 +11023,7 @@ export function toJson_NodeProps(obj: NodeProps | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NodeList is the whole list of all Nodes which have been registered with master.
@@ -10121,7 +11050,7 @@ export interface NodeListProps {
 /**
  * Converts an object of type 'NodeListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NodeListProps(obj: NodeListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10131,7 +11060,7 @@ export function toJson_NodeListProps(obj: NodeListProps | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolume (PV) is a storage resource provisioned by an administrator. It is analogous to a node. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes
@@ -10158,7 +11087,7 @@ export interface PersistentVolumeProps {
 /**
  * Converts an object of type 'PersistentVolumeProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeProps(obj: PersistentVolumeProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10168,7 +11097,7 @@ export function toJson_PersistentVolumeProps(obj: PersistentVolumeProps | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeClaim is a user's request for and claim to a persistent volume
@@ -10195,7 +11124,7 @@ export interface PersistentVolumeClaimProps {
 /**
  * Converts an object of type 'PersistentVolumeClaimProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeClaimProps(obj: PersistentVolumeClaimProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10205,7 +11134,7 @@ export function toJson_PersistentVolumeClaimProps(obj: PersistentVolumeClaimProp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeClaimList is a list of PersistentVolumeClaim items.
@@ -10232,7 +11161,7 @@ export interface PersistentVolumeClaimListProps {
 /**
  * Converts an object of type 'PersistentVolumeClaimListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeClaimListProps(obj: PersistentVolumeClaimListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10242,7 +11171,7 @@ export function toJson_PersistentVolumeClaimListProps(obj: PersistentVolumeClaim
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeList is a list of PersistentVolume items.
@@ -10269,7 +11198,7 @@ export interface PersistentVolumeListProps {
 /**
  * Converts an object of type 'PersistentVolumeListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeListProps(obj: PersistentVolumeListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10279,7 +11208,7 @@ export function toJson_PersistentVolumeListProps(obj: PersistentVolumeListProps 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Pod is a collection of containers that can run on a host. This resource is created by clients and scheduled onto hosts.
@@ -10306,7 +11235,7 @@ export interface PodProps {
 /**
  * Converts an object of type 'PodProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodProps(obj: PodProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10316,7 +11245,7 @@ export function toJson_PodProps(obj: PodProps | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodList is a list of Pods.
@@ -10343,7 +11272,7 @@ export interface PodListProps {
 /**
  * Converts an object of type 'PodListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodListProps(obj: PodListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10353,7 +11282,7 @@ export function toJson_PodListProps(obj: PodListProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodTemplate describes a template for creating copies of a predefined pod.
@@ -10380,7 +11309,7 @@ export interface PodTemplateProps {
 /**
  * Converts an object of type 'PodTemplateProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodTemplateProps(obj: PodTemplateProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10390,7 +11319,7 @@ export function toJson_PodTemplateProps(obj: PodTemplateProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodTemplateList is a list of PodTemplates.
@@ -10417,7 +11346,7 @@ export interface PodTemplateListProps {
 /**
  * Converts an object of type 'PodTemplateListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodTemplateListProps(obj: PodTemplateListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10427,7 +11356,7 @@ export function toJson_PodTemplateListProps(obj: PodTemplateListProps | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ReplicationController represents the configuration of a replication controller.
@@ -10454,7 +11383,7 @@ export interface ReplicationControllerProps {
 /**
  * Converts an object of type 'ReplicationControllerProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationControllerProps(obj: ReplicationControllerProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10464,7 +11393,7 @@ export function toJson_ReplicationControllerProps(obj: ReplicationControllerProp
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ReplicationControllerList is a collection of replication controllers.
@@ -10491,7 +11420,7 @@ export interface ReplicationControllerListProps {
 /**
  * Converts an object of type 'ReplicationControllerListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationControllerListProps(obj: ReplicationControllerListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10501,7 +11430,7 @@ export function toJson_ReplicationControllerListProps(obj: ReplicationController
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceQuota sets aggregate quota restrictions enforced per namespace
@@ -10528,7 +11457,7 @@ export interface ResourceQuotaProps {
 /**
  * Converts an object of type 'ResourceQuotaProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourceQuotaProps(obj: ResourceQuotaProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10538,7 +11467,7 @@ export function toJson_ResourceQuotaProps(obj: ResourceQuotaProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceQuotaList is a list of ResourceQuota items.
@@ -10565,7 +11494,7 @@ export interface ResourceQuotaListProps {
 /**
  * Converts an object of type 'ResourceQuotaListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourceQuotaListProps(obj: ResourceQuotaListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10575,7 +11504,7 @@ export function toJson_ResourceQuotaListProps(obj: ResourceQuotaListProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Secret holds secret data of a certain type. The total bytes of the values in the Data field must be less than MaxSecretSize bytes.
@@ -10623,7 +11552,7 @@ export interface SecretProps {
 /**
  * Converts an object of type 'SecretProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretProps(obj: SecretProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10636,7 +11565,7 @@ export function toJson_SecretProps(obj: SecretProps | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SecretList is a list of Secret.
@@ -10663,7 +11592,7 @@ export interface SecretListProps {
 /**
  * Converts an object of type 'SecretListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretListProps(obj: SecretListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10673,7 +11602,7 @@ export function toJson_SecretListProps(obj: SecretListProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Service is a named abstraction of software service (for example, mysql) consisting of local port (for example 3306) that the proxy listens on, and the selector that determines which pods will answer requests sent through the proxy.
@@ -10700,7 +11629,7 @@ export interface ServiceProps {
 /**
  * Converts an object of type 'ServiceProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceProps(obj: ServiceProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10710,7 +11639,7 @@ export function toJson_ServiceProps(obj: ServiceProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceAccount binds together: * a name, understood by users, and perhaps by peripheral systems, for an identity * a principal that can be authenticated and authorized * a set of secrets
@@ -10740,7 +11669,7 @@ export interface ServiceAccountProps {
   readonly imagePullSecrets?: LocalObjectReference[];
 
   /**
-   * Secrets is a list of the secrets in the same namespace that pods running using this ServiceAccount are allowed to use. Pods are only limited to this list if this service account has a "kubernetes.io/enforce-mountable-secrets" annotation set to "true". This field should not be used to find auto-generated service account token secrets for use outside of pods. Instead, tokens can be requested directly using the TokenRequest API, or service account token secrets can be manually created. More info: https://kubernetes.io/docs/concepts/configuration/secret
+   * Secrets is a list of the secrets in the same namespace that pods running using this ServiceAccount are allowed to use. Pods are only limited to this list if this service account has a "kubernetes.io/enforce-mountable-secrets" annotation set to "true". The "kubernetes.io/enforce-mountable-secrets" annotation is deprecated since v1.32. Prefer separate namespaces to isolate access to mounted secrets. This field should not be used to find auto-generated service account token secrets for use outside of pods. Instead, tokens can be requested directly using the TokenRequest API, or service account token secrets can be manually created. More info: https://kubernetes.io/docs/concepts/configuration/secret
    *
    * @schema io.k8s.api.core.v1.ServiceAccount#secrets
    */
@@ -10751,7 +11680,7 @@ export interface ServiceAccountProps {
 /**
  * Converts an object of type 'ServiceAccountProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceAccountProps(obj: ServiceAccountProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10763,7 +11692,7 @@ export function toJson_ServiceAccountProps(obj: ServiceAccountProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceAccountList is a list of ServiceAccount objects
@@ -10790,7 +11719,7 @@ export interface ServiceAccountListProps {
 /**
  * Converts an object of type 'ServiceAccountListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceAccountListProps(obj: ServiceAccountListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10800,7 +11729,7 @@ export function toJson_ServiceAccountListProps(obj: ServiceAccountListProps | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceList holds a list of services.
@@ -10827,7 +11756,7 @@ export interface ServiceListProps {
 /**
  * Converts an object of type 'ServiceListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceListProps(obj: ServiceListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10837,7 +11766,7 @@ export function toJson_ServiceListProps(obj: ServiceListProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointSlice represents a subset of the endpoints that implement a service. For a given service there may be multiple EndpointSlice objects, selected by labels, which must be joined to produce the full set of endpoints.
@@ -10878,7 +11807,7 @@ export interface EndpointSliceProps {
 /**
  * Converts an object of type 'EndpointSliceProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointSliceProps(obj: EndpointSliceProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10890,7 +11819,7 @@ export function toJson_EndpointSliceProps(obj: EndpointSliceProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointSliceList represents a list of endpoint slices
@@ -10917,7 +11846,7 @@ export interface EndpointSliceListProps {
 /**
  * Converts an object of type 'EndpointSliceListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointSliceListProps(obj: EndpointSliceListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10927,7 +11856,7 @@ export function toJson_EndpointSliceListProps(obj: EndpointSliceListProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * FlowSchema defines the schema of a group of flows. Note that a flow is made up of a set of inbound API requests with similar attributes and is identified by a pair of strings: the name of the FlowSchema and a "flow distinguisher".
@@ -10954,7 +11883,7 @@ export interface FlowSchemaProps {
 /**
  * Converts an object of type 'FlowSchemaProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlowSchemaProps(obj: FlowSchemaProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -10964,7 +11893,7 @@ export function toJson_FlowSchemaProps(obj: FlowSchemaProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * FlowSchemaList is a list of FlowSchema objects.
@@ -10991,7 +11920,7 @@ export interface FlowSchemaListProps {
 /**
  * Converts an object of type 'FlowSchemaListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlowSchemaListProps(obj: FlowSchemaListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11001,7 +11930,7 @@ export function toJson_FlowSchemaListProps(obj: FlowSchemaListProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PriorityLevelConfiguration represents the configuration of a priority level.
@@ -11028,7 +11957,7 @@ export interface PriorityLevelConfigurationProps {
 /**
  * Converts an object of type 'PriorityLevelConfigurationProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PriorityLevelConfigurationProps(obj: PriorityLevelConfigurationProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11038,7 +11967,7 @@ export function toJson_PriorityLevelConfigurationProps(obj: PriorityLevelConfigu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.
@@ -11065,7 +11994,7 @@ export interface PriorityLevelConfigurationListProps {
 /**
  * Converts an object of type 'PriorityLevelConfigurationListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PriorityLevelConfigurationListProps(obj: PriorityLevelConfigurationListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11075,155 +12004,7 @@ export function toJson_PriorityLevelConfigurationListProps(obj: PriorityLevelCon
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * FlowSchema defines the schema of a group of flows. Note that a flow is made up of a set of inbound API requests with similar attributes and is identified by a pair of strings: the name of the FlowSchema and a "flow distinguisher".
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchema
- */
-export interface FlowSchemaV1Beta3Props {
-  /**
-   * `metadata` is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchema#metadata
-   */
-  readonly metadata?: ObjectMeta;
-
-  /**
-   * `spec` is the specification of the desired behavior of a FlowSchema. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchema#spec
-   */
-  readonly spec?: FlowSchemaSpecV1Beta3;
-
-}
-
-/**
- * Converts an object of type 'FlowSchemaV1Beta3Props' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_FlowSchemaV1Beta3Props(obj: FlowSchemaV1Beta3Props | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_FlowSchemaSpecV1Beta3(obj.spec),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * FlowSchemaList is a list of FlowSchema objects.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaList
- */
-export interface FlowSchemaListV1Beta3Props {
-  /**
-   * `metadata` is the standard list metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaList#metadata
-   */
-  readonly metadata?: ListMeta;
-
-  /**
-   * `items` is a list of FlowSchemas.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaList#items
-   */
-  readonly items: FlowSchemaV1Beta3[];
-
-}
-
-/**
- * Converts an object of type 'FlowSchemaListV1Beta3Props' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_FlowSchemaListV1Beta3Props(obj: FlowSchemaListV1Beta3Props | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': toJson_ListMeta(obj.metadata),
-    'items': obj.items?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * PriorityLevelConfiguration represents the configuration of a priority level.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration
- */
-export interface PriorityLevelConfigurationV1Beta3Props {
-  /**
-   * `metadata` is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration#metadata
-   */
-  readonly metadata?: ObjectMeta;
-
-  /**
-   * `spec` is the specification of the desired behavior of a "request-priority". More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfiguration#spec
-   */
-  readonly spec?: PriorityLevelConfigurationSpecV1Beta3;
-
-}
-
-/**
- * Converts an object of type 'PriorityLevelConfigurationV1Beta3Props' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_PriorityLevelConfigurationV1Beta3Props(obj: PriorityLevelConfigurationV1Beta3Props | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_PriorityLevelConfigurationSpecV1Beta3(obj.spec),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * PriorityLevelConfigurationList is a list of PriorityLevelConfiguration objects.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList
- */
-export interface PriorityLevelConfigurationListV1Beta3Props {
-  /**
-   * `metadata` is the standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList#metadata
-   */
-  readonly metadata?: ListMeta;
-
-  /**
-   * `items` is a list of request-priorities.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationList#items
-   */
-  readonly items: PriorityLevelConfigurationV1Beta3[];
-
-}
-
-/**
- * Converts an object of type 'PriorityLevelConfigurationListV1Beta3Props' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_PriorityLevelConfigurationListV1Beta3Props(obj: PriorityLevelConfigurationListV1Beta3Props | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': toJson_ListMeta(obj.metadata),
-    'items': obj.items?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Ingress is a collection of rules that allow inbound connections to reach the endpoints defined by a backend. An Ingress can be configured to give services externally-reachable urls, load balance traffic, terminate SSL, offer name based virtual hosting etc.
@@ -11250,7 +12031,7 @@ export interface IngressProps {
 /**
  * Converts an object of type 'IngressProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressProps(obj: IngressProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11260,7 +12041,7 @@ export function toJson_IngressProps(obj: IngressProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressClass represents the class of the Ingress, referenced by the Ingress Spec. The `ingressclass.kubernetes.io/is-default-class` annotation can be used to indicate that an IngressClass should be considered default. When a single IngressClass resource has this annotation set to true, new Ingress resources without a class specified will be assigned this default class.
@@ -11287,7 +12068,7 @@ export interface IngressClassProps {
 /**
  * Converts an object of type 'IngressClassProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressClassProps(obj: IngressClassProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11297,7 +12078,7 @@ export function toJson_IngressClassProps(obj: IngressClassProps | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressClassList is a collection of IngressClasses.
@@ -11324,7 +12105,7 @@ export interface IngressClassListProps {
 /**
  * Converts an object of type 'IngressClassListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressClassListProps(obj: IngressClassListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11334,7 +12115,7 @@ export function toJson_IngressClassListProps(obj: IngressClassListProps | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressList is a collection of Ingress.
@@ -11361,7 +12142,7 @@ export interface IngressListProps {
 /**
  * Converts an object of type 'IngressListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressListProps(obj: IngressListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11371,7 +12152,7 @@ export function toJson_IngressListProps(obj: IngressListProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicy describes what network traffic is allowed for a set of Pods
@@ -11398,7 +12179,7 @@ export interface NetworkPolicyProps {
 /**
  * Converts an object of type 'NetworkPolicyProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicyProps(obj: NetworkPolicyProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11408,7 +12189,7 @@ export function toJson_NetworkPolicyProps(obj: NetworkPolicyProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicyList is a list of NetworkPolicy objects.
@@ -11435,7 +12216,7 @@ export interface NetworkPolicyListProps {
 /**
  * Converts an object of type 'NetworkPolicyListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicyListProps(obj: NetworkPolicyListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11445,72 +12226,72 @@ export function toJson_NetworkPolicyListProps(obj: NetworkPolicyListProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IPAddress represents a single IP of a single IP Family. The object is designed to be used by APIs that operate on IP addresses. The object is used by the Service core API for allocation of IP addresses. An IP address can be represented in different formats, to guarantee the uniqueness of the IP, the name of the object is the IP address in canonical format, four decimal digits separated by dots suppressing leading zeros for IPv4 and the representation defined by RFC 5952 for IPv6. Valid: 192.168.1.5 or 2001:db8::1 or 2001:db8:aaaa:bbbb:cccc:dddd:eeee:1 Invalid: 10.01.2.3 or 2001:db8:0:0:0::1
  *
- * @schema io.k8s.api.networking.v1alpha1.IPAddress
+ * @schema io.k8s.api.networking.v1beta1.IPAddress
  */
-export interface IpAddressV1Alpha1Props {
+export interface IpAddressV1Beta1Props {
   /**
    * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
    *
-   * @schema io.k8s.api.networking.v1alpha1.IPAddress#metadata
+   * @schema io.k8s.api.networking.v1beta1.IPAddress#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
    * spec is the desired state of the IPAddress. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
    *
-   * @schema io.k8s.api.networking.v1alpha1.IPAddress#spec
+   * @schema io.k8s.api.networking.v1beta1.IPAddress#spec
    */
-  readonly spec?: IpAddressSpecV1Alpha1;
+  readonly spec?: IpAddressSpecV1Beta1;
 
 }
 
 /**
- * Converts an object of type 'IpAddressV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'IpAddressV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_IpAddressV1Alpha1Props(obj: IpAddressV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IpAddressV1Beta1Props(obj: IpAddressV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_IpAddressSpecV1Alpha1(obj.spec),
+    'spec': toJson_IpAddressSpecV1Beta1(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IPAddressList contains a list of IPAddress.
  *
- * @schema io.k8s.api.networking.v1alpha1.IPAddressList
+ * @schema io.k8s.api.networking.v1beta1.IPAddressList
  */
-export interface IpAddressListV1Alpha1Props {
+export interface IpAddressListV1Beta1Props {
   /**
    * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
    *
-   * @schema io.k8s.api.networking.v1alpha1.IPAddressList#metadata
+   * @schema io.k8s.api.networking.v1beta1.IPAddressList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * items is the list of IPAddresses.
    *
-   * @schema io.k8s.api.networking.v1alpha1.IPAddressList#items
+   * @schema io.k8s.api.networking.v1beta1.IPAddressList#items
    */
-  readonly items: IpAddressV1Alpha1[];
+  readonly items: IpAddressV1Beta1[];
 
 }
 
 /**
- * Converts an object of type 'IpAddressListV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'IpAddressListV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_IpAddressListV1Alpha1Props(obj: IpAddressListV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IpAddressListV1Beta1Props(obj: IpAddressListV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -11519,72 +12300,72 @@ export function toJson_IpAddressListV1Alpha1Props(obj: IpAddressListV1Alpha1Prop
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceCIDR defines a range of IP addresses using CIDR format (e.g. 192.168.0.0/24 or 2001:db2::/64). This range is used to allocate ClusterIPs to Service objects.
  *
- * @schema io.k8s.api.networking.v1alpha1.ServiceCIDR
+ * @schema io.k8s.api.networking.v1beta1.ServiceCIDR
  */
-export interface ServiceCidrv1Alpha1Props {
+export interface ServiceCidrv1Beta1Props {
   /**
    * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
    *
-   * @schema io.k8s.api.networking.v1alpha1.ServiceCIDR#metadata
+   * @schema io.k8s.api.networking.v1beta1.ServiceCIDR#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
    * spec is the desired state of the ServiceCIDR. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
    *
-   * @schema io.k8s.api.networking.v1alpha1.ServiceCIDR#spec
+   * @schema io.k8s.api.networking.v1beta1.ServiceCIDR#spec
    */
-  readonly spec?: ServiceCidrSpecV1Alpha1;
+  readonly spec?: ServiceCidrSpecV1Beta1;
 
 }
 
 /**
- * Converts an object of type 'ServiceCidrv1Alpha1Props' to JSON representation.
+ * Converts an object of type 'ServiceCidrv1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ServiceCidrv1Alpha1Props(obj: ServiceCidrv1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ServiceCidrv1Beta1Props(obj: ServiceCidrv1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_ServiceCidrSpecV1Alpha1(obj.spec),
+    'spec': toJson_ServiceCidrSpecV1Beta1(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceCIDRList contains a list of ServiceCIDR objects.
  *
- * @schema io.k8s.api.networking.v1alpha1.ServiceCIDRList
+ * @schema io.k8s.api.networking.v1beta1.ServiceCIDRList
  */
-export interface ServiceCidrListV1Alpha1Props {
+export interface ServiceCidrListV1Beta1Props {
   /**
    * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
    *
-   * @schema io.k8s.api.networking.v1alpha1.ServiceCIDRList#metadata
+   * @schema io.k8s.api.networking.v1beta1.ServiceCIDRList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * items is the list of ServiceCIDRs.
    *
-   * @schema io.k8s.api.networking.v1alpha1.ServiceCIDRList#items
+   * @schema io.k8s.api.networking.v1beta1.ServiceCIDRList#items
    */
-  readonly items: ServiceCidrv1Alpha1[];
+  readonly items: ServiceCidrv1Beta1[];
 
 }
 
 /**
- * Converts an object of type 'ServiceCidrListV1Alpha1Props' to JSON representation.
+ * Converts an object of type 'ServiceCidrListV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ServiceCidrListV1Alpha1Props(obj: ServiceCidrListV1Alpha1Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ServiceCidrListV1Beta1Props(obj: ServiceCidrListV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -11593,7 +12374,7 @@ export function toJson_ServiceCidrListV1Alpha1Props(obj: ServiceCidrListV1Alpha1
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RuntimeClass defines a class of container runtime supported in the cluster. The RuntimeClass is used to determine which container runtime is used to run all containers in a pod. RuntimeClasses are manually defined by a user or cluster provisioner, and referenced in the PodSpec. The Kubelet is responsible for resolving the RuntimeClassName reference before running the pod.  For more details, see https://kubernetes.io/docs/concepts/containers/runtime-class/
@@ -11635,7 +12416,7 @@ export interface RuntimeClassProps {
 /**
  * Converts an object of type 'RuntimeClassProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RuntimeClassProps(obj: RuntimeClassProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11647,7 +12428,7 @@ export function toJson_RuntimeClassProps(obj: RuntimeClassProps | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RuntimeClassList is a list of RuntimeClass objects.
@@ -11674,7 +12455,7 @@ export interface RuntimeClassListProps {
 /**
  * Converts an object of type 'RuntimeClassListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RuntimeClassListProps(obj: RuntimeClassListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11684,7 +12465,7 @@ export function toJson_RuntimeClassListProps(obj: RuntimeClassListProps | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Eviction evicts a pod from its node subject to certain policies and safety constraints. This is a subresource of Pod.  A request to cause such an eviction is created by POSTing to .../pods/<pod name>/evictions.
@@ -11711,7 +12492,7 @@ export interface EvictionProps {
 /**
  * Converts an object of type 'EvictionProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EvictionProps(obj: EvictionProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11721,7 +12502,7 @@ export function toJson_EvictionProps(obj: EvictionProps | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodDisruptionBudget is an object to define the max disruption that can be caused to a collection of pods
@@ -11748,7 +12529,7 @@ export interface PodDisruptionBudgetProps {
 /**
  * Converts an object of type 'PodDisruptionBudgetProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodDisruptionBudgetProps(obj: PodDisruptionBudgetProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11758,7 +12539,7 @@ export function toJson_PodDisruptionBudgetProps(obj: PodDisruptionBudgetProps | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodDisruptionBudgetList is a collection of PodDisruptionBudgets.
@@ -11785,7 +12566,7 @@ export interface PodDisruptionBudgetListProps {
 /**
  * Converts an object of type 'PodDisruptionBudgetListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodDisruptionBudgetListProps(obj: PodDisruptionBudgetListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11795,7 +12576,7 @@ export function toJson_PodDisruptionBudgetListProps(obj: PodDisruptionBudgetList
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterRole is a cluster level, logical grouping of PolicyRules that can be referenced as a unit by a RoleBinding or ClusterRoleBinding.
@@ -11829,7 +12610,7 @@ export interface ClusterRoleProps {
 /**
  * Converts an object of type 'ClusterRoleProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterRoleProps(obj: ClusterRoleProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11840,7 +12621,7 @@ export function toJson_ClusterRoleProps(obj: ClusterRoleProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterRoleBinding references a ClusterRole, but not contain it.  It can reference a ClusterRole in the global namespace, and adds who information via Subject.
@@ -11874,7 +12655,7 @@ export interface ClusterRoleBindingProps {
 /**
  * Converts an object of type 'ClusterRoleBindingProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterRoleBindingProps(obj: ClusterRoleBindingProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11885,7 +12666,7 @@ export function toJson_ClusterRoleBindingProps(obj: ClusterRoleBindingProps | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterRoleBindingList is a collection of ClusterRoleBindings
@@ -11912,7 +12693,7 @@ export interface ClusterRoleBindingListProps {
 /**
  * Converts an object of type 'ClusterRoleBindingListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterRoleBindingListProps(obj: ClusterRoleBindingListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11922,7 +12703,7 @@ export function toJson_ClusterRoleBindingListProps(obj: ClusterRoleBindingListPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterRoleList is a collection of ClusterRoles
@@ -11949,7 +12730,7 @@ export interface ClusterRoleListProps {
 /**
  * Converts an object of type 'ClusterRoleListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterRoleListProps(obj: ClusterRoleListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11959,7 +12740,7 @@ export function toJson_ClusterRoleListProps(obj: ClusterRoleListProps | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Role is a namespaced, logical grouping of PolicyRules that can be referenced as a unit by a RoleBinding.
@@ -11986,7 +12767,7 @@ export interface RoleProps {
 /**
  * Converts an object of type 'RoleProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RoleProps(obj: RoleProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -11996,7 +12777,7 @@ export function toJson_RoleProps(obj: RoleProps | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RoleBinding references a role, but does not contain it.  It can reference a Role in the same namespace or a ClusterRole in the global namespace. It adds who information via Subjects and namespace information by which namespace it exists in.  RoleBindings in a given namespace only have effect in that namespace.
@@ -12030,7 +12811,7 @@ export interface RoleBindingProps {
 /**
  * Converts an object of type 'RoleBindingProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RoleBindingProps(obj: RoleBindingProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12041,7 +12822,7 @@ export function toJson_RoleBindingProps(obj: RoleBindingProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RoleBindingList is a collection of RoleBindings
@@ -12068,7 +12849,7 @@ export interface RoleBindingListProps {
 /**
  * Converts an object of type 'RoleBindingListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RoleBindingListProps(obj: RoleBindingListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12078,7 +12859,7 @@ export function toJson_RoleBindingListProps(obj: RoleBindingListProps | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RoleList is a collection of Roles
@@ -12105,7 +12886,7 @@ export interface RoleListProps {
 /**
  * Converts an object of type 'RoleListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RoleListProps(obj: RoleListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12115,74 +12896,78 @@ export function toJson_RoleListProps(obj: RoleListProps | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PodSchedulingContext objects hold information that is needed to schedule a Pod with ResourceClaims that use "WaitForFirstConsumer" allocation mode.
+ * DeviceClass is a vendor- or admin-provided resource that contains device configuration and selectors. It can be referenced in the device requests of a claim to apply these presets. Cluster scoped.
  *
  * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContext
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClass
  */
-export interface PodSchedulingContextV1Alpha2Props {
+export interface DeviceClassV1Alpha3Props {
   /**
    * Standard object metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContext#metadata
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClass#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
-   * Spec describes where resources for the Pod are needed.
+   * Spec defines what can be allocated and how to configure it.
    *
-   * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContext#spec
+   * This is mutable. Consumers have to be prepared for classes changing at any time, either because they get updated or replaced. Claim allocations are done once based on whatever was set in classes at the time of allocation.
+   *
+   * Changing the spec automatically increments the metadata.generation number.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClass#spec
    */
-  readonly spec: PodSchedulingContextSpecV1Alpha2;
+  readonly spec: DeviceClassSpecV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'PodSchedulingContextV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'DeviceClassV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_PodSchedulingContextV1Alpha2Props(obj: PodSchedulingContextV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassV1Alpha3Props(obj: DeviceClassV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_PodSchedulingContextSpecV1Alpha2(obj.spec),
+    'spec': toJson_DeviceClassSpecV1Alpha3(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PodSchedulingContextList is a collection of Pod scheduling objects.
+ * DeviceClassList is a collection of classes.
  *
- * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextList
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClassList
  */
-export interface PodSchedulingContextListV1Alpha2Props {
+export interface DeviceClassListV1Alpha3Props {
   /**
    * Standard list metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextList#metadata
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClassList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
-   * Items is the list of PodSchedulingContext objects.
+   * Items is the list of resource classes.
    *
-   * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextList#items
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClassList#items
    */
-  readonly items: PodSchedulingContextV1Alpha2[];
+  readonly items: DeviceClassV1Alpha3[];
 
 }
 
 /**
- * Converts an object of type 'PodSchedulingContextListV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'DeviceClassListV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_PodSchedulingContextListV1Alpha2Props(obj: PodSchedulingContextListV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassListV1Alpha3Props(obj: DeviceClassListV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -12191,74 +12976,74 @@ export function toJson_PodSchedulingContextListV1Alpha2Props(obj: PodSchedulingC
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ResourceClaim describes which resources are needed by a resource consumer. Its status tracks whether the resource has been allocated and what the resulting attributes are.
+ * ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
  *
  * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaim
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaim
  */
-export interface ResourceClaimV1Alpha2Props {
+export interface ResourceClaimV1Alpha3Props {
   /**
    * Standard object metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaim#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaim#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
-   * Spec describes the desired attributes of a resource that then needs to be allocated. It can only be set once when creating the ResourceClaim.
+   * Spec describes what is being requested and how to configure it. The spec is immutable.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaim#spec
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaim#spec
    */
-  readonly spec: ResourceClaimSpecV1Alpha2;
+  readonly spec: ResourceClaimSpecV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'ResourceClaimV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimV1Alpha2Props(obj: ResourceClaimV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimV1Alpha3Props(obj: ResourceClaimV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_ResourceClaimSpecV1Alpha2(obj.spec),
+    'spec': toJson_ResourceClaimSpecV1Alpha3(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaimList is a collection of claims.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimList
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimList
  */
-export interface ResourceClaimListV1Alpha2Props {
+export interface ResourceClaimListV1Alpha3Props {
   /**
    * Standard list metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimList#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * Items is the list of resource claims.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimList#items
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimList#items
    */
-  readonly items: ResourceClaimV1Alpha2[];
+  readonly items: ResourceClaimV1Alpha3[];
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimListV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'ResourceClaimListV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimListV1Alpha2Props(obj: ResourceClaimListV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimListV1Alpha3Props(obj: ResourceClaimListV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -12267,18 +13052,20 @@ export function toJson_ResourceClaimListV1Alpha2Props(obj: ResourceClaimListV1Al
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaimTemplate is used to produce ResourceClaim objects.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplate
+ * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplate
  */
-export interface ResourceClaimTemplateV1Alpha2Props {
+export interface ResourceClaimTemplateV1Alpha3Props {
   /**
    * Standard object metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplate#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplate#metadata
    */
   readonly metadata?: ObjectMeta;
 
@@ -12287,54 +13074,54 @@ export interface ResourceClaimTemplateV1Alpha2Props {
    *
    * This field is immutable. A ResourceClaim will get created by the control plane for a Pod when needed and then not get updated anymore.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplate#spec
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplate#spec
    */
-  readonly spec: ResourceClaimTemplateSpecV1Alpha2;
+  readonly spec: ResourceClaimTemplateSpecV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimTemplateV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'ResourceClaimTemplateV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimTemplateV1Alpha2Props(obj: ResourceClaimTemplateV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimTemplateV1Alpha3Props(obj: ResourceClaimTemplateV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_ResourceClaimTemplateSpecV1Alpha2(obj.spec),
+    'spec': toJson_ResourceClaimTemplateSpecV1Alpha3(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaimTemplateList is a collection of claim templates.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList
  */
-export interface ResourceClaimTemplateListV1Alpha2Props {
+export interface ResourceClaimTemplateListV1Alpha3Props {
   /**
    * Standard list metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * Items is the list of resource claim templates.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateList#items
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateList#items
    */
-  readonly items: ResourceClaimTemplateV1Alpha2[];
+  readonly items: ResourceClaimTemplateV1Alpha3[];
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimTemplateListV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'ResourceClaimTemplateListV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimTemplateListV1Alpha2Props(obj: ResourceClaimTemplateListV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimTemplateListV1Alpha3Props(obj: ResourceClaimTemplateListV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -12343,94 +13130,164 @@ export function toJson_ResourceClaimTemplateListV1Alpha2Props(obj: ResourceClaim
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ResourceClass is used by administrators to influence how resources are allocated.
+ * ResourceSlice represents one or more resources in a pool of similar resources, managed by a common driver. A pool may span more than one ResourceSlice, and exactly how many ResourceSlices comprise a pool is determined by the driver.
+ *
+ * At the moment, the only supported resources are devices with attributes and capacities. Each device in a given pool, regardless of how many ResourceSlices, must have a unique name. The ResourceSlice in which a device gets published may change over time. The unique identifier for a device is the tuple <driver name>, <pool name>, <device name>.
+ *
+ * Whenever a driver needs to update a pool, it increments the pool.Spec.Pool.Generation number and updates all ResourceSlices with that new number and new resource definitions. A consumer must only use ResourceSlices with the highest generation number and ignore all others.
+ *
+ * When allocating all resources in a pool matching certain criteria or when looking for the best solution among several different alternatives, a consumer should check the number of ResourceSlices in a pool (included in each ResourceSlice) to determine whether its view of a pool is complete and if not, should wait until the driver has completed updating the pool.
+ *
+ * For resources that are not local to a node, the node name is not set. Instead, the driver may use a node selector to specify where the devices are available.
  *
  * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClass
+ * @schema io.k8s.api.resource.v1alpha3.ResourceSlice
  */
-export interface ResourceClassV1Alpha2Props {
+export interface ResourceSliceV1Alpha3Props {
   /**
    * Standard object metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClass#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSlice#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
-   * DriverName defines the name of the dynamic resource driver that is used for allocation of a ResourceClaim that uses this class.
+   * Contains the information published by the driver.
    *
-   * Resource drivers have a unique name in forward domain order (acme.example.com).
+   * Changing the spec automatically increments the metadata.generation number.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClass#driverName
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSlice#spec
    */
-  readonly driverName: string;
-
-  /**
-   * ParametersRef references an arbitrary separate object that may hold parameters that will be used by the driver when allocating a resource that uses this class. A dynamic resource driver can distinguish between parameters stored here and and those stored in ResourceClaimSpec.
-   *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClass#parametersRef
-   */
-  readonly parametersRef?: ResourceClassParametersReferenceV1Alpha2;
-
-  /**
-   * Only nodes matching the selector will be considered by the scheduler when trying to find a Node that fits a Pod when that Pod uses a ResourceClaim that has not been allocated yet.
-   *
-   * Setting this field is optional. If null, all nodes are candidates.
-   *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClass#suitableNodes
-   */
-  readonly suitableNodes?: NodeSelector;
+  readonly spec: ResourceSliceSpecV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'ResourceClassV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'ResourceSliceV1Alpha3Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClassV1Alpha2Props(obj: ResourceClassV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceSliceV1Alpha3Props(obj: ResourceSliceV1Alpha3Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'driverName': obj.driverName,
-    'parametersRef': toJson_ResourceClassParametersReferenceV1Alpha2(obj.parametersRef),
-    'suitableNodes': toJson_NodeSelector(obj.suitableNodes),
+    'spec': toJson_ResourceSliceSpecV1Alpha3(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ResourceClassList is a collection of classes.
+ * ResourceSliceList is a collection of ResourceSlices.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClassList
+ * @schema io.k8s.api.resource.v1alpha3.ResourceSliceList
  */
-export interface ResourceClassListV1Alpha2Props {
+export interface ResourceSliceListV1Alpha3Props {
   /**
    * Standard list metadata
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClassList#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * Items is the list of resource ResourceSlices.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceList#items
+   */
+  readonly items: ResourceSliceV1Alpha3[];
+
+}
+
+/**
+ * Converts an object of type 'ResourceSliceListV1Alpha3Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceSliceListV1Alpha3Props(obj: ResourceSliceListV1Alpha3Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClass is a vendor- or admin-provided resource that contains device configuration and selectors. It can be referenced in the device requests of a claim to apply these presets. Cluster scoped.
+ *
+ * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClass
+ */
+export interface DeviceClassV1Beta1Props {
+  /**
+   * Standard object metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClass#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Spec defines what can be allocated and how to configure it.
+   *
+   * This is mutable. Consumers have to be prepared for classes changing at any time, either because they get updated or replaced. Claim allocations are done once based on whatever was set in classes at the time of allocation.
+   *
+   * Changing the spec automatically increments the metadata.generation number.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClass#spec
+   */
+  readonly spec: DeviceClassSpecV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'DeviceClassV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassV1Beta1Props(obj: DeviceClassV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_DeviceClassSpecV1Beta1(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClassList is a collection of classes.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClassList
+ */
+export interface DeviceClassListV1Beta1Props {
+  /**
+   * Standard list metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClassList#metadata
    */
   readonly metadata?: ListMeta;
 
   /**
    * Items is the list of resource classes.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClassList#items
+   * @schema io.k8s.api.resource.v1beta1.DeviceClassList#items
    */
-  readonly items: ResourceClassV1Alpha2[];
+  readonly items: DeviceClassV1Beta1[];
 
 }
 
 /**
- * Converts an object of type 'ResourceClassListV1Alpha2Props' to JSON representation.
+ * Converts an object of type 'DeviceClassListV1Beta1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClassListV1Alpha2Props(obj: ResourceClassListV1Alpha2Props | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassListV1Beta1Props(obj: DeviceClassListV1Beta1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ListMeta(obj.metadata),
@@ -12439,7 +13296,247 @@ export function toJson_ResourceClassListV1Alpha2Props(obj: ResourceClassListV1Al
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceClaim describes a request for access to resources in the cluster, for use by workloads. For example, if a workload needs an accelerator device with specific properties, this is how that request is expressed. The status stanza tracks whether this claim has been satisfied and what specific resources have been allocated.
+ *
+ * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaim
+ */
+export interface ResourceClaimV1Beta1Props {
+  /**
+   * Standard object metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaim#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Spec describes what is being requested and how to configure it. The spec is immutable.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaim#spec
+   */
+  readonly spec: ResourceClaimSpecV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'ResourceClaimV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimV1Beta1Props(obj: ResourceClaimV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_ResourceClaimSpecV1Beta1(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceClaimList is a collection of claims.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimList
+ */
+export interface ResourceClaimListV1Beta1Props {
+  /**
+   * Standard list metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * Items is the list of resource claims.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimList#items
+   */
+  readonly items: ResourceClaimV1Beta1[];
+
+}
+
+/**
+ * Converts an object of type 'ResourceClaimListV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimListV1Beta1Props(obj: ResourceClaimListV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceClaimTemplate is used to produce ResourceClaim objects.
+ *
+ * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplate
+ */
+export interface ResourceClaimTemplateV1Beta1Props {
+  /**
+   * Standard object metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplate#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Describes the ResourceClaim that is to be generated.
+   *
+   * This field is immutable. A ResourceClaim will get created by the control plane for a Pod when needed and then not get updated anymore.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplate#spec
+   */
+  readonly spec: ResourceClaimTemplateSpecV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'ResourceClaimTemplateV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimTemplateV1Beta1Props(obj: ResourceClaimTemplateV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_ResourceClaimTemplateSpecV1Beta1(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceClaimTemplateList is a collection of claim templates.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateList
+ */
+export interface ResourceClaimTemplateListV1Beta1Props {
+  /**
+   * Standard list metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * Items is the list of resource claim templates.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateList#items
+   */
+  readonly items: ResourceClaimTemplateV1Beta1[];
+
+}
+
+/**
+ * Converts an object of type 'ResourceClaimTemplateListV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimTemplateListV1Beta1Props(obj: ResourceClaimTemplateListV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceSlice represents one or more resources in a pool of similar resources, managed by a common driver. A pool may span more than one ResourceSlice, and exactly how many ResourceSlices comprise a pool is determined by the driver.
+ *
+ * At the moment, the only supported resources are devices with attributes and capacities. Each device in a given pool, regardless of how many ResourceSlices, must have a unique name. The ResourceSlice in which a device gets published may change over time. The unique identifier for a device is the tuple <driver name>, <pool name>, <device name>.
+ *
+ * Whenever a driver needs to update a pool, it increments the pool.Spec.Pool.Generation number and updates all ResourceSlices with that new number and new resource definitions. A consumer must only use ResourceSlices with the highest generation number and ignore all others.
+ *
+ * When allocating all resources in a pool matching certain criteria or when looking for the best solution among several different alternatives, a consumer should check the number of ResourceSlices in a pool (included in each ResourceSlice) to determine whether its view of a pool is complete and if not, should wait until the driver has completed updating the pool.
+ *
+ * For resources that are not local to a node, the node name is not set. Instead, the driver may use a node selector to specify where the devices are available.
+ *
+ * This is an alpha type and requires enabling the DynamicResourceAllocation feature gate.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceSlice
+ */
+export interface ResourceSliceV1Beta1Props {
+  /**
+   * Standard object metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSlice#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Contains the information published by the driver.
+   *
+   * Changing the spec automatically increments the metadata.generation number.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSlice#spec
+   */
+  readonly spec: ResourceSliceSpecV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'ResourceSliceV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceSliceV1Beta1Props(obj: ResourceSliceV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_ResourceSliceSpecV1Beta1(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceSliceList is a collection of ResourceSlices.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceSliceList
+ */
+export interface ResourceSliceListV1Beta1Props {
+  /**
+   * Standard list metadata
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * Items is the list of resource ResourceSlices.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceList#items
+   */
+  readonly items: ResourceSliceV1Beta1[];
+
+}
+
+/**
+ * Converts an object of type 'ResourceSliceListV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceSliceListV1Beta1Props(obj: ResourceSliceListV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PriorityClass defines mapping from a priority class name to the priority integer value. The value can be any valid integer.
@@ -12488,7 +13585,7 @@ export interface PriorityClassProps {
 /**
  * Converts an object of type 'PriorityClassProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PriorityClassProps(obj: PriorityClassProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12501,7 +13598,7 @@ export function toJson_PriorityClassProps(obj: PriorityClassProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PriorityClassList is a collection of priority classes.
@@ -12528,7 +13625,7 @@ export interface PriorityClassListProps {
 /**
  * Converts an object of type 'PriorityClassListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PriorityClassListProps(obj: PriorityClassListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12538,7 +13635,7 @@ export function toJson_PriorityClassListProps(obj: PriorityClassListProps | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSIDriver captures information about a Container Storage Interface (CSI) volume driver deployed on the cluster. Kubernetes attach detach controller uses this object to determine whether attach is required. Kubelet uses this object to determine whether pod information needs to be passed on mount. CSIDriver objects are non-namespaced.
@@ -12565,7 +13662,7 @@ export interface CsiDriverProps {
 /**
  * Converts an object of type 'CsiDriverProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiDriverProps(obj: CsiDriverProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12575,7 +13672,7 @@ export function toJson_CsiDriverProps(obj: CsiDriverProps | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSIDriverList is a collection of CSIDriver objects.
@@ -12602,7 +13699,7 @@ export interface CsiDriverListProps {
 /**
  * Converts an object of type 'CsiDriverListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiDriverListProps(obj: CsiDriverListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12612,7 +13709,7 @@ export function toJson_CsiDriverListProps(obj: CsiDriverListProps | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSINode holds information about all CSI drivers installed on a node. CSI drivers do not need to create the CSINode object directly. As long as they use the node-driver-registrar sidecar container, the kubelet will automatically populate the CSINode object for the CSI driver as part of kubelet plugin registration. CSINode has the same name as a node. If the object is missing, it means either there are no CSI Drivers available on the node, or the Kubelet version is low enough that it doesn't create this object. CSINode has an OwnerReference that points to the corresponding node object.
@@ -12639,7 +13736,7 @@ export interface CsiNodeProps {
 /**
  * Converts an object of type 'CsiNodeProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiNodeProps(obj: CsiNodeProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12649,7 +13746,7 @@ export function toJson_CsiNodeProps(obj: CsiNodeProps | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSINodeList is a collection of CSINode objects.
@@ -12676,7 +13773,7 @@ export interface CsiNodeListProps {
 /**
  * Converts an object of type 'CsiNodeListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiNodeListProps(obj: CsiNodeListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12686,7 +13783,7 @@ export function toJson_CsiNodeListProps(obj: CsiNodeListProps | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSIStorageCapacity stores the result of one CSI GetCapacity call. For a given StorageClass, this describes the available capacity in a particular topology segment.  This can be used when considering where to instantiate new PersistentVolumes.
@@ -12750,7 +13847,7 @@ export interface CsiStorageCapacityProps {
 /**
  * Converts an object of type 'CsiStorageCapacityProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiStorageCapacityProps(obj: CsiStorageCapacityProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12763,7 +13860,7 @@ export function toJson_CsiStorageCapacityProps(obj: CsiStorageCapacityProps | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSIStorageCapacityList is a collection of CSIStorageCapacity objects.
@@ -12790,7 +13887,7 @@ export interface CsiStorageCapacityListProps {
 /**
  * Converts an object of type 'CsiStorageCapacityListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiStorageCapacityListProps(obj: CsiStorageCapacityListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12800,7 +13897,7 @@ export function toJson_CsiStorageCapacityListProps(obj: CsiStorageCapacityListPr
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StorageClass describes the parameters for a class of storage for which PersistentVolumes can be dynamically provisioned.
@@ -12872,7 +13969,7 @@ export interface StorageClassProps {
 /**
  * Converts an object of type 'StorageClassProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StorageClassProps(obj: StorageClassProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12888,7 +13985,7 @@ export function toJson_StorageClassProps(obj: StorageClassProps | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StorageClassList is a collection of storage classes.
@@ -12915,7 +14012,7 @@ export interface StorageClassListProps {
 /**
  * Converts an object of type 'StorageClassListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StorageClassListProps(obj: StorageClassListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12925,7 +14022,7 @@ export function toJson_StorageClassListProps(obj: StorageClassListProps | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeAttachment captures the intent to attach or detach the specified volume to/from the specified node.
@@ -12954,7 +14051,7 @@ export interface VolumeAttachmentProps {
 /**
  * Converts an object of type 'VolumeAttachmentProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeAttachmentProps(obj: VolumeAttachmentProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -12964,7 +14061,7 @@ export function toJson_VolumeAttachmentProps(obj: VolumeAttachmentProps | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeAttachmentList is a collection of VolumeAttachment objects.
@@ -12991,7 +14088,7 @@ export interface VolumeAttachmentListProps {
 /**
  * Converts an object of type 'VolumeAttachmentListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeAttachmentListProps(obj: VolumeAttachmentListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13001,7 +14098,7 @@ export function toJson_VolumeAttachmentListProps(obj: VolumeAttachmentListProps 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeAttributesClass represents a specification of mutable volume attributes defined by the CSI driver. The class can be specified during dynamic provisioning of PersistentVolumeClaims, and changed in the PersistentVolumeClaim spec after provisioning.
@@ -13037,7 +14134,7 @@ export interface VolumeAttributesClassV1Alpha1Props {
 /**
  * Converts an object of type 'VolumeAttributesClassV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeAttributesClassV1Alpha1Props(obj: VolumeAttributesClassV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13048,7 +14145,7 @@ export function toJson_VolumeAttributesClassV1Alpha1Props(obj: VolumeAttributesC
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeAttributesClassList is a collection of VolumeAttributesClass objects.
@@ -13075,7 +14172,7 @@ export interface VolumeAttributesClassListV1Alpha1Props {
 /**
  * Converts an object of type 'VolumeAttributesClassListV1Alpha1Props' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeAttributesClassListV1Alpha1Props(obj: VolumeAttributesClassListV1Alpha1Props | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13085,7 +14182,165 @@ export function toJson_VolumeAttributesClassListV1Alpha1Props(obj: VolumeAttribu
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * VolumeAttributesClass represents a specification of mutable volume attributes defined by the CSI driver. The class can be specified during dynamic provisioning of PersistentVolumeClaims, and changed in the PersistentVolumeClaim spec after provisioning.
+ *
+ * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClass
+ */
+export interface VolumeAttributesClassV1Beta1Props {
+  /**
+   * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+   *
+   * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClass#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Name of the CSI driver This field is immutable.
+   *
+   * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClass#driverName
+   */
+  readonly driverName: string;
+
+  /**
+   * parameters hold volume attributes defined by the CSI driver. These values are opaque to the Kubernetes and are passed directly to the CSI driver. The underlying storage provider supports changing these attributes on an existing volume, however the parameters field itself is immutable. To invoke a volume update, a new VolumeAttributesClass should be created with new parameters, and the PersistentVolumeClaim should be updated to reference the new VolumeAttributesClass.
+   *
+   * This field is required and must contain at least one key/value pair. The keys cannot be empty, and the maximum number of parameters is 512, with a cumulative max size of 256K. If the CSI driver rejects invalid parameters, the target PersistentVolumeClaim will be set to an "Infeasible" state in the modifyVolumeStatus field.
+   *
+   * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClass#parameters
+   */
+  readonly parameters?: { [key: string]: string };
+
+}
+
+/**
+ * Converts an object of type 'VolumeAttributesClassV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_VolumeAttributesClassV1Beta1Props(obj: VolumeAttributesClassV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'driverName': obj.driverName,
+    'parameters': ((obj.parameters) === undefined) ? undefined : (Object.entries(obj.parameters).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * VolumeAttributesClassList is a collection of VolumeAttributesClass objects.
+ *
+ * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClassList
+ */
+export interface VolumeAttributesClassListV1Beta1Props {
+  /**
+   * Standard list metadata More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+   *
+   * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClassList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * items is the list of VolumeAttributesClass objects.
+   *
+   * @schema io.k8s.api.storage.v1beta1.VolumeAttributesClassList#items
+   */
+  readonly items: VolumeAttributesClassV1Beta1[];
+
+}
+
+/**
+ * Converts an object of type 'VolumeAttributesClassListV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_VolumeAttributesClassListV1Beta1Props(obj: VolumeAttributesClassListV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * StorageVersionMigration represents a migration of stored data to the latest storage version.
+ *
+ * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration
+ */
+export interface StorageVersionMigrationV1Alpha1Props {
+  /**
+   * Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Specification of the migration.
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigration#spec
+   */
+  readonly spec?: StorageVersionMigrationSpecV1Alpha1;
+
+}
+
+/**
+ * Converts an object of type 'StorageVersionMigrationV1Alpha1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_StorageVersionMigrationV1Alpha1Props(obj: StorageVersionMigrationV1Alpha1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_StorageVersionMigrationSpecV1Alpha1(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * StorageVersionMigrationList is a collection of storage version migrations.
+ *
+ * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList
+ */
+export interface StorageVersionMigrationListV1Alpha1Props {
+  /**
+   * Standard list metadata More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList#metadata
+   */
+  readonly metadata?: ListMeta;
+
+  /**
+   * Items is the list of StorageVersionMigration
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationList#items
+   */
+  readonly items: StorageVersionMigrationV1Alpha1[];
+
+}
+
+/**
+ * Converts an object of type 'StorageVersionMigrationListV1Alpha1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_StorageVersionMigrationListV1Alpha1Props(obj: StorageVersionMigrationListV1Alpha1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ListMeta(obj.metadata),
+    'items': obj.items?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceDefinition represents a resource that should be exposed on the API server.  Its name MUST be in the format <.spec.name>.<.spec.group>.
@@ -13112,7 +14367,7 @@ export interface CustomResourceDefinitionProps {
 /**
  * Converts an object of type 'CustomResourceDefinitionProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceDefinitionProps(obj: CustomResourceDefinitionProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13122,7 +14377,7 @@ export function toJson_CustomResourceDefinitionProps(obj: CustomResourceDefiniti
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceDefinitionList is a list of CustomResourceDefinition objects.
@@ -13149,7 +14404,7 @@ export interface CustomResourceDefinitionListProps {
 /**
  * Converts an object of type 'CustomResourceDefinitionListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceDefinitionListProps(obj: CustomResourceDefinitionListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13159,7 +14414,7 @@ export function toJson_CustomResourceDefinitionListProps(obj: CustomResourceDefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Status is a return value for calls that don't return other objects.
@@ -13207,7 +14462,7 @@ export interface StatusProps {
 /**
  * Converts an object of type 'StatusProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatusProps(obj: StatusProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13220,7 +14475,7 @@ export function toJson_StatusProps(obj: StatusProps | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * APIService represents a server for a particular GroupVersion. Name must be "version.group".
@@ -13247,7 +14502,7 @@ export interface ApiServiceProps {
 /**
  * Converts an object of type 'ApiServiceProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ApiServiceProps(obj: ApiServiceProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13257,7 +14512,7 @@ export function toJson_ApiServiceProps(obj: ApiServiceProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * APIServiceList is a list of APIService objects.
@@ -13284,7 +14539,7 @@ export interface ApiServiceListProps {
 /**
  * Converts an object of type 'ApiServiceListProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ApiServiceListProps(obj: ApiServiceListProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13294,7 +14549,7 @@ export function toJson_ApiServiceListProps(obj: ApiServiceListProps | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.
@@ -13426,7 +14681,7 @@ export interface ObjectMeta {
 /**
  * Converts an object of type 'ObjectMeta' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ObjectMeta(obj: ObjectMeta | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13449,7 +14704,7 @@ export function toJson_ObjectMeta(obj: ObjectMeta | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MutatingWebhook describes an admission webhook and the resources and operations it applies to.
@@ -13488,8 +14743,6 @@ export interface MutatingWebhook {
    * 3. If any matchCondition evaluates to an error (but none are FALSE):
    * - If failurePolicy=Fail, reject the request
    * - If failurePolicy=Ignore, the error is ignored and the webhook is skipped
-   *
-   * This is a beta feature and managed by the AdmissionWebhookMatchConditions feature gate.
    *
    * @schema io.k8s.api.admissionregistration.v1.MutatingWebhook#matchConditions
    */
@@ -13603,7 +14856,7 @@ export interface MutatingWebhook {
 /**
  * Converts an object of type 'MutatingWebhook' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MutatingWebhook(obj: MutatingWebhook | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13623,7 +14876,7 @@ export function toJson_MutatingWebhook(obj: MutatingWebhook | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.
@@ -13664,7 +14917,7 @@ export interface ListMeta {
 /**
  * Converts an object of type 'ListMeta' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ListMeta(obj: ListMeta | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13676,7 +14929,175 @@ export function toJson_ListMeta(obj: ListMeta | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ValidatingAdmissionPolicySpec is the specification of the desired behavior of the AdmissionPolicy.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec
+ */
+export interface ValidatingAdmissionPolicySpec {
+  /**
+   * auditAnnotations contains CEL expressions which are used to produce audit annotations for the audit event of the API request. validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#auditAnnotations
+   */
+  readonly auditAnnotations?: AuditAnnotation[];
+
+  /**
+   * failurePolicy defines how to handle failures for the admission policy. Failures can occur from CEL expression parse errors, type check errors, runtime errors and invalid or mis-configured policy definitions or bindings.
+   *
+   * A policy is invalid if spec.paramKind refers to a non-existent Kind. A binding is invalid if spec.paramRef.name refers to a non-existent resource.
+   *
+   * failurePolicy does not define how validations that evaluate to false are handled.
+   *
+   * When failurePolicy is set to Fail, ValidatingAdmissionPolicyBinding validationActions define how failures are enforced.
+   *
+   * Allowed values are Ignore or Fail. Defaults to Fail.
+   *
+   * @default Fail.
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#failurePolicy
+   */
+  readonly failurePolicy?: string;
+
+  /**
+   * MatchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
+   *
+   * If a parameter object is provided, it can be accessed via the `params` handle in the same manner as validation expressions.
+   *
+   * The exact matching logic is (in order):
+   * 1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
+   * 2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
+   * 3. If any matchCondition evaluates to an error (but none are FALSE):
+   * - If failurePolicy=Fail, reject the request
+   * - If failurePolicy=Ignore, the policy is skipped
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#matchConditions
+   */
+  readonly matchConditions?: MatchCondition[];
+
+  /**
+   * MatchConstraints specifies what resources this policy is designed to validate. The AdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API ValidatingAdmissionPolicy cannot match ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#matchConstraints
+   */
+  readonly matchConstraints?: MatchResources;
+
+  /**
+   * ParamKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If ParamKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in ValidatingAdmissionPolicyBinding, the params variable will be null.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#paramKind
+   */
+  readonly paramKind?: ParamKind;
+
+  /**
+   * Validations contain CEL expressions which is used to apply the validation. Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#validations
+   */
+  readonly validations?: Validation[];
+
+  /**
+   * Variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except MatchConditions because MatchConditions are evaluated before the rest of the policy.
+   *
+   * The expression of a variable can refer to other variables defined earlier in the list but not those after. Thus, Variables must be sorted by the order of first appearance and acyclic.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicySpec#variables
+   */
+  readonly variables?: Variable[];
+
+}
+
+/**
+ * Converts an object of type 'ValidatingAdmissionPolicySpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ValidatingAdmissionPolicySpec(obj: ValidatingAdmissionPolicySpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'auditAnnotations': obj.auditAnnotations?.map(y => toJson_AuditAnnotation(y)),
+    'failurePolicy': obj.failurePolicy,
+    'matchConditions': obj.matchConditions?.map(y => toJson_MatchCondition(y)),
+    'matchConstraints': toJson_MatchResources(obj.matchConstraints),
+    'paramKind': toJson_ParamKind(obj.paramKind),
+    'validations': obj.validations?.map(y => toJson_Validation(y)),
+    'variables': obj.variables?.map(y => toJson_Variable(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ValidatingAdmissionPolicyBindingSpec is the specification of the ValidatingAdmissionPolicyBinding.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingSpec
+ */
+export interface ValidatingAdmissionPolicyBindingSpec {
+  /**
+   * MatchResources declares what resources match this binding and will be validated by it. Note that this is intersected with the policy's matchConstraints, so only requests that are matched by the policy can be selected by this. If this is unset, all resources matched by the policy are validated by this binding When resourceRules is unset, it does not constrain resource matching. If a resource is matched by the other fields of this object, it will be validated. Note that this is differs from ValidatingAdmissionPolicy matchConstraints, where resourceRules are required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingSpec#matchResources
+   */
+  readonly matchResources?: MatchResources;
+
+  /**
+   * paramRef specifies the parameter resource used to configure the admission control policy. It should point to a resource of the type specified in ParamKind of the bound ValidatingAdmissionPolicy. If the policy specifies a ParamKind and the resource referred to by ParamRef does not exist, this binding is considered mis-configured and the FailurePolicy of the ValidatingAdmissionPolicy applied. If the policy does not specify a ParamKind then this field is ignored, and the rules are evaluated without a param.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingSpec#paramRef
+   */
+  readonly paramRef?: ParamRef;
+
+  /**
+   * PolicyName references a ValidatingAdmissionPolicy name which the ValidatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingSpec#policyName
+   */
+  readonly policyName?: string;
+
+  /**
+   * validationActions declares how Validations of the referenced ValidatingAdmissionPolicy are enforced. If a validation evaluates to false it is always enforced according to these actions.
+   *
+   * Failures defined by the ValidatingAdmissionPolicy's FailurePolicy are enforced according to these actions only if the FailurePolicy is set to Fail, otherwise the failures are ignored. This includes compilation errors, runtime errors and misconfigurations of the policy.
+   *
+   * validationActions is declared as a set of action values. Order does not matter. validationActions may not contain duplicates of the same action.
+   *
+   * The supported actions values are:
+   *
+   * "Deny" specifies that a validation failure results in a denied request.
+   *
+   * "Warn" specifies that a validation failure is reported to the request client in HTTP Warning headers, with a warning code of 299. Warnings can be sent both for allowed or denied admission responses.
+   *
+   * "Audit" specifies that a validation failure is included in the published audit event for the request. The audit event will contain a `validation.policy.admission.k8s.io/validation_failure` audit annotation with a value containing the details of the validation failures, formatted as a JSON list of objects, each with the following fields: - message: The validation failure message string - policy: The resource name of the ValidatingAdmissionPolicy - binding: The resource name of the ValidatingAdmissionPolicyBinding - expressionIndex: The index of the failed validations in the ValidatingAdmissionPolicy - validationActions: The enforcement actions enacted for the validation failure Example audit annotation: `"validation.policy.admission.k8s.io/validation_failure": "[{\"message\": \"Invalid value\", {\"policy\": \"policy.example.com\", {\"binding\": \"policybinding.example.com\", {\"expressionIndex\": \"1\", {\"validationActions\": [\"Audit\"]}]"`
+   *
+   * Clients should expect to handle additional values by ignoring any values not recognized.
+   *
+   * "Deny" and "Warn" may not be used together since this combination needlessly duplicates the validation failure both in the API response body and the HTTP warning headers.
+   *
+   * Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ValidatingAdmissionPolicyBindingSpec#validationActions
+   */
+  readonly validationActions?: string[];
+
+}
+
+/**
+ * Converts an object of type 'ValidatingAdmissionPolicyBindingSpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ValidatingAdmissionPolicyBindingSpec(obj: ValidatingAdmissionPolicyBindingSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchResources': toJson_MatchResources(obj.matchResources),
+    'paramRef': toJson_ParamRef(obj.paramRef),
+    'policyName': obj.policyName,
+    'validationActions': obj.validationActions?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingWebhook describes an admission webhook and the resources and operations it applies to.
@@ -13715,8 +15136,6 @@ export interface ValidatingWebhook {
    * 3. If any matchCondition evaluates to an error (but none are FALSE):
    * - If failurePolicy=Fail, reject the request
    * - If failurePolicy=Ignore, the error is ignored and the webhook is skipped
-   *
-   * This is a beta feature and managed by the AdmissionWebhookMatchConditions feature gate.
    *
    * @schema io.k8s.api.admissionregistration.v1.ValidatingWebhook#matchConditions
    */
@@ -13816,7 +15235,7 @@ export interface ValidatingWebhook {
 /**
  * Converts an object of type 'ValidatingWebhook' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingWebhook(obj: ValidatingWebhook | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -13835,39 +15254,30 @@ export function toJson_ValidatingWebhook(obj: ValidatingWebhook | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ValidatingAdmissionPolicySpec is the specification of the desired behavior of the AdmissionPolicy.
+ * MutatingAdmissionPolicySpec is the specification of the desired behavior of the admission policy.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec
  */
-export interface ValidatingAdmissionPolicySpecV1Alpha1 {
-  /**
-   * auditAnnotations contains CEL expressions which are used to produce audit annotations for the audit event of the API request. validations and auditAnnotations may not both be empty; a least one of validations or auditAnnotations is required.
-   *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#auditAnnotations
-   */
-  readonly auditAnnotations?: AuditAnnotationV1Alpha1[];
-
+export interface MutatingAdmissionPolicySpecV1Alpha1 {
   /**
    * failurePolicy defines how to handle failures for the admission policy. Failures can occur from CEL expression parse errors, type check errors, runtime errors and invalid or mis-configured policy definitions or bindings.
    *
-   * A policy is invalid if spec.paramKind refers to a non-existent Kind. A binding is invalid if spec.paramRef.name refers to a non-existent resource.
+   * A policy is invalid if paramKind refers to a non-existent Kind. A binding is invalid if paramRef.name refers to a non-existent resource.
    *
    * failurePolicy does not define how validations that evaluate to false are handled.
-   *
-   * When failurePolicy is set to Fail, ValidatingAdmissionPolicyBinding validationActions define how failures are enforced.
    *
    * Allowed values are Ignore or Fail. Defaults to Fail.
    *
    * @default Fail.
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#failurePolicy
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#failurePolicy
    */
   readonly failurePolicy?: string;
 
   /**
-   * MatchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the rules, namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
+   * matchConditions is a list of conditions that must be met for a request to be validated. Match conditions filter requests that have already been matched by the matchConstraints. An empty list of matchConditions matches all requests. There are a maximum of 64 match conditions allowed.
    *
    * If a parameter object is provided, it can be accessed via the `params` handle in the same manner as validation expressions.
    *
@@ -13878,132 +15288,117 @@ export interface ValidatingAdmissionPolicySpecV1Alpha1 {
    * - If failurePolicy=Fail, reject the request
    * - If failurePolicy=Ignore, the policy is skipped
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#matchConditions
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#matchConditions
    */
   readonly matchConditions?: MatchConditionV1Alpha1[];
 
   /**
-   * MatchConstraints specifies what resources this policy is designed to validate. The AdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API ValidatingAdmissionPolicy cannot match ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding. Required.
+   * matchConstraints specifies what resources this policy is designed to validate. The MutatingAdmissionPolicy cares about a request if it matches _all_ Constraints. However, in order to prevent clusters from being put into an unstable state that cannot be recovered from via the API MutatingAdmissionPolicy cannot match MutatingAdmissionPolicy and MutatingAdmissionPolicyBinding. The CREATE, UPDATE and CONNECT operations are allowed.  The DELETE operation may not be matched. '*' matches CREATE, UPDATE and CONNECT. Required.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#matchConstraints
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#matchConstraints
    */
   readonly matchConstraints?: MatchResourcesV1Alpha1;
 
   /**
-   * ParamKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If ParamKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in ValidatingAdmissionPolicyBinding, the params variable will be null.
+   * mutations contain operations to perform on matching objects. mutations may not be empty; a minimum of one mutation is required. mutations are evaluated in order, and are reinvoked according to the reinvocationPolicy. The mutations of a policy are invoked for each binding of this policy and reinvocation of mutations occurs on a per binding basis.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#paramKind
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#mutations
+   */
+  readonly mutations?: MutationV1Alpha1[];
+
+  /**
+   * paramKind specifies the kind of resources used to parameterize this policy. If absent, there are no parameters for this policy and the param CEL variable will not be provided to validation expressions. If paramKind refers to a non-existent kind, this policy definition is mis-configured and the FailurePolicy is applied. If paramKind is specified but paramRef is unset in MutatingAdmissionPolicyBinding, the params variable will be null.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#paramKind
    */
   readonly paramKind?: ParamKindV1Alpha1;
 
   /**
-   * Validations contain CEL expressions which is used to apply the validation. Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is required.
+   * reinvocationPolicy indicates whether mutations may be called multiple times per MutatingAdmissionPolicyBinding as part of a single admission evaluation. Allowed values are "Never" and "IfNeeded".
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#validations
+   * Never: These mutations will not be called more than once per binding in a single admission evaluation.
+   *
+   * IfNeeded: These mutations may be invoked more than once per binding for a single admission request and there is no guarantee of order with respect to other admission plugins, admission webhooks, bindings of this policy and admission policies.  Mutations are only reinvoked when mutations change the object after this mutation is invoked. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#reinvocationPolicy
    */
-  readonly validations?: ValidationV1Alpha1[];
+  readonly reinvocationPolicy?: string;
 
   /**
-   * Variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except MatchConditions because MatchConditions are evaluated before the rest of the policy.
+   * variables contain definitions of variables that can be used in composition of other expressions. Each variable is defined as a named CEL expression. The variables defined here will be available under `variables` in other expressions of the policy except matchConditions because matchConditions are evaluated before the rest of the policy.
    *
-   * The expression of a variable can refer to other variables defined earlier in the list but not those after. Thus, Variables must be sorted by the order of first appearance and acyclic.
+   * The expression of a variable can refer to other variables defined earlier in the list but not those after. Thus, variables must be sorted by the order of first appearance and acyclic.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicySpec#variables
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicySpec#variables
    */
   readonly variables?: VariableV1Alpha1[];
 
 }
 
 /**
- * Converts an object of type 'ValidatingAdmissionPolicySpecV1Alpha1' to JSON representation.
+ * Converts an object of type 'MutatingAdmissionPolicySpecV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidatingAdmissionPolicySpecV1Alpha1(obj: ValidatingAdmissionPolicySpecV1Alpha1 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutatingAdmissionPolicySpecV1Alpha1(obj: MutatingAdmissionPolicySpecV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'auditAnnotations': obj.auditAnnotations?.map(y => toJson_AuditAnnotationV1Alpha1(y)),
     'failurePolicy': obj.failurePolicy,
     'matchConditions': obj.matchConditions?.map(y => toJson_MatchConditionV1Alpha1(y)),
     'matchConstraints': toJson_MatchResourcesV1Alpha1(obj.matchConstraints),
+    'mutations': obj.mutations?.map(y => toJson_MutationV1Alpha1(y)),
     'paramKind': toJson_ParamKindV1Alpha1(obj.paramKind),
-    'validations': obj.validations?.map(y => toJson_ValidationV1Alpha1(y)),
+    'reinvocationPolicy': obj.reinvocationPolicy,
     'variables': obj.variables?.map(y => toJson_VariableV1Alpha1(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ValidatingAdmissionPolicyBindingSpec is the specification of the ValidatingAdmissionPolicyBinding.
+ * MutatingAdmissionPolicyBindingSpec is the specification of the MutatingAdmissionPolicyBinding.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingSpec
+ * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingSpec
  */
-export interface ValidatingAdmissionPolicyBindingSpecV1Alpha1 {
+export interface MutatingAdmissionPolicyBindingSpecV1Alpha1 {
   /**
-   * MatchResources declares what resources match this binding and will be validated by it. Note that this is intersected with the policy's matchConstraints, so only requests that are matched by the policy can be selected by this. If this is unset, all resources matched by the policy are validated by this binding When resourceRules is unset, it does not constrain resource matching. If a resource is matched by the other fields of this object, it will be validated. Note that this is differs from ValidatingAdmissionPolicy matchConstraints, where resourceRules are required.
+   * matchResources limits what resources match this binding and may be mutated by it. Note that if matchResources matches a resource, the resource must also match a policy's matchConstraints and matchConditions before the resource may be mutated. When matchResources is unset, it does not constrain resource matching, and only the policy's matchConstraints and matchConditions must match for the resource to be mutated. Additionally, matchResources.resourceRules are optional and do not constraint matching when unset. Note that this is differs from MutatingAdmissionPolicy matchConstraints, where resourceRules are required. The CREATE, UPDATE and CONNECT operations are allowed.  The DELETE operation may not be matched. '*' matches CREATE, UPDATE and CONNECT.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingSpec#matchResources
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingSpec#matchResources
    */
   readonly matchResources?: MatchResourcesV1Alpha1;
 
   /**
-   * paramRef specifies the parameter resource used to configure the admission control policy. It should point to a resource of the type specified in ParamKind of the bound ValidatingAdmissionPolicy. If the policy specifies a ParamKind and the resource referred to by ParamRef does not exist, this binding is considered mis-configured and the FailurePolicy of the ValidatingAdmissionPolicy applied. If the policy does not specify a ParamKind then this field is ignored, and the rules are evaluated without a param.
+   * paramRef specifies the parameter resource used to configure the admission control policy. It should point to a resource of the type specified in spec.ParamKind of the bound MutatingAdmissionPolicy. If the policy specifies a ParamKind and the resource referred to by ParamRef does not exist, this binding is considered mis-configured and the FailurePolicy of the MutatingAdmissionPolicy applied. If the policy does not specify a ParamKind then this field is ignored, and the rules are evaluated without a param.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingSpec#paramRef
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingSpec#paramRef
    */
   readonly paramRef?: ParamRefV1Alpha1;
 
   /**
-   * PolicyName references a ValidatingAdmissionPolicy name which the ValidatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
+   * policyName references a MutatingAdmissionPolicy name which the MutatingAdmissionPolicyBinding binds to. If the referenced resource does not exist, this binding is considered invalid and will be ignored Required.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingSpec#policyName
+   * @schema io.k8s.api.admissionregistration.v1alpha1.MutatingAdmissionPolicyBindingSpec#policyName
    */
   readonly policyName?: string;
-
-  /**
-   * validationActions declares how Validations of the referenced ValidatingAdmissionPolicy are enforced. If a validation evaluates to false it is always enforced according to these actions.
-   *
-   * Failures defined by the ValidatingAdmissionPolicy's FailurePolicy are enforced according to these actions only if the FailurePolicy is set to Fail, otherwise the failures are ignored. This includes compilation errors, runtime errors and misconfigurations of the policy.
-   *
-   * validationActions is declared as a set of action values. Order does not matter. validationActions may not contain duplicates of the same action.
-   *
-   * The supported actions values are:
-   *
-   * "Deny" specifies that a validation failure results in a denied request.
-   *
-   * "Warn" specifies that a validation failure is reported to the request client in HTTP Warning headers, with a warning code of 299. Warnings can be sent both for allowed or denied admission responses.
-   *
-   * "Audit" specifies that a validation failure is included in the published audit event for the request. The audit event will contain a `validation.policy.admission.k8s.io/validation_failure` audit annotation with a value containing the details of the validation failures, formatted as a JSON list of objects, each with the following fields: - message: The validation failure message string - policy: The resource name of the ValidatingAdmissionPolicy - binding: The resource name of the ValidatingAdmissionPolicyBinding - expressionIndex: The index of the failed validations in the ValidatingAdmissionPolicy - validationActions: The enforcement actions enacted for the validation failure Example audit annotation: `"validation.policy.admission.k8s.io/validation_failure": "[{"message": "Invalid value", {"policy": "policy.example.com", {"binding": "policybinding.example.com", {"expressionIndex": "1", {"validationActions": ["Audit"]}]"`
-   *
-   * Clients should expect to handle additional values by ignoring any values not recognized.
-   *
-   * "Deny" and "Warn" may not be used together since this combination needlessly duplicates the validation failure both in the API response body and the HTTP warning headers.
-   *
-   * Required.
-   *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.ValidatingAdmissionPolicyBindingSpec#validationActions
-   */
-  readonly validationActions?: string[];
 
 }
 
 /**
- * Converts an object of type 'ValidatingAdmissionPolicyBindingSpecV1Alpha1' to JSON representation.
+ * Converts an object of type 'MutatingAdmissionPolicyBindingSpecV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidatingAdmissionPolicyBindingSpecV1Alpha1(obj: ValidatingAdmissionPolicyBindingSpecV1Alpha1 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutatingAdmissionPolicyBindingSpecV1Alpha1(obj: MutatingAdmissionPolicyBindingSpecV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'matchResources': toJson_MatchResourcesV1Alpha1(obj.matchResources),
     'paramRef': toJson_ParamRefV1Alpha1(obj.paramRef),
     'policyName': obj.policyName,
-    'validationActions': obj.validationActions?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingAdmissionPolicySpec is the specification of the desired behavior of the AdmissionPolicy.
@@ -14085,7 +15480,7 @@ export interface ValidatingAdmissionPolicySpecV1Beta1 {
 /**
  * Converts an object of type 'ValidatingAdmissionPolicySpecV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingAdmissionPolicySpecV1Beta1(obj: ValidatingAdmissionPolicySpecV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14100,7 +15495,7 @@ export function toJson_ValidatingAdmissionPolicySpecV1Beta1(obj: ValidatingAdmis
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidatingAdmissionPolicyBindingSpec is the specification of the ValidatingAdmissionPolicyBinding.
@@ -14142,7 +15537,7 @@ export interface ValidatingAdmissionPolicyBindingSpecV1Beta1 {
    *
    * "Warn" specifies that a validation failure is reported to the request client in HTTP Warning headers, with a warning code of 299. Warnings can be sent both for allowed or denied admission responses.
    *
-   * "Audit" specifies that a validation failure is included in the published audit event for the request. The audit event will contain a `validation.policy.admission.k8s.io/validation_failure` audit annotation with a value containing the details of the validation failures, formatted as a JSON list of objects, each with the following fields: - message: The validation failure message string - policy: The resource name of the ValidatingAdmissionPolicy - binding: The resource name of the ValidatingAdmissionPolicyBinding - expressionIndex: The index of the failed validations in the ValidatingAdmissionPolicy - validationActions: The enforcement actions enacted for the validation failure Example audit annotation: `"validation.policy.admission.k8s.io/validation_failure": "[{"message": "Invalid value", {"policy": "policy.example.com", {"binding": "policybinding.example.com", {"expressionIndex": "1", {"validationActions": ["Audit"]}]"`
+   * "Audit" specifies that a validation failure is included in the published audit event for the request. The audit event will contain a `validation.policy.admission.k8s.io/validation_failure` audit annotation with a value containing the details of the validation failures, formatted as a JSON list of objects, each with the following fields: - message: The validation failure message string - policy: The resource name of the ValidatingAdmissionPolicy - binding: The resource name of the ValidatingAdmissionPolicyBinding - expressionIndex: The index of the failed validations in the ValidatingAdmissionPolicy - validationActions: The enforcement actions enacted for the validation failure Example audit annotation: `"validation.policy.admission.k8s.io/validation_failure": "[{\"message\": \"Invalid value\", {\"policy\": \"policy.example.com\", {\"binding\": \"policybinding.example.com\", {\"expressionIndex\": \"1\", {\"validationActions\": [\"Audit\"]}]"`
    *
    * Clients should expect to handle additional values by ignoring any values not recognized.
    *
@@ -14159,7 +15554,7 @@ export interface ValidatingAdmissionPolicyBindingSpecV1Beta1 {
 /**
  * Converts an object of type 'ValidatingAdmissionPolicyBindingSpecV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidatingAdmissionPolicyBindingSpecV1Beta1(obj: ValidatingAdmissionPolicyBindingSpecV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14171,7 +15566,7 @@ export function toJson_ValidatingAdmissionPolicyBindingSpecV1Beta1(obj: Validati
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DaemonSetSpec is the specification of a daemon set.
@@ -14221,7 +15616,7 @@ export interface DaemonSetSpec {
 /**
  * Converts an object of type 'DaemonSetSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DaemonSetSpec(obj: DaemonSetSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14234,7 +15629,7 @@ export function toJson_DaemonSetSpec(obj: DaemonSetSpec | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DeploymentSpec is the specification of the desired behavior of the Deployment.
@@ -14307,7 +15702,7 @@ export interface DeploymentSpec {
 /**
  * Converts an object of type 'DeploymentSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DeploymentSpec(obj: DeploymentSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14323,7 +15718,7 @@ export function toJson_DeploymentSpec(obj: DeploymentSpec | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ReplicaSetSpec is the specification of a ReplicaSet.
@@ -14366,7 +15761,7 @@ export interface ReplicaSetSpec {
 /**
  * Converts an object of type 'ReplicaSetSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicaSetSpec(obj: ReplicaSetSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14378,7 +15773,7 @@ export function toJson_ReplicaSetSpec(obj: ReplicaSetSpec | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A StatefulSetSpec is the specification of a StatefulSet.
@@ -14395,14 +15790,14 @@ export interface StatefulSetSpec {
   readonly minReadySeconds?: number;
 
   /**
-   * ordinals controls the numbering of replica indices in a StatefulSet. The default ordinals behavior assigns a "0" index to the first replica and increments the index by one for each additional replica requested. Using the ordinals field requires the StatefulSetStartOrdinal feature gate to be enabled, which is beta.
+   * ordinals controls the numbering of replica indices in a StatefulSet. The default ordinals behavior assigns a "0" index to the first replica and increments the index by one for each additional replica requested.
    *
    * @schema io.k8s.api.apps.v1.StatefulSetSpec#ordinals
    */
   readonly ordinals?: StatefulSetOrdinals;
 
   /**
-   * persistentVolumeClaimRetentionPolicy describes the lifecycle of persistent volume claims created from volumeClaimTemplates. By default, all persistent volume claims are created as needed and retained until manually deleted. This policy allows the lifecycle to be altered, for example by deleting persistent volume claims when their stateful set is deleted, or when their pod is scaled down. This requires the StatefulSetAutoDeletePVC feature gate to be enabled, which is alpha.  +optional
+   * persistentVolumeClaimRetentionPolicy describes the lifecycle of persistent volume claims created from volumeClaimTemplates. By default, all persistent volume claims are created as needed and retained until manually deleted. This policy allows the lifecycle to be altered, for example by deleting persistent volume claims when their stateful set is deleted, or when their pod is scaled down.
    *
    * @schema io.k8s.api.apps.v1.StatefulSetSpec#persistentVolumeClaimRetentionPolicy
    */
@@ -14469,7 +15864,7 @@ export interface StatefulSetSpec {
 /**
  * Converts an object of type 'StatefulSetSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatefulSetSpec(obj: StatefulSetSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14488,7 +15883,7 @@ export function toJson_StatefulSetSpec(obj: StatefulSetSpec | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TokenRequestSpec contains client provided parameters of a token request.
@@ -14522,7 +15917,7 @@ export interface TokenRequestSpec {
 /**
  * Converts an object of type 'TokenRequestSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TokenRequestSpec(obj: TokenRequestSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14533,7 +15928,7 @@ export function toJson_TokenRequestSpec(obj: TokenRequestSpec | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TokenReviewSpec is a description of the token authentication request.
@@ -14560,7 +15955,7 @@ export interface TokenReviewSpec {
 /**
  * Converts an object of type 'TokenReviewSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TokenReviewSpec(obj: TokenReviewSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14570,7 +15965,7 @@ export function toJson_TokenReviewSpec(obj: TokenReviewSpec | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set
@@ -14625,7 +16020,7 @@ export interface SubjectAccessReviewSpec {
 /**
  * Converts an object of type 'SubjectAccessReviewSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SubjectAccessReviewSpec(obj: SubjectAccessReviewSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14639,7 +16034,7 @@ export function toJson_SubjectAccessReviewSpec(obj: SubjectAccessReviewSpec | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set
@@ -14666,7 +16061,7 @@ export interface SelfSubjectAccessReviewSpec {
 /**
  * Converts an object of type 'SelfSubjectAccessReviewSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SelfSubjectAccessReviewSpec(obj: SelfSubjectAccessReviewSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14676,7 +16071,7 @@ export function toJson_SelfSubjectAccessReviewSpec(obj: SelfSubjectAccessReviewS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SelfSubjectRulesReviewSpec defines the specification for SelfSubjectRulesReview.
@@ -14696,7 +16091,7 @@ export interface SelfSubjectRulesReviewSpec {
 /**
  * Converts an object of type 'SelfSubjectRulesReviewSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SelfSubjectRulesReviewSpec(obj: SelfSubjectRulesReviewSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14705,7 +16100,7 @@ export function toJson_SelfSubjectRulesReviewSpec(obj: SelfSubjectRulesReviewSpe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * specification of a horizontal pod autoscaler.
@@ -14746,7 +16141,7 @@ export interface HorizontalPodAutoscalerSpec {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerSpec(obj: HorizontalPodAutoscalerSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14758,7 +16153,7 @@ export function toJson_HorizontalPodAutoscalerSpec(obj: HorizontalPodAutoscalerS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ScaleSpec describes the attributes of a scale subresource.
@@ -14778,7 +16173,7 @@ export interface ScaleSpec {
 /**
  * Converts an object of type 'ScaleSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ScaleSpec(obj: ScaleSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14787,7 +16182,7 @@ export function toJson_ScaleSpec(obj: ScaleSpec | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HorizontalPodAutoscalerSpec describes the desired functionality of the HorizontalPodAutoscaler.
@@ -14835,7 +16230,7 @@ export interface HorizontalPodAutoscalerSpecV2 {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerSpecV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerSpecV2(obj: HorizontalPodAutoscalerSpecV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14848,7 +16243,7 @@ export function toJson_HorizontalPodAutoscalerSpecV2(obj: HorizontalPodAutoscale
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CronJobSpec describes how the job execution will look like and when it will actually run.
@@ -14922,7 +16317,7 @@ export interface CronJobSpec {
 /**
  * Converts an object of type 'CronJobSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CronJobSpec(obj: CronJobSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -14938,7 +16333,7 @@ export function toJson_CronJobSpec(obj: CronJobSpec | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * JobSpec describes how the job execution will look like.
@@ -14989,6 +16384,15 @@ export interface JobSpec {
   readonly completions?: number;
 
   /**
+   * ManagedBy field indicates the controller that manages a Job. The k8s Job controller reconciles jobs which don't have this field at all or the field value is the reserved string `kubernetes.io/job-controller`, but skips reconciling Jobs with a custom value for this field. The value must be a valid domain-prefixed path (e.g. acme.io/foo) - all characters before the first "/" must be a valid subdomain as defined by RFC 1123. All characters trailing the first "/" must be valid HTTP Path characters as defined by RFC 3986. The value cannot exceed 63 characters. This field is immutable.
+   *
+   * This field is beta-level. The job controller accepts setting the field when the feature gate JobManagedBy is enabled (enabled by default).
+   *
+   * @schema io.k8s.api.batch.v1.JobSpec#managedBy
+   */
+  readonly managedBy?: string;
+
+  /**
    * manualSelector controls generation of pod labels and pod selectors. Leave `manualSelector` unset unless you are certain what you are doing. When false or unset, the system pick labels unique to this job and appends those labels to the pod template.  When true, the user is responsible for picking unique labels and specifying the selector.  Failure to pick a unique label may cause this and other jobs to not function correctly.  However, You may see `manualSelector=true` in jobs that were created with the old `extensions/v1beta1` API. More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/#specifying-your-own-pod-selector
    *
    * @schema io.k8s.api.batch.v1.JobSpec#manualSelector
@@ -15012,8 +16416,6 @@ export interface JobSpec {
   /**
    * Specifies the policy of handling failed pods. In particular, it allows to specify the set of actions and conditions which need to be satisfied to take the associated action. If empty, the default behaviour applies - the counter of failed pods, represented by the jobs's .status.failed field, is incremented and it is checked against the backoffLimit. This field cannot be used in combination with restartPolicy=OnFailure.
    *
-   * This field is beta-level. It can be used when the `JobPodFailurePolicy` feature gate is enabled (enabled by default).
-   *
    * @schema io.k8s.api.batch.v1.JobSpec#podFailurePolicy
    */
   readonly podFailurePolicy?: PodFailurePolicy;
@@ -15036,6 +16438,15 @@ export interface JobSpec {
    * @schema io.k8s.api.batch.v1.JobSpec#selector
    */
   readonly selector?: LabelSelector;
+
+  /**
+   * successPolicy specifies the policy when the Job can be declared as succeeded. If empty, the default behavior applies - the Job is declared as succeeded only when the number of succeeded pods equals to the completions. When the field is specified, it must be immutable and works only for the Indexed Jobs. Once the Job meets the SuccessPolicy, the lingering pods are terminated.
+   *
+   * This field is beta-level. To use this field, you must enable the `JobSuccessPolicy` feature gate (enabled by default).
+   *
+   * @schema io.k8s.api.batch.v1.JobSpec#successPolicy
+   */
+  readonly successPolicy?: SuccessPolicy;
 
   /**
    * suspend specifies whether the Job controller should create Pods or not. If a Job is created with suspend set to true, no Pods are created by the Job controller. If a Job is suspended after creation (i.e. the flag goes from false to true), the Job controller will delete all active Pods associated with this Job. Users must design their workload to gracefully handle this. Suspending a Job will reset the StartTime field of the Job, effectively resetting the ActiveDeadlineSeconds timer too. Defaults to false.
@@ -15064,7 +16475,7 @@ export interface JobSpec {
 /**
  * Converts an object of type 'JobSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_JobSpec(obj: JobSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15073,12 +16484,14 @@ export function toJson_JobSpec(obj: JobSpec | undefined): Record<string, any> | 
     'backoffLimitPerIndex': obj.backoffLimitPerIndex,
     'completionMode': obj.completionMode,
     'completions': obj.completions,
+    'managedBy': obj.managedBy,
     'manualSelector': obj.manualSelector,
     'maxFailedIndexes': obj.maxFailedIndexes,
     'parallelism': obj.parallelism,
     'podFailurePolicy': toJson_PodFailurePolicy(obj.podFailurePolicy),
     'podReplacementPolicy': obj.podReplacementPolicy,
     'selector': toJson_LabelSelector(obj.selector),
+    'successPolicy': toJson_SuccessPolicy(obj.successPolicy),
     'suspend': obj.suspend,
     'template': toJson_PodTemplateSpec(obj.template),
     'ttlSecondsAfterFinished': obj.ttlSecondsAfterFinished,
@@ -15086,7 +16499,7 @@ export function toJson_JobSpec(obj: JobSpec | undefined): Record<string, any> | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CertificateSigningRequestSpec contains the certificate request.
@@ -15199,7 +16612,7 @@ export interface CertificateSigningRequestSpec {
 /**
  * Converts an object of type 'CertificateSigningRequestSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CertificateSigningRequestSpec(obj: CertificateSigningRequestSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15215,7 +16628,7 @@ export function toJson_CertificateSigningRequestSpec(obj: CertificateSigningRequ
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterTrustBundleSpec contains the signer and trust anchors.
@@ -15254,7 +16667,7 @@ export interface ClusterTrustBundleSpecV1Alpha1 {
 /**
  * Converts an object of type 'ClusterTrustBundleSpecV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterTrustBundleSpecV1Alpha1(obj: ClusterTrustBundleSpecV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15264,7 +16677,7 @@ export function toJson_ClusterTrustBundleSpecV1Alpha1(obj: ClusterTrustBundleSpe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LeaseSpec is a specification of a Lease.
@@ -15280,14 +16693,14 @@ export interface LeaseSpec {
   readonly acquireTime?: Date;
 
   /**
-   * holderIdentity contains the identity of the holder of a current lease.
+   * holderIdentity contains the identity of the holder of a current lease. If Coordinated Leader Election is used, the holder identity must be equal to the elected LeaseCandidate.metadata.name field.
    *
    * @schema io.k8s.api.coordination.v1.LeaseSpec#holderIdentity
    */
   readonly holderIdentity?: string;
 
   /**
-   * leaseDurationSeconds is a duration that candidates for a lease need to wait to force acquire it. This is measure against time of last observed renewTime.
+   * leaseDurationSeconds is a duration that candidates for a lease need to wait to force acquire it. This is measured against the time of last observed renewTime.
    *
    * @schema io.k8s.api.coordination.v1.LeaseSpec#leaseDurationSeconds
    */
@@ -15301,18 +16714,32 @@ export interface LeaseSpec {
   readonly leaseTransitions?: number;
 
   /**
+   * PreferredHolder signals to a lease holder that the lease has a more optimal holder and should be given up. This field can only be set if Strategy is also set.
+   *
+   * @schema io.k8s.api.coordination.v1.LeaseSpec#preferredHolder
+   */
+  readonly preferredHolder?: string;
+
+  /**
    * renewTime is a time when the current holder of a lease has last updated the lease.
    *
    * @schema io.k8s.api.coordination.v1.LeaseSpec#renewTime
    */
   readonly renewTime?: Date;
 
+  /**
+   * Strategy indicates the strategy for picking the leader for coordinated leader election. If the field is not specified, there is no active coordination for this lease. (Alpha) Using this field requires the CoordinatedLeaderElection feature gate to be enabled.
+   *
+   * @schema io.k8s.api.coordination.v1.LeaseSpec#strategy
+   */
+  readonly strategy?: string;
+
 }
 
 /**
  * Converts an object of type 'LeaseSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LeaseSpec(obj: LeaseSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15320,12 +16747,83 @@ export function toJson_LeaseSpec(obj: LeaseSpec | undefined): Record<string, any
     'holderIdentity': obj.holderIdentity,
     'leaseDurationSeconds': obj.leaseDurationSeconds,
     'leaseTransitions': obj.leaseTransitions,
+    'preferredHolder': obj.preferredHolder,
     'renewTime': obj.renewTime?.toISOString(),
+    'strategy': obj.strategy,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LeaseCandidateSpec is a specification of a Lease.
+ *
+ * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec
+ */
+export interface LeaseCandidateSpecV1Alpha2 {
+  /**
+   * BinaryVersion is the binary version. It must be in a semver format without leading `v`. This field is required.
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec#binaryVersion
+   */
+  readonly binaryVersion: string;
+
+  /**
+   * EmulationVersion is the emulation version. It must be in a semver format without leading `v`. EmulationVersion must be less than or equal to BinaryVersion. This field is required when strategy is "OldestEmulationVersion"
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec#emulationVersion
+   */
+  readonly emulationVersion?: string;
+
+  /**
+   * LeaseName is the name of the lease for which this candidate is contending. This field is immutable.
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec#leaseName
+   */
+  readonly leaseName: string;
+
+  /**
+   * PingTime is the last time that the server has requested the LeaseCandidate to renew. It is only done during leader election to check if any LeaseCandidates have become ineligible. When PingTime is updated, the LeaseCandidate will respond by updating RenewTime.
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec#pingTime
+   */
+  readonly pingTime?: Date;
+
+  /**
+   * RenewTime is the time that the LeaseCandidate was last updated. Any time a Lease needs to do leader election, the PingTime field is updated to signal to the LeaseCandidate that they should update the RenewTime. Old LeaseCandidate objects are also garbage collected if it has been hours since the last renew. The PingTime field is updated regularly to prevent garbage collection for still active LeaseCandidates.
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec#renewTime
+   */
+  readonly renewTime?: Date;
+
+  /**
+   * Strategy is the strategy that coordinated leader election will use for picking the leader. If multiple candidates for the same Lease return different strategies, the strategy provided by the candidate with the latest BinaryVersion will be used. If there is still conflict, this is a user error and coordinated leader election will not operate the Lease until resolved. (Alpha) Using this field requires the CoordinatedLeaderElection feature gate to be enabled.
+   *
+   * @schema io.k8s.api.coordination.v1alpha2.LeaseCandidateSpec#strategy
+   */
+  readonly strategy: string;
+
+}
+
+/**
+ * Converts an object of type 'LeaseCandidateSpecV1Alpha2' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_LeaseCandidateSpecV1Alpha2(obj: LeaseCandidateSpecV1Alpha2 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binaryVersion': obj.binaryVersion,
+    'emulationVersion': obj.emulationVersion,
+    'leaseName': obj.leaseName,
+    'pingTime': obj.pingTime?.toISOString(),
+    'renewTime': obj.renewTime?.toISOString(),
+    'strategy': obj.strategy,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ObjectReference contains enough information to let you inspect or modify the referred object.
@@ -15387,7 +16885,7 @@ export interface ObjectReference {
 /**
  * Converts an object of type 'ObjectReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ObjectReference(obj: ObjectReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15402,7 +16900,7 @@ export function toJson_ObjectReference(obj: ObjectReference | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Information about the condition of a component.
@@ -15443,7 +16941,7 @@ export interface ComponentCondition {
 /**
  * Converts an object of type 'ComponentCondition' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ComponentCondition(obj: ComponentCondition | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15455,7 +16953,7 @@ export function toJson_ComponentCondition(obj: ComponentCondition | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointSubset is a group of addresses with a common set of ports. The expanded set of endpoints is the Cartesian product of Addresses x Ports. For example, given:
@@ -15499,7 +16997,7 @@ export interface EndpointSubset {
 /**
  * Converts an object of type 'EndpointSubset' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointSubset(obj: EndpointSubset | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15510,7 +17008,7 @@ export function toJson_EndpointSubset(obj: EndpointSubset | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EventSource contains information for an event.
@@ -15537,7 +17035,7 @@ export interface EventSource {
 /**
  * Converts an object of type 'EventSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EventSource(obj: EventSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15547,7 +17045,7 @@ export function toJson_EventSource(obj: EventSource | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EventSeries contain information on series of events, i.e. thing that was/is happening continuously for some time. How often to update the EventSeries is up to the event reporters. The default event reporter in "k8s.io/client-go/tools/events/event_broadcaster.go" shows how this struct is updated on heartbeats and can guide customized reporter implementations.
@@ -15574,7 +17072,7 @@ export interface EventSeries {
 /**
  * Converts an object of type 'EventSeries' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EventSeries(obj: EventSeries | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15584,7 +17082,7 @@ export function toJson_EventSeries(obj: EventSeries | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LimitRangeSpec defines a min/max usage limit for resources that match on kind.
@@ -15604,7 +17102,7 @@ export interface LimitRangeSpec {
 /**
  * Converts an object of type 'LimitRangeSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LimitRangeSpec(obj: LimitRangeSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15613,7 +17111,7 @@ export function toJson_LimitRangeSpec(obj: LimitRangeSpec | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NamespaceSpec describes the attributes on a Namespace.
@@ -15633,7 +17131,7 @@ export interface NamespaceSpec {
 /**
  * Converts an object of type 'NamespaceSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NamespaceSpec(obj: NamespaceSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15642,7 +17140,7 @@ export function toJson_NamespaceSpec(obj: NamespaceSpec | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NodeSpec describes the attributes that a node is created with.
@@ -15704,7 +17202,7 @@ export interface NodeSpec {
 /**
  * Converts an object of type 'NodeSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NodeSpec(obj: NodeSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15719,7 +17217,7 @@ export function toJson_NodeSpec(obj: NodeSpec | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeSpec is the specification of a persistent volume.
@@ -15735,21 +17233,21 @@ export interface PersistentVolumeSpec {
   readonly accessModes?: string[];
 
   /**
-   * awsElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
+   * awsElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Deprecated: AWSElasticBlockStore is deprecated. All operations for the in-tree awsElasticBlockStore type are redirected to the ebs.csi.aws.com CSI driver. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#awsElasticBlockStore
    */
   readonly awsElasticBlockStore?: AwsElasticBlockStoreVolumeSource;
 
   /**
-   * azureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.
+   * azureDisk represents an Azure Data Disk mount on the host and bind mount to the pod. Deprecated: AzureDisk is deprecated. All operations for the in-tree azureDisk type are redirected to the disk.csi.azure.com CSI driver.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#azureDisk
    */
   readonly azureDisk?: AzureDiskVolumeSource;
 
   /**
-   * azureFile represents an Azure File Service mount on the host and bind mount to the pod.
+   * azureFile represents an Azure File Service mount on the host and bind mount to the pod. Deprecated: AzureFile is deprecated. All operations for the in-tree azureFile type are redirected to the file.csi.azure.com CSI driver.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#azureFile
    */
@@ -15763,14 +17261,14 @@ export interface PersistentVolumeSpec {
   readonly capacity?: { [key: string]: Quantity };
 
   /**
-   * cephFS represents a Ceph FS mount on the host that shares a pod's lifetime
+   * cephFS represents a Ceph FS mount on the host that shares a pod's lifetime. Deprecated: CephFS is deprecated and the in-tree cephfs type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#cephfs
    */
   readonly cephfs?: CephFsPersistentVolumeSource;
 
   /**
-   * cinder represents a cinder volume attached and mounted on kubelets host machine. More info: https://examples.k8s.io/mysql-cinder-pd/README.md
+   * cinder represents a cinder volume attached and mounted on kubelets host machine. Deprecated: Cinder is deprecated. All operations for the in-tree cinder type are redirected to the cinder.csi.openstack.org CSI driver. More info: https://examples.k8s.io/mysql-cinder-pd/README.md
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#cinder
    */
@@ -15784,7 +17282,7 @@ export interface PersistentVolumeSpec {
   readonly claimRef?: ObjectReference;
 
   /**
-   * csi represents storage that is handled by an external CSI driver (Beta feature).
+   * csi represents storage that is handled by an external CSI driver.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#csi
    */
@@ -15798,28 +17296,28 @@ export interface PersistentVolumeSpec {
   readonly fc?: FcVolumeSource;
 
   /**
-   * flexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin.
+   * flexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin. Deprecated: FlexVolume is deprecated. Consider using a CSIDriver instead.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#flexVolume
    */
   readonly flexVolume?: FlexPersistentVolumeSource;
 
   /**
-   * flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the pod for its usage. This depends on the Flocker control service being running
+   * flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the pod for its usage. This depends on the Flocker control service being running. Deprecated: Flocker is deprecated and the in-tree flocker type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#flocker
    */
   readonly flocker?: FlockerVolumeSource;
 
   /**
-   * gcePersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
+   * gcePersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin. Deprecated: GCEPersistentDisk is deprecated. All operations for the in-tree gcePersistentDisk type are redirected to the pd.csi.storage.gke.io CSI driver. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#gcePersistentDisk
    */
   readonly gcePersistentDisk?: GcePersistentDiskVolumeSource;
 
   /**
-   * glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod. Provisioned by an admin. More info: https://examples.k8s.io/volumes/glusterfs/README.md
+   * glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod. Provisioned by an admin. Deprecated: Glusterfs is deprecated and the in-tree glusterfs type is no longer supported. More info: https://examples.k8s.io/volumes/glusterfs/README.md
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#glusterfs
    */
@@ -15875,35 +17373,35 @@ export interface PersistentVolumeSpec {
   readonly persistentVolumeReclaimPolicy?: string;
 
   /**
-   * photonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine
+   * photonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine. Deprecated: PhotonPersistentDisk is deprecated and the in-tree photonPersistentDisk type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#photonPersistentDisk
    */
   readonly photonPersistentDisk?: PhotonPersistentDiskVolumeSource;
 
   /**
-   * portworxVolume represents a portworx volume attached and mounted on kubelets host machine
+   * portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate is on.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#portworxVolume
    */
   readonly portworxVolume?: PortworxVolumeSource;
 
   /**
-   * quobyte represents a Quobyte mount on the host that shares a pod's lifetime
+   * quobyte represents a Quobyte mount on the host that shares a pod's lifetime. Deprecated: Quobyte is deprecated and the in-tree quobyte type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#quobyte
    */
   readonly quobyte?: QuobyteVolumeSource;
 
   /**
-   * rbd represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md
+   * rbd represents a Rados Block Device mount on the host that shares a pod's lifetime. Deprecated: RBD is deprecated and the in-tree rbd type is no longer supported. More info: https://examples.k8s.io/volumes/rbd/README.md
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#rbd
    */
   readonly rbd?: RbdPersistentVolumeSource;
 
   /**
-   * scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
+   * scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes. Deprecated: ScaleIO is deprecated and the in-tree scaleIO type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#scaleIO
    */
@@ -15917,14 +17415,14 @@ export interface PersistentVolumeSpec {
   readonly storageClassName?: string;
 
   /**
-   * storageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod More info: https://examples.k8s.io/volumes/storageos/README.md
+   * storageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod. Deprecated: StorageOS is deprecated and the in-tree storageos type is no longer supported. More info: https://examples.k8s.io/volumes/storageos/README.md
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#storageos
    */
   readonly storageos?: StorageOsPersistentVolumeSource;
 
   /**
-   * Name of VolumeAttributesClass to which this persistent volume belongs. Empty value is not allowed. When this field is not set, it indicates that this volume does not belong to any VolumeAttributesClass. This field is mutable and can be changed by the CSI driver after a volume has been updated successfully to a new class. For an unbound PersistentVolume, the volumeAttributesClassName will be matched with unbound PersistentVolumeClaims during the binding process. This is an alpha field and requires enabling VolumeAttributesClass feature.
+   * Name of VolumeAttributesClass to which this persistent volume belongs. Empty value is not allowed. When this field is not set, it indicates that this volume does not belong to any VolumeAttributesClass. This field is mutable and can be changed by the CSI driver after a volume has been updated successfully to a new class. For an unbound PersistentVolume, the volumeAttributesClassName will be matched with unbound PersistentVolumeClaims during the binding process. This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#volumeAttributesClassName
    */
@@ -15938,7 +17436,7 @@ export interface PersistentVolumeSpec {
   readonly volumeMode?: string;
 
   /**
-   * vsphereVolume represents a vSphere volume attached and mounted on kubelets host machine
+   * vsphereVolume represents a vSphere volume attached and mounted on kubelets host machine. Deprecated: VsphereVolume is deprecated. All operations for the in-tree vsphereVolume type are redirected to the csi.vsphere.vmware.com CSI driver.
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeSpec#vsphereVolume
    */
@@ -15949,7 +17447,7 @@ export interface PersistentVolumeSpec {
 /**
  * Converts an object of type 'PersistentVolumeSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeSpec(obj: PersistentVolumeSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -15988,7 +17486,7 @@ export function toJson_PersistentVolumeSpec(obj: PersistentVolumeSpec | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeClaimSpec describes the common attributes of storage devices and allows a Source for provider-specific attributes
@@ -16046,7 +17544,7 @@ export interface PersistentVolumeClaimSpec {
   readonly storageClassName?: string;
 
   /**
-   * volumeAttributesClassName may be used to set the VolumeAttributesClass used by this claim. If specified, the CSI driver will create or update the volume with the attributes defined in the corresponding VolumeAttributesClass. This has a different purpose than storageClassName, it can be changed after the claim is created. An empty string value means that no VolumeAttributesClass will be applied to the claim but it's not allowed to reset this field to empty string once it is set. If unspecified and the PersistentVolumeClaim is unbound, the default VolumeAttributesClass will be set by the persistentvolume controller if it exists. If the resource referred to by volumeAttributesClass does not exist, this PersistentVolumeClaim will be set to a Pending state, as reflected by the modifyVolumeStatus field, until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass (Alpha) Using this field requires the VolumeAttributesClass feature gate to be enabled.
+   * volumeAttributesClassName may be used to set the VolumeAttributesClass used by this claim. If specified, the CSI driver will create or update the volume with the attributes defined in the corresponding VolumeAttributesClass. This has a different purpose than storageClassName, it can be changed after the claim is created. An empty string value means that no VolumeAttributesClass will be applied to the claim but it's not allowed to reset this field to empty string once it is set. If unspecified and the PersistentVolumeClaim is unbound, the default VolumeAttributesClass will be set by the persistentvolume controller if it exists. If the resource referred to by volumeAttributesClass does not exist, this PersistentVolumeClaim will be set to a Pending state, as reflected by the modifyVolumeStatus field, until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/ (Beta) Using this field requires the VolumeAttributesClass feature gate to be enabled (off by default).
    *
    * @schema io.k8s.api.core.v1.PersistentVolumeClaimSpec#volumeAttributesClassName
    */
@@ -16071,7 +17569,7 @@ export interface PersistentVolumeClaimSpec {
 /**
  * Converts an object of type 'PersistentVolumeClaimSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeClaimSpec(obj: PersistentVolumeClaimSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16088,7 +17586,7 @@ export function toJson_PersistentVolumeClaimSpec(obj: PersistentVolumeClaimSpec 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodSpec is a description of a pod.
@@ -16155,7 +17653,7 @@ export interface PodSpec {
   readonly ephemeralContainers?: EphemeralContainer[];
 
   /**
-   * HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts file if specified. This is only valid for non-hostNetwork pods.
+   * HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts file if specified.
    *
    * @schema io.k8s.api.core.v1.PodSpec#hostAliases
    */
@@ -16215,7 +17713,7 @@ export interface PodSpec {
   readonly initContainers?: Container[];
 
   /**
-   * NodeName is a request to schedule this pod onto a specific node. If it is non-empty, the scheduler simply schedules this pod onto that node, assuming that it fits resource requirements.
+   * NodeName indicates in which node this pod is scheduled. If empty, this pod is a candidate for scheduling by the scheduler defined in schedulerName. Once this field is set, the kubelet for this node becomes responsible for the lifecycle of this pod. This field should not be used to express a desire for the pod to be scheduled on a specific node. https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodename
    *
    * @schema io.k8s.api.core.v1.PodSpec#nodeName
    */
@@ -16233,7 +17731,7 @@ export interface PodSpec {
    *
    * If the OS field is set to linux, the following fields must be unset: -securityContext.windowsOptions
    *
-   * If the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups - spec.containers[*].securityContext.seLinuxOptions - spec.containers[*].securityContext.seccompProfile - spec.containers[*].securityContext.capabilities - spec.containers[*].securityContext.readOnlyRootFilesystem - spec.containers[*].securityContext.privileged - spec.containers[*].securityContext.allowPrivilegeEscalation - spec.containers[*].securityContext.procMount - spec.containers[*].securityContext.runAsUser - spec.containers[*].securityContext.runAsGroup
+   * If the OS field is set to windows, following fields must be unset: - spec.hostPID - spec.hostIPC - spec.hostUsers - spec.securityContext.appArmorProfile - spec.securityContext.seLinuxOptions - spec.securityContext.seccompProfile - spec.securityContext.fsGroup - spec.securityContext.fsGroupChangePolicy - spec.securityContext.sysctls - spec.shareProcessNamespace - spec.securityContext.runAsUser - spec.securityContext.runAsGroup - spec.securityContext.supplementalGroups - spec.securityContext.supplementalGroupsPolicy - spec.containers[*].securityContext.appArmorProfile - spec.containers[*].securityContext.seLinuxOptions - spec.containers[*].securityContext.seccompProfile - spec.containers[*].securityContext.capabilities - spec.containers[*].securityContext.readOnlyRootFilesystem - spec.containers[*].securityContext.privileged - spec.containers[*].securityContext.allowPrivilegeEscalation - spec.containers[*].securityContext.procMount - spec.containers[*].securityContext.runAsUser - spec.containers[*].securityContext.runAsGroup
    *
    * @schema io.k8s.api.core.v1.PodSpec#os
    */
@@ -16287,6 +17785,17 @@ export interface PodSpec {
   readonly resourceClaims?: PodResourceClaim[];
 
   /**
+   * Resources is the total amount of CPU and Memory resources required by all containers in the pod. It supports specifying Requests and Limits for "cpu" and "memory" resource names only. ResourceClaims are not supported.
+   *
+   * This field enables fine-grained control over resource allocation for the entire pod, allowing resource sharing among containers in a pod.
+   *
+   * This is an alpha field and requires enabling the PodLevelResources feature gate.
+   *
+   * @schema io.k8s.api.core.v1.PodSpec#resources
+   */
+  readonly resources?: ResourceRequirements;
+
+  /**
    * Restart policy for all containers within the pod. One of Always, OnFailure, Never. In some contexts, only a subset of those values may be permitted. Default to Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy
    *
    * @default Always. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy
@@ -16313,8 +17822,6 @@ export interface PodSpec {
    *
    * SchedulingGates can only be set at pod creation time, and be removed only afterwards.
    *
-   * This is a beta feature enabled by the PodSchedulingReadiness feature gate.
-   *
    * @schema io.k8s.api.core.v1.PodSpec#schedulingGates
    */
   readonly schedulingGates?: PodSchedulingGate[];
@@ -16328,7 +17835,7 @@ export interface PodSpec {
   readonly securityContext?: PodSecurityContext;
 
   /**
-   * DeprecatedServiceAccount is a depreciated alias for ServiceAccountName. Deprecated: Use serviceAccountName instead.
+   * DeprecatedServiceAccount is a deprecated alias for ServiceAccountName. Deprecated: Use serviceAccountName instead.
    *
    * @schema io.k8s.api.core.v1.PodSpec#serviceAccount
    */
@@ -16342,7 +17849,7 @@ export interface PodSpec {
   readonly serviceAccountName?: string;
 
   /**
-   * If true the pod's hostname will be configured as the pod's FQDN, rather than the leaf name (the default). In Linux containers, this means setting the FQDN in the hostname field of the kernel (the nodename field of struct utsname). In Windows containers, this means setting the registry value of hostname for the registry key HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters to FQDN. If a pod does not have FQDN, this has no effect. Default to false.
+   * If true the pod's hostname will be configured as the pod's FQDN, rather than the leaf name (the default). In Linux containers, this means setting the FQDN in the hostname field of the kernel (the nodename field of struct utsname). In Windows containers, this means setting the registry value of hostname for the registry key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters to FQDN. If a pod does not have FQDN, this has no effect. Default to false.
    *
    * @default false.
    * @schema io.k8s.api.core.v1.PodSpec#setHostnameAsFQDN
@@ -16398,7 +17905,7 @@ export interface PodSpec {
 /**
  * Converts an object of type 'PodSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodSpec(obj: PodSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16427,6 +17934,7 @@ export function toJson_PodSpec(obj: PodSpec | undefined): Record<string, any> | 
     'priorityClassName': obj.priorityClassName,
     'readinessGates': obj.readinessGates?.map(y => toJson_PodReadinessGate(y)),
     'resourceClaims': obj.resourceClaims?.map(y => toJson_PodResourceClaim(y)),
+    'resources': toJson_ResourceRequirements(obj.resources),
     'restartPolicy': obj.restartPolicy,
     'runtimeClassName': obj.runtimeClassName,
     'schedulerName': obj.schedulerName,
@@ -16445,7 +17953,7 @@ export function toJson_PodSpec(obj: PodSpec | undefined): Record<string, any> | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodTemplateSpec describes the data a pod should have when created from a template
@@ -16472,7 +17980,7 @@ export interface PodTemplateSpec {
 /**
  * Converts an object of type 'PodTemplateSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodTemplateSpec(obj: PodTemplateSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16482,7 +17990,7 @@ export function toJson_PodTemplateSpec(obj: PodTemplateSpec | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ReplicationControllerSpec is the specification of a replication controller.
@@ -16525,7 +18033,7 @@ export interface ReplicationControllerSpec {
 /**
  * Converts an object of type 'ReplicationControllerSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ReplicationControllerSpec(obj: ReplicationControllerSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16537,7 +18045,7 @@ export function toJson_ReplicationControllerSpec(obj: ReplicationControllerSpec 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceQuotaSpec defines the desired hard limits to enforce for Quota.
@@ -16571,7 +18079,7 @@ export interface ResourceQuotaSpec {
 /**
  * Converts an object of type 'ResourceQuotaSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourceQuotaSpec(obj: ResourceQuotaSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16582,7 +18090,7 @@ export function toJson_ResourceQuotaSpec(obj: ResourceQuotaSpec | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceSpec describes the attributes that a user creates on a service.
@@ -16723,6 +18231,13 @@ export interface ServiceSpec {
   readonly sessionAffinityConfig?: SessionAffinityConfig;
 
   /**
+   * TrafficDistribution offers a way to express preferences for how traffic is distributed to Service endpoints. Implementations can use this field as a hint, but are not required to guarantee strict adherence. If the field is not set, the implementation will apply its default routing strategy. If set to "PreferClose", implementations should prioritize endpoints that are topologically close (e.g., same zone). This is a beta field and requires enabling ServiceTrafficDistribution feature.
+   *
+   * @schema io.k8s.api.core.v1.ServiceSpec#trafficDistribution
+   */
+  readonly trafficDistribution?: string;
+
+  /**
    * type determines how the Service is exposed. Defaults to ClusterIP. Valid options are ExternalName, ClusterIP, NodePort, and LoadBalancer. "ClusterIP" allocates a cluster-internal IP address for load-balancing to endpoints. Endpoints are determined by the selector or if that is not specified, by manual construction of an Endpoints object or EndpointSlice objects. If clusterIP is "None", no virtual IP is allocated and the endpoints are published as a set of endpoints rather than a virtual IP. "NodePort" builds on ClusterIP and allocates a port on every node which routes to the same endpoints as the clusterIP. "LoadBalancer" builds on NodePort and creates an external load-balancer (if supported in the current cloud) which routes to the same endpoints as the clusterIP. "ExternalName" aliases this service to the specified externalName. Several other fields do not apply to ExternalName services. More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
    *
    * @default ClusterIP. Valid options are ExternalName, ClusterIP, NodePort, and LoadBalancer. "ClusterIP" allocates a cluster-internal IP address for load-balancing to endpoints. Endpoints are determined by the selector or if that is not specified, by manual construction of an Endpoints object or EndpointSlice objects. If clusterIP is "None", no virtual IP is allocated and the endpoints are published as a set of endpoints rather than a virtual IP. "NodePort" builds on ClusterIP and allocates a port on every node which routes to the same endpoints as the clusterIP. "LoadBalancer" builds on NodePort and creates an external load-balancer (if supported in the current cloud) which routes to the same endpoints as the clusterIP. "ExternalName" aliases this service to the specified externalName. Several other fields do not apply to ExternalName services. More info: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
@@ -16735,7 +18250,7 @@ export interface ServiceSpec {
 /**
  * Converts an object of type 'ServiceSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceSpec(obj: ServiceSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16757,12 +18272,13 @@ export function toJson_ServiceSpec(obj: ServiceSpec | undefined): Record<string,
     'selector': ((obj.selector) === undefined) ? undefined : (Object.entries(obj.selector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'sessionAffinity': obj.sessionAffinity,
     'sessionAffinityConfig': toJson_SessionAffinityConfig(obj.sessionAffinityConfig),
+    'trafficDistribution': obj.trafficDistribution,
     'type': obj.type,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LocalObjectReference contains enough information to let you locate the referenced object inside the same namespace.
@@ -16771,7 +18287,7 @@ export function toJson_ServiceSpec(obj: ServiceSpec | undefined): Record<string,
  */
 export interface LocalObjectReference {
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.LocalObjectReference#name
    */
@@ -16782,7 +18298,7 @@ export interface LocalObjectReference {
 /**
  * Converts an object of type 'LocalObjectReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LocalObjectReference(obj: LocalObjectReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16791,7 +18307,7 @@ export function toJson_LocalObjectReference(obj: LocalObjectReference | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Endpoint represents a single logical "backend" implementing a service.
@@ -16860,7 +18376,7 @@ export interface Endpoint {
 /**
  * Converts an object of type 'Endpoint' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Endpoint(obj: Endpoint | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16876,7 +18392,7 @@ export function toJson_Endpoint(obj: Endpoint | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointPort is a tuple that describes a single port.
@@ -16927,7 +18443,7 @@ export interface EndpointPort {
 /**
  * Converts an object of type 'EndpointPort' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointPort(obj: EndpointPort | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16939,7 +18455,7 @@ export function toJson_EndpointPort(obj: EndpointPort | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * FlowSchemaSpec describes how the FlowSchema's specification looks like.
@@ -16980,7 +18496,7 @@ export interface FlowSchemaSpec {
 /**
  * Converts an object of type 'FlowSchemaSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlowSchemaSpec(obj: FlowSchemaSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -16992,7 +18508,7 @@ export function toJson_FlowSchemaSpec(obj: FlowSchemaSpec | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PriorityLevelConfigurationSpec specifies the configuration of a priority level.
@@ -17026,7 +18542,7 @@ export interface PriorityLevelConfigurationSpec {
 /**
  * Converts an object of type 'PriorityLevelConfigurationSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PriorityLevelConfigurationSpec(obj: PriorityLevelConfigurationSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17037,105 +18553,7 @@ export function toJson_PriorityLevelConfigurationSpec(obj: PriorityLevelConfigur
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * FlowSchemaSpec describes how the FlowSchema's specification looks like.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaSpec
- */
-export interface FlowSchemaSpecV1Beta3 {
-  /**
-   * `distinguisherMethod` defines how to compute the flow distinguisher for requests that match this schema. `nil` specifies that the distinguisher is disabled and thus will always be the empty string.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaSpec#distinguisherMethod
-   */
-  readonly distinguisherMethod?: FlowDistinguisherMethodV1Beta3;
-
-  /**
-   * `matchingPrecedence` is used to choose among the FlowSchemas that match a given request. The chosen FlowSchema is among those with the numerically lowest (which we take to be logically highest) MatchingPrecedence.  Each MatchingPrecedence value must be ranged in [1,10000]. Note that if the precedence is not specified, it will be set to 1000 as default.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaSpec#matchingPrecedence
-   */
-  readonly matchingPrecedence?: number;
-
-  /**
-   * `priorityLevelConfiguration` should reference a PriorityLevelConfiguration in the cluster. If the reference cannot be resolved, the FlowSchema will be ignored and marked as invalid in its status. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaSpec#priorityLevelConfiguration
-   */
-  readonly priorityLevelConfiguration: PriorityLevelConfigurationReferenceV1Beta3;
-
-  /**
-   * `rules` describes which requests will match this flow schema. This FlowSchema matches a request if and only if at least one member of rules matches the request. if it is an empty slice, there will be no requests matching the FlowSchema.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowSchemaSpec#rules
-   */
-  readonly rules?: PolicyRulesWithSubjectsV1Beta3[];
-
-}
-
-/**
- * Converts an object of type 'FlowSchemaSpecV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_FlowSchemaSpecV1Beta3(obj: FlowSchemaSpecV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'distinguisherMethod': toJson_FlowDistinguisherMethodV1Beta3(obj.distinguisherMethod),
-    'matchingPrecedence': obj.matchingPrecedence,
-    'priorityLevelConfiguration': toJson_PriorityLevelConfigurationReferenceV1Beta3(obj.priorityLevelConfiguration),
-    'rules': obj.rules?.map(y => toJson_PolicyRulesWithSubjectsV1Beta3(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * PriorityLevelConfigurationSpec specifies the configuration of a priority level.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationSpec
- */
-export interface PriorityLevelConfigurationSpecV1Beta3 {
-  /**
-   * `exempt` specifies how requests are handled for an exempt priority level. This field MUST be empty if `type` is `"Limited"`. This field MAY be non-empty if `type` is `"Exempt"`. If empty and `type` is `"Exempt"` then the default values for `ExemptPriorityLevelConfiguration` apply.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationSpec#exempt
-   */
-  readonly exempt?: ExemptPriorityLevelConfigurationV1Beta3;
-
-  /**
-   * `limited` specifies how requests are handled for a Limited priority level. This field must be non-empty if and only if `type` is `"Limited"`.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationSpec#limited
-   */
-  readonly limited?: LimitedPriorityLevelConfigurationV1Beta3;
-
-  /**
-   * `type` indicates whether this priority level is subject to limitation on request execution.  A value of `"Exempt"` means that requests of this priority level are not subject to a limit (and thus are never queued) and do not detract from the capacity made available to other priority levels.  A value of `"Limited"` means that (a) requests of this priority level _are_ subject to limits and (b) some of the server's limited capacity is made available exclusively to this priority level. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationSpec#type
-   */
-  readonly type: string;
-
-}
-
-/**
- * Converts an object of type 'PriorityLevelConfigurationSpecV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_PriorityLevelConfigurationSpecV1Beta3(obj: PriorityLevelConfigurationSpecV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'exempt': toJson_ExemptPriorityLevelConfigurationV1Beta3(obj.exempt),
-    'limited': toJson_LimitedPriorityLevelConfigurationV1Beta3(obj.limited),
-    'type': obj.type,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressSpec describes the Ingress the user wishes to exist.
@@ -17176,7 +18594,7 @@ export interface IngressSpec {
 /**
  * Converts an object of type 'IngressSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressSpec(obj: IngressSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17188,7 +18606,7 @@ export function toJson_IngressSpec(obj: IngressSpec | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressClassSpec provides information about the class of an Ingress.
@@ -17215,7 +18633,7 @@ export interface IngressClassSpec {
 /**
  * Converts an object of type 'IngressClassSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressClassSpec(obj: IngressClassSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17225,7 +18643,7 @@ export function toJson_IngressClassSpec(obj: IngressClassSpec | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicySpec provides the specification of a NetworkPolicy
@@ -17266,7 +18684,7 @@ export interface NetworkPolicySpec {
 /**
  * Converts an object of type 'NetworkPolicySpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicySpec(obj: NetworkPolicySpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17278,57 +18696,57 @@ export function toJson_NetworkPolicySpec(obj: NetworkPolicySpec | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IPAddressSpec describe the attributes in an IP Address.
  *
- * @schema io.k8s.api.networking.v1alpha1.IPAddressSpec
+ * @schema io.k8s.api.networking.v1beta1.IPAddressSpec
  */
-export interface IpAddressSpecV1Alpha1 {
+export interface IpAddressSpecV1Beta1 {
   /**
    * ParentRef references the resource that an IPAddress is attached to. An IPAddress must reference a parent object.
    *
-   * @schema io.k8s.api.networking.v1alpha1.IPAddressSpec#parentRef
+   * @schema io.k8s.api.networking.v1beta1.IPAddressSpec#parentRef
    */
-  readonly parentRef?: ParentReferenceV1Alpha1;
+  readonly parentRef: ParentReferenceV1Beta1;
 
 }
 
 /**
- * Converts an object of type 'IpAddressSpecV1Alpha1' to JSON representation.
+ * Converts an object of type 'IpAddressSpecV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_IpAddressSpecV1Alpha1(obj: IpAddressSpecV1Alpha1 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IpAddressSpecV1Beta1(obj: IpAddressSpecV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'parentRef': toJson_ParentReferenceV1Alpha1(obj.parentRef),
+    'parentRef': toJson_ParentReferenceV1Beta1(obj.parentRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceCIDRSpec define the CIDRs the user wants to use for allocating ClusterIPs for Services.
  *
- * @schema io.k8s.api.networking.v1alpha1.ServiceCIDRSpec
+ * @schema io.k8s.api.networking.v1beta1.ServiceCIDRSpec
  */
-export interface ServiceCidrSpecV1Alpha1 {
+export interface ServiceCidrSpecV1Beta1 {
   /**
    * CIDRs defines the IP blocks in CIDR notation (e.g. "192.168.0.0/24" or "2001:db8::/64") from which to assign service cluster IPs. Max of two CIDRs is allowed, one of each IP family. This field is immutable.
    *
-   * @schema io.k8s.api.networking.v1alpha1.ServiceCIDRSpec#cidrs
+   * @schema io.k8s.api.networking.v1beta1.ServiceCIDRSpec#cidrs
    */
   readonly cidrs?: string[];
 
 }
 
 /**
- * Converts an object of type 'ServiceCidrSpecV1Alpha1' to JSON representation.
+ * Converts an object of type 'ServiceCidrSpecV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ServiceCidrSpecV1Alpha1(obj: ServiceCidrSpecV1Alpha1 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ServiceCidrSpecV1Beta1(obj: ServiceCidrSpecV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'cidrs': obj.cidrs?.map(y => y),
@@ -17336,7 +18754,7 @@ export function toJson_ServiceCidrSpecV1Alpha1(obj: ServiceCidrSpecV1Alpha1 | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Overhead structure represents the resource overhead associated with running a pod.
@@ -17356,7 +18774,7 @@ export interface Overhead {
 /**
  * Converts an object of type 'Overhead' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Overhead(obj: Overhead | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17365,7 +18783,7 @@ export function toJson_Overhead(obj: Overhead | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Scheduling specifies the scheduling constraints for nodes supporting a RuntimeClass.
@@ -17392,7 +18810,7 @@ export interface Scheduling {
 /**
  * Converts an object of type 'Scheduling' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Scheduling(obj: Scheduling | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17402,7 +18820,7 @@ export function toJson_Scheduling(obj: Scheduling | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DeleteOptions may be provided when deleting an API object.
@@ -17431,6 +18849,13 @@ export interface DeleteOptions {
    * @schema io.k8s.apimachinery.pkg.apis.meta.v1.DeleteOptions#gracePeriodSeconds
    */
   readonly gracePeriodSeconds?: number;
+
+  /**
+   * if set to true, it will trigger an unsafe deletion of the resource in case the normal deletion flow fails with a corrupt object error. A resource is considered corrupt if it can not be retrieved from the underlying storage successfully because of a) its data can not be transformed e.g. decryption failure, or b) it fails to decode into an object. NOTE: unsafe deletion ignores finalizer constraints, skips precondition checks, and removes the object from the storage. WARNING: This may potentially break the cluster if the workload associated with the resource being unsafe-deleted relies on normal deletion flow. Use only if you REALLY know what you are doing. The default value is false, and the user must opt in to enable it
+   *
+   * @schema io.k8s.apimachinery.pkg.apis.meta.v1.DeleteOptions#ignoreStoreReadErrorWithClusterBreakingPotential
+   */
+  readonly ignoreStoreReadErrorWithClusterBreakingPotential?: boolean;
 
   /**
    * Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
@@ -17465,13 +18890,14 @@ export interface DeleteOptions {
 /**
  * Converts an object of type 'DeleteOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DeleteOptions(obj: DeleteOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'apiVersion': obj.apiVersion,
     'dryRun': obj.dryRun?.map(y => y),
     'gracePeriodSeconds': obj.gracePeriodSeconds,
+    'ignoreStoreReadErrorWithClusterBreakingPotential': obj.ignoreStoreReadErrorWithClusterBreakingPotential,
     'kind': obj.kind,
     'orphanDependents': obj.orphanDependents,
     'preconditions': toJson_Preconditions(obj.preconditions),
@@ -17480,7 +18906,7 @@ export function toJson_DeleteOptions(obj: DeleteOptions | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodDisruptionBudgetSpec is a description of a PodDisruptionBudget.
@@ -17531,7 +18957,7 @@ export interface PodDisruptionBudgetSpec {
 /**
  * Converts an object of type 'PodDisruptionBudgetSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodDisruptionBudgetSpec(obj: PodDisruptionBudgetSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17543,7 +18969,7 @@ export function toJson_PodDisruptionBudgetSpec(obj: PodDisruptionBudgetSpec | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AggregationRule describes how to locate ClusterRoles to aggregate into the ClusterRole
@@ -17563,7 +18989,7 @@ export interface AggregationRule {
 /**
  * Converts an object of type 'AggregationRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_AggregationRule(obj: AggregationRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17572,7 +18998,7 @@ export function toJson_AggregationRule(obj: AggregationRule | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PolicyRule holds information that describes a policy rule, but does not contain information about who the rule applies to or which namespace the rule applies to.
@@ -17620,7 +19046,7 @@ export interface PolicyRule {
 /**
  * Converts an object of type 'PolicyRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PolicyRule(obj: PolicyRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17633,7 +19059,7 @@ export function toJson_PolicyRule(obj: PolicyRule | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RoleRef contains information that points to the role being used
@@ -17667,7 +19093,7 @@ export interface RoleRef {
 /**
  * Converts an object of type 'RoleRef' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RoleRef(obj: RoleRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17678,7 +19104,7 @@ export function toJson_RoleRef(obj: RoleRef | undefined): Record<string, any> | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Subject contains a reference to the object or user identities a role binding applies to.  This can either hold a direct API object reference, or a value for non-objects such as user and group names.
@@ -17720,7 +19146,7 @@ export interface Subject {
 /**
  * Converts an object of type 'Subject' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Subject(obj: Subject | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -17732,212 +19158,383 @@ export function toJson_Subject(obj: Subject | undefined): Record<string, any> | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PodSchedulingContextSpec describes where resources for the Pod are needed.
+ * DeviceClassSpec is used in a [DeviceClass] to define what can be allocated and how to configure it.
  *
- * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextSpec
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClassSpec
  */
-export interface PodSchedulingContextSpecV1Alpha2 {
+export interface DeviceClassSpecV1Alpha3 {
   /**
-   * PotentialNodes lists nodes where the Pod might be able to run.
+   * Config defines configuration parameters that apply to each device that is claimed via this class. Some classses may potentially be satisfied by multiple drivers, so each instance of a vendor configuration applies to exactly one driver.
    *
-   * The size of this field is limited to 128. This is large enough for many clusters. Larger clusters may need more attempts to find a node that suits all pending resources. This may get increased in the future, but not reduced.
+   * They are passed to the driver, but are not considered while allocating the claim.
    *
-   * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextSpec#potentialNodes
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClassSpec#config
    */
-  readonly potentialNodes?: string[];
+  readonly config?: DeviceClassConfigurationV1Alpha3[];
 
   /**
-   * SelectedNode is the node for which allocation of ResourceClaims that are referenced by the Pod and that use "WaitForFirstConsumer" allocation is to be attempted.
+   * Each selector must be satisfied by a device which is claimed via this class.
    *
-   * @schema io.k8s.api.resource.v1alpha2.PodSchedulingContextSpec#selectedNode
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClassSpec#selectors
    */
-  readonly selectedNode?: string;
+  readonly selectors?: DeviceSelectorV1Alpha3[];
 
 }
 
 /**
- * Converts an object of type 'PodSchedulingContextSpecV1Alpha2' to JSON representation.
+ * Converts an object of type 'DeviceClassSpecV1Alpha3' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_PodSchedulingContextSpecV1Alpha2(obj: PodSchedulingContextSpecV1Alpha2 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassSpecV1Alpha3(obj: DeviceClassSpecV1Alpha3 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'potentialNodes': obj.potentialNodes?.map(y => y),
-    'selectedNode': obj.selectedNode,
+    'config': obj.config?.map(y => toJson_DeviceClassConfigurationV1Alpha3(y)),
+    'selectors': obj.selectors?.map(y => toJson_DeviceSelectorV1Alpha3(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ResourceClaimSpec defines how a resource is to be allocated.
+ * ResourceClaimSpec defines what is being requested in a ResourceClaim and how to configure it.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimSpec
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimSpec
  */
-export interface ResourceClaimSpecV1Alpha2 {
+export interface ResourceClaimSpecV1Alpha3 {
   /**
-   * Allocation can start immediately or when a Pod wants to use the resource. "WaitForFirstConsumer" is the default.
+   * Devices defines how to request devices.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimSpec#allocationMode
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimSpec#devices
    */
-  readonly allocationMode?: string;
-
-  /**
-   * ParametersRef references a separate object with arbitrary parameters that will be used by the driver when allocating a resource for the claim.
-   *
-   * The object must be in the same namespace as the ResourceClaim.
-   *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimSpec#parametersRef
-   */
-  readonly parametersRef?: ResourceClaimParametersReferenceV1Alpha2;
-
-  /**
-   * ResourceClassName references the driver and additional parameters via the name of a ResourceClass that was created as part of the driver deployment.
-   *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimSpec#resourceClassName
-   */
-  readonly resourceClassName: string;
+  readonly devices?: DeviceClaimV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimSpecV1Alpha2' to JSON representation.
+ * Converts an object of type 'ResourceClaimSpecV1Alpha3' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimSpecV1Alpha2(obj: ResourceClaimSpecV1Alpha2 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimSpecV1Alpha3(obj: ResourceClaimSpecV1Alpha3 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'allocationMode': obj.allocationMode,
-    'parametersRef': toJson_ResourceClaimParametersReferenceV1Alpha2(obj.parametersRef),
-    'resourceClassName': obj.resourceClassName,
+    'devices': toJson_DeviceClaimV1Alpha3(obj.devices),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceClaimTemplateSpec contains the metadata and fields for a ResourceClaim.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateSpec
+ * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateSpec
  */
-export interface ResourceClaimTemplateSpecV1Alpha2 {
+export interface ResourceClaimTemplateSpecV1Alpha3 {
   /**
-   * ObjectMeta may contain labels and annotations that will be copied into the PVC when creating it. No other fields are allowed and will be rejected during validation.
+   * ObjectMeta may contain labels and annotations that will be copied into the ResourceClaim when creating it. No other fields are allowed and will be rejected during validation.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateSpec#metadata
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateSpec#metadata
    */
   readonly metadata?: ObjectMeta;
 
   /**
    * Spec for the ResourceClaim. The entire content is copied unchanged into the ResourceClaim that gets created from this template. The same fields as in a ResourceClaim are also valid here.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimTemplateSpec#spec
+   * @schema io.k8s.api.resource.v1alpha3.ResourceClaimTemplateSpec#spec
    */
-  readonly spec: ResourceClaimSpecV1Alpha2;
+  readonly spec: ResourceClaimSpecV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimTemplateSpecV1Alpha2' to JSON representation.
+ * Converts an object of type 'ResourceClaimTemplateSpecV1Alpha3' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimTemplateSpecV1Alpha2(obj: ResourceClaimTemplateSpecV1Alpha2 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimTemplateSpecV1Alpha3(obj: ResourceClaimTemplateSpecV1Alpha3 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': toJson_ObjectMeta(obj.metadata),
-    'spec': toJson_ResourceClaimSpecV1Alpha2(obj.spec),
+    'spec': toJson_ResourceClaimSpecV1Alpha3(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ResourceClassParametersReference contains enough information to let you locate the parameters for a ResourceClass.
+ * ResourceSliceSpec contains the information published by the driver in one ResourceSlice.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClassParametersReference
+ * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec
  */
-export interface ResourceClassParametersReferenceV1Alpha2 {
+export interface ResourceSliceSpecV1Alpha3 {
   /**
-   * APIGroup is the group for the resource being referenced. It is empty for the core API. This matches the group in the APIVersion that is used when creating the resources.
+   * AllNodes indicates that all nodes have access to the resources in the pool.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClassParametersReference#apiGroup
+   * Exactly one of NodeName, NodeSelector and AllNodes must be set.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec#allNodes
    */
-  readonly apiGroup?: string;
+  readonly allNodes?: boolean;
 
   /**
-   * Kind is the type of resource being referenced. This is the same value as in the parameter object's metadata.
+   * Devices lists some or all of the devices in this pool.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClassParametersReference#kind
+   * Must not have more than 128 entries.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec#devices
    */
-  readonly kind: string;
+  readonly devices?: DeviceV1Alpha3[];
 
   /**
-   * Name is the name of resource being referenced.
+   * Driver identifies the DRA driver providing the capacity information. A field selector can be used to list only ResourceSlice objects with a certain driver name.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClassParametersReference#name
+   * Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. This field is immutable.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec#driver
    */
-  readonly name: string;
+  readonly driver: string;
 
   /**
-   * Namespace that contains the referenced resource. Must be empty for cluster-scoped resources and non-empty for namespaced resources.
+   * NodeName identifies the node which provides the resources in this pool. A field selector can be used to list only ResourceSlice objects belonging to a certain node.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClassParametersReference#namespace
+   * This field can be used to limit access from nodes to ResourceSlices with the same node name. It also indicates to autoscalers that adding new nodes of the same type as some old node might also make new resources available.
+   *
+   * Exactly one of NodeName, NodeSelector and AllNodes must be set. This field is immutable.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec#nodeName
    */
-  readonly namespace?: string;
+  readonly nodeName?: string;
+
+  /**
+   * NodeSelector defines which nodes have access to the resources in the pool, when that pool is not limited to a single node.
+   *
+   * Must use exactly one term.
+   *
+   * Exactly one of NodeName, NodeSelector and AllNodes must be set.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec#nodeSelector
+   */
+  readonly nodeSelector?: NodeSelector;
+
+  /**
+   * Pool describes the pool that this ResourceSlice belongs to.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourceSliceSpec#pool
+   */
+  readonly pool: ResourcePoolV1Alpha3;
 
 }
 
 /**
- * Converts an object of type 'ResourceClassParametersReferenceV1Alpha2' to JSON representation.
+ * Converts an object of type 'ResourceSliceSpecV1Alpha3' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClassParametersReferenceV1Alpha2(obj: ResourceClassParametersReferenceV1Alpha2 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceSliceSpecV1Alpha3(obj: ResourceSliceSpecV1Alpha3 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'apiGroup': obj.apiGroup,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
+    'allNodes': obj.allNodes,
+    'devices': obj.devices?.map(y => toJson_DeviceV1Alpha3(y)),
+    'driver': obj.driver,
+    'nodeName': obj.nodeName,
+    'nodeSelector': toJson_NodeSelector(obj.nodeSelector),
+    'pool': toJson_ResourcePoolV1Alpha3(obj.pool),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector represents the union of the results of one or more label queries over a set of nodes; that is, it represents the OR of the selectors represented by the node selector terms.
+ * DeviceClassSpec is used in a [DeviceClass] to define what can be allocated and how to configure it.
  *
- * @schema io.k8s.api.core.v1.NodeSelector
+ * @schema io.k8s.api.resource.v1beta1.DeviceClassSpec
  */
-export interface NodeSelector {
+export interface DeviceClassSpecV1Beta1 {
   /**
-   * Required. A list of node selector terms. The terms are ORed.
+   * Config defines configuration parameters that apply to each device that is claimed via this class. Some classses may potentially be satisfied by multiple drivers, so each instance of a vendor configuration applies to exactly one driver.
    *
-   * @schema io.k8s.api.core.v1.NodeSelector#nodeSelectorTerms
+   * They are passed to the driver, but are not considered while allocating the claim.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClassSpec#config
    */
-  readonly nodeSelectorTerms: NodeSelectorTerm[];
+  readonly config?: DeviceClassConfigurationV1Beta1[];
+
+  /**
+   * Each selector must be satisfied by a device which is claimed via this class.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClassSpec#selectors
+   */
+  readonly selectors?: DeviceSelectorV1Beta1[];
 
 }
 
 /**
- * Converts an object of type 'NodeSelector' to JSON representation.
+ * Converts an object of type 'DeviceClassSpecV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_NodeSelector(obj: NodeSelector | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassSpecV1Beta1(obj: DeviceClassSpecV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'nodeSelectorTerms': obj.nodeSelectorTerms?.map(y => toJson_NodeSelectorTerm(y)),
+    'config': obj.config?.map(y => toJson_DeviceClassConfigurationV1Beta1(y)),
+    'selectors': obj.selectors?.map(y => toJson_DeviceSelectorV1Beta1(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceClaimSpec defines what is being requested in a ResourceClaim and how to configure it.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimSpec
+ */
+export interface ResourceClaimSpecV1Beta1 {
+  /**
+   * Devices defines how to request devices.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimSpec#devices
+   */
+  readonly devices?: DeviceClaimV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'ResourceClaimSpecV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimSpecV1Beta1(obj: ResourceClaimSpecV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'devices': toJson_DeviceClaimV1Beta1(obj.devices),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceClaimTemplateSpec contains the metadata and fields for a ResourceClaim.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateSpec
+ */
+export interface ResourceClaimTemplateSpecV1Beta1 {
+  /**
+   * ObjectMeta may contain labels and annotations that will be copied into the ResourceClaim when creating it. No other fields are allowed and will be rejected during validation.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateSpec#metadata
+   */
+  readonly metadata?: ObjectMeta;
+
+  /**
+   * Spec for the ResourceClaim. The entire content is copied unchanged into the ResourceClaim that gets created from this template. The same fields as in a ResourceClaim are also valid here.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceClaimTemplateSpec#spec
+   */
+  readonly spec: ResourceClaimSpecV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'ResourceClaimTemplateSpecV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaimTemplateSpecV1Beta1(obj: ResourceClaimTemplateSpecV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': toJson_ObjectMeta(obj.metadata),
+    'spec': toJson_ResourceClaimSpecV1Beta1(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceSliceSpec contains the information published by the driver in one ResourceSlice.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec
+ */
+export interface ResourceSliceSpecV1Beta1 {
+  /**
+   * AllNodes indicates that all nodes have access to the resources in the pool.
+   *
+   * Exactly one of NodeName, NodeSelector and AllNodes must be set.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec#allNodes
+   */
+  readonly allNodes?: boolean;
+
+  /**
+   * Devices lists some or all of the devices in this pool.
+   *
+   * Must not have more than 128 entries.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec#devices
+   */
+  readonly devices?: DeviceV1Beta1[];
+
+  /**
+   * Driver identifies the DRA driver providing the capacity information. A field selector can be used to list only ResourceSlice objects with a certain driver name.
+   *
+   * Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver. This field is immutable.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec#driver
+   */
+  readonly driver: string;
+
+  /**
+   * NodeName identifies the node which provides the resources in this pool. A field selector can be used to list only ResourceSlice objects belonging to a certain node.
+   *
+   * This field can be used to limit access from nodes to ResourceSlices with the same node name. It also indicates to autoscalers that adding new nodes of the same type as some old node might also make new resources available.
+   *
+   * Exactly one of NodeName, NodeSelector and AllNodes must be set. This field is immutable.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec#nodeName
+   */
+  readonly nodeName?: string;
+
+  /**
+   * NodeSelector defines which nodes have access to the resources in the pool, when that pool is not limited to a single node.
+   *
+   * Must use exactly one term.
+   *
+   * Exactly one of NodeName, NodeSelector and AllNodes must be set.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec#nodeSelector
+   */
+  readonly nodeSelector?: NodeSelector;
+
+  /**
+   * Pool describes the pool that this ResourceSlice belongs to.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourceSliceSpec#pool
+   */
+  readonly pool: ResourcePoolV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'ResourceSliceSpecV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceSliceSpecV1Beta1(obj: ResourceSliceSpecV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allNodes': obj.allNodes,
+    'devices': obj.devices?.map(y => toJson_DeviceV1Beta1(y)),
+    'driver': obj.driver,
+    'nodeName': obj.nodeName,
+    'nodeSelector': toJson_NodeSelector(obj.nodeSelector),
+    'pool': toJson_ResourcePoolV1Beta1(obj.pool),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSIDriverSpec is the specification of a CSIDriver.
@@ -17957,7 +19554,7 @@ export interface CsiDriverSpec {
   /**
    * fsGroupPolicy defines if the underlying volume supports changing ownership and permission of the volume before being mounted. Refer to the specific FSGroupPolicy values for additional details.
    *
-   * This field is immutable.
+   * This field was immutable in Kubernetes < 1.29 and now is mutable.
    *
    * Defaults to ReadWriteOnceWithFSType, which will examine each volume to determine if Kubernetes should modify ownership and permissions of the volume. With the default policy the defined fsGroup will only be applied if a fstype is defined and the volume's access mode contains ReadWriteOnce.
    *
@@ -17976,7 +19573,7 @@ export interface CsiDriverSpec {
    *
    * "csi.storage.k8s.io/ephemeral" is a new feature in Kubernetes 1.16. It is only required for drivers which support both the "Persistent" and "Ephemeral" VolumeLifecycleMode. Other drivers can leave pod info disabled and/or ignore this field. As Kubernetes 1.15 doesn't support this field, drivers can only support one mode when deployed on such a cluster and the deployment determines which mode that is, for example via a command line parameter of the driver.
    *
-   * This field is immutable.
+   * This field was immutable in Kubernetes < 1.29 and now is mutable.
    *
    * @default false.
    * @schema io.k8s.api.storage.v1.CSIDriverSpec#podInfoOnMount
@@ -18052,7 +19649,7 @@ export interface CsiDriverSpec {
 /**
  * Converts an object of type 'CsiDriverSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiDriverSpec(obj: CsiDriverSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18068,7 +19665,7 @@ export function toJson_CsiDriverSpec(obj: CsiDriverSpec | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSINodeSpec holds information about the specification of all CSI drivers installed on a node
@@ -18088,7 +19685,7 @@ export interface CsiNodeSpec {
 /**
  * Converts an object of type 'CsiNodeSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiNodeSpec(obj: CsiNodeSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18097,7 +19694,7 @@ export function toJson_CsiNodeSpec(obj: CsiNodeSpec | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema io.k8s.apimachinery.pkg.api.resource.Quantity
@@ -18138,7 +19735,7 @@ export interface LabelSelector {
 /**
  * Converts an object of type 'LabelSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LabelSelector(obj: LabelSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18148,7 +19745,7 @@ export function toJson_LabelSelector(obj: LabelSelector | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A topology selector term represents the result of label queries. A null or empty topology selector term matches no objects. The requirements of them are ANDed. It provides a subset of functionality as NodeSelectorTerm. This is an alpha feature and may change in the future.
@@ -18168,7 +19765,7 @@ export interface TopologySelectorTerm {
 /**
  * Converts an object of type 'TopologySelectorTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TopologySelectorTerm(obj: TopologySelectorTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18177,7 +19774,7 @@ export function toJson_TopologySelectorTerm(obj: TopologySelectorTerm | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeAttachmentSpec is the specification of a VolumeAttachment request.
@@ -18211,7 +19808,7 @@ export interface VolumeAttachmentSpec {
 /**
  * Converts an object of type 'VolumeAttachmentSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeAttachmentSpec(obj: VolumeAttachmentSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18222,7 +19819,44 @@ export function toJson_VolumeAttachmentSpec(obj: VolumeAttachmentSpec | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec of the storage version migration.
+ *
+ * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationSpec
+ */
+export interface StorageVersionMigrationSpecV1Alpha1 {
+  /**
+   * The token used in the list options to get the next chunk of objects to migrate. When the .status.conditions indicates the migration is "Running", users can use this token to check the progress of the migration.
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationSpec#continueToken
+   */
+  readonly continueToken?: string;
+
+  /**
+   * The resource that is being migrated. The migrator sends requests to the endpoint serving the resource. Immutable.
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.StorageVersionMigrationSpec#resource
+   */
+  readonly resource: GroupVersionResourceV1Alpha1;
+
+}
+
+/**
+ * Converts an object of type 'StorageVersionMigrationSpecV1Alpha1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_StorageVersionMigrationSpecV1Alpha1(obj: StorageVersionMigrationSpecV1Alpha1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'continueToken': obj.continueToken,
+    'resource': toJson_GroupVersionResourceV1Alpha1(obj.resource),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceDefinitionSpec describes how a user wants their resource to appear
@@ -18277,7 +19911,7 @@ export interface CustomResourceDefinitionSpec {
 /**
  * Converts an object of type 'CustomResourceDefinitionSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceDefinitionSpec(obj: CustomResourceDefinitionSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18291,7 +19925,7 @@ export function toJson_CustomResourceDefinitionSpec(obj: CustomResourceDefinitio
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response. The Reason field of a Status object defines what attributes will be set. Clients must ignore fields that do not match the defined type of each attribute, and should assume that any attribute may be empty, invalid, or under defined.
@@ -18346,7 +19980,7 @@ export interface StatusDetails {
 /**
  * Converts an object of type 'StatusDetails' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatusDetails(obj: StatusDetails | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18360,7 +19994,7 @@ export function toJson_StatusDetails(obj: StatusDetails | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * APIServiceSpec contains information for locating and communicating with a server. Only https is supported, though you are able to disable certificate verification.
@@ -18422,7 +20056,7 @@ export interface ApiServiceSpec {
 /**
  * Converts an object of type 'ApiServiceSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ApiServiceSpec(obj: ApiServiceSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18437,7 +20071,7 @@ export function toJson_ApiServiceSpec(obj: ApiServiceSpec | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.
@@ -18499,7 +20133,7 @@ export interface ManagedFieldsEntry {
 /**
  * Converts an object of type 'ManagedFieldsEntry' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ManagedFieldsEntry(obj: ManagedFieldsEntry | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18514,7 +20148,7 @@ export function toJson_ManagedFieldsEntry(obj: ManagedFieldsEntry | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * OwnerReference contains enough information to let you identify an owning object. An owning object must be in the same namespace as the dependent, or be cluster-scoped, so there is no namespace field.
@@ -18570,7 +20204,7 @@ export interface OwnerReference {
 /**
  * Converts an object of type 'OwnerReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_OwnerReference(obj: OwnerReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18584,7 +20218,7 @@ export function toJson_OwnerReference(obj: OwnerReference | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * WebhookClientConfig contains the information to make a TLS connection with the webhook
@@ -18630,7 +20264,7 @@ export interface WebhookClientConfig {
 /**
  * Converts an object of type 'WebhookClientConfig' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_WebhookClientConfig(obj: WebhookClientConfig | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18641,7 +20275,7 @@ export function toJson_WebhookClientConfig(obj: WebhookClientConfig | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MatchCondition represents a condition which must by fulfilled for a request to be sent to a webhook.
@@ -18678,7 +20312,7 @@ export interface MatchCondition {
 /**
  * Converts an object of type 'MatchCondition' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MatchCondition(obj: MatchCondition | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18688,7 +20322,7 @@ export function toJson_MatchCondition(obj: MatchCondition | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RuleWithOperations is a tuple of Operations and Resources. It is recommended to make sure that all the tuple expansions are valid.
@@ -18743,7 +20377,7 @@ export interface RuleWithOperations {
 /**
  * Converts an object of type 'RuleWithOperations' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RuleWithOperations(obj: RuleWithOperations | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18756,14 +20390,14 @@ export function toJson_RuleWithOperations(obj: RuleWithOperations | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AuditAnnotation describes how to produce an audit annotation for an API request.
  *
- * @schema io.k8s.api.admissionregistration.v1alpha1.AuditAnnotation
+ * @schema io.k8s.api.admissionregistration.v1.AuditAnnotation
  */
-export interface AuditAnnotationV1Alpha1 {
+export interface AuditAnnotation {
   /**
    * key specifies the audit annotation key. The audit annotation keys of a ValidatingAdmissionPolicy must be unique. The key must be a qualified name ([A-Za-z0-9][-A-Za-z0-9_.]*) no more than 63 bytes in length.
    *
@@ -18773,7 +20407,7 @@ export interface AuditAnnotationV1Alpha1 {
    *
    * Required.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.AuditAnnotation#key
+   * @schema io.k8s.api.admissionregistration.v1.AuditAnnotation#key
    */
   readonly key: string;
 
@@ -18784,17 +20418,17 @@ export interface AuditAnnotationV1Alpha1 {
    *
    * Required.
    *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.AuditAnnotation#valueExpression
+   * @schema io.k8s.api.admissionregistration.v1.AuditAnnotation#valueExpression
    */
   readonly valueExpression: string;
 
 }
 
 /**
- * Converts an object of type 'AuditAnnotationV1Alpha1' to JSON representation.
+ * Converts an object of type 'AuditAnnotation' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_AuditAnnotationV1Alpha1(obj: AuditAnnotationV1Alpha1 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_AuditAnnotation(obj: AuditAnnotation | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -18803,7 +20437,330 @@ export function toJson_AuditAnnotationV1Alpha1(obj: AuditAnnotationV1Alpha1 | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * MatchResources decides whether to run the admission control policy on an object based on whether it meets the match criteria. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
+ *
+ * @schema io.k8s.api.admissionregistration.v1.MatchResources
+ */
+export interface MatchResources {
+  /**
+   * ExcludeResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy should not care about. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
+   *
+   * @schema io.k8s.api.admissionregistration.v1.MatchResources#excludeResourceRules
+   */
+  readonly excludeResourceRules?: NamedRuleWithOperations[];
+
+  /**
+   * matchPolicy defines how the "MatchResources" list is used to match incoming requests. Allowed values are "Exact" or "Equivalent".
+   *
+   * - Exact: match a request only if it exactly matches a specified rule. For example, if deployments can be modified via apps/v1, apps/v1beta1, and extensions/v1beta1, but "rules" only included `apiGroups:["apps"], apiVersions:["v1"], resources: ["deployments"]`, a request to apps/v1beta1 or extensions/v1beta1 would not be sent to the ValidatingAdmissionPolicy.
+   *
+   * - Equivalent: match a request if modifies a resource listed in rules, even via another API group or version. For example, if deployments can be modified via apps/v1, apps/v1beta1, and extensions/v1beta1, and "rules" only included `apiGroups:["apps"], apiVersions:["v1"], resources: ["deployments"]`, a request to apps/v1beta1 or extensions/v1beta1 would be converted to apps/v1 and sent to the ValidatingAdmissionPolicy.
+   *
+   * Defaults to "Equivalent"
+   *
+   * @default Equivalent"
+   * @schema io.k8s.api.admissionregistration.v1.MatchResources#matchPolicy
+   */
+  readonly matchPolicy?: string;
+
+  /**
+   * NamespaceSelector decides whether to run the admission control policy on an object based on whether the namespace for that object matches the selector. If the object itself is a namespace, the matching is performed on object.metadata.labels. If the object is another cluster scoped resource, it never skips the policy.
+   *
+   * For example, to run the webhook on any objects whose namespace is not associated with "runlevel" of "0" or "1";  you will set the selector as follows: "namespaceSelector": {
+   * "matchExpressions": [
+   * {
+   * "key": "runlevel",
+   * "operator": "NotIn",
+   * "values": [
+   * "0",
+   * "1"
+   * ]
+   * }
+   * ]
+   * }
+   *
+   * If instead you want to only run the policy on any objects whose namespace is associated with the "environment" of "prod" or "staging"; you will set the selector as follows: "namespaceSelector": {
+   * "matchExpressions": [
+   * {
+   * "key": "environment",
+   * "operator": "In",
+   * "values": [
+   * "prod",
+   * "staging"
+   * ]
+   * }
+   * ]
+   * }
+   *
+   * See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/ for more examples of label selectors.
+   *
+   * Default to the empty LabelSelector, which matches everything.
+   *
+   * @default the empty LabelSelector, which matches everything.
+   * @schema io.k8s.api.admissionregistration.v1.MatchResources#namespaceSelector
+   */
+  readonly namespaceSelector?: LabelSelector;
+
+  /**
+   * ObjectSelector decides whether to run the validation based on if the object has matching labels. objectSelector is evaluated against both the oldObject and newObject that would be sent to the cel validation, and is considered to match if either object matches the selector. A null object (oldObject in the case of create, or newObject in the case of delete) or an object that cannot have labels (like a DeploymentRollback or a PodProxyOptions object) is not considered to match. Use the object selector only if the webhook is opt-in, because end users may skip the admission webhook by setting the labels. Default to the empty LabelSelector, which matches everything.
+   *
+   * @default the empty LabelSelector, which matches everything.
+   * @schema io.k8s.api.admissionregistration.v1.MatchResources#objectSelector
+   */
+  readonly objectSelector?: LabelSelector;
+
+  /**
+   * ResourceRules describes what operations on what resources/subresources the ValidatingAdmissionPolicy matches. The policy cares about an operation if it matches _any_ Rule.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.MatchResources#resourceRules
+   */
+  readonly resourceRules?: NamedRuleWithOperations[];
+
+}
+
+/**
+ * Converts an object of type 'MatchResources' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MatchResources(obj: MatchResources | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'excludeResourceRules': obj.excludeResourceRules?.map(y => toJson_NamedRuleWithOperations(y)),
+    'matchPolicy': obj.matchPolicy,
+    'namespaceSelector': toJson_LabelSelector(obj.namespaceSelector),
+    'objectSelector': toJson_LabelSelector(obj.objectSelector),
+    'resourceRules': obj.resourceRules?.map(y => toJson_NamedRuleWithOperations(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParamKind is a tuple of Group Kind and Version.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ParamKind
+ */
+export interface ParamKind {
+  /**
+   * APIVersion is the API group version the resources belong to. In format of "group/version". Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ParamKind#apiVersion
+   */
+  readonly apiVersion?: string;
+
+  /**
+   * Kind is the API kind the resources belong to. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ParamKind#kind
+   */
+  readonly kind?: string;
+
+}
+
+/**
+ * Converts an object of type 'ParamKind' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ParamKind(obj: ParamKind | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'apiVersion': obj.apiVersion,
+    'kind': obj.kind,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Validation specifies the CEL expression which is used to apply the validation.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.Validation
+ */
+export interface Validation {
+  /**
+   * Expression represents the expression which will be evaluated by CEL. ref: https://github.com/google/cel-spec CEL expressions have access to the contents of the API request/response, organized into CEL variables as well as some other useful variables:
+   *
+   * - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
+   * For example, a variable named 'foo' can be accessed as 'variables.foo'.
+   * - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
+   * See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
+   * - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
+   * request resource.
+   *
+   * The `apiVersion`, `kind`, `metadata.name` and `metadata.generateName` are always accessible from the root of the object. No other metadata properties are accessible.
+   *
+   * Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Accessible property names are escaped according to the following rules when accessed in the expression: - '__' escapes to '__underscores__' - '.' escapes to '__dot__' - '-' escapes to '__dash__' - '/' escapes to '__slash__' - Property names that exactly match a CEL RESERVED keyword escape to '__{keyword}__'. The keywords are:
+   * "true", "false", "null", "in", "as", "break", "const", "continue", "else", "for", "function", "if",
+   * "import", "let", "loop", "package", "namespace", "return".
+   * Examples:
+   * - Expression accessing a property named "namespace": {"Expression": "object.__namespace__ > 0"}
+   * - Expression accessing a property named "x-prop": {"Expression": "object.x__dash__prop > 0"}
+   * - Expression accessing a property named "redact__d": {"Expression": "object.redact__underscores__d > 0"}
+   *
+   * Equality on arrays with list type of 'set' or 'map' ignores element order, i.e. [1, 2] == [2, 1]. Concatenation on arrays with x-kubernetes-list-type use the semantics of the list type:
+   * - 'set': `X + Y` performs a union where the array positions of all elements in `X` are preserved and
+   * non-intersecting elements in `Y` are appended, retaining their partial order.
+   * - 'map': `X + Y` performs a merge where the array positions of all keys in `X` are preserved but the values
+   * are overwritten by values in `Y` when the key sets of `X` and `Y` intersect. Elements in `Y` with
+   * non-intersecting keys are appended, retaining their partial order.
+   * Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.Validation#expression
+   */
+  readonly expression: string;
+
+  /**
+   * Message represents the message displayed when validation fails. The message is required if the Expression contains line breaks. The message must not contain line breaks. If unset, the message is "failed rule: {Rule}". e.g. "must be a URL with the host matching spec.host" If the Expression contains line breaks. Message is required. The message must not contain line breaks. If unset, the message is "failed Expression: {Expression}".
+   *
+   * @schema io.k8s.api.admissionregistration.v1.Validation#message
+   */
+  readonly message?: string;
+
+  /**
+   * messageExpression declares a CEL expression that evaluates to the validation failure message that is returned when this rule fails. Since messageExpression is used as a failure message, it must evaluate to a string. If both message and messageExpression are present on a validation, then messageExpression will be used if validation fails. If messageExpression results in a runtime error, the runtime error is logged, and the validation failure message is produced as if the messageExpression field were unset. If messageExpression evaluates to an empty string, a string with only spaces, or a string that contains line breaks, then the validation failure message will also be produced as if the messageExpression field were unset, and the fact that messageExpression produced an empty string/string with only spaces/string with line breaks will be logged. messageExpression has access to all the same variables as the `expression` except for 'authorizer' and 'authorizer.requestResource'. Example: "object.x must be less than max ("+string(params.max)+")"
+   *
+   * @schema io.k8s.api.admissionregistration.v1.Validation#messageExpression
+   */
+  readonly messageExpression?: string;
+
+  /**
+   * Reason represents a machine-readable description of why this validation failed. If this is the first validation in the list to fail, this reason, as well as the corresponding HTTP response code, are used in the HTTP response to the client. The currently supported reasons are: "Unauthorized", "Forbidden", "Invalid", "RequestEntityTooLarge". If not set, StatusReasonInvalid is used in the response to the client.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.Validation#reason
+   */
+  readonly reason?: string;
+
+}
+
+/**
+ * Converts an object of type 'Validation' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_Validation(obj: Validation | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'expression': obj.expression,
+    'message': obj.message,
+    'messageExpression': obj.messageExpression,
+    'reason': obj.reason,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Variable is the definition of a variable that is used for composition. A variable is defined as a named expression.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.Variable
+ */
+export interface Variable {
+  /**
+   * Expression is the expression that will be evaluated as the value of the variable. The CEL expression has access to the same identifiers as the CEL expressions in Validation.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.Variable#expression
+   */
+  readonly expression: string;
+
+  /**
+   * Name is the name of the variable. The name must be a valid CEL identifier and unique among all variables. The variable can be accessed in other expressions through `variables` For example, if name is "foo", the variable will be available as `variables.foo`
+   *
+   * @schema io.k8s.api.admissionregistration.v1.Variable#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'Variable' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_Variable(obj: Variable | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'expression': obj.expression,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParamRef describes how to locate the params to be used as input to expressions of rules applied by a policy binding.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.ParamRef
+ */
+export interface ParamRef {
+  /**
+   * name is the name of the resource being referenced.
+   *
+   * One of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.
+   *
+   * A single parameter used for all admission requests can be configured by setting the `name` field, leaving `selector` blank, and setting namespace if `paramKind` is namespace-scoped.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ParamRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * namespace is the namespace of the referenced resource. Allows limiting the search for params to a specific namespace. Applies to both `name` and `selector` fields.
+   *
+   * A per-namespace parameter may be used by specifying a namespace-scoped `paramKind` in the policy and leaving this field empty.
+   *
+   * - If `paramKind` is cluster-scoped, this field MUST be unset. Setting this field results in a configuration error.
+   *
+   * - If `paramKind` is namespace-scoped, the namespace of the object being evaluated for admission will be used when this field is left unset. Take care that if this is left empty the binding must not match any cluster-scoped resources, which will result in an error.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ParamRef#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * `parameterNotFoundAction` controls the behavior of the binding when the resource exists, and name or selector is valid, but there are no parameters matched by the binding. If the value is set to `Allow`, then no matched parameters will be treated as successful validation by the binding. If set to `Deny`, then no matched parameters will be subject to the `failurePolicy` of the policy.
+   *
+   * Allowed values are `Allow` or `Deny`
+   *
+   * Required
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ParamRef#parameterNotFoundAction
+   */
+  readonly parameterNotFoundAction?: string;
+
+  /**
+   * selector can be used to match multiple param objects based on their labels. Supply selector: {} to match all resources of the ParamKind.
+   *
+   * If multiple params are found, they are all evaluated with the policy expressions and the results are ANDed together.
+   *
+   * One of `name` or `selector` must be set, but `name` and `selector` are mutually exclusive properties. If one is set, the other must be unset.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.ParamRef#selector
+   */
+  readonly selector?: LabelSelector;
+
+}
+
+/**
+ * Converts an object of type 'ParamRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ParamRef(obj: ParamRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'parameterNotFoundAction': obj.parameterNotFoundAction,
+    'selector': toJson_LabelSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema io.k8s.api.admissionregistration.v1alpha1.MatchCondition
@@ -18838,7 +20795,7 @@ export interface MatchConditionV1Alpha1 {
 /**
  * Converts an object of type 'MatchConditionV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MatchConditionV1Alpha1(obj: MatchConditionV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18848,7 +20805,7 @@ export function toJson_MatchConditionV1Alpha1(obj: MatchConditionV1Alpha1 | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MatchResources decides whether to run the admission control policy on an object based on whether it meets the match criteria. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
@@ -18935,7 +20892,7 @@ export interface MatchResourcesV1Alpha1 {
 /**
  * Converts an object of type 'MatchResourcesV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MatchResourcesV1Alpha1(obj: MatchResourcesV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18948,7 +20905,52 @@ export function toJson_MatchResourcesV1Alpha1(obj: MatchResourcesV1Alpha1 | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Mutation specifies the CEL expression which is used to apply the Mutation.
+ *
+ * @schema io.k8s.api.admissionregistration.v1alpha1.Mutation
+ */
+export interface MutationV1Alpha1 {
+  /**
+   * applyConfiguration defines the desired configuration values of an object. The configuration is applied to the admission object using [structured merge diff](https://github.com/kubernetes-sigs/structured-merge-diff). A CEL expression is used to create apply configuration.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.Mutation#applyConfiguration
+   */
+  readonly applyConfiguration?: ApplyConfigurationV1Alpha1;
+
+  /**
+   * jsonPatch defines a [JSON patch](https://jsonpatch.com/) operation to perform a mutation to the object. A CEL expression is used to create the JSON patch.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.Mutation#jsonPatch
+   */
+  readonly jsonPatch?: JsonPatchV1Alpha1;
+
+  /**
+   * patchType indicates the patch strategy used. Allowed values are "ApplyConfiguration" and "JSONPatch". Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.Mutation#patchType
+   */
+  readonly patchType: string;
+
+}
+
+/**
+ * Converts an object of type 'MutationV1Alpha1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_MutationV1Alpha1(obj: MutationV1Alpha1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'applyConfiguration': toJson_ApplyConfigurationV1Alpha1(obj.applyConfiguration),
+    'jsonPatch': toJson_JsonPatchV1Alpha1(obj.jsonPatch),
+    'patchType': obj.patchType,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ParamKind is a tuple of Group Kind and Version.
@@ -18975,7 +20977,7 @@ export interface ParamKindV1Alpha1 {
 /**
  * Converts an object of type 'ParamKindV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ParamKindV1Alpha1(obj: ParamKindV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -18985,85 +20987,7 @@ export function toJson_ParamKindV1Alpha1(obj: ParamKindV1Alpha1 | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * Validation specifies the CEL expression which is used to apply the validation.
- *
- * @schema io.k8s.api.admissionregistration.v1alpha1.Validation
- */
-export interface ValidationV1Alpha1 {
-  /**
-   * Expression represents the expression which will be evaluated by CEL. ref: https://github.com/google/cel-spec CEL expressions have access to the contents of the API request/response, organized into CEL variables as well as some other useful variables:
-   *
-   * - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
-   * For example, a variable named 'foo' can be accessed as 'variables.foo'.
-   * - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
-   * See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
-   * - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
-   * request resource.
-   *
-   * The `apiVersion`, `kind`, `metadata.name` and `metadata.generateName` are always accessible from the root of the object. No other metadata properties are accessible.
-   *
-   * Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Accessible property names are escaped according to the following rules when accessed in the expression: - '__' escapes to '__underscores__' - '.' escapes to '__dot__' - '-' escapes to '__dash__' - '/' escapes to '__slash__' - Property names that exactly match a CEL RESERVED keyword escape to '__{keyword}__'. The keywords are:
-   * "true", "false", "null", "in", "as", "break", "const", "continue", "else", "for", "function", "if",
-   * "import", "let", "loop", "package", "namespace", "return".
-   * Examples:
-   * - Expression accessing a property named "namespace": {"Expression": "object.__namespace__ > 0"}
-   * - Expression accessing a property named "x-prop": {"Expression": "object.x__dash__prop > 0"}
-   * - Expression accessing a property named "redact__d": {"Expression": "object.redact__underscores__d > 0"}
-   *
-   * Equality on arrays with list type of 'set' or 'map' ignores element order, i.e. [1, 2] == [2, 1]. Concatenation on arrays with x-kubernetes-list-type use the semantics of the list type:
-   * - 'set': `X + Y` performs a union where the array positions of all elements in `X` are preserved and
-   * non-intersecting elements in `Y` are appended, retaining their partial order.
-   * - 'map': `X + Y` performs a merge where the array positions of all keys in `X` are preserved but the values
-   * are overwritten by values in `Y` when the key sets of `X` and `Y` intersect. Elements in `Y` with
-   * non-intersecting keys are appended, retaining their partial order.
-   * Required.
-   *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.Validation#expression
-   */
-  readonly expression: string;
-
-  /**
-   * Message represents the message displayed when validation fails. The message is required if the Expression contains line breaks. The message must not contain line breaks. If unset, the message is "failed rule: {Rule}". e.g. "must be a URL with the host matching spec.host" If the Expression contains line breaks. Message is required. The message must not contain line breaks. If unset, the message is "failed Expression: {Expression}".
-   *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.Validation#message
-   */
-  readonly message?: string;
-
-  /**
-   * messageExpression declares a CEL expression that evaluates to the validation failure message that is returned when this rule fails. Since messageExpression is used as a failure message, it must evaluate to a string. If both message and messageExpression are present on a validation, then messageExpression will be used if validation fails. If messageExpression results in a runtime error, the runtime error is logged, and the validation failure message is produced as if the messageExpression field were unset. If messageExpression evaluates to an empty string, a string with only spaces, or a string that contains line breaks, then the validation failure message will also be produced as if the messageExpression field were unset, and the fact that messageExpression produced an empty string/string with only spaces/string with line breaks will be logged. messageExpression has access to all the same variables as the `expression` except for 'authorizer' and 'authorizer.requestResource'. Example: "object.x must be less than max ("+string(params.max)+")"
-   *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.Validation#messageExpression
-   */
-  readonly messageExpression?: string;
-
-  /**
-   * Reason represents a machine-readable description of why this validation failed. If this is the first validation in the list to fail, this reason, as well as the corresponding HTTP response code, are used in the HTTP response to the client. The currently supported reasons are: "Unauthorized", "Forbidden", "Invalid", "RequestEntityTooLarge". If not set, StatusReasonInvalid is used in the response to the client.
-   *
-   * @schema io.k8s.api.admissionregistration.v1alpha1.Validation#reason
-   */
-  readonly reason?: string;
-
-}
-
-/**
- * Converts an object of type 'ValidationV1Alpha1' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_ValidationV1Alpha1(obj: ValidationV1Alpha1 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'expression': obj.expression,
-    'message': obj.message,
-    'messageExpression': obj.messageExpression,
-    'reason': obj.reason,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Variable is the definition of a variable that is used for composition.
@@ -19090,7 +21014,7 @@ export interface VariableV1Alpha1 {
 /**
  * Converts an object of type 'VariableV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VariableV1Alpha1(obj: VariableV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19100,7 +21024,7 @@ export function toJson_VariableV1Alpha1(obj: VariableV1Alpha1 | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ParamRef describes how to locate the params to be used as input to expressions of rules applied by a policy binding.
@@ -19156,7 +21080,7 @@ export interface ParamRefV1Alpha1 {
 /**
  * Converts an object of type 'ParamRefV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ParamRefV1Alpha1(obj: ParamRefV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19168,7 +21092,7 @@ export function toJson_ParamRefV1Alpha1(obj: ParamRefV1Alpha1 | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AuditAnnotation describes how to produce an audit annotation for an API request.
@@ -19205,7 +21129,7 @@ export interface AuditAnnotationV1Beta1 {
 /**
  * Converts an object of type 'AuditAnnotationV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_AuditAnnotationV1Beta1(obj: AuditAnnotationV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19215,7 +21139,7 @@ export function toJson_AuditAnnotationV1Beta1(obj: AuditAnnotationV1Beta1 | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MatchCondition represents a condition which must be fulfilled for a request to be sent to a webhook.
@@ -19252,7 +21176,7 @@ export interface MatchConditionV1Beta1 {
 /**
  * Converts an object of type 'MatchConditionV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MatchConditionV1Beta1(obj: MatchConditionV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19262,7 +21186,7 @@ export function toJson_MatchConditionV1Beta1(obj: MatchConditionV1Beta1 | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MatchResources decides whether to run the admission control policy on an object based on whether it meets the match criteria. The exclude rules take precedence over include rules (if a resource matches both, it is excluded)
@@ -19349,7 +21273,7 @@ export interface MatchResourcesV1Beta1 {
 /**
  * Converts an object of type 'MatchResourcesV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MatchResourcesV1Beta1(obj: MatchResourcesV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19362,7 +21286,7 @@ export function toJson_MatchResourcesV1Beta1(obj: MatchResourcesV1Beta1 | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ParamKind is a tuple of Group Kind and Version.
@@ -19389,7 +21313,7 @@ export interface ParamKindV1Beta1 {
 /**
  * Converts an object of type 'ParamKindV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ParamKindV1Beta1(obj: ParamKindV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19399,7 +21323,7 @@ export function toJson_ParamKindV1Beta1(obj: ParamKindV1Beta1 | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Validation specifies the CEL expression which is used to apply the validation.
@@ -19465,7 +21389,7 @@ export interface ValidationV1Beta1 {
 /**
  * Converts an object of type 'ValidationV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidationV1Beta1(obj: ValidationV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19477,7 +21401,7 @@ export function toJson_ValidationV1Beta1(obj: ValidationV1Beta1 | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Variable is the definition of a variable that is used for composition. A variable is defined as a named expression.
@@ -19504,7 +21428,7 @@ export interface VariableV1Beta1 {
 /**
  * Converts an object of type 'VariableV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VariableV1Beta1(obj: VariableV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19514,7 +21438,7 @@ export function toJson_VariableV1Beta1(obj: VariableV1Beta1 | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ParamRef describes how to locate the params to be used as input to expressions of rules applied by a policy binding.
@@ -19573,7 +21497,7 @@ export interface ParamRefV1Beta1 {
 /**
  * Converts an object of type 'ParamRefV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ParamRefV1Beta1(obj: ParamRefV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19585,7 +21509,7 @@ export function toJson_ParamRefV1Beta1(obj: ParamRefV1Beta1 | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DaemonSetUpdateStrategy is a struct used to control the update strategy for a DaemonSet.
@@ -19613,7 +21537,7 @@ export interface DaemonSetUpdateStrategy {
 /**
  * Converts an object of type 'DaemonSetUpdateStrategy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DaemonSetUpdateStrategy(obj: DaemonSetUpdateStrategy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19623,7 +21547,7 @@ export function toJson_DaemonSetUpdateStrategy(obj: DaemonSetUpdateStrategy | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DeploymentStrategy describes how to replace existing pods with new ones.
@@ -19651,7 +21575,7 @@ export interface DeploymentStrategy {
 /**
  * Converts an object of type 'DeploymentStrategy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DeploymentStrategy(obj: DeploymentStrategy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19661,7 +21585,7 @@ export function toJson_DeploymentStrategy(obj: DeploymentStrategy | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatefulSetOrdinals describes the policy used for replica ordinal assignment in this StatefulSet.
@@ -19684,7 +21608,7 @@ export interface StatefulSetOrdinals {
 /**
  * Converts an object of type 'StatefulSetOrdinals' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatefulSetOrdinals(obj: StatefulSetOrdinals | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19693,7 +21617,7 @@ export function toJson_StatefulSetOrdinals(obj: StatefulSetOrdinals | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatefulSetPersistentVolumeClaimRetentionPolicy describes the policy used for PVCs created from the StatefulSet VolumeClaimTemplates.
@@ -19720,7 +21644,7 @@ export interface StatefulSetPersistentVolumeClaimRetentionPolicy {
 /**
  * Converts an object of type 'StatefulSetPersistentVolumeClaimRetentionPolicy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatefulSetPersistentVolumeClaimRetentionPolicy(obj: StatefulSetPersistentVolumeClaimRetentionPolicy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19730,7 +21654,7 @@ export function toJson_StatefulSetPersistentVolumeClaimRetentionPolicy(obj: Stat
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatefulSetUpdateStrategy indicates the strategy that the StatefulSet controller will use to perform updates. It includes any additional parameters necessary to perform the update for the indicated strategy.
@@ -19758,7 +21682,7 @@ export interface StatefulSetUpdateStrategy {
 /**
  * Converts an object of type 'StatefulSetUpdateStrategy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatefulSetUpdateStrategy(obj: StatefulSetUpdateStrategy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19768,7 +21692,7 @@ export function toJson_StatefulSetUpdateStrategy(obj: StatefulSetUpdateStrategy 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * BoundObjectReference is a reference to an object that a token is bound to.
@@ -19809,7 +21733,7 @@ export interface BoundObjectReference {
 /**
  * Converts an object of type 'BoundObjectReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_BoundObjectReference(obj: BoundObjectReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19821,7 +21745,7 @@ export function toJson_BoundObjectReference(obj: BoundObjectReference | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NonResourceAttributes includes the authorization attributes available for non-resource requests to the Authorizer interface
@@ -19848,7 +21772,7 @@ export interface NonResourceAttributes {
 /**
  * Converts an object of type 'NonResourceAttributes' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NonResourceAttributes(obj: NonResourceAttributes | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19858,7 +21782,7 @@ export function toJson_NonResourceAttributes(obj: NonResourceAttributes | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceAttributes includes the authorization attributes available for resource requests to the Authorizer interface
@@ -19867,11 +21791,29 @@ export function toJson_NonResourceAttributes(obj: NonResourceAttributes | undefi
  */
 export interface ResourceAttributes {
   /**
+   * fieldSelector describes the limitation on access based on field.  It can only limit access, not broaden it.
+   *
+   * This field  is alpha-level. To use this field, you must enable the `AuthorizeWithSelectors` feature gate (disabled by default).
+   *
+   * @schema io.k8s.api.authorization.v1.ResourceAttributes#fieldSelector
+   */
+  readonly fieldSelector?: FieldSelectorAttributes;
+
+  /**
    * Group is the API Group of the Resource.  "*" means all.
    *
    * @schema io.k8s.api.authorization.v1.ResourceAttributes#group
    */
   readonly group?: string;
+
+  /**
+   * labelSelector describes the limitation on access based on labels.  It can only limit access, not broaden it.
+   *
+   * This field  is alpha-level. To use this field, you must enable the `AuthorizeWithSelectors` feature gate (disabled by default).
+   *
+   * @schema io.k8s.api.authorization.v1.ResourceAttributes#labelSelector
+   */
+  readonly labelSelector?: LabelSelectorAttributes;
 
   /**
    * Name is the name of the resource being requested for a "get" or deleted for a "delete". "" (empty) means all.
@@ -19920,11 +21862,13 @@ export interface ResourceAttributes {
 /**
  * Converts an object of type 'ResourceAttributes' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourceAttributes(obj: ResourceAttributes | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'fieldSelector': toJson_FieldSelectorAttributes(obj.fieldSelector),
     'group': obj.group,
+    'labelSelector': toJson_LabelSelectorAttributes(obj.labelSelector),
     'name': obj.name,
     'namespace': obj.namespace,
     'resource': obj.resource,
@@ -19935,7 +21879,7 @@ export function toJson_ResourceAttributes(obj: ResourceAttributes | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CrossVersionObjectReference contains enough information to let you identify the referred resource.
@@ -19969,7 +21913,7 @@ export interface CrossVersionObjectReference {
 /**
  * Converts an object of type 'CrossVersionObjectReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CrossVersionObjectReference(obj: CrossVersionObjectReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -19980,7 +21924,7 @@ export function toJson_CrossVersionObjectReference(obj: CrossVersionObjectRefere
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HorizontalPodAutoscalerBehavior configures the scaling behavior of the target in both Up and Down directions (scaleUp and scaleDown fields respectively).
@@ -20010,7 +21954,7 @@ export interface HorizontalPodAutoscalerBehaviorV2 {
 /**
  * Converts an object of type 'HorizontalPodAutoscalerBehaviorV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HorizontalPodAutoscalerBehaviorV2(obj: HorizontalPodAutoscalerBehaviorV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20020,7 +21964,7 @@ export function toJson_HorizontalPodAutoscalerBehaviorV2(obj: HorizontalPodAutos
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MetricSpec specifies how to scale based on a single metric (only `type` and one other matching field should be set at once).
@@ -20029,7 +21973,7 @@ export function toJson_HorizontalPodAutoscalerBehaviorV2(obj: HorizontalPodAutos
  */
 export interface MetricSpecV2 {
   /**
-   * containerResource refers to a resource metric (such as those specified in requests and limits) known to Kubernetes describing a single container in each pod of the current scale target (e.g. CPU or memory). Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source. This is an alpha feature and can be enabled by the HPAContainerMetrics feature flag.
+   * containerResource refers to a resource metric (such as those specified in requests and limits) known to Kubernetes describing a single container in each pod of the current scale target (e.g. CPU or memory). Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.
    *
    * @schema io.k8s.api.autoscaling.v2.MetricSpec#containerResource
    */
@@ -20064,7 +22008,7 @@ export interface MetricSpecV2 {
   readonly resource?: ResourceMetricSourceV2;
 
   /**
-   * type is the type of metric source.  It should be one of "ContainerResource", "External", "Object", "Pods" or "Resource", each mapping to a matching field in the object. Note: "ContainerResource" type is available on when the feature-gate HPAContainerMetrics is enabled
+   * type is the type of metric source.  It should be one of "ContainerResource", "External", "Object", "Pods" or "Resource", each mapping to a matching field in the object.
    *
    * @schema io.k8s.api.autoscaling.v2.MetricSpec#type
    */
@@ -20075,7 +22019,7 @@ export interface MetricSpecV2 {
 /**
  * Converts an object of type 'MetricSpecV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MetricSpecV2(obj: MetricSpecV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20089,7 +22033,7 @@ export function toJson_MetricSpecV2(obj: MetricSpecV2 | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CrossVersionObjectReference contains enough information to let you identify the referred resource.
@@ -20123,7 +22067,7 @@ export interface CrossVersionObjectReferenceV2 {
 /**
  * Converts an object of type 'CrossVersionObjectReferenceV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CrossVersionObjectReferenceV2(obj: CrossVersionObjectReferenceV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20134,7 +22078,7 @@ export function toJson_CrossVersionObjectReferenceV2(obj: CrossVersionObjectRefe
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * JobTemplateSpec describes the data a Job should have when created from a template
@@ -20161,7 +22105,7 @@ export interface JobTemplateSpec {
 /**
  * Converts an object of type 'JobTemplateSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_JobTemplateSpec(obj: JobTemplateSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20171,7 +22115,7 @@ export function toJson_JobTemplateSpec(obj: JobTemplateSpec | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodFailurePolicy describes how failed pods influence the backoffLimit.
@@ -20191,7 +22135,7 @@ export interface PodFailurePolicy {
 /**
  * Converts an object of type 'PodFailurePolicy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodFailurePolicy(obj: PodFailurePolicy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20200,7 +22144,36 @@ export function toJson_PodFailurePolicy(obj: PodFailurePolicy | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SuccessPolicy describes when a Job can be declared as succeeded based on the success of some indexes.
+ *
+ * @schema io.k8s.api.batch.v1.SuccessPolicy
+ */
+export interface SuccessPolicy {
+  /**
+   * rules represents the list of alternative rules for the declaring the Jobs as successful before `.status.succeeded >= .spec.completions`. Once any of the rules are met, the "SucceededCriteriaMet" condition is added, and the lingering pods are removed. The terminal state for such a Job has the "Complete" condition. Additionally, these rules are evaluated in order; Once the Job meets one of the rules, other rules are ignored. At most 20 elements are allowed.
+   *
+   * @schema io.k8s.api.batch.v1.SuccessPolicy#rules
+   */
+  readonly rules: SuccessPolicyRule[];
+
+}
+
+/**
+ * Converts an object of type 'SuccessPolicy' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SuccessPolicy(obj: SuccessPolicy | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'rules': obj.rules?.map(y => toJson_SuccessPolicyRule(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointAddress is a tuple that describes single IP address.
@@ -20241,7 +22214,7 @@ export interface EndpointAddress {
 /**
  * Converts an object of type 'EndpointAddress' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointAddress(obj: EndpointAddress | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20253,7 +22226,7 @@ export function toJson_EndpointAddress(obj: EndpointAddress | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LimitRangeItem defines a min/max usage limit for any resource that matches on kind.
@@ -20308,7 +22281,7 @@ export interface LimitRangeItem {
 /**
  * Converts an object of type 'LimitRangeItem' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LimitRangeItem(obj: LimitRangeItem | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20322,7 +22295,7 @@ export function toJson_LimitRangeItem(obj: LimitRangeItem | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NodeConfigSource specifies a source of node configuration. Exactly one subfield (excluding metadata) must be non-nil. This API is deprecated since 1.22
@@ -20342,7 +22315,7 @@ export interface NodeConfigSource {
 /**
  * Converts an object of type 'NodeConfigSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NodeConfigSource(obj: NodeConfigSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20351,7 +22324,7 @@ export function toJson_NodeConfigSource(obj: NodeConfigSource | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The node this Taint is attached to has the "effect" on any pod that does not tolerate the Taint.
@@ -20392,7 +22365,7 @@ export interface Taint {
 /**
  * Converts an object of type 'Taint' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Taint(obj: Taint | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20404,7 +22377,7 @@ export function toJson_Taint(obj: Taint | undefined): Record<string, any> | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Persistent Disk resource in AWS.
@@ -20447,7 +22420,7 @@ export interface AwsElasticBlockStoreVolumeSource {
 /**
  * Converts an object of type 'AwsElasticBlockStoreVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_AwsElasticBlockStoreVolumeSource(obj: AwsElasticBlockStoreVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20459,7 +22432,7 @@ export function toJson_AwsElasticBlockStoreVolumeSource(obj: AwsElasticBlockStor
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.
@@ -20515,7 +22488,7 @@ export interface AzureDiskVolumeSource {
 /**
  * Converts an object of type 'AzureDiskVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_AzureDiskVolumeSource(obj: AzureDiskVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20529,7 +22502,7 @@ export function toJson_AzureDiskVolumeSource(obj: AzureDiskVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AzureFile represents an Azure File Service mount on the host and bind mount to the pod.
@@ -20570,7 +22543,7 @@ export interface AzureFilePersistentVolumeSource {
 /**
  * Converts an object of type 'AzureFilePersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_AzureFilePersistentVolumeSource(obj: AzureFilePersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20582,7 +22555,7 @@ export function toJson_AzureFilePersistentVolumeSource(obj: AzureFilePersistentV
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Ceph Filesystem mount that lasts the lifetime of a pod Cephfs volumes do not support ownership management or SELinux relabeling.
@@ -20638,7 +22611,7 @@ export interface CephFsPersistentVolumeSource {
 /**
  * Converts an object of type 'CephFsPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CephFsPersistentVolumeSource(obj: CephFsPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20652,7 +22625,7 @@ export function toJson_CephFsPersistentVolumeSource(obj: CephFsPersistentVolumeS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a cinder volume resource in Openstack. A Cinder volume must exist before mounting to a container. The volume must also be in the same region as the kubelet. Cinder volumes support ownership management and SELinux relabeling.
@@ -20694,7 +22667,7 @@ export interface CinderPersistentVolumeSource {
 /**
  * Converts an object of type 'CinderPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CinderPersistentVolumeSource(obj: CinderPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20706,10 +22679,10 @@ export function toJson_CinderPersistentVolumeSource(obj: CinderPersistentVolumeS
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Represents storage that is managed by an external CSI volume driver (Beta feature)
+ * Represents storage that is managed by an external CSI volume driver
  *
  * @schema io.k8s.api.core.v1.CSIPersistentVolumeSource
  */
@@ -20790,7 +22763,7 @@ export interface CsiPersistentVolumeSource {
 /**
  * Converts an object of type 'CsiPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiPersistentVolumeSource(obj: CsiPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20808,7 +22781,7 @@ export function toJson_CsiPersistentVolumeSource(obj: CsiPersistentVolumeSource 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Fibre Channel volume. Fibre Channel volumes can only be mounted as read/write once. Fibre Channel volumes support ownership management and SELinux relabeling.
@@ -20857,7 +22830,7 @@ export interface FcVolumeSource {
 /**
  * Converts an object of type 'FcVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FcVolumeSource(obj: FcVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20870,7 +22843,7 @@ export function toJson_FcVolumeSource(obj: FcVolumeSource | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * FlexPersistentVolumeSource represents a generic persistent volume resource that is provisioned/attached using an exec based plugin.
@@ -20918,7 +22891,7 @@ export interface FlexPersistentVolumeSource {
 /**
  * Converts an object of type 'FlexPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlexPersistentVolumeSource(obj: FlexPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20931,7 +22904,7 @@ export function toJson_FlexPersistentVolumeSource(obj: FlexPersistentVolumeSourc
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Flocker volume mounted by the Flocker agent. One and only one of datasetName and datasetUUID should be set. Flocker volumes do not support ownership management or SELinux relabeling.
@@ -20958,7 +22931,7 @@ export interface FlockerVolumeSource {
 /**
  * Converts an object of type 'FlockerVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlockerVolumeSource(obj: FlockerVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -20968,7 +22941,7 @@ export function toJson_FlockerVolumeSource(obj: FlockerVolumeSource | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Persistent Disk resource in Google Compute Engine.
@@ -21012,7 +22985,7 @@ export interface GcePersistentDiskVolumeSource {
 /**
  * Converts an object of type 'GcePersistentDiskVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_GcePersistentDiskVolumeSource(obj: GcePersistentDiskVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21024,7 +22997,7 @@ export function toJson_GcePersistentDiskVolumeSource(obj: GcePersistentDiskVolum
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Glusterfs mount that lasts the lifetime of a pod. Glusterfs volumes do not support ownership management or SELinux relabeling.
@@ -21066,7 +23039,7 @@ export interface GlusterfsPersistentVolumeSource {
 /**
  * Converts an object of type 'GlusterfsPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_GlusterfsPersistentVolumeSource(obj: GlusterfsPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21078,7 +23051,7 @@ export function toJson_GlusterfsPersistentVolumeSource(obj: GlusterfsPersistentV
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a host path mapped into a pod. Host path volumes do not support ownership management or SELinux relabeling.
@@ -21106,7 +23079,7 @@ export interface HostPathVolumeSource {
 /**
  * Converts an object of type 'HostPathVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HostPathVolumeSource(obj: HostPathVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21116,7 +23089,7 @@ export function toJson_HostPathVolumeSource(obj: HostPathVolumeSource | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ISCSIPersistentVolumeSource represents an ISCSI disk. ISCSI volumes can only be mounted as read/write once. ISCSI volumes support ownership management and SELinux relabeling.
@@ -21208,7 +23181,7 @@ export interface IscsiPersistentVolumeSource {
 /**
  * Converts an object of type 'IscsiPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IscsiPersistentVolumeSource(obj: IscsiPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21227,10 +23200,10 @@ export function toJson_IscsiPersistentVolumeSource(obj: IscsiPersistentVolumeSou
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Local represents directly-attached storage with node affinity (Beta feature)
+ * Local represents directly-attached storage with node affinity
  *
  * @schema io.k8s.api.core.v1.LocalVolumeSource
  */
@@ -21254,7 +23227,7 @@ export interface LocalVolumeSource {
 /**
  * Converts an object of type 'LocalVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LocalVolumeSource(obj: LocalVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21264,7 +23237,7 @@ export function toJson_LocalVolumeSource(obj: LocalVolumeSource | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents an NFS mount that lasts the lifetime of a pod. NFS volumes do not support ownership management or SELinux relabeling.
@@ -21299,7 +23272,7 @@ export interface NfsVolumeSource {
 /**
  * Converts an object of type 'NfsVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NfsVolumeSource(obj: NfsVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21310,7 +23283,7 @@ export function toJson_NfsVolumeSource(obj: NfsVolumeSource | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeNodeAffinity defines constraints that limit what nodes this volume can be accessed from.
@@ -21330,7 +23303,7 @@ export interface VolumeNodeAffinity {
 /**
  * Converts an object of type 'VolumeNodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeNodeAffinity(obj: VolumeNodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21339,7 +23312,7 @@ export function toJson_VolumeNodeAffinity(obj: VolumeNodeAffinity | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Photon Controller persistent disk resource.
@@ -21366,7 +23339,7 @@ export interface PhotonPersistentDiskVolumeSource {
 /**
  * Converts an object of type 'PhotonPersistentDiskVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PhotonPersistentDiskVolumeSource(obj: PhotonPersistentDiskVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21376,7 +23349,7 @@ export function toJson_PhotonPersistentDiskVolumeSource(obj: PhotonPersistentDis
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PortworxVolumeSource represents a Portworx volume resource.
@@ -21410,7 +23383,7 @@ export interface PortworxVolumeSource {
 /**
  * Converts an object of type 'PortworxVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PortworxVolumeSource(obj: PortworxVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21421,7 +23394,7 @@ export function toJson_PortworxVolumeSource(obj: PortworxVolumeSource | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Quobyte mount that lasts the lifetime of a pod. Quobyte volumes do not support ownership management or SELinux relabeling.
@@ -21479,7 +23452,7 @@ export interface QuobyteVolumeSource {
 /**
  * Converts an object of type 'QuobyteVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_QuobyteVolumeSource(obj: QuobyteVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21493,7 +23466,7 @@ export function toJson_QuobyteVolumeSource(obj: QuobyteVolumeSource | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Rados Block Device mount that lasts the lifetime of a pod. RBD volumes support ownership management and SELinux relabeling.
@@ -21567,7 +23540,7 @@ export interface RbdPersistentVolumeSource {
 /**
  * Converts an object of type 'RbdPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RbdPersistentVolumeSource(obj: RbdPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21583,7 +23556,7 @@ export function toJson_RbdPersistentVolumeSource(obj: RbdPersistentVolumeSource 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ScaleIOPersistentVolumeSource represents a persistent ScaleIO volume
@@ -21668,7 +23641,7 @@ export interface ScaleIoPersistentVolumeSource {
 /**
  * Converts an object of type 'ScaleIoPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ScaleIoPersistentVolumeSource(obj: ScaleIoPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21686,7 +23659,7 @@ export function toJson_ScaleIoPersistentVolumeSource(obj: ScaleIoPersistentVolum
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a StorageOS persistent volume resource.
@@ -21734,7 +23707,7 @@ export interface StorageOsPersistentVolumeSource {
 /**
  * Converts an object of type 'StorageOsPersistentVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StorageOsPersistentVolumeSource(obj: StorageOsPersistentVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21747,7 +23720,7 @@ export function toJson_StorageOsPersistentVolumeSource(obj: StorageOsPersistentV
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a vSphere volume resource.
@@ -21788,7 +23761,7 @@ export interface VsphereVirtualDiskVolumeSource {
 /**
  * Converts an object of type 'VsphereVirtualDiskVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VsphereVirtualDiskVolumeSource(obj: VsphereVirtualDiskVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21800,7 +23773,7 @@ export function toJson_VsphereVirtualDiskVolumeSource(obj: VsphereVirtualDiskVol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TypedLocalObjectReference contains enough information to let you locate the typed referenced object inside the same namespace.
@@ -21834,7 +23807,7 @@ export interface TypedLocalObjectReference {
 /**
  * Converts an object of type 'TypedLocalObjectReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TypedLocalObjectReference(obj: TypedLocalObjectReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21845,9 +23818,11 @@ export function toJson_TypedLocalObjectReference(obj: TypedLocalObjectReference 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * TypedObjectReference contains enough information to let you locate the typed referenced object
+ *
  * @schema io.k8s.api.core.v1.TypedObjectReference
  */
 export interface TypedObjectReference {
@@ -21884,7 +23859,7 @@ export interface TypedObjectReference {
 /**
  * Converts an object of type 'TypedObjectReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TypedObjectReference(obj: TypedObjectReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21896,7 +23871,7 @@ export function toJson_TypedObjectReference(obj: TypedObjectReference | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeResourceRequirements describes the storage resource requirements for a volume.
@@ -21923,7 +23898,7 @@ export interface VolumeResourceRequirements {
 /**
  * Converts an object of type 'VolumeResourceRequirements' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeResourceRequirements(obj: VolumeResourceRequirements | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21933,7 +23908,7 @@ export function toJson_VolumeResourceRequirements(obj: VolumeResourceRequirement
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Affinity is a group of affinity scheduling rules.
@@ -21967,7 +23942,7 @@ export interface Affinity {
 /**
  * Converts an object of type 'Affinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Affinity(obj: Affinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -21978,7 +23953,7 @@ export function toJson_Affinity(obj: Affinity | undefined): Record<string, any> 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A single application container that you want to run within a pod.
@@ -22165,7 +24140,7 @@ export interface Container {
 /**
  * Converts an object of type 'Container' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Container(obj: Container | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22197,7 +24172,7 @@ export function toJson_Container(obj: Container | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodDNSConfig defines the DNS parameters of a pod in addition to those generated from DNSPolicy.
@@ -22231,7 +24206,7 @@ export interface PodDnsConfig {
 /**
  * Converts an object of type 'PodDnsConfig' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodDnsConfig(obj: PodDnsConfig | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22242,7 +24217,7 @@ export function toJson_PodDnsConfig(obj: PodDnsConfig | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An EphemeralContainer is a temporary container that you may add to an existing Pod for user-initiated activities such as debugging. Ephemeral containers have no resource or scheduling guarantees, and they will not be restarted when they exit or when a Pod is removed or restarted. The kubelet may evict a Pod if an ephemeral container causes the Pod to exceed its resource allocation.
@@ -22440,7 +24415,7 @@ export interface EphemeralContainer {
 /**
  * Converts an object of type 'EphemeralContainer' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EphemeralContainer(obj: EphemeralContainer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22473,7 +24448,7 @@ export function toJson_EphemeralContainer(obj: EphemeralContainer | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HostAlias holds the mapping between IP and hostnames that will be injected as an entry in the pod's hosts file.
@@ -22493,14 +24468,14 @@ export interface HostAlias {
    *
    * @schema io.k8s.api.core.v1.HostAlias#ip
    */
-  readonly ip?: string;
+  readonly ip: string;
 
 }
 
 /**
  * Converts an object of type 'HostAlias' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HostAlias(obj: HostAlias | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22510,7 +24485,7 @@ export function toJson_HostAlias(obj: HostAlias | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodOS defines the OS parameters of a pod.
@@ -22530,7 +24505,7 @@ export interface PodOs {
 /**
  * Converts an object of type 'PodOs' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodOs(obj: PodOs | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22539,7 +24514,7 @@ export function toJson_PodOs(obj: PodOs | undefined): Record<string, any> | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodReadinessGate contains the reference to a pod condition
@@ -22559,7 +24534,7 @@ export interface PodReadinessGate {
 /**
  * Converts an object of type 'PodReadinessGate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodReadinessGate(obj: PodReadinessGate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22568,10 +24543,12 @@ export function toJson_PodReadinessGate(obj: PodReadinessGate | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PodResourceClaim references exactly one ResourceClaim through a ClaimSource. It adds a name to it that uniquely identifies the ResourceClaim inside the Pod. Containers that need access to the ResourceClaim reference it with this name.
+ * PodResourceClaim references exactly one ResourceClaim, either directly or by naming a ResourceClaimTemplate which is then turned into a ResourceClaim for the pod.
+ *
+ * It adds a name to it that uniquely identifies the ResourceClaim inside the Pod. Containers that need access to the ResourceClaim reference it with this name.
  *
  * @schema io.k8s.api.core.v1.PodResourceClaim
  */
@@ -22584,28 +24561,93 @@ export interface PodResourceClaim {
   readonly name: string;
 
   /**
-   * Source describes where to find the ResourceClaim.
+   * ResourceClaimName is the name of a ResourceClaim object in the same namespace as this pod.
    *
-   * @schema io.k8s.api.core.v1.PodResourceClaim#source
+   * Exactly one of ResourceClaimName and ResourceClaimTemplateName must be set.
+   *
+   * @schema io.k8s.api.core.v1.PodResourceClaim#resourceClaimName
    */
-  readonly source?: ClaimSource;
+  readonly resourceClaimName?: string;
+
+  /**
+   * ResourceClaimTemplateName is the name of a ResourceClaimTemplate object in the same namespace as this pod.
+   *
+   * The template will be used to create a new ResourceClaim, which will be bound to this pod. When this pod is deleted, the ResourceClaim will also be deleted. The pod name and resource name, along with a generated component, will be used to form a unique name for the ResourceClaim, which will be recorded in pod.status.resourceClaimStatuses.
+   *
+   * This field is immutable and no changes will be made to the corresponding ResourceClaim by the control plane after creating the ResourceClaim.
+   *
+   * Exactly one of ResourceClaimName and ResourceClaimTemplateName must be set.
+   *
+   * @schema io.k8s.api.core.v1.PodResourceClaim#resourceClaimTemplateName
+   */
+  readonly resourceClaimTemplateName?: string;
 
 }
 
 /**
  * Converts an object of type 'PodResourceClaim' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodResourceClaim(obj: PodResourceClaim | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'name': obj.name,
-    'source': toJson_ClaimSource(obj.source),
+    'resourceClaimName': obj.resourceClaimName,
+    'resourceClaimTemplateName': obj.resourceClaimTemplateName,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourceRequirements describes the compute resource requirements.
+ *
+ * @schema io.k8s.api.core.v1.ResourceRequirements
+ */
+export interface ResourceRequirements {
+  /**
+   * Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.
+   *
+   * This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.
+   *
+   * This field is immutable. It can only be set for containers.
+   *
+   * @schema io.k8s.api.core.v1.ResourceRequirements#claims
+   */
+  readonly claims?: ResourceClaim[];
+
+  /**
+   * Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+   *
+   * @schema io.k8s.api.core.v1.ResourceRequirements#limits
+   */
+  readonly limits?: { [key: string]: Quantity };
+
+  /**
+   * Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+   *
+   * @schema io.k8s.api.core.v1.ResourceRequirements#requests
+   */
+  readonly requests?: { [key: string]: Quantity };
+
+}
+
+/**
+ * Converts an object of type 'ResourceRequirements' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceRequirements(obj: ResourceRequirements | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'claims': obj.claims?.map(y => toJson_ResourceClaim(y)),
+    'limits': ((obj.limits) === undefined) ? undefined : (Object.entries(obj.limits).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1]?.value }), {})),
+    'requests': ((obj.requests) === undefined) ? undefined : (Object.entries(obj.requests).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1]?.value }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodSchedulingGate is associated to a Pod to guard its scheduling.
@@ -22625,7 +24667,7 @@ export interface PodSchedulingGate {
 /**
  * Converts an object of type 'PodSchedulingGate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodSchedulingGate(obj: PodSchedulingGate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22634,7 +24676,7 @@ export function toJson_PodSchedulingGate(obj: PodSchedulingGate | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodSecurityContext holds pod-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.
@@ -22642,6 +24684,13 @@ export function toJson_PodSchedulingGate(obj: PodSchedulingGate | undefined): Re
  * @schema io.k8s.api.core.v1.PodSecurityContext
  */
 export interface PodSecurityContext {
+  /**
+   * appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema io.k8s.api.core.v1.PodSecurityContext#appArmorProfile
+   */
+  readonly appArmorProfile?: AppArmorProfile;
+
   /**
    * A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change the ownership of that volume to be owned by the pod:
    *
@@ -22683,6 +24732,23 @@ export interface PodSecurityContext {
   readonly runAsUser?: number;
 
   /**
+   * seLinuxChangePolicy defines how the container's SELinux label is applied to all volumes used by the Pod. It has no effect on nodes that do not support SELinux or to volumes does not support SELinux. Valid values are "MountOption" and "Recursive".
+   *
+   * "Recursive" means relabeling of all files on all Pod volumes by the container runtime. This may be slow for large volumes, but allows mixing privileged and unprivileged Pods sharing the same volume on the same node.
+   *
+   * "MountOption" mounts all eligible Pod volumes with `-o context` mount option. This requires all Pods that share the same volume to use the same SELinux label. It is not possible to share the same volume among privileged and unprivileged Pods. Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their CSIDriver instance. Other volumes are always re-labelled recursively. "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
+   *
+   * If not specified and SELinuxMount feature gate is enabled, "MountOption" is used. If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes and "Recursive" for all other volumes.
+   *
+   * This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
+   *
+   * All Pods that use the same volume should use the same seLinuxChangePolicy, otherwise some pods can get stuck in ContainerCreating state. Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema io.k8s.api.core.v1.PodSecurityContext#seLinuxChangePolicy
+   */
+  readonly seLinuxChangePolicy?: string;
+
+  /**
    * The SELinux context to be applied to all containers. If unspecified, the container runtime will allocate a random SELinux context for each container.  May also be set in SecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence for that container. Note that this field cannot be set when spec.os.name is windows.
    *
    * @schema io.k8s.api.core.v1.PodSecurityContext#seLinuxOptions
@@ -22697,11 +24763,18 @@ export interface PodSecurityContext {
   readonly seccompProfile?: SeccompProfile;
 
   /**
-   * A list of groups applied to the first process run in each container, in addition to the container's primary GID, the fsGroup (if specified), and group memberships defined in the container image for the uid of the container process. If unspecified, no additional groups are added to any container. Note that group memberships defined in the container image for the uid of the container process are still effective, even if they are not included in this list. Note that this field cannot be set when spec.os.name is windows.
+   * A list of groups applied to the first process run in each container, in addition to the container's primary GID and fsGroup (if specified).  If the SupplementalGroupsPolicy feature is enabled, the supplementalGroupsPolicy field determines whether these are in addition to or instead of any group memberships defined in the container image. If unspecified, no additional groups are added, though group memberships defined in the container image may still be used, depending on the supplementalGroupsPolicy field. Note that this field cannot be set when spec.os.name is windows.
    *
    * @schema io.k8s.api.core.v1.PodSecurityContext#supplementalGroups
    */
   readonly supplementalGroups?: number[];
+
+  /**
+   * Defines how supplemental groups of the first container processes are calculated. Valid values are "Merge" and "Strict". If not specified, "Merge" is used. (Alpha) Using the field requires the SupplementalGroupsPolicy feature gate to be enabled and the container runtime must implement support for this feature. Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema io.k8s.api.core.v1.PodSecurityContext#supplementalGroupsPolicy
+   */
+  readonly supplementalGroupsPolicy?: string;
 
   /**
    * Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported sysctls (by the container runtime) might fail to launch. Note that this field cannot be set when spec.os.name is windows.
@@ -22722,25 +24795,28 @@ export interface PodSecurityContext {
 /**
  * Converts an object of type 'PodSecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodSecurityContext(obj: PodSecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'appArmorProfile': toJson_AppArmorProfile(obj.appArmorProfile),
     'fsGroup': obj.fsGroup,
     'fsGroupChangePolicy': obj.fsGroupChangePolicy,
     'runAsGroup': obj.runAsGroup,
     'runAsNonRoot': obj.runAsNonRoot,
     'runAsUser': obj.runAsUser,
+    'seLinuxChangePolicy': obj.seLinuxChangePolicy,
     'seLinuxOptions': toJson_SeLinuxOptions(obj.seLinuxOptions),
     'seccompProfile': toJson_SeccompProfile(obj.seccompProfile),
     'supplementalGroups': obj.supplementalGroups?.map(y => y),
+    'supplementalGroupsPolicy': obj.supplementalGroupsPolicy,
     'sysctls': obj.sysctls?.map(y => toJson_Sysctl(y)),
     'windowsOptions': toJson_WindowsSecurityContextOptions(obj.windowsOptions),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
@@ -22789,7 +24865,7 @@ export interface Toleration {
 /**
  * Converts an object of type 'Toleration' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Toleration(obj: Toleration | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22802,7 +24878,7 @@ export function toJson_Toleration(obj: Toleration | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TopologySpreadConstraint specifies how to spread matching pods among the given topology.
@@ -22837,8 +24913,6 @@ export interface TopologySpreadConstraint {
    * MinDomains indicates a minimum number of eligible domains. When the number of eligible domains with matching topology keys is less than minDomains, Pod Topology Spread treats "global minimum" as 0, and then the calculation of Skew is performed. And when the number of eligible domains with matching topology keys equals or greater than minDomains, this value has no effect on scheduling. As a result, when the number of eligible domains is less than minDomains, scheduler won't schedule more than maxSkew Pods to those domains. If value is nil, the constraint behaves as if MinDomains is equal to 1. Valid values are integers greater than 0. When value is not nil, WhenUnsatisfiable must be DoNotSchedule.
    *
    * For example, in a 3-zone cluster, MaxSkew is set to 2, MinDomains is set to 5 and pods with the same labelSelector spread as 2/2/2: | zone1 | zone2 | zone3 | |  P P  |  P P  |  P P  | The number of domains is less than 5(MinDomains), so "global minimum" is treated as 0. In this situation, new pod with the same labelSelector cannot be scheduled, because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones, it will violate MaxSkew.
-   *
-   * This is a beta field and requires the MinDomainsInPodTopologySpread feature gate to be enabled (enabled by default).
    *
    * @schema io.k8s.api.core.v1.TopologySpreadConstraint#minDomains
    */
@@ -22884,7 +24958,7 @@ export interface TopologySpreadConstraint {
 /**
  * Converts an object of type 'TopologySpreadConstraint' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TopologySpreadConstraint(obj: TopologySpreadConstraint | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -22900,7 +24974,7 @@ export function toJson_TopologySpreadConstraint(obj: TopologySpreadConstraint | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Volume represents a named volume in a pod that may be accessed by any container in the pod.
@@ -22909,35 +24983,35 @@ export function toJson_TopologySpreadConstraint(obj: TopologySpreadConstraint | 
  */
 export interface Volume {
   /**
-   * awsElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
+   * awsElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Deprecated: AWSElasticBlockStore is deprecated. All operations for the in-tree awsElasticBlockStore type are redirected to the ebs.csi.aws.com CSI driver. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
    *
    * @schema io.k8s.api.core.v1.Volume#awsElasticBlockStore
    */
   readonly awsElasticBlockStore?: AwsElasticBlockStoreVolumeSource;
 
   /**
-   * azureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.
+   * azureDisk represents an Azure Data Disk mount on the host and bind mount to the pod. Deprecated: AzureDisk is deprecated. All operations for the in-tree azureDisk type are redirected to the disk.csi.azure.com CSI driver.
    *
    * @schema io.k8s.api.core.v1.Volume#azureDisk
    */
   readonly azureDisk?: AzureDiskVolumeSource;
 
   /**
-   * azureFile represents an Azure File Service mount on the host and bind mount to the pod.
+   * azureFile represents an Azure File Service mount on the host and bind mount to the pod. Deprecated: AzureFile is deprecated. All operations for the in-tree azureFile type are redirected to the file.csi.azure.com CSI driver.
    *
    * @schema io.k8s.api.core.v1.Volume#azureFile
    */
   readonly azureFile?: AzureFileVolumeSource;
 
   /**
-   * cephFS represents a Ceph FS mount on the host that shares a pod's lifetime
+   * cephFS represents a Ceph FS mount on the host that shares a pod's lifetime. Deprecated: CephFS is deprecated and the in-tree cephfs type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.Volume#cephfs
    */
   readonly cephfs?: CephFsVolumeSource;
 
   /**
-   * cinder represents a cinder volume attached and mounted on kubelets host machine. More info: https://examples.k8s.io/mysql-cinder-pd/README.md
+   * cinder represents a cinder volume attached and mounted on kubelets host machine. Deprecated: Cinder is deprecated. All operations for the in-tree cinder type are redirected to the cinder.csi.openstack.org CSI driver. More info: https://examples.k8s.io/mysql-cinder-pd/README.md
    *
    * @schema io.k8s.api.core.v1.Volume#cinder
    */
@@ -22951,7 +25025,7 @@ export interface Volume {
   readonly configMap?: ConfigMapVolumeSource;
 
   /**
-   * csi (Container Storage Interface) represents ephemeral storage that is handled by certain external CSI drivers (Beta feature).
+   * csi (Container Storage Interface) represents ephemeral storage that is handled by certain external CSI drivers.
    *
    * @schema io.k8s.api.core.v1.Volume#csi
    */
@@ -22999,35 +25073,35 @@ export interface Volume {
   readonly fc?: FcVolumeSource;
 
   /**
-   * flexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin.
+   * flexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin. Deprecated: FlexVolume is deprecated. Consider using a CSIDriver instead.
    *
    * @schema io.k8s.api.core.v1.Volume#flexVolume
    */
   readonly flexVolume?: FlexVolumeSource;
 
   /**
-   * flocker represents a Flocker volume attached to a kubelet's host machine. This depends on the Flocker control service being running
+   * flocker represents a Flocker volume attached to a kubelet's host machine. This depends on the Flocker control service being running. Deprecated: Flocker is deprecated and the in-tree flocker type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.Volume#flocker
    */
   readonly flocker?: FlockerVolumeSource;
 
   /**
-   * gcePersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
+   * gcePersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Deprecated: GCEPersistentDisk is deprecated. All operations for the in-tree gcePersistentDisk type are redirected to the pd.csi.storage.gke.io CSI driver. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
    *
    * @schema io.k8s.api.core.v1.Volume#gcePersistentDisk
    */
   readonly gcePersistentDisk?: GcePersistentDiskVolumeSource;
 
   /**
-   * gitRepo represents a git repository at a particular revision. DEPRECATED: GitRepo is deprecated. To provision a container with a git repo, mount an EmptyDir into an InitContainer that clones the repo using git, then mount the EmptyDir into the Pod's container.
+   * gitRepo represents a git repository at a particular revision. Deprecated: GitRepo is deprecated. To provision a container with a git repo, mount an EmptyDir into an InitContainer that clones the repo using git, then mount the EmptyDir into the Pod's container.
    *
    * @schema io.k8s.api.core.v1.Volume#gitRepo
    */
   readonly gitRepo?: GitRepoVolumeSource;
 
   /**
-   * glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/glusterfs/README.md
+   * glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. Deprecated: Glusterfs is deprecated and the in-tree glusterfs type is no longer supported. More info: https://examples.k8s.io/volumes/glusterfs/README.md
    *
    * @schema io.k8s.api.core.v1.Volume#glusterfs
    */
@@ -23039,6 +25113,17 @@ export interface Volume {
    * @schema io.k8s.api.core.v1.Volume#hostPath
    */
   readonly hostPath?: HostPathVolumeSource;
+
+  /**
+   * image represents an OCI object (a container image or artifact) pulled and mounted on the kubelet's host machine. The volume is resolved at pod startup depending on which PullPolicy value is provided:
+   *
+   * - Always: the kubelet always attempts to pull the reference. Container creation will fail If the pull fails. - Never: the kubelet never pulls the reference and only uses a local image or artifact. Container creation will fail if the reference isn't present. - IfNotPresent: the kubelet pulls if the reference isn't already present on disk. Container creation will fail if the reference isn't present and the pull fails.
+   *
+   * The volume gets re-resolved if the pod gets deleted and recreated, which means that new remote content will become available on pod recreation. A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message. The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field. The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images. The volume will be mounted read-only (ro) and non-executable files (noexec). Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath). The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
+   *
+   * @schema io.k8s.api.core.v1.Volume#image
+   */
+  readonly image?: ImageVolumeSource;
 
   /**
    * iscsi represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://examples.k8s.io/volumes/iscsi/README.md
@@ -23069,14 +25154,14 @@ export interface Volume {
   readonly persistentVolumeClaim?: PersistentVolumeClaimVolumeSource;
 
   /**
-   * photonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine
+   * photonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine. Deprecated: PhotonPersistentDisk is deprecated and the in-tree photonPersistentDisk type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.Volume#photonPersistentDisk
    */
   readonly photonPersistentDisk?: PhotonPersistentDiskVolumeSource;
 
   /**
-   * portworxVolume represents a portworx volume attached and mounted on kubelets host machine
+   * portworxVolume represents a portworx volume attached and mounted on kubelets host machine. Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate is on.
    *
    * @schema io.k8s.api.core.v1.Volume#portworxVolume
    */
@@ -23090,21 +25175,21 @@ export interface Volume {
   readonly projected?: ProjectedVolumeSource;
 
   /**
-   * quobyte represents a Quobyte mount on the host that shares a pod's lifetime
+   * quobyte represents a Quobyte mount on the host that shares a pod's lifetime. Deprecated: Quobyte is deprecated and the in-tree quobyte type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.Volume#quobyte
    */
   readonly quobyte?: QuobyteVolumeSource;
 
   /**
-   * rbd represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://examples.k8s.io/volumes/rbd/README.md
+   * rbd represents a Rados Block Device mount on the host that shares a pod's lifetime. Deprecated: RBD is deprecated and the in-tree rbd type is no longer supported. More info: https://examples.k8s.io/volumes/rbd/README.md
    *
    * @schema io.k8s.api.core.v1.Volume#rbd
    */
   readonly rbd?: RbdVolumeSource;
 
   /**
-   * scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
+   * scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes. Deprecated: ScaleIO is deprecated and the in-tree scaleIO type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.Volume#scaleIO
    */
@@ -23118,14 +25203,14 @@ export interface Volume {
   readonly secret?: SecretVolumeSource;
 
   /**
-   * storageOS represents a StorageOS volume attached and mounted on Kubernetes nodes.
+   * storageOS represents a StorageOS volume attached and mounted on Kubernetes nodes. Deprecated: StorageOS is deprecated and the in-tree storageos type is no longer supported.
    *
    * @schema io.k8s.api.core.v1.Volume#storageos
    */
   readonly storageos?: StorageOsVolumeSource;
 
   /**
-   * vsphereVolume represents a vSphere volume attached and mounted on kubelets host machine
+   * vsphereVolume represents a vSphere volume attached and mounted on kubelets host machine. Deprecated: VsphereVolume is deprecated. All operations for the in-tree vsphereVolume type are redirected to the csi.vsphere.vmware.com CSI driver.
    *
    * @schema io.k8s.api.core.v1.Volume#vsphereVolume
    */
@@ -23136,7 +25221,7 @@ export interface Volume {
 /**
  * Converts an object of type 'Volume' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Volume(obj: Volume | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23157,6 +25242,7 @@ export function toJson_Volume(obj: Volume | undefined): Record<string, any> | un
     'gitRepo': toJson_GitRepoVolumeSource(obj.gitRepo),
     'glusterfs': toJson_GlusterfsVolumeSource(obj.glusterfs),
     'hostPath': toJson_HostPathVolumeSource(obj.hostPath),
+    'image': toJson_ImageVolumeSource(obj.image),
     'iscsi': toJson_IscsiVolumeSource(obj.iscsi),
     'name': obj.name,
     'nfs': toJson_NfsVolumeSource(obj.nfs),
@@ -23174,7 +25260,7 @@ export function toJson_Volume(obj: Volume | undefined): Record<string, any> | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A scope selector represents the AND of the selectors represented by the scoped-resource selector requirements.
@@ -23194,7 +25280,7 @@ export interface ScopeSelector {
 /**
  * Converts an object of type 'ScopeSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ScopeSelector(obj: ScopeSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23203,7 +25289,7 @@ export function toJson_ScopeSelector(obj: ScopeSelector | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServicePort contains information on service's port.
@@ -23268,7 +25354,7 @@ export interface ServicePort {
 /**
  * Converts an object of type 'ServicePort' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServicePort(obj: ServicePort | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23282,7 +25368,7 @@ export function toJson_ServicePort(obj: ServicePort | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SessionAffinityConfig represents the configurations of session affinity.
@@ -23302,7 +25388,7 @@ export interface SessionAffinityConfig {
 /**
  * Converts an object of type 'SessionAffinityConfig' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SessionAffinityConfig(obj: SessionAffinityConfig | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23311,7 +25397,7 @@ export function toJson_SessionAffinityConfig(obj: SessionAffinityConfig | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointConditions represents the current condition of an endpoint.
@@ -23345,7 +25431,7 @@ export interface EndpointConditions {
 /**
  * Converts an object of type 'EndpointConditions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointConditions(obj: EndpointConditions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23356,7 +25442,7 @@ export function toJson_EndpointConditions(obj: EndpointConditions | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EndpointHints provides hints describing how an endpoint should be consumed.
@@ -23376,7 +25462,7 @@ export interface EndpointHints {
 /**
  * Converts an object of type 'EndpointHints' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EndpointHints(obj: EndpointHints | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23385,7 +25471,7 @@ export function toJson_EndpointHints(obj: EndpointHints | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * FlowDistinguisherMethod specifies the method of a flow distinguisher.
@@ -23405,7 +25491,7 @@ export interface FlowDistinguisherMethod {
 /**
  * Converts an object of type 'FlowDistinguisherMethod' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlowDistinguisherMethod(obj: FlowDistinguisherMethod | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23414,7 +25500,7 @@ export function toJson_FlowDistinguisherMethod(obj: FlowDistinguisherMethod | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PriorityLevelConfigurationReference contains information that points to the "request-priority" being used.
@@ -23434,7 +25520,7 @@ export interface PriorityLevelConfigurationReference {
 /**
  * Converts an object of type 'PriorityLevelConfigurationReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PriorityLevelConfigurationReference(obj: PriorityLevelConfigurationReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23443,7 +25529,7 @@ export function toJson_PriorityLevelConfigurationReference(obj: PriorityLevelCon
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PolicyRulesWithSubjects prescribes a test that applies to a request to an apiserver. The test considers the subject making the request, the verb being requested, and the resource to be acted upon. This PolicyRulesWithSubjects matches a request if and only if both (a) at least one member of subjects matches the request and (b) at least one member of resourceRules or nonResourceRules matches the request.
@@ -23477,7 +25563,7 @@ export interface PolicyRulesWithSubjects {
 /**
  * Converts an object of type 'PolicyRulesWithSubjects' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PolicyRulesWithSubjects(obj: PolicyRulesWithSubjects | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23488,7 +25574,7 @@ export function toJson_PolicyRulesWithSubjects(obj: PolicyRulesWithSubjects | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExemptPriorityLevelConfiguration describes the configurable aspects of the handling of exempt requests. In the mandatory exempt configuration object the values in the fields here can be modified by authorized users, unlike the rest of the `spec`.
@@ -23521,7 +25607,7 @@ export interface ExemptPriorityLevelConfiguration {
 /**
  * Converts an object of type 'ExemptPriorityLevelConfiguration' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ExemptPriorityLevelConfiguration(obj: ExemptPriorityLevelConfiguration | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23531,7 +25617,7 @@ export function toJson_ExemptPriorityLevelConfiguration(obj: ExemptPriorityLevel
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LimitedPriorityLevelConfiguration specifies how to handle requests that are subject to limits. It addresses two issues:
@@ -23588,7 +25674,7 @@ export interface LimitedPriorityLevelConfiguration {
 /**
  * Converts an object of type 'LimitedPriorityLevelConfiguration' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LimitedPriorityLevelConfiguration(obj: LimitedPriorityLevelConfiguration | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23600,218 +25686,7 @@ export function toJson_LimitedPriorityLevelConfiguration(obj: LimitedPriorityLev
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * FlowDistinguisherMethod specifies the method of a flow distinguisher.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.FlowDistinguisherMethod
- */
-export interface FlowDistinguisherMethodV1Beta3 {
-  /**
-   * `type` is the type of flow distinguisher method The supported types are "ByUser" and "ByNamespace". Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.FlowDistinguisherMethod#type
-   */
-  readonly type: string;
-
-}
-
-/**
- * Converts an object of type 'FlowDistinguisherMethodV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_FlowDistinguisherMethodV1Beta3(obj: FlowDistinguisherMethodV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'type': obj.type,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * PriorityLevelConfigurationReference contains information that points to the "request-priority" being used.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationReference
- */
-export interface PriorityLevelConfigurationReferenceV1Beta3 {
-  /**
-   * `name` is the name of the priority level configuration being referenced Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PriorityLevelConfigurationReference#name
-   */
-  readonly name: string;
-
-}
-
-/**
- * Converts an object of type 'PriorityLevelConfigurationReferenceV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_PriorityLevelConfigurationReferenceV1Beta3(obj: PriorityLevelConfigurationReferenceV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'name': obj.name,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * PolicyRulesWithSubjects prescribes a test that applies to a request to an apiserver. The test considers the subject making the request, the verb being requested, and the resource to be acted upon. This PolicyRulesWithSubjects matches a request if and only if both (a) at least one member of subjects matches the request and (b) at least one member of resourceRules or nonResourceRules matches the request.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.PolicyRulesWithSubjects
- */
-export interface PolicyRulesWithSubjectsV1Beta3 {
-  /**
-   * `nonResourceRules` is a list of NonResourcePolicyRules that identify matching requests according to their verb and the target non-resource URL.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PolicyRulesWithSubjects#nonResourceRules
-   */
-  readonly nonResourceRules?: NonResourcePolicyRuleV1Beta3[];
-
-  /**
-   * `resourceRules` is a slice of ResourcePolicyRules that identify matching requests according to their verb and the target resource. At least one of `resourceRules` and `nonResourceRules` has to be non-empty.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PolicyRulesWithSubjects#resourceRules
-   */
-  readonly resourceRules?: ResourcePolicyRuleV1Beta3[];
-
-  /**
-   * subjects is the list of normal user, serviceaccount, or group that this rule cares about. There must be at least one member in this slice. A slice that includes both the system:authenticated and system:unauthenticated user groups matches every request. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.PolicyRulesWithSubjects#subjects
-   */
-  readonly subjects: SubjectV1Beta3[];
-
-}
-
-/**
- * Converts an object of type 'PolicyRulesWithSubjectsV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_PolicyRulesWithSubjectsV1Beta3(obj: PolicyRulesWithSubjectsV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'nonResourceRules': obj.nonResourceRules?.map(y => toJson_NonResourcePolicyRuleV1Beta3(y)),
-    'resourceRules': obj.resourceRules?.map(y => toJson_ResourcePolicyRuleV1Beta3(y)),
-    'subjects': obj.subjects?.map(y => toJson_SubjectV1Beta3(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * ExemptPriorityLevelConfiguration describes the configurable aspects of the handling of exempt requests. In the mandatory exempt configuration object the values in the fields here can be modified by authorized users, unlike the rest of the `spec`.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.ExemptPriorityLevelConfiguration
- */
-export interface ExemptPriorityLevelConfigurationV1Beta3 {
-  /**
-   * `lendablePercent` prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels.  This value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.
-   *
-   * LendableCL(i) = round( NominalCL(i) * lendablePercent(i)/100.0 )
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ExemptPriorityLevelConfiguration#lendablePercent
-   */
-  readonly lendablePercent?: number;
-
-  /**
-   * `nominalConcurrencyShares` (NCS) contributes to the computation of the NominalConcurrencyLimit (NominalCL) of this level. This is the number of execution seats nominally reserved for this priority level. This DOES NOT limit the dispatching from this priority level but affects the other priority levels through the borrowing mechanism. The server's concurrency limit (ServerCL) is divided among all the priority levels in proportion to their NCS values:
-   *
-   * NominalCL(i)  = ceil( ServerCL * NCS(i) / sum_ncs ) sum_ncs = sum[priority level k] NCS(k)
-   *
-   * Bigger numbers mean a larger nominal concurrency limit, at the expense of every other priority level. This field has a default value of zero.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ExemptPriorityLevelConfiguration#nominalConcurrencyShares
-   */
-  readonly nominalConcurrencyShares?: number;
-
-}
-
-/**
- * Converts an object of type 'ExemptPriorityLevelConfigurationV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_ExemptPriorityLevelConfigurationV1Beta3(obj: ExemptPriorityLevelConfigurationV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'lendablePercent': obj.lendablePercent,
-    'nominalConcurrencyShares': obj.nominalConcurrencyShares,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * LimitedPriorityLevelConfiguration specifies how to handle requests that are subject to limits. It addresses two issues:
- * - How are requests for this priority level limited?
- * - What should be done with requests that exceed the limit?
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.LimitedPriorityLevelConfiguration
- */
-export interface LimitedPriorityLevelConfigurationV1Beta3 {
-  /**
-   * `borrowingLimitPercent`, if present, configures a limit on how many seats this priority level can borrow from other priority levels. The limit is known as this level's BorrowingConcurrencyLimit (BorrowingCL) and is a limit on the total number of seats that this level may borrow at any one time. This field holds the ratio of that limit to the level's nominal concurrency limit. When this field is non-nil, it must hold a non-negative integer and the limit is calculated as follows.
-   *
-   * BorrowingCL(i) = round( NominalCL(i) * borrowingLimitPercent(i)/100.0 )
-   *
-   * The value of this field can be more than 100, implying that this priority level can borrow a number of seats that is greater than its own nominal concurrency limit (NominalCL). When this field is left `nil`, the limit is effectively infinite.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.LimitedPriorityLevelConfiguration#borrowingLimitPercent
-   */
-  readonly borrowingLimitPercent?: number;
-
-  /**
-   * `lendablePercent` prescribes the fraction of the level's NominalCL that can be borrowed by other priority levels. The value of this field must be between 0 and 100, inclusive, and it defaults to 0. The number of seats that other levels can borrow from this level, known as this level's LendableConcurrencyLimit (LendableCL), is defined as follows.
-   *
-   * LendableCL(i) = round( NominalCL(i) * lendablePercent(i)/100.0 )
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.LimitedPriorityLevelConfiguration#lendablePercent
-   */
-  readonly lendablePercent?: number;
-
-  /**
-   * `limitResponse` indicates what to do with requests that can not be executed right now
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.LimitedPriorityLevelConfiguration#limitResponse
-   */
-  readonly limitResponse?: LimitResponseV1Beta3;
-
-  /**
-   * `nominalConcurrencyShares` (NCS) contributes to the computation of the NominalConcurrencyLimit (NominalCL) of this level. This is the number of execution seats available at this priority level. This is used both for requests dispatched from this priority level as well as requests dispatched from other priority levels borrowing seats from this level. The server's concurrency limit (ServerCL) is divided among the Limited priority levels in proportion to their NCS values:
-   *
-   * NominalCL(i)  = ceil( ServerCL * NCS(i) / sum_ncs ) sum_ncs = sum[priority level k] NCS(k)
-   *
-   * Bigger numbers mean a larger nominal concurrency limit, at the expense of every other priority level. This field has a default value of 30.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.LimitedPriorityLevelConfiguration#nominalConcurrencyShares
-   */
-  readonly nominalConcurrencyShares?: number;
-
-}
-
-/**
- * Converts an object of type 'LimitedPriorityLevelConfigurationV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_LimitedPriorityLevelConfigurationV1Beta3(obj: LimitedPriorityLevelConfigurationV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'borrowingLimitPercent': obj.borrowingLimitPercent,
-    'lendablePercent': obj.lendablePercent,
-    'limitResponse': toJson_LimitResponseV1Beta3(obj.limitResponse),
-    'nominalConcurrencyShares': obj.nominalConcurrencyShares,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressBackend describes all endpoints for a given service and port.
@@ -23838,7 +25713,7 @@ export interface IngressBackend {
 /**
  * Converts an object of type 'IngressBackend' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressBackend(obj: IngressBackend | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23848,7 +25723,7 @@ export function toJson_IngressBackend(obj: IngressBackend | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressRule represents the rules mapping the paths under a specified host to the related backend services. Incoming requests are first evaluated for a host match, then routed to the backend associated with the matching IngressRuleValue.
@@ -23880,7 +25755,7 @@ export interface IngressRule {
 /**
  * Converts an object of type 'IngressRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressRule(obj: IngressRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23890,7 +25765,7 @@ export function toJson_IngressRule(obj: IngressRule | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressTLS describes the transport layer security associated with an ingress.
@@ -23918,7 +25793,7 @@ export interface IngressTls {
 /**
  * Converts an object of type 'IngressTls' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressTls(obj: IngressTls | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23928,7 +25803,7 @@ export function toJson_IngressTls(obj: IngressTls | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressClassParametersReference identifies an API object. This can be used to specify a cluster or namespace-scoped resource.
@@ -23976,7 +25851,7 @@ export interface IngressClassParametersReference {
 /**
  * Converts an object of type 'IngressClassParametersReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressClassParametersReference(obj: IngressClassParametersReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -23989,7 +25864,7 @@ export function toJson_IngressClassParametersReference(obj: IngressClassParamete
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicyEgressRule describes a particular set of traffic that is allowed out of pods matched by a NetworkPolicySpec's podSelector. The traffic must match both ports and to. This type is beta-level in 1.8
@@ -24016,7 +25891,7 @@ export interface NetworkPolicyEgressRule {
 /**
  * Converts an object of type 'NetworkPolicyEgressRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicyEgressRule(obj: NetworkPolicyEgressRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24026,7 +25901,7 @@ export function toJson_NetworkPolicyEgressRule(obj: NetworkPolicyEgressRule | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicyIngressRule describes a particular set of traffic that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The traffic must match both ports and from.
@@ -24053,7 +25928,7 @@ export interface NetworkPolicyIngressRule {
 /**
  * Converts an object of type 'NetworkPolicyIngressRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicyIngressRule(obj: NetworkPolicyIngressRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24063,49 +25938,49 @@ export function toJson_NetworkPolicyIngressRule(obj: NetworkPolicyIngressRule | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ParentReference describes a reference to a parent object.
  *
- * @schema io.k8s.api.networking.v1alpha1.ParentReference
+ * @schema io.k8s.api.networking.v1beta1.ParentReference
  */
-export interface ParentReferenceV1Alpha1 {
+export interface ParentReferenceV1Beta1 {
   /**
    * Group is the group of the object being referenced.
    *
-   * @schema io.k8s.api.networking.v1alpha1.ParentReference#group
+   * @schema io.k8s.api.networking.v1beta1.ParentReference#group
    */
   readonly group?: string;
 
   /**
    * Name is the name of the object being referenced.
    *
-   * @schema io.k8s.api.networking.v1alpha1.ParentReference#name
+   * @schema io.k8s.api.networking.v1beta1.ParentReference#name
    */
-  readonly name?: string;
+  readonly name: string;
 
   /**
    * Namespace is the namespace of the object being referenced.
    *
-   * @schema io.k8s.api.networking.v1alpha1.ParentReference#namespace
+   * @schema io.k8s.api.networking.v1beta1.ParentReference#namespace
    */
   readonly namespace?: string;
 
   /**
    * Resource is the resource of the object being referenced.
    *
-   * @schema io.k8s.api.networking.v1alpha1.ParentReference#resource
+   * @schema io.k8s.api.networking.v1beta1.ParentReference#resource
    */
-  readonly resource?: string;
+  readonly resource: string;
 
 }
 
 /**
- * Converts an object of type 'ParentReferenceV1Alpha1' to JSON representation.
+ * Converts an object of type 'ParentReferenceV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ParentReferenceV1Alpha1(obj: ParentReferenceV1Alpha1 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ParentReferenceV1Beta1(obj: ParentReferenceV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'group': obj.group,
@@ -24116,7 +25991,7 @@ export function toJson_ParentReferenceV1Alpha1(obj: ParentReferenceV1Alpha1 | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
@@ -24153,7 +26028,7 @@ export interface Preconditions {
 /**
  * Converts an object of type 'Preconditions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Preconditions(obj: Preconditions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24163,7 +26038,7 @@ export function toJson_Preconditions(obj: Preconditions | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * @schema io.k8s.apimachinery.pkg.util.intstr.IntOrString
@@ -24180,86 +26055,415 @@ export class IntOrString {
 }
 
 /**
- * ResourceClaimParametersReference contains enough information to let you locate the parameters for a ResourceClaim. The object must be in the same namespace as the ResourceClaim.
+ * DeviceClassConfiguration is used in DeviceClass.
  *
- * @schema io.k8s.api.resource.v1alpha2.ResourceClaimParametersReference
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClassConfiguration
  */
-export interface ResourceClaimParametersReferenceV1Alpha2 {
+export interface DeviceClassConfigurationV1Alpha3 {
   /**
-   * APIGroup is the group for the resource being referenced. It is empty for the core API. This matches the group in the APIVersion that is used when creating the resources.
+   * Opaque provides driver-specific configuration parameters.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimParametersReference#apiGroup
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClassConfiguration#opaque
    */
-  readonly apiGroup?: string;
+  readonly opaque?: OpaqueDeviceConfigurationV1Alpha3;
+
+}
+
+/**
+ * Converts an object of type 'DeviceClassConfigurationV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassConfigurationV1Alpha3(obj: DeviceClassConfigurationV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'opaque': toJson_OpaqueDeviceConfigurationV1Alpha3(obj.opaque),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceSelector must have exactly one field set.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.DeviceSelector
+ */
+export interface DeviceSelectorV1Alpha3 {
+  /**
+   * CEL contains a CEL expression for selecting a device.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceSelector#cel
+   */
+  readonly cel?: CelDeviceSelectorV1Alpha3;
+
+}
+
+/**
+ * Converts an object of type 'DeviceSelectorV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceSelectorV1Alpha3(obj: DeviceSelectorV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'cel': toJson_CelDeviceSelectorV1Alpha3(obj.cel),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClaim defines how to request devices with a ResourceClaim.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClaim
+ */
+export interface DeviceClaimV1Alpha3 {
+  /**
+   * This field holds configuration for multiple potential drivers which could satisfy requests in this claim. It is ignored while allocating the claim.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClaim#config
+   */
+  readonly config?: DeviceClaimConfigurationV1Alpha3[];
 
   /**
-   * Kind is the type of resource being referenced. This is the same value as in the parameter object's metadata, for example "ConfigMap".
+   * These constraints must be satisfied by the set of devices that get allocated for the claim.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimParametersReference#kind
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClaim#constraints
    */
-  readonly kind: string;
+  readonly constraints?: DeviceConstraintV1Alpha3[];
 
   /**
-   * Name is the name of resource being referenced.
+   * Requests represent individual requests for distinct devices which must all be satisfied. If empty, nothing needs to be allocated.
    *
-   * @schema io.k8s.api.resource.v1alpha2.ResourceClaimParametersReference#name
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClaim#requests
+   */
+  readonly requests?: DeviceRequestV1Alpha3[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceClaimV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClaimV1Alpha3(obj: DeviceClaimV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config?.map(y => toJson_DeviceClaimConfigurationV1Alpha3(y)),
+    'constraints': obj.constraints?.map(y => toJson_DeviceConstraintV1Alpha3(y)),
+    'requests': obj.requests?.map(y => toJson_DeviceRequestV1Alpha3(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Device represents one individual hardware instance that can be selected based on its attributes. Besides the name, exactly one field must be set.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.Device
+ */
+export interface DeviceV1Alpha3 {
+  /**
+   * Basic defines one device instance.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.Device#basic
+   */
+  readonly basic?: BasicDeviceV1Alpha3;
+
+  /**
+   * Name is unique identifier among all devices managed by the driver in the pool. It must be a DNS label.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.Device#name
    */
   readonly name: string;
 
 }
 
 /**
- * Converts an object of type 'ResourceClaimParametersReferenceV1Alpha2' to JSON representation.
+ * Converts an object of type 'DeviceV1Alpha3' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaimParametersReferenceV1Alpha2(obj: ResourceClaimParametersReferenceV1Alpha2 | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceV1Alpha3(obj: DeviceV1Alpha3 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'apiGroup': obj.apiGroup,
-    'kind': obj.kind,
+    'basic': toJson_BasicDeviceV1Alpha3(obj.basic),
     'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+ * A node selector represents the union of the results of one or more label queries over a set of nodes; that is, it represents the OR of the selectors represented by the node selector terms.
  *
- * @schema io.k8s.api.core.v1.NodeSelectorTerm
+ * @schema io.k8s.api.core.v1.NodeSelector
  */
-export interface NodeSelectorTerm {
+export interface NodeSelector {
   /**
-   * A list of node selector requirements by node's labels.
+   * Required. A list of node selector terms. The terms are ORed.
    *
-   * @schema io.k8s.api.core.v1.NodeSelectorTerm#matchExpressions
+   * @schema io.k8s.api.core.v1.NodeSelector#nodeSelectorTerms
    */
-  readonly matchExpressions?: NodeSelectorRequirement[];
-
-  /**
-   * A list of node selector requirements by node's fields.
-   *
-   * @schema io.k8s.api.core.v1.NodeSelectorTerm#matchFields
-   */
-  readonly matchFields?: NodeSelectorRequirement[];
+  readonly nodeSelectorTerms: NodeSelectorTerm[];
 
 }
 
 /**
- * Converts an object of type 'NodeSelectorTerm' to JSON representation.
+ * Converts an object of type 'NodeSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_NodeSelectorTerm(obj: NodeSelectorTerm | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_NodeSelector(obj: NodeSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_NodeSelectorRequirement(y)),
-    'matchFields': obj.matchFields?.map(y => toJson_NodeSelectorRequirement(y)),
+    'nodeSelectorTerms': obj.nodeSelectorTerms?.map(y => toJson_NodeSelectorTerm(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourcePool describes the pool that ResourceSlices belong to.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.ResourcePool
+ */
+export interface ResourcePoolV1Alpha3 {
+  /**
+   * Generation tracks the change in a pool over time. Whenever a driver changes something about one or more of the resources in a pool, it must change the generation in all ResourceSlices which are part of that pool. Consumers of ResourceSlices should only consider resources from the pool with the highest generation number. The generation may be reset by drivers, which should be fine for consumers, assuming that all ResourceSlices in a pool are updated to match or deleted.
+   *
+   * Combined with ResourceSliceCount, this mechanism enables consumers to detect pools which are comprised of multiple ResourceSlices and are in an incomplete state.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourcePool#generation
+   */
+  readonly generation: number;
+
+  /**
+   * Name is used to identify the pool. For node-local devices, this is often the node name, but this is not required.
+   *
+   * It must not be longer than 253 characters and must consist of one or more DNS sub-domains separated by slashes. This field is immutable.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourcePool#name
+   */
+  readonly name: string;
+
+  /**
+   * ResourceSliceCount is the total number of ResourceSlices in the pool at this generation number. Must be greater than zero.
+   *
+   * Consumers can use this to check whether they have seen all ResourceSlices belonging to the same pool.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.ResourcePool#resourceSliceCount
+   */
+  readonly resourceSliceCount: number;
+
+}
+
+/**
+ * Converts an object of type 'ResourcePoolV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourcePoolV1Alpha3(obj: ResourcePoolV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'generation': obj.generation,
+    'name': obj.name,
+    'resourceSliceCount': obj.resourceSliceCount,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClassConfiguration is used in DeviceClass.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClassConfiguration
+ */
+export interface DeviceClassConfigurationV1Beta1 {
+  /**
+   * Opaque provides driver-specific configuration parameters.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClassConfiguration#opaque
+   */
+  readonly opaque?: OpaqueDeviceConfigurationV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'DeviceClassConfigurationV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClassConfigurationV1Beta1(obj: DeviceClassConfigurationV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'opaque': toJson_OpaqueDeviceConfigurationV1Beta1(obj.opaque),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceSelector must have exactly one field set.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceSelector
+ */
+export interface DeviceSelectorV1Beta1 {
+  /**
+   * CEL contains a CEL expression for selecting a device.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceSelector#cel
+   */
+  readonly cel?: CelDeviceSelectorV1Beta1;
+
+}
+
+/**
+ * Converts an object of type 'DeviceSelectorV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceSelectorV1Beta1(obj: DeviceSelectorV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'cel': toJson_CelDeviceSelectorV1Beta1(obj.cel),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClaim defines how to request devices with a ResourceClaim.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClaim
+ */
+export interface DeviceClaimV1Beta1 {
+  /**
+   * This field holds configuration for multiple potential drivers which could satisfy requests in this claim. It is ignored while allocating the claim.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClaim#config
+   */
+  readonly config?: DeviceClaimConfigurationV1Beta1[];
+
+  /**
+   * These constraints must be satisfied by the set of devices that get allocated for the claim.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClaim#constraints
+   */
+  readonly constraints?: DeviceConstraintV1Beta1[];
+
+  /**
+   * Requests represent individual requests for distinct devices which must all be satisfied. If empty, nothing needs to be allocated.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClaim#requests
+   */
+  readonly requests?: DeviceRequestV1Beta1[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceClaimV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClaimV1Beta1(obj: DeviceClaimV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config?.map(y => toJson_DeviceClaimConfigurationV1Beta1(y)),
+    'constraints': obj.constraints?.map(y => toJson_DeviceConstraintV1Beta1(y)),
+    'requests': obj.requests?.map(y => toJson_DeviceRequestV1Beta1(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Device represents one individual hardware instance that can be selected based on its attributes. Besides the name, exactly one field must be set.
+ *
+ * @schema io.k8s.api.resource.v1beta1.Device
+ */
+export interface DeviceV1Beta1 {
+  /**
+   * Basic defines one device instance.
+   *
+   * @schema io.k8s.api.resource.v1beta1.Device#basic
+   */
+  readonly basic?: BasicDeviceV1Beta1;
+
+  /**
+   * Name is unique identifier among all devices managed by the driver in the pool. It must be a DNS label.
+   *
+   * @schema io.k8s.api.resource.v1beta1.Device#name
+   */
+  readonly name: string;
+
+}
+
+/**
+ * Converts an object of type 'DeviceV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceV1Beta1(obj: DeviceV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'basic': toJson_BasicDeviceV1Beta1(obj.basic),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResourcePool describes the pool that ResourceSlices belong to.
+ *
+ * @schema io.k8s.api.resource.v1beta1.ResourcePool
+ */
+export interface ResourcePoolV1Beta1 {
+  /**
+   * Generation tracks the change in a pool over time. Whenever a driver changes something about one or more of the resources in a pool, it must change the generation in all ResourceSlices which are part of that pool. Consumers of ResourceSlices should only consider resources from the pool with the highest generation number. The generation may be reset by drivers, which should be fine for consumers, assuming that all ResourceSlices in a pool are updated to match or deleted.
+   *
+   * Combined with ResourceSliceCount, this mechanism enables consumers to detect pools which are comprised of multiple ResourceSlices and are in an incomplete state.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourcePool#generation
+   */
+  readonly generation: number;
+
+  /**
+   * Name is used to identify the pool. For node-local devices, this is often the node name, but this is not required.
+   *
+   * It must not be longer than 253 characters and must consist of one or more DNS sub-domains separated by slashes. This field is immutable.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourcePool#name
+   */
+  readonly name: string;
+
+  /**
+   * ResourceSliceCount is the total number of ResourceSlices in the pool at this generation number. Must be greater than zero.
+   *
+   * Consumers can use this to check whether they have seen all ResourceSlices belonging to the same pool.
+   *
+   * @schema io.k8s.api.resource.v1beta1.ResourcePool#resourceSliceCount
+   */
+  readonly resourceSliceCount: number;
+
+}
+
+/**
+ * Converts an object of type 'ResourcePoolV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourcePoolV1Beta1(obj: ResourcePoolV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'generation': obj.generation,
+    'name': obj.name,
+    'resourceSliceCount': obj.resourceSliceCount,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CSINodeDriver holds information about the specification of one CSI driver installed on a node
@@ -24300,7 +26504,7 @@ export interface CsiNodeDriver {
 /**
  * Converts an object of type 'CsiNodeDriver' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiNodeDriver(obj: CsiNodeDriver | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24312,7 +26516,7 @@ export function toJson_CsiNodeDriver(obj: CsiNodeDriver | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
@@ -24346,7 +26550,7 @@ export interface LabelSelectorRequirement {
 /**
  * Converts an object of type 'LabelSelectorRequirement' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LabelSelectorRequirement(obj: LabelSelectorRequirement | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24357,7 +26561,7 @@ export function toJson_LabelSelectorRequirement(obj: LabelSelectorRequirement | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A topology selector requirement is a selector that matches given label. This is an alpha feature and may change in the future.
@@ -24384,7 +26588,7 @@ export interface TopologySelectorLabelRequirement {
 /**
  * Converts an object of type 'TopologySelectorLabelRequirement' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TopologySelectorLabelRequirement(obj: TopologySelectorLabelRequirement | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24394,10 +26598,10 @@ export function toJson_TopologySelectorLabelRequirement(obj: TopologySelectorLab
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * VolumeAttachmentSource represents a volume that should be attached. Right now only PersistenVolumes can be attached via external attacher, in future we may allow also inline volumes in pods. Exactly one member can be set.
+ * VolumeAttachmentSource represents a volume that should be attached. Right now only PersistentVolumes can be attached via external attacher, in the future we may allow also inline volumes in pods. Exactly one member can be set.
  *
  * @schema io.k8s.api.storage.v1.VolumeAttachmentSource
  */
@@ -24421,7 +26625,7 @@ export interface VolumeAttachmentSource {
 /**
  * Converts an object of type 'VolumeAttachmentSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeAttachmentSource(obj: VolumeAttachmentSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24431,7 +26635,52 @@ export function toJson_VolumeAttachmentSource(obj: VolumeAttachmentSource | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * The names of the group, the version, and the resource.
+ *
+ * @schema io.k8s.api.storagemigration.v1alpha1.GroupVersionResource
+ */
+export interface GroupVersionResourceV1Alpha1 {
+  /**
+   * The name of the group.
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.GroupVersionResource#group
+   */
+  readonly group?: string;
+
+  /**
+   * The name of the resource.
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.GroupVersionResource#resource
+   */
+  readonly resource?: string;
+
+  /**
+   * The name of the version.
+   *
+   * @schema io.k8s.api.storagemigration.v1alpha1.GroupVersionResource#version
+   */
+  readonly version?: string;
+
+}
+
+/**
+ * Converts an object of type 'GroupVersionResourceV1Alpha1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GroupVersionResourceV1Alpha1(obj: GroupVersionResourceV1Alpha1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'resource': obj.resource,
+    'version': obj.version,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceConversion describes how to convert different versions of a CR.
@@ -24459,7 +26708,7 @@ export interface CustomResourceConversion {
 /**
  * Converts an object of type 'CustomResourceConversion' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceConversion(obj: CustomResourceConversion | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24469,7 +26718,7 @@ export function toJson_CustomResourceConversion(obj: CustomResourceConversion | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceDefinitionNames indicates the names to serve this CustomResourceDefinition
@@ -24526,7 +26775,7 @@ export interface CustomResourceDefinitionNames {
 /**
  * Converts an object of type 'CustomResourceDefinitionNames' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceDefinitionNames(obj: CustomResourceDefinitionNames | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24540,7 +26789,7 @@ export function toJson_CustomResourceDefinitionNames(obj: CustomResourceDefiniti
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceDefinitionVersion describes a version for CRD.
@@ -24585,6 +26834,13 @@ export interface CustomResourceDefinitionVersion {
   readonly schema?: CustomResourceValidation;
 
   /**
+   * selectableFields specifies paths to fields that may be used as field selectors. A maximum of 8 selectable fields are allowed. See https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors
+   *
+   * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinitionVersion#selectableFields
+   */
+  readonly selectableFields?: SelectableField[];
+
+  /**
    * served is a flag enabling/disabling this version from being served via REST APIs
    *
    * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinitionVersion#served
@@ -24610,7 +26866,7 @@ export interface CustomResourceDefinitionVersion {
 /**
  * Converts an object of type 'CustomResourceDefinitionVersion' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceDefinitionVersion(obj: CustomResourceDefinitionVersion | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24619,6 +26875,7 @@ export function toJson_CustomResourceDefinitionVersion(obj: CustomResourceDefini
     'deprecationWarning': obj.deprecationWarning,
     'name': obj.name,
     'schema': toJson_CustomResourceValidation(obj.schema),
+    'selectableFields': obj.selectableFields?.map(y => toJson_SelectableField(y)),
     'served': obj.served,
     'storage': obj.storage,
     'subresources': toJson_CustomResourceSubresources(obj.subresources),
@@ -24626,7 +26883,7 @@ export function toJson_CustomResourceDefinitionVersion(obj: CustomResourceDefini
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * StatusCause provides more information about an api.Status failure, including cases when multiple errors are encountered.
@@ -24664,7 +26921,7 @@ export interface StatusCause {
 /**
  * Converts an object of type 'StatusCause' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StatusCause(obj: StatusCause | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24675,7 +26932,7 @@ export function toJson_StatusCause(obj: StatusCause | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceReference holds a reference to Service.legacy.k8s.io
@@ -24717,7 +26974,7 @@ export interface ServiceReference {
 /**
  * Converts an object of type 'ServiceReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceReference(obj: ServiceReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24729,7 +26986,83 @@ export function toJson_ServiceReference(obj: ServiceReference | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * NamedRuleWithOperations is a tuple of Operations and Resources with ResourceNames.
+ *
+ * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations
+ */
+export interface NamedRuleWithOperations {
+  /**
+   * APIGroups is the API groups the resources belong to. '*' is all groups. If '*' is present, the length of the slice must be one. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations#apiGroups
+   */
+  readonly apiGroups?: string[];
+
+  /**
+   * APIVersions is the API versions the resources belong to. '*' is all versions. If '*' is present, the length of the slice must be one. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations#apiVersions
+   */
+  readonly apiVersions?: string[];
+
+  /**
+   * Operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or * for all of those operations and any future admission operations that are added. If '*' is present, the length of the slice must be one. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations#operations
+   */
+  readonly operations?: string[];
+
+  /**
+   * ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations#resourceNames
+   */
+  readonly resourceNames?: string[];
+
+  /**
+   * Resources is a list of resources this rule applies to.
+   *
+   * For example: 'pods' means pods. 'pods/log' means the log subresource of pods. '*' means all resources, but not subresources. 'pods/*' means all subresources of pods. '_/scale' means all scale subresources. '_/*' means all resources and their subresources.
+   *
+   * If wildcard is present, the validation rule will ensure resources do not overlap with each other.
+   *
+   * Depending on the enclosing object, subresources might not be allowed. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations#resources
+   */
+  readonly resources?: string[];
+
+  /**
+   * scope specifies the scope of this rule. Valid values are "Cluster", "Namespaced", and "*" "Cluster" means that only cluster-scoped resources will match this rule. Namespace API objects are cluster-scoped. "Namespaced" means that only namespaced resources will match this rule. "*" means that there are no scope restrictions. Subresources match the scope of their parent resource. Default is "*".
+   *
+   * @default .
+   * @schema io.k8s.api.admissionregistration.v1.NamedRuleWithOperations#scope
+   */
+  readonly scope?: string;
+
+}
+
+/**
+ * Converts an object of type 'NamedRuleWithOperations' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_NamedRuleWithOperations(obj: NamedRuleWithOperations | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'apiGroups': obj.apiGroups?.map(y => y),
+    'apiVersions': obj.apiVersions?.map(y => y),
+    'operations': obj.operations?.map(y => y),
+    'resourceNames': obj.resourceNames?.map(y => y),
+    'resources': obj.resources?.map(y => y),
+    'scope': obj.scope,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NamedRuleWithOperations is a tuple of Operations and Resources with ResourceNames.
@@ -24791,7 +27124,7 @@ export interface NamedRuleWithOperationsV1Alpha1 {
 /**
  * Converts an object of type 'NamedRuleWithOperationsV1Alpha1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NamedRuleWithOperationsV1Alpha1(obj: NamedRuleWithOperationsV1Alpha1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24805,7 +27138,145 @@ export function toJson_NamedRuleWithOperationsV1Alpha1(obj: NamedRuleWithOperati
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ApplyConfiguration defines the desired configuration values of an object.
+ *
+ * @schema io.k8s.api.admissionregistration.v1alpha1.ApplyConfiguration
+ */
+export interface ApplyConfigurationV1Alpha1 {
+  /**
+   * expression will be evaluated by CEL to create an apply configuration. ref: https://github.com/google/cel-spec
+   *
+   * Apply configurations are declared in CEL using object initialization. For example, this CEL expression returns an apply configuration to set a single field:
+   *
+   * Object{
+   * spec: Object.spec{
+   * serviceAccountName: "example"
+   * }
+   * }
+   *
+   * Apply configurations may not modify atomic structs, maps or arrays due to the risk of accidental deletion of values not included in the apply configuration.
+   *
+   * CEL expressions have access to the object types needed to create apply configurations:
+   *
+   * - 'Object' - CEL type of the resource object. - 'Object.<fieldName>' - CEL type of object field (such as 'Object.spec') - 'Object.<fieldName1>.<fieldName2>...<fieldNameN>` - CEL type of nested field (such as 'Object.spec.containers')
+   *
+   * CEL expressions have access to the contents of the API request, organized into CEL variables as well as some other useful variables:
+   *
+   * - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
+   * For example, a variable named 'foo' can be accessed as 'variables.foo'.
+   * - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
+   * See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
+   * - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
+   * request resource.
+   *
+   * The `apiVersion`, `kind`, `metadata.name` and `metadata.generateName` are always accessible from the root of the object. No other metadata properties are accessible.
+   *
+   * Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.ApplyConfiguration#expression
+   */
+  readonly expression?: string;
+
+}
+
+/**
+ * Converts an object of type 'ApplyConfigurationV1Alpha1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ApplyConfigurationV1Alpha1(obj: ApplyConfigurationV1Alpha1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'expression': obj.expression,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * JSONPatch defines a JSON Patch.
+ *
+ * @schema io.k8s.api.admissionregistration.v1alpha1.JSONPatch
+ */
+export interface JsonPatchV1Alpha1 {
+  /**
+   * expression will be evaluated by CEL to create a [JSON patch](https://jsonpatch.com/). ref: https://github.com/google/cel-spec
+   *
+   * expression must return an array of JSONPatch values.
+   *
+   * For example, this CEL expression returns a JSON patch to conditionally modify a value:
+   *
+   * [
+   * JSONPatch{op: "test", path: "/spec/example", value: "Red"},
+   * JSONPatch{op: "replace", path: "/spec/example", value: "Green"}
+   * ]
+   *
+   * To define an object for the patch value, use Object types. For example:
+   *
+   * [
+   * JSONPatch{
+   * op: "add",
+   * path: "/spec/selector",
+   * value: Object.spec.selector{matchLabels: {"environment": "test"}}
+   * }
+   * ]
+   *
+   * To use strings containing '/' and '~' as JSONPatch path keys, use "jsonpatch.escapeKey". For example:
+   *
+   * [
+   * JSONPatch{
+   * op: "add",
+   * path: "/metadata/labels/" + jsonpatch.escapeKey("example.com/environment"),
+   * value: "test"
+   * },
+   * ]
+   *
+   * CEL expressions have access to the types needed to create JSON patches and objects:
+   *
+   * - 'JSONPatch' - CEL type of JSON Patch operations. JSONPatch has the fields 'op', 'from', 'path' and 'value'.
+   * See [JSON patch](https://jsonpatch.com/) for more details. The 'value' field may be set to any of: string,
+   * integer, array, map or object.  If set, the 'path' and 'from' fields must be set to a
+   * [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901/) string, where the 'jsonpatch.escapeKey()' CEL
+   * function may be used to escape path keys containing '/' and '~'.
+   * - 'Object' - CEL type of the resource object. - 'Object.<fieldName>' - CEL type of object field (such as 'Object.spec') - 'Object.<fieldName1>.<fieldName2>...<fieldNameN>` - CEL type of nested field (such as 'Object.spec.containers')
+   *
+   * CEL expressions have access to the contents of the API request, organized into CEL variables as well as some other useful variables:
+   *
+   * - 'object' - The object from the incoming request. The value is null for DELETE requests. - 'oldObject' - The existing object. The value is null for CREATE requests. - 'request' - Attributes of the API request([ref](/pkg/apis/admission/types.go#AdmissionRequest)). - 'params' - Parameter resource referred to by the policy binding being evaluated. Only populated if the policy has a ParamKind. - 'namespaceObject' - The namespace object that the incoming object belongs to. The value is null for cluster-scoped resources. - 'variables' - Map of composited variables, from its name to its lazily evaluated value.
+   * For example, a variable named 'foo' can be accessed as 'variables.foo'.
+   * - 'authorizer' - A CEL Authorizer. May be used to perform authorization checks for the principal (user or service account) of the request.
+   * See https://pkg.go.dev/k8s.io/apiserver/pkg/cel/library#Authz
+   * - 'authorizer.requestResource' - A CEL ResourceCheck constructed from the 'authorizer' and configured with the
+   * request resource.
+   *
+   * CEL expressions have access to [Kubernetes CEL function libraries](https://kubernetes.io/docs/reference/using-api/cel/#cel-options-language-features-and-libraries) as well as:
+   *
+   * - 'jsonpatch.escapeKey' - Performs JSONPatch key escaping. '~' and  '/' are escaped as '~0' and `~1' respectively).
+   *
+   * Only property names of the form `[a-zA-Z_.-/][a-zA-Z0-9_.-/]*` are accessible. Required.
+   *
+   * @schema io.k8s.api.admissionregistration.v1alpha1.JSONPatch#expression
+   */
+  readonly expression?: string;
+
+}
+
+/**
+ * Converts an object of type 'JsonPatchV1Alpha1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_JsonPatchV1Alpha1(obj: JsonPatchV1Alpha1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'expression': obj.expression,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NamedRuleWithOperations is a tuple of Operations and Resources with ResourceNames.
@@ -24867,7 +27338,7 @@ export interface NamedRuleWithOperationsV1Beta1 {
 /**
  * Converts an object of type 'NamedRuleWithOperationsV1Beta1' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NamedRuleWithOperationsV1Beta1(obj: NamedRuleWithOperationsV1Beta1 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24881,7 +27352,7 @@ export function toJson_NamedRuleWithOperationsV1Beta1(obj: NamedRuleWithOperatio
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Spec to control the desired behavior of daemon set rolling update.
@@ -24908,7 +27379,7 @@ export interface RollingUpdateDaemonSet {
 /**
  * Converts an object of type 'RollingUpdateDaemonSet' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RollingUpdateDaemonSet(obj: RollingUpdateDaemonSet | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24918,7 +27389,7 @@ export function toJson_RollingUpdateDaemonSet(obj: RollingUpdateDaemonSet | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Spec to control the desired behavior of rolling update.
@@ -24947,7 +27418,7 @@ export interface RollingUpdateDeployment {
 /**
  * Converts an object of type 'RollingUpdateDeployment' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RollingUpdateDeployment(obj: RollingUpdateDeployment | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24957,7 +27428,7 @@ export function toJson_RollingUpdateDeployment(obj: RollingUpdateDeployment | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * RollingUpdateStatefulSetStrategy is used to communicate parameter for RollingUpdateStatefulSetStrategyType.
@@ -24985,7 +27456,7 @@ export interface RollingUpdateStatefulSetStrategy {
 /**
  * Converts an object of type 'RollingUpdateStatefulSetStrategy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RollingUpdateStatefulSetStrategy(obj: RollingUpdateStatefulSetStrategy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -24995,7 +27466,81 @@ export function toJson_RollingUpdateStatefulSetStrategy(obj: RollingUpdateStatef
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FieldSelectorAttributes indicates a field limited access. Webhook authors are encouraged to * ensure rawSelector and requirements are not both set * consider the requirements field if set * not try to parse or consider the rawSelector field if set. This is to avoid another CVE-2022-2880 (i.e. getting different systems to agree on how exactly to parse a query is not something we want), see https://www.oxeye.io/resources/golang-parameter-smuggling-attack for more details. For the *SubjectAccessReview endpoints of the kube-apiserver: * If rawSelector is empty and requirements are empty, the request is not limited. * If rawSelector is present and requirements are empty, the rawSelector will be parsed and limited if the parsing succeeds. * If rawSelector is empty and requirements are present, the requirements should be honored * If rawSelector is present and requirements are present, the request is invalid.
+ *
+ * @schema io.k8s.api.authorization.v1.FieldSelectorAttributes
+ */
+export interface FieldSelectorAttributes {
+  /**
+   * rawSelector is the serialization of a field selector that would be included in a query parameter. Webhook implementations are encouraged to ignore rawSelector. The kube-apiserver's *SubjectAccessReview will parse the rawSelector as long as the requirements are not present.
+   *
+   * @schema io.k8s.api.authorization.v1.FieldSelectorAttributes#rawSelector
+   */
+  readonly rawSelector?: string;
+
+  /**
+   * requirements is the parsed interpretation of a field selector. All requirements must be met for a resource instance to match the selector. Webhook implementations should handle requirements, but how to handle them is up to the webhook. Since requirements can only limit the request, it is safe to authorize as unlimited request if the requirements are not understood.
+   *
+   * @schema io.k8s.api.authorization.v1.FieldSelectorAttributes#requirements
+   */
+  readonly requirements?: FieldSelectorRequirement[];
+
+}
+
+/**
+ * Converts an object of type 'FieldSelectorAttributes' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_FieldSelectorAttributes(obj: FieldSelectorAttributes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'rawSelector': obj.rawSelector,
+    'requirements': obj.requirements?.map(y => toJson_FieldSelectorRequirement(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LabelSelectorAttributes indicates a label limited access. Webhook authors are encouraged to * ensure rawSelector and requirements are not both set * consider the requirements field if set * not try to parse or consider the rawSelector field if set. This is to avoid another CVE-2022-2880 (i.e. getting different systems to agree on how exactly to parse a query is not something we want), see https://www.oxeye.io/resources/golang-parameter-smuggling-attack for more details. For the *SubjectAccessReview endpoints of the kube-apiserver: * If rawSelector is empty and requirements are empty, the request is not limited. * If rawSelector is present and requirements are empty, the rawSelector will be parsed and limited if the parsing succeeds. * If rawSelector is empty and requirements are present, the requirements should be honored * If rawSelector is present and requirements are present, the request is invalid.
+ *
+ * @schema io.k8s.api.authorization.v1.LabelSelectorAttributes
+ */
+export interface LabelSelectorAttributes {
+  /**
+   * rawSelector is the serialization of a field selector that would be included in a query parameter. Webhook implementations are encouraged to ignore rawSelector. The kube-apiserver's *SubjectAccessReview will parse the rawSelector as long as the requirements are not present.
+   *
+   * @schema io.k8s.api.authorization.v1.LabelSelectorAttributes#rawSelector
+   */
+  readonly rawSelector?: string;
+
+  /**
+   * requirements is the parsed interpretation of a label selector. All requirements must be met for a resource instance to match the selector. Webhook implementations should handle requirements, but how to handle them is up to the webhook. Since requirements can only limit the request, it is safe to authorize as unlimited request if the requirements are not understood.
+   *
+   * @schema io.k8s.api.authorization.v1.LabelSelectorAttributes#requirements
+   */
+  readonly requirements?: LabelSelectorRequirement[];
+
+}
+
+/**
+ * Converts an object of type 'LabelSelectorAttributes' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_LabelSelectorAttributes(obj: LabelSelectorAttributes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'rawSelector': obj.rawSelector,
+    'requirements': obj.requirements?.map(y => toJson_LabelSelectorRequirement(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HPAScalingRules configures the scaling behavior for one direction. These Rules are applied after calculating DesiredReplicas from metrics for the HPA. They can limit the scaling velocity by specifying scaling policies. They can prevent flapping by specifying the stabilization window, so that the number of replicas is not set instantly, instead, the safest value from the stabilization window is chosen.
@@ -25029,7 +27574,7 @@ export interface HpaScalingRulesV2 {
 /**
  * Converts an object of type 'HpaScalingRulesV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HpaScalingRulesV2(obj: HpaScalingRulesV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25040,7 +27585,7 @@ export function toJson_HpaScalingRulesV2(obj: HpaScalingRulesV2 | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ContainerResourceMetricSource indicates how to scale on a resource metric known to Kubernetes, as specified in requests and limits, describing each pod in the current scale target (e.g. CPU or memory).  The values will be averaged together before being compared to the target.  Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.  Only one "target" type should be set.
@@ -25074,7 +27619,7 @@ export interface ContainerResourceMetricSourceV2 {
 /**
  * Converts an object of type 'ContainerResourceMetricSourceV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ContainerResourceMetricSourceV2(obj: ContainerResourceMetricSourceV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25085,7 +27630,7 @@ export function toJson_ContainerResourceMetricSourceV2(obj: ContainerResourceMet
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExternalMetricSource indicates how to scale on a metric not associated with any Kubernetes object (for example length of queue in cloud messaging service, or QPS from loadbalancer running outside of cluster).
@@ -25112,7 +27657,7 @@ export interface ExternalMetricSourceV2 {
 /**
  * Converts an object of type 'ExternalMetricSourceV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ExternalMetricSourceV2(obj: ExternalMetricSourceV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25122,7 +27667,7 @@ export function toJson_ExternalMetricSourceV2(obj: ExternalMetricSourceV2 | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ObjectMetricSource indicates how to scale on a metric describing a kubernetes object (for example, hits-per-second on an Ingress object).
@@ -25156,7 +27701,7 @@ export interface ObjectMetricSourceV2 {
 /**
  * Converts an object of type 'ObjectMetricSourceV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ObjectMetricSourceV2(obj: ObjectMetricSourceV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25167,7 +27712,7 @@ export function toJson_ObjectMetricSourceV2(obj: ObjectMetricSourceV2 | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodsMetricSource indicates how to scale on a metric describing each pod in the current scale target (for example, transactions-processed-per-second). The values will be averaged together before being compared to the target value.
@@ -25194,7 +27739,7 @@ export interface PodsMetricSourceV2 {
 /**
  * Converts an object of type 'PodsMetricSourceV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodsMetricSourceV2(obj: PodsMetricSourceV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25204,7 +27749,7 @@ export function toJson_PodsMetricSourceV2(obj: PodsMetricSourceV2 | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceMetricSource indicates how to scale on a resource metric known to Kubernetes, as specified in requests and limits, describing each pod in the current scale target (e.g. CPU or memory).  The values will be averaged together before being compared to the target.  Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.  Only one "target" type should be set.
@@ -25231,7 +27776,7 @@ export interface ResourceMetricSourceV2 {
 /**
  * Converts an object of type 'ResourceMetricSourceV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourceMetricSourceV2(obj: ResourceMetricSourceV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25241,7 +27786,7 @@ export function toJson_ResourceMetricSourceV2(obj: ResourceMetricSourceV2 | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodFailurePolicyRule describes how a pod failure is handled when the requirements are met. One of onExitCodes and onPodConditions, but not both, can be used in each rule.
@@ -25287,7 +27832,7 @@ export interface PodFailurePolicyRule {
 /**
  * Converts an object of type 'PodFailurePolicyRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodFailurePolicyRule(obj: PodFailurePolicyRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25298,7 +27843,44 @@ export function toJson_PodFailurePolicyRule(obj: PodFailurePolicyRule | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SuccessPolicyRule describes rule for declaring a Job as succeeded. Each rule must have at least one of the "succeededIndexes" or "succeededCount" specified.
+ *
+ * @schema io.k8s.api.batch.v1.SuccessPolicyRule
+ */
+export interface SuccessPolicyRule {
+  /**
+   * succeededCount specifies the minimal required size of the actual set of the succeeded indexes for the Job. When succeededCount is used along with succeededIndexes, the check is constrained only to the set of indexes specified by succeededIndexes. For example, given that succeededIndexes is "1-4", succeededCount is "3", and completed indexes are "1", "3", and "5", the Job isn't declared as succeeded because only "1" and "3" indexes are considered in that rules. When this field is null, this doesn't default to any value and is never evaluated at any time. When specified it needs to be a positive integer.
+   *
+   * @schema io.k8s.api.batch.v1.SuccessPolicyRule#succeededCount
+   */
+  readonly succeededCount?: number;
+
+  /**
+   * succeededIndexes specifies the set of indexes which need to be contained in the actual set of the succeeded indexes for the Job. The list of indexes must be within 0 to ".spec.completions-1" and must not contain duplicates. At least one element is required. The indexes are represented as intervals separated by commas. The intervals can be a decimal integer or a pair of decimal integers separated by a hyphen. The number are listed in represented by the first and last element of the series, separated by a hyphen. For example, if the completed indexes are 1, 3, 4, 5 and 7, they are represented as "1,3-5,7". When this field is null, this field doesn't default to any value and is never evaluated at any time.
+   *
+   * @schema io.k8s.api.batch.v1.SuccessPolicyRule#succeededIndexes
+   */
+  readonly succeededIndexes?: string;
+
+}
+
+/**
+ * Converts an object of type 'SuccessPolicyRule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SuccessPolicyRule(obj: SuccessPolicyRule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'succeededCount': obj.succeededCount,
+    'succeededIndexes': obj.succeededIndexes,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ConfigMapNodeConfigSource contains the information to reference a ConfigMap as a config source for the Node. This API is deprecated since 1.22: https://git.k8s.io/enhancements/keps/sig-node/281-dynamic-kubelet-configuration
@@ -25346,7 +27928,7 @@ export interface ConfigMapNodeConfigSource {
 /**
  * Converts an object of type 'ConfigMapNodeConfigSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapNodeConfigSource(obj: ConfigMapNodeConfigSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25359,7 +27941,7 @@ export function toJson_ConfigMapNodeConfigSource(obj: ConfigMapNodeConfigSource 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SecretReference represents a Secret Reference. It has enough information to retrieve secret in any namespace
@@ -25386,7 +27968,7 @@ export interface SecretReference {
 /**
  * Converts an object of type 'SecretReference' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretReference(obj: SecretReference | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25396,7 +27978,7 @@ export function toJson_SecretReference(obj: SecretReference | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Node affinity is a group of node affinity scheduling rules.
@@ -25423,7 +28005,7 @@ export interface NodeAffinity {
 /**
  * Converts an object of type 'NodeAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NodeAffinity(obj: NodeAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25433,7 +28015,7 @@ export function toJson_NodeAffinity(obj: NodeAffinity | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Pod affinity is a group of inter pod affinity scheduling rules.
@@ -25460,7 +28042,7 @@ export interface PodAffinity {
 /**
  * Converts an object of type 'PodAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodAffinity(obj: PodAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25470,7 +28052,7 @@ export function toJson_PodAffinity(obj: PodAffinity | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Pod anti affinity is a group of inter pod anti affinity scheduling rules.
@@ -25497,7 +28079,7 @@ export interface PodAntiAffinity {
 /**
  * Converts an object of type 'PodAntiAffinity' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodAntiAffinity(obj: PodAntiAffinity | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25507,7 +28089,7 @@ export function toJson_PodAntiAffinity(obj: PodAntiAffinity | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EnvVar represents an environment variable present in a Container.
@@ -25542,7 +28124,7 @@ export interface EnvVar {
 /**
  * Converts an object of type 'EnvVar' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvVar(obj: EnvVar | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25553,7 +28135,7 @@ export function toJson_EnvVar(obj: EnvVar | undefined): Record<string, any> | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EnvFromSource represents the source of a set of ConfigMaps
@@ -25587,7 +28169,7 @@ export interface EnvFromSource {
 /**
  * Converts an object of type 'EnvFromSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvFromSource(obj: EnvFromSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25598,7 +28180,7 @@ export function toJson_EnvFromSource(obj: EnvFromSource | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Lifecycle describes actions that the management system should take in response to container lifecycle events. For the PostStart and PreStop lifecycle handlers, management of the container blocks until the action is complete, unless the container process fails, in which case the handler is aborted.
@@ -25625,7 +28207,7 @@ export interface Lifecycle {
 /**
  * Converts an object of type 'Lifecycle' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Lifecycle(obj: Lifecycle | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25635,7 +28217,7 @@ export function toJson_Lifecycle(obj: Lifecycle | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.
@@ -25644,7 +28226,7 @@ export function toJson_Lifecycle(obj: Lifecycle | undefined): Record<string, any
  */
 export interface Probe {
   /**
-   * Exec specifies the action to take.
+   * Exec specifies a command to execute in the container.
    *
    * @schema io.k8s.api.core.v1.Probe#exec
    */
@@ -25659,14 +28241,14 @@ export interface Probe {
   readonly failureThreshold?: number;
 
   /**
-   * GRPC specifies an action involving a GRPC port.
+   * GRPC specifies a GRPC HealthCheckRequest.
    *
    * @schema io.k8s.api.core.v1.Probe#grpc
    */
   readonly grpc?: GrpcAction;
 
   /**
-   * HTTPGet specifies the http request to perform.
+   * HTTPGet specifies an HTTP GET request to perform.
    *
    * @schema io.k8s.api.core.v1.Probe#httpGet
    */
@@ -25696,7 +28278,7 @@ export interface Probe {
   readonly successThreshold?: number;
 
   /**
-   * TCPSocket specifies an action involving a TCP port.
+   * TCPSocket specifies a connection to a TCP port.
    *
    * @schema io.k8s.api.core.v1.Probe#tcpSocket
    */
@@ -25722,7 +28304,7 @@ export interface Probe {
 /**
  * Converts an object of type 'Probe' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Probe(obj: Probe | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25740,7 +28322,7 @@ export function toJson_Probe(obj: Probe | undefined): Record<string, any> | unde
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ContainerPort represents a network port in a single container.
@@ -25789,7 +28371,7 @@ export interface ContainerPort {
 /**
  * Converts an object of type 'ContainerPort' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ContainerPort(obj: ContainerPort | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25802,7 +28384,7 @@ export function toJson_ContainerPort(obj: ContainerPort | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ContainerResizePolicy represents resource resize policy for the container.
@@ -25829,7 +28411,7 @@ export interface ContainerResizePolicy {
 /**
  * Converts an object of type 'ContainerResizePolicy' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ContainerResizePolicy(obj: ContainerResizePolicy | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -25839,56 +28421,7 @@ export function toJson_ContainerResizePolicy(obj: ContainerResizePolicy | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * ResourceRequirements describes the compute resource requirements.
- *
- * @schema io.k8s.api.core.v1.ResourceRequirements
- */
-export interface ResourceRequirements {
-  /**
-   * Claims lists the names of resources, defined in spec.resourceClaims, that are used by this container.
-   *
-   * This is an alpha field and requires enabling the DynamicResourceAllocation feature gate.
-   *
-   * This field is immutable. It can only be set for containers.
-   *
-   * @schema io.k8s.api.core.v1.ResourceRequirements#claims
-   */
-  readonly claims?: ResourceClaim[];
-
-  /**
-   * Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-   *
-   * @schema io.k8s.api.core.v1.ResourceRequirements#limits
-   */
-  readonly limits?: { [key: string]: Quantity };
-
-  /**
-   * Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-   *
-   * @schema io.k8s.api.core.v1.ResourceRequirements#requests
-   */
-  readonly requests?: { [key: string]: Quantity };
-
-}
-
-/**
- * Converts an object of type 'ResourceRequirements' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceRequirements(obj: ResourceRequirements | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'claims': obj.claims?.map(y => toJson_ResourceClaim(y)),
-    'limits': ((obj.limits) === undefined) ? undefined : (Object.entries(obj.limits).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1]?.value }), {})),
-    'requests': ((obj.requests) === undefined) ? undefined : (Object.entries(obj.requests).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1]?.value }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SecurityContext holds security configuration that will be applied to a container. Some fields are present in both SecurityContext and PodSecurityContext.  When both are set, the values in SecurityContext take precedence.
@@ -25902,6 +28435,13 @@ export interface SecurityContext {
    * @schema io.k8s.api.core.v1.SecurityContext#allowPrivilegeEscalation
    */
   readonly allowPrivilegeEscalation?: boolean;
+
+  /**
+   * appArmorProfile is the AppArmor options to use by this container. If set, this profile overrides the pod's appArmorProfile. Note that this field cannot be set when spec.os.name is windows.
+   *
+   * @schema io.k8s.api.core.v1.SecurityContext#appArmorProfile
+   */
+  readonly appArmorProfile?: AppArmorProfile;
 
   /**
    * The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime. Note that this field cannot be set when spec.os.name is windows.
@@ -25920,7 +28460,7 @@ export interface SecurityContext {
   readonly privileged?: boolean;
 
   /**
-   * procMount denotes the type of proc mount to use for the containers. The default is DefaultProcMount which uses the container runtime defaults for readonly paths and masked paths. This requires the ProcMountType feature flag to be enabled. Note that this field cannot be set when spec.os.name is windows.
+   * procMount denotes the type of proc mount to use for the containers. The default value is Default which uses the container runtime defaults for readonly paths and masked paths. This requires the ProcMountType feature flag to be enabled. Note that this field cannot be set when spec.os.name is windows.
    *
    * @schema io.k8s.api.core.v1.SecurityContext#procMount
    */
@@ -25982,11 +28522,12 @@ export interface SecurityContext {
 /**
  * Converts an object of type 'SecurityContext' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecurityContext(obj: SecurityContext | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'allowPrivilegeEscalation': obj.allowPrivilegeEscalation,
+    'appArmorProfile': toJson_AppArmorProfile(obj.appArmorProfile),
     'capabilities': toJson_Capabilities(obj.capabilities),
     'privileged': obj.privileged,
     'procMount': obj.procMount,
@@ -26001,7 +28542,7 @@ export function toJson_SecurityContext(obj: SecurityContext | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * volumeDevice describes a mapping of a raw block device within a container.
@@ -26028,7 +28569,7 @@ export interface VolumeDevice {
 /**
  * Converts an object of type 'VolumeDevice' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeDevice(obj: VolumeDevice | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26038,7 +28579,7 @@ export function toJson_VolumeDevice(obj: VolumeDevice | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeMount describes a mounting of a Volume within a container.
@@ -26054,7 +28595,7 @@ export interface VolumeMount {
   readonly mountPath: string;
 
   /**
-   * mountPropagation determines how mounts are propagated from the host to container and the other way around. When not set, MountPropagationNone is used. This field is beta in 1.10.
+   * mountPropagation determines how mounts are propagated from the host to container and the other way around. When not set, MountPropagationNone is used. This field is beta in 1.10. When RecursiveReadOnly is set to IfPossible or to Enabled, MountPropagation must be None or unspecified (which defaults to None).
    *
    * @schema io.k8s.api.core.v1.VolumeMount#mountPropagation
    */
@@ -26074,6 +28615,21 @@ export interface VolumeMount {
    * @schema io.k8s.api.core.v1.VolumeMount#readOnly
    */
   readonly readOnly?: boolean;
+
+  /**
+   * RecursiveReadOnly specifies whether read-only mounts should be handled recursively.
+   *
+   * If ReadOnly is false, this field has no meaning and must be unspecified.
+   *
+   * If ReadOnly is true, and this field is set to Disabled, the mount is not made recursively read-only.  If this field is set to IfPossible, the mount is made recursively read-only, if it is supported by the container runtime.  If this field is set to Enabled, the mount is made recursively read-only if it is supported by the container runtime, otherwise the pod will not be started and an error will be generated to indicate the reason.
+   *
+   * If this field is set to IfPossible or Enabled, MountPropagation must be set to None (or be unspecified, which defaults to None).
+   *
+   * If this field is not specified, it is treated as an equivalent of Disabled.
+   *
+   * @schema io.k8s.api.core.v1.VolumeMount#recursiveReadOnly
+   */
+  readonly recursiveReadOnly?: string;
 
   /**
    * Path within the volume from which the container's volume should be mounted. Defaults to "" (volume's root).
@@ -26096,7 +28652,7 @@ export interface VolumeMount {
 /**
  * Converts an object of type 'VolumeMount' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeMount(obj: VolumeMount | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26104,13 +28660,14 @@ export function toJson_VolumeMount(obj: VolumeMount | undefined): Record<string,
     'mountPropagation': obj.mountPropagation,
     'name': obj.name,
     'readOnly': obj.readOnly,
+    'recursiveReadOnly': obj.recursiveReadOnly,
     'subPath': obj.subPath,
     'subPathExpr': obj.subPathExpr,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodDNSConfigOption defines DNS resolver options of a pod.
@@ -26119,13 +28676,15 @@ export function toJson_VolumeMount(obj: VolumeMount | undefined): Record<string,
  */
 export interface PodDnsConfigOption {
   /**
-   * Required.
+   * Name is this DNS resolver option's name. Required.
    *
    * @schema io.k8s.api.core.v1.PodDNSConfigOption#name
    */
   readonly name?: string;
 
   /**
+   * Value is this DNS resolver option's value.
+   *
    * @schema io.k8s.api.core.v1.PodDNSConfigOption#value
    */
   readonly value?: string;
@@ -26135,7 +28694,7 @@ export interface PodDnsConfigOption {
 /**
  * Converts an object of type 'PodDnsConfigOption' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodDnsConfigOption(obj: PodDnsConfigOption | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26145,50 +28704,84 @@ export function toJson_PodDnsConfigOption(obj: PodDnsConfigOption | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ClaimSource describes a reference to a ResourceClaim.
+ * ResourceClaim references one entry in PodSpec.ResourceClaims.
  *
- * Exactly one of these fields should be set.  Consumers of this type must treat an empty object as if it has an unknown value.
- *
- * @schema io.k8s.api.core.v1.ClaimSource
+ * @schema io.k8s.api.core.v1.ResourceClaim
  */
-export interface ClaimSource {
+export interface ResourceClaim {
   /**
-   * ResourceClaimName is the name of a ResourceClaim object in the same namespace as this pod.
+   * Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
    *
-   * @schema io.k8s.api.core.v1.ClaimSource#resourceClaimName
+   * @schema io.k8s.api.core.v1.ResourceClaim#name
    */
-  readonly resourceClaimName?: string;
+  readonly name: string;
 
   /**
-   * ResourceClaimTemplateName is the name of a ResourceClaimTemplate object in the same namespace as this pod.
+   * Request is the name chosen for a request in the referenced claim. If empty, everything from the claim is made available, otherwise only the result of this request.
    *
-   * The template will be used to create a new ResourceClaim, which will be bound to this pod. When this pod is deleted, the ResourceClaim will also be deleted. The pod name and resource name, along with a generated component, will be used to form a unique name for the ResourceClaim, which will be recorded in pod.status.resourceClaimStatuses.
-   *
-   * This field is immutable and no changes will be made to the corresponding ResourceClaim by the control plane after creating the ResourceClaim.
-   *
-   * @schema io.k8s.api.core.v1.ClaimSource#resourceClaimTemplateName
+   * @schema io.k8s.api.core.v1.ResourceClaim#request
    */
-  readonly resourceClaimTemplateName?: string;
+  readonly request?: string;
 
 }
 
 /**
- * Converts an object of type 'ClaimSource' to JSON representation.
+ * Converts an object of type 'ResourceClaim' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_ClaimSource(obj: ClaimSource | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ResourceClaim(obj: ResourceClaim | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'resourceClaimName': obj.resourceClaimName,
-    'resourceClaimTemplateName': obj.resourceClaimTemplateName,
+    'name': obj.name,
+    'request': obj.request,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * AppArmorProfile defines a pod or container's AppArmor settings.
+ *
+ * @schema io.k8s.api.core.v1.AppArmorProfile
+ */
+export interface AppArmorProfile {
+  /**
+   * localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is "Localhost".
+   *
+   * @schema io.k8s.api.core.v1.AppArmorProfile#localhostProfile
+   */
+  readonly localhostProfile?: string;
+
+  /**
+   * type indicates which kind of AppArmor profile will be applied. Valid options are:
+   * Localhost - a profile pre-loaded on the node.
+   * RuntimeDefault - the container runtime's default profile.
+   * Unconfined - no AppArmor enforcement.
+   *
+   * @schema io.k8s.api.core.v1.AppArmorProfile#type
+   */
+  readonly type: string;
+
+}
+
+/**
+ * Converts an object of type 'AppArmorProfile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_AppArmorProfile(obj: AppArmorProfile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'localhostProfile': obj.localhostProfile,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SELinuxOptions are the labels to be applied to the container
@@ -26229,7 +28822,7 @@ export interface SeLinuxOptions {
 /**
  * Converts an object of type 'SeLinuxOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SeLinuxOptions(obj: SeLinuxOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26241,7 +28834,7 @@ export function toJson_SeLinuxOptions(obj: SeLinuxOptions | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SeccompProfile defines a pod/container's seccomp profile settings. Only one profile source may be set.
@@ -26270,7 +28863,7 @@ export interface SeccompProfile {
 /**
  * Converts an object of type 'SeccompProfile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SeccompProfile(obj: SeccompProfile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26280,7 +28873,7 @@ export function toJson_SeccompProfile(obj: SeccompProfile | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Sysctl defines a kernel parameter to be set
@@ -26307,7 +28900,7 @@ export interface Sysctl {
 /**
  * Converts an object of type 'Sysctl' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Sysctl(obj: Sysctl | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26317,7 +28910,7 @@ export function toJson_Sysctl(obj: Sysctl | undefined): Record<string, any> | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * WindowsSecurityContextOptions contain Windows-specific options and credentials.
@@ -26359,7 +28952,7 @@ export interface WindowsSecurityContextOptions {
 /**
  * Converts an object of type 'WindowsSecurityContextOptions' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_WindowsSecurityContextOptions(obj: WindowsSecurityContextOptions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26371,7 +28964,7 @@ export function toJson_WindowsSecurityContextOptions(obj: WindowsSecurityContext
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AzureFile represents an Azure File Service mount on the host and bind mount to the pod.
@@ -26405,7 +28998,7 @@ export interface AzureFileVolumeSource {
 /**
  * Converts an object of type 'AzureFileVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_AzureFileVolumeSource(obj: AzureFileVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26416,7 +29009,7 @@ export function toJson_AzureFileVolumeSource(obj: AzureFileVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Ceph Filesystem mount that lasts the lifetime of a pod Cephfs volumes do not support ownership management or SELinux relabeling.
@@ -26472,7 +29065,7 @@ export interface CephFsVolumeSource {
 /**
  * Converts an object of type 'CephFsVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CephFsVolumeSource(obj: CephFsVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26486,7 +29079,7 @@ export function toJson_CephFsVolumeSource(obj: CephFsVolumeSource | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a cinder volume resource in Openstack. A Cinder volume must exist before mounting to a container. The volume must also be in the same region as the kubelet. Cinder volumes support ownership management and SELinux relabeling.
@@ -26527,7 +29120,7 @@ export interface CinderVolumeSource {
 /**
  * Converts an object of type 'CinderVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CinderVolumeSource(obj: CinderVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26539,7 +29132,7 @@ export function toJson_CinderVolumeSource(obj: CinderVolumeSource | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Adapts a ConfigMap into a volume.
@@ -26565,7 +29158,7 @@ export interface ConfigMapVolumeSource {
   readonly items?: KeyToPath[];
 
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.ConfigMapVolumeSource#name
    */
@@ -26583,7 +29176,7 @@ export interface ConfigMapVolumeSource {
 /**
  * Converts an object of type 'ConfigMapVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapVolumeSource(obj: ConfigMapVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26595,7 +29188,7 @@ export function toJson_ConfigMapVolumeSource(obj: ConfigMapVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a source location of a volume to mount, managed by an external CSI driver
@@ -26644,7 +29237,7 @@ export interface CsiVolumeSource {
 /**
  * Converts an object of type 'CsiVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CsiVolumeSource(obj: CsiVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26657,7 +29250,7 @@ export function toJson_CsiVolumeSource(obj: CsiVolumeSource | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DownwardAPIVolumeSource represents a volume containing downward API info. Downward API volumes support ownership management and SELinux relabeling.
@@ -26685,7 +29278,7 @@ export interface DownwardApiVolumeSource {
 /**
  * Converts an object of type 'DownwardApiVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DownwardApiVolumeSource(obj: DownwardApiVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26695,7 +29288,7 @@ export function toJson_DownwardApiVolumeSource(obj: DownwardApiVolumeSource | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents an empty directory for a pod. Empty directory volumes support ownership management and SELinux relabeling.
@@ -26722,7 +29315,7 @@ export interface EmptyDirVolumeSource {
 /**
  * Converts an object of type 'EmptyDirVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EmptyDirVolumeSource(obj: EmptyDirVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26732,7 +29325,7 @@ export function toJson_EmptyDirVolumeSource(obj: EmptyDirVolumeSource | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents an ephemeral volume that is handled by a normal storage driver.
@@ -26758,7 +29351,7 @@ export interface EphemeralVolumeSource {
 /**
  * Converts an object of type 'EphemeralVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EphemeralVolumeSource(obj: EphemeralVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26767,7 +29360,7 @@ export function toJson_EphemeralVolumeSource(obj: EphemeralVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * FlexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin.
@@ -26815,7 +29408,7 @@ export interface FlexVolumeSource {
 /**
  * Converts an object of type 'FlexVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_FlexVolumeSource(obj: FlexVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26828,7 +29421,7 @@ export function toJson_FlexVolumeSource(obj: FlexVolumeSource | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a volume that is populated with the contents of a git repository. Git repo volumes do not support ownership management. Git repo volumes support SELinux relabeling.
@@ -26864,7 +29457,7 @@ export interface GitRepoVolumeSource {
 /**
  * Converts an object of type 'GitRepoVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_GitRepoVolumeSource(obj: GitRepoVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26875,7 +29468,7 @@ export function toJson_GitRepoVolumeSource(obj: GitRepoVolumeSource | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Glusterfs mount that lasts the lifetime of a pod. Glusterfs volumes do not support ownership management or SELinux relabeling.
@@ -26910,7 +29503,7 @@ export interface GlusterfsVolumeSource {
 /**
  * Converts an object of type 'GlusterfsVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_GlusterfsVolumeSource(obj: GlusterfsVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -26921,7 +29514,45 @@ export function toJson_GlusterfsVolumeSource(obj: GlusterfsVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ImageVolumeSource represents a image volume resource.
+ *
+ * @schema io.k8s.api.core.v1.ImageVolumeSource
+ */
+export interface ImageVolumeSource {
+  /**
+   * Policy for pulling OCI objects. Possible values are: Always: the kubelet always attempts to pull the reference. Container creation will fail If the pull fails. Never: the kubelet never pulls the reference and only uses a local image or artifact. Container creation will fail if the reference isn't present. IfNotPresent: the kubelet pulls if the reference isn't already present on disk. Container creation will fail if the reference isn't present and the pull fails. Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
+   *
+   * @default Always if :latest tag is specified, or IfNotPresent otherwise.
+   * @schema io.k8s.api.core.v1.ImageVolumeSource#pullPolicy
+   */
+  readonly pullPolicy?: string;
+
+  /**
+   * Required: Image or artifact reference to be used. Behaves in the same way as pod.spec.containers[*].image. Pull secrets will be assembled in the same way as for the container image by looking up node credentials, SA image pull secrets, and pod spec image pull secrets. More info: https://kubernetes.io/docs/concepts/containers/images This field is optional to allow higher level config management to default or override container images in workload controllers like Deployments and StatefulSets.
+   *
+   * @schema io.k8s.api.core.v1.ImageVolumeSource#reference
+   */
+  readonly reference?: string;
+
+}
+
+/**
+ * Converts an object of type 'ImageVolumeSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ImageVolumeSource(obj: ImageVolumeSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'pullPolicy': obj.pullPolicy,
+    'reference': obj.reference,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents an ISCSI disk. ISCSI volumes can only be mounted as read/write once. ISCSI volumes support ownership management and SELinux relabeling.
@@ -27013,7 +29644,7 @@ export interface IscsiVolumeSource {
 /**
  * Converts an object of type 'IscsiVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IscsiVolumeSource(obj: IscsiVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27032,7 +29663,7 @@ export function toJson_IscsiVolumeSource(obj: IscsiVolumeSource | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeClaimVolumeSource references the user's PVC in the same namespace. This volume finds the bound PV and mounts that volume for the pod. A PersistentVolumeClaimVolumeSource is, essentially, a wrapper around another type of volume that is owned by someone else (the system).
@@ -27059,7 +29690,7 @@ export interface PersistentVolumeClaimVolumeSource {
 /**
  * Converts an object of type 'PersistentVolumeClaimVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeClaimVolumeSource(obj: PersistentVolumeClaimVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27069,7 +29700,7 @@ export function toJson_PersistentVolumeClaimVolumeSource(obj: PersistentVolumeCl
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a projected volume source
@@ -27085,7 +29716,7 @@ export interface ProjectedVolumeSource {
   readonly defaultMode?: number;
 
   /**
-   * sources is the list of volume projections
+   * sources is the list of volume projections. Each entry in this list handles one source.
    *
    * @schema io.k8s.api.core.v1.ProjectedVolumeSource#sources
    */
@@ -27096,7 +29727,7 @@ export interface ProjectedVolumeSource {
 /**
  * Converts an object of type 'ProjectedVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ProjectedVolumeSource(obj: ProjectedVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27106,7 +29737,7 @@ export function toJson_ProjectedVolumeSource(obj: ProjectedVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a Rados Block Device mount that lasts the lifetime of a pod. RBD volumes support ownership management and SELinux relabeling.
@@ -27180,7 +29811,7 @@ export interface RbdVolumeSource {
 /**
  * Converts an object of type 'RbdVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_RbdVolumeSource(obj: RbdVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27196,7 +29827,7 @@ export function toJson_RbdVolumeSource(obj: RbdVolumeSource | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ScaleIOVolumeSource represents a persistent ScaleIO volume
@@ -27282,7 +29913,7 @@ export interface ScaleIoVolumeSource {
 /**
  * Converts an object of type 'ScaleIoVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ScaleIoVolumeSource(obj: ScaleIoVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27300,7 +29931,7 @@ export function toJson_ScaleIoVolumeSource(obj: ScaleIoVolumeSource | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Adapts a Secret into a volume.
@@ -27344,7 +29975,7 @@ export interface SecretVolumeSource {
 /**
  * Converts an object of type 'SecretVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretVolumeSource(obj: SecretVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27356,7 +29987,7 @@ export function toJson_SecretVolumeSource(obj: SecretVolumeSource | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents a StorageOS persistent volume resource.
@@ -27404,7 +30035,7 @@ export interface StorageOsVolumeSource {
 /**
  * Converts an object of type 'StorageOsVolumeSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_StorageOsVolumeSource(obj: StorageOsVolumeSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27417,7 +30048,7 @@ export function toJson_StorageOsVolumeSource(obj: StorageOsVolumeSource | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A scoped-resource selector requirement is a selector that contains values, a scope name, and an operator that relates the scope name and values.
@@ -27451,7 +30082,7 @@ export interface ScopedResourceSelectorRequirement {
 /**
  * Converts an object of type 'ScopedResourceSelectorRequirement' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ScopedResourceSelectorRequirement(obj: ScopedResourceSelectorRequirement | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27462,7 +30093,7 @@ export function toJson_ScopedResourceSelectorRequirement(obj: ScopedResourceSele
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClientIPConfig represents the configurations of Client IP based session affinity.
@@ -27482,7 +30113,7 @@ export interface ClientIpConfig {
 /**
  * Converts an object of type 'ClientIpConfig' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClientIpConfig(obj: ClientIpConfig | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27491,7 +30122,7 @@ export function toJson_ClientIpConfig(obj: ClientIpConfig | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ForZone provides information about which zones should consume this endpoint.
@@ -27511,7 +30142,7 @@ export interface ForZone {
 /**
  * Converts an object of type 'ForZone' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ForZone(obj: ForZone | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27520,7 +30151,7 @@ export function toJson_ForZone(obj: ForZone | undefined): Record<string, any> | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NonResourcePolicyRule is a predicate that matches non-resource requests according to their verb and the target non-resource URL. A NonResourcePolicyRule matches a request if and only if both (a) at least one member of verbs matches the request and (b) at least one member of nonResourceURLs matches the request.
@@ -27553,7 +30184,7 @@ export interface NonResourcePolicyRule {
 /**
  * Converts an object of type 'NonResourcePolicyRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NonResourcePolicyRule(obj: NonResourcePolicyRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27563,7 +30194,7 @@ export function toJson_NonResourcePolicyRule(obj: NonResourcePolicyRule | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourcePolicyRule is a predicate that matches some resource requests, testing the request's verb and the target resource. A ResourcePolicyRule matches a resource request if and only if: (a) at least one member of verbs matches the request, (b) at least one member of apiGroups matches the request, (c) at least one member of resources matches the request, and (d) either (d1) the request does not specify a namespace (i.e., `Namespace==""`) and clusterScope is true or (d2) the request specifies a namespace and least one member of namespaces matches the request's namespace.
@@ -27611,7 +30242,7 @@ export interface ResourcePolicyRule {
 /**
  * Converts an object of type 'ResourcePolicyRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourcePolicyRule(obj: ResourcePolicyRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27624,7 +30255,7 @@ export function toJson_ResourcePolicyRule(obj: ResourcePolicyRule | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LimitResponse defines how to handle requests that can not be executed right now.
@@ -27651,7 +30282,7 @@ export interface LimitResponse {
 /**
  * Converts an object of type 'LimitResponse' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LimitResponse(obj: LimitResponse | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27661,201 +30292,7 @@ export function toJson_LimitResponse(obj: LimitResponse | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * NonResourcePolicyRule is a predicate that matches non-resource requests according to their verb and the target non-resource URL. A NonResourcePolicyRule matches a request if and only if both (a) at least one member of verbs matches the request and (b) at least one member of nonResourceURLs matches the request.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.NonResourcePolicyRule
- */
-export interface NonResourcePolicyRuleV1Beta3 {
-  /**
-   * `nonResourceURLs` is a set of url prefixes that a user should have access to and may not be empty. For example:
-   * - "/healthz" is legal
-   * - "/hea*" is illegal
-   * - "/hea" is legal but matches nothing
-   * - "/hea/*" also matches nothing
-   * - "/healthz/*" matches all per-component health checks.
-   * "*" matches all non-resource urls. if it is present, it must be the only entry. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.NonResourcePolicyRule#nonResourceURLs
-   */
-  readonly nonResourceUrLs: string[];
-
-  /**
-   * `verbs` is a list of matching verbs and may not be empty. "*" matches all verbs. If it is present, it must be the only entry. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.NonResourcePolicyRule#verbs
-   */
-  readonly verbs: string[];
-
-}
-
-/**
- * Converts an object of type 'NonResourcePolicyRuleV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_NonResourcePolicyRuleV1Beta3(obj: NonResourcePolicyRuleV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'nonResourceURLs': obj.nonResourceUrLs?.map(y => y),
-    'verbs': obj.verbs?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * ResourcePolicyRule is a predicate that matches some resource requests, testing the request's verb and the target resource. A ResourcePolicyRule matches a resource request if and only if: (a) at least one member of verbs matches the request, (b) at least one member of apiGroups matches the request, (c) at least one member of resources matches the request, and (d) either (d1) the request does not specify a namespace (i.e., `Namespace==""`) and clusterScope is true or (d2) the request specifies a namespace and least one member of namespaces matches the request's namespace.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule
- */
-export interface ResourcePolicyRuleV1Beta3 {
-  /**
-   * `apiGroups` is a list of matching API groups and may not be empty. "*" matches all API groups and, if present, must be the only entry. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule#apiGroups
-   */
-  readonly apiGroups: string[];
-
-  /**
-   * `clusterScope` indicates whether to match requests that do not specify a namespace (which happens either because the resource is not namespaced or the request targets all namespaces). If this field is omitted or false then the `namespaces` field must contain a non-empty list.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule#clusterScope
-   */
-  readonly clusterScope?: boolean;
-
-  /**
-   * `namespaces` is a list of target namespaces that restricts matches.  A request that specifies a target namespace matches only if either (a) this list contains that target namespace or (b) this list contains "*".  Note that "*" matches any specified namespace but does not match a request that _does not specify_ a namespace (see the `clusterScope` field for that). This list may be empty, but only if `clusterScope` is true.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule#namespaces
-   */
-  readonly namespaces?: string[];
-
-  /**
-   * `resources` is a list of matching resources (i.e., lowercase and plural) with, if desired, subresource.  For example, [ "services", "nodes/status" ].  This list may not be empty. "*" matches all resources and, if present, must be the only entry. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule#resources
-   */
-  readonly resources: string[];
-
-  /**
-   * `verbs` is a list of matching verbs and may not be empty. "*" matches all verbs and, if present, must be the only entry. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ResourcePolicyRule#verbs
-   */
-  readonly verbs: string[];
-
-}
-
-/**
- * Converts an object of type 'ResourcePolicyRuleV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourcePolicyRuleV1Beta3(obj: ResourcePolicyRuleV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiGroups': obj.apiGroups?.map(y => y),
-    'clusterScope': obj.clusterScope,
-    'namespaces': obj.namespaces?.map(y => y),
-    'resources': obj.resources?.map(y => y),
-    'verbs': obj.verbs?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * Subject matches the originator of a request, as identified by the request authentication system. There are three ways of matching an originator; by user, group, or service account.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.Subject
- */
-export interface SubjectV1Beta3 {
-  /**
-   * `group` matches based on user group name.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.Subject#group
-   */
-  readonly group?: GroupSubjectV1Beta3;
-
-  /**
-   * `kind` indicates which one of the other fields is non-empty. Required
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.Subject#kind
-   */
-  readonly kind: string;
-
-  /**
-   * `serviceAccount` matches ServiceAccounts.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.Subject#serviceAccount
-   */
-  readonly serviceAccount?: ServiceAccountSubjectV1Beta3;
-
-  /**
-   * `user` matches based on username.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.Subject#user
-   */
-  readonly user?: UserSubjectV1Beta3;
-
-}
-
-/**
- * Converts an object of type 'SubjectV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_SubjectV1Beta3(obj: SubjectV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'group': toJson_GroupSubjectV1Beta3(obj.group),
-    'kind': obj.kind,
-    'serviceAccount': toJson_ServiceAccountSubjectV1Beta3(obj.serviceAccount),
-    'user': toJson_UserSubjectV1Beta3(obj.user),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * LimitResponse defines how to handle requests that can not be executed right now.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.LimitResponse
- */
-export interface LimitResponseV1Beta3 {
-  /**
-   * `queuing` holds the configuration parameters for queuing. This field may be non-empty only if `type` is `"Queue"`.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.LimitResponse#queuing
-   */
-  readonly queuing?: QueuingConfigurationV1Beta3;
-
-  /**
-   * `type` is "Queue" or "Reject". "Queue" means that requests that can not be executed upon arrival are held in a queue until they can be executed or a queuing limit is reached. "Reject" means that requests that can not be executed upon arrival are rejected. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.LimitResponse#type
-   */
-  readonly type: string;
-
-}
-
-/**
- * Converts an object of type 'LimitResponseV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_LimitResponseV1Beta3(obj: LimitResponseV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'queuing': toJson_QueuingConfigurationV1Beta3(obj.queuing),
-    'type': obj.type,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IngressServiceBackend references a Kubernetes Service as a Backend.
@@ -27882,7 +30319,7 @@ export interface IngressServiceBackend {
 /**
  * Converts an object of type 'IngressServiceBackend' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IngressServiceBackend(obj: IngressServiceBackend | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27892,7 +30329,7 @@ export function toJson_IngressServiceBackend(obj: IngressServiceBackend | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HTTPIngressRuleValue is a list of http selectors pointing to backends. In the example: http://<host>/<path>?<searchpart> -> backend where where parts of the url correspond to RFC 3986, this resource will be used to match against everything after the last '/' and before the first '?' or '#'.
@@ -27912,7 +30349,7 @@ export interface HttpIngressRuleValue {
 /**
  * Converts an object of type 'HttpIngressRuleValue' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HttpIngressRuleValue(obj: HttpIngressRuleValue | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27921,7 +30358,7 @@ export function toJson_HttpIngressRuleValue(obj: HttpIngressRuleValue | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicyPort describes a port to allow traffic on
@@ -27955,7 +30392,7 @@ export interface NetworkPolicyPort {
 /**
  * Converts an object of type 'NetworkPolicyPort' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicyPort(obj: NetworkPolicyPort | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -27966,7 +30403,7 @@ export function toJson_NetworkPolicyPort(obj: NetworkPolicyPort | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * NetworkPolicyPeer describes a peer to allow traffic to/from. Only certain combinations of fields are allowed
@@ -28004,7 +30441,7 @@ export interface NetworkPolicyPeer {
 /**
  * Converts an object of type 'NetworkPolicyPeer' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_NetworkPolicyPeer(obj: NetworkPolicyPeer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28015,52 +30452,664 @@ export function toJson_NetworkPolicyPeer(obj: NetworkPolicyPeer | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ * OpaqueDeviceConfiguration contains configuration parameters for a driver in a format defined by the driver vendor.
  *
- * @schema io.k8s.api.core.v1.NodeSelectorRequirement
+ * @schema io.k8s.api.resource.v1alpha3.OpaqueDeviceConfiguration
  */
-export interface NodeSelectorRequirement {
+export interface OpaqueDeviceConfigurationV1Alpha3 {
   /**
-   * The label key that the selector applies to.
+   * Driver is used to determine which kubelet plugin needs to be passed these configuration parameters.
    *
-   * @schema io.k8s.api.core.v1.NodeSelectorRequirement#key
+   * An admission policy provided by the driver developer could use this to decide whether it needs to validate them.
+   *
+   * Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.OpaqueDeviceConfiguration#driver
    */
-  readonly key: string;
+  readonly driver: string;
 
   /**
-   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   * Parameters can contain arbitrary data. It is the responsibility of the driver developer to handle validation and versioning. Typically this includes self-identification and a version ("kind" + "apiVersion" for Kubernetes types), with conversion between different versions.
    *
-   * @schema io.k8s.api.core.v1.NodeSelectorRequirement#operator
-   */
-  readonly operator: string;
-
-  /**
-   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   * The length of the raw data must be smaller or equal to 10 Ki.
    *
-   * @schema io.k8s.api.core.v1.NodeSelectorRequirement#values
+   * @schema io.k8s.api.resource.v1alpha3.OpaqueDeviceConfiguration#parameters
    */
-  readonly values?: string[];
+  readonly parameters: any;
 
 }
 
 /**
- * Converts an object of type 'NodeSelectorRequirement' to JSON representation.
+ * Converts an object of type 'OpaqueDeviceConfigurationV1Alpha3' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
-export function toJson_NodeSelectorRequirement(obj: NodeSelectorRequirement | undefined): Record<string, any> | undefined {
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_OpaqueDeviceConfigurationV1Alpha3(obj: OpaqueDeviceConfigurationV1Alpha3 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
+    'driver': obj.driver,
+    'parameters': obj.parameters,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * CELDeviceSelector contains a CEL expression for selecting a device.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.CELDeviceSelector
+ */
+export interface CelDeviceSelectorV1Alpha3 {
+  /**
+   * Expression is a CEL expression which evaluates a single device. It must evaluate to true when the device under consideration satisfies the desired criteria, and false when it does not. Any other result is an error and causes allocation of devices to abort.
+   *
+   * The expression's input is an object named "device", which carries the following properties:
+   * - driver (string): the name of the driver which defines this device.
+   * - attributes (map[string]object): the device's attributes, grouped by prefix
+   * (e.g. device.attributes["dra.example.com"] evaluates to an object with all
+   * of the attributes which were prefixed by "dra.example.com".
+   * - capacity (map[string]object): the device's capacities, grouped by prefix.
+   *
+   * Example: Consider a device with driver="dra.example.com", which exposes two attributes named "model" and "ext.example.com/family" and which exposes one capacity named "modules". This input to this expression would have the following fields:
+   *
+   * device.driver
+   * device.attributes["dra.example.com"].model
+   * device.attributes["ext.example.com"].family
+   * device.capacity["dra.example.com"].modules
+   *
+   * The device.driver field can be used to check for a specific driver, either as a high-level precondition (i.e. you only want to consider devices from this driver) or as part of a multi-clause expression that is meant to consider devices from different drivers.
+   *
+   * The value type of each attribute is defined by the device definition, and users who write these expressions must consult the documentation for their specific drivers. The value type of each capacity is Quantity.
+   *
+   * If an unknown prefix is used as a lookup in either device.attributes or device.capacity, an empty map will be returned. Any reference to an unknown field will cause an evaluation error and allocation to abort.
+   *
+   * A robust expression should check for the existence of attributes before referencing them.
+   *
+   * For ease of use, the cel.bind() function is enabled, and can be used to simplify expressions that access multiple attributes with the same domain. For example:
+   *
+   * cel.bind(dra, device.attributes["dra.example.com"], dra.someBool && dra.anotherBool)
+   *
+   * The length of the expression must be smaller or equal to 10 Ki. The cost of evaluating it is also limited based on the estimated number of logical steps.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.CELDeviceSelector#expression
+   */
+  readonly expression: string;
+
+}
+
+/**
+ * Converts an object of type 'CelDeviceSelectorV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CelDeviceSelectorV1Alpha3(obj: CelDeviceSelectorV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'expression': obj.expression,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClaimConfiguration is used for configuration parameters in DeviceClaim.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.DeviceClaimConfiguration
+ */
+export interface DeviceClaimConfigurationV1Alpha3 {
+  /**
+   * Opaque provides driver-specific configuration parameters.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClaimConfiguration#opaque
+   */
+  readonly opaque?: OpaqueDeviceConfigurationV1Alpha3;
+
+  /**
+   * Requests lists the names of requests where the configuration applies. If empty, it applies to all requests.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceClaimConfiguration#requests
+   */
+  readonly requests?: string[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceClaimConfigurationV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClaimConfigurationV1Alpha3(obj: DeviceClaimConfigurationV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'opaque': toJson_OpaqueDeviceConfigurationV1Alpha3(obj.opaque),
+    'requests': obj.requests?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceConstraint must have exactly one field set besides Requests.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.DeviceConstraint
+ */
+export interface DeviceConstraintV1Alpha3 {
+  /**
+   * MatchAttribute requires that all devices in question have this attribute and that its type and value are the same across those devices.
+   *
+   * For example, if you specified "dra.example.com/numa" (a hypothetical example!), then only devices in the same NUMA node will be chosen. A device which does not have that attribute will not be chosen. All devices should use a value of the same type for this attribute because that is part of its specification, but if one device doesn't, then it also will not be chosen.
+   *
+   * Must include the domain qualifier.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceConstraint#matchAttribute
+   */
+  readonly matchAttribute?: string;
+
+  /**
+   * Requests is a list of the one or more requests in this claim which must co-satisfy this constraint. If a request is fulfilled by multiple devices, then all of the devices must satisfy the constraint. If this is not specified, this constraint applies to all requests in this claim.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceConstraint#requests
+   */
+  readonly requests?: string[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceConstraintV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceConstraintV1Alpha3(obj: DeviceConstraintV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchAttribute': obj.matchAttribute,
+    'requests': obj.requests?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceRequest is a request for devices required for a claim. This is typically a request for a single resource like a device, but can also ask for several identical devices.
+ *
+ * A DeviceClassName is currently required. Clients must check that it is indeed set. It's absence indicates that something changed in a way that is not supported by the client yet, in which case it must refuse to handle the request.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.DeviceRequest
+ */
+export interface DeviceRequestV1Alpha3 {
+  /**
+   * AdminAccess indicates that this is a claim for administrative access to the device(s). Claims with AdminAccess are expected to be used for monitoring or other management services for a device.  They ignore all ordinary claims to the device with respect to access modes and any resource allocations.
+   *
+   * This is an alpha field and requires enabling the DRAAdminAccess feature gate. Admin access is disabled if this field is unset or set to false, otherwise it is enabled.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceRequest#adminAccess
+   */
+  readonly adminAccess?: boolean;
+
+  /**
+   * AllocationMode and its related fields define how devices are allocated to satisfy this request. Supported values are:
+   *
+   * - ExactCount: This request is for a specific number of devices.
+   * This is the default. The exact number is provided in the
+   * count field.
+   *
+   * - All: This request is for all of the matching devices in a pool.
+   * Allocation will fail if some devices are already allocated,
+   * unless adminAccess is requested.
+   *
+   * If AlloctionMode is not specified, the default mode is ExactCount. If the mode is ExactCount and count is not specified, the default count is one. Any other requests must specify this field.
+   *
+   * More modes may get added in the future. Clients must refuse to handle requests with unknown modes.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceRequest#allocationMode
+   */
+  readonly allocationMode?: string;
+
+  /**
+   * Count is used only when the count mode is "ExactCount". Must be greater than zero. If AllocationMode is ExactCount and this field is not specified, the default is one.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceRequest#count
+   */
+  readonly count?: number;
+
+  /**
+   * DeviceClassName references a specific DeviceClass, which can define additional configuration and selectors to be inherited by this request.
+   *
+   * A class is required. Which classes are available depends on the cluster.
+   *
+   * Administrators may use this to restrict which devices may get requested by only installing classes with selectors for permitted devices. If users are free to request anything without restrictions, then administrators can create an empty DeviceClass for users to reference.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceRequest#deviceClassName
+   */
+  readonly deviceClassName: string;
+
+  /**
+   * Name can be used to reference this request in a pod.spec.containers[].resources.claims entry and in a constraint of the claim.
+   *
+   * Must be a DNS label.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceRequest#name
+   */
+  readonly name: string;
+
+  /**
+   * Selectors define criteria which must be satisfied by a specific device in order for that device to be considered for this request. All selectors must be satisfied for a device to be considered.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceRequest#selectors
+   */
+  readonly selectors?: DeviceSelectorV1Alpha3[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceRequestV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceRequestV1Alpha3(obj: DeviceRequestV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'adminAccess': obj.adminAccess,
+    'allocationMode': obj.allocationMode,
+    'count': obj.count,
+    'deviceClassName': obj.deviceClassName,
+    'name': obj.name,
+    'selectors': obj.selectors?.map(y => toJson_DeviceSelectorV1Alpha3(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * BasicDevice defines one device instance.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.BasicDevice
+ */
+export interface BasicDeviceV1Alpha3 {
+  /**
+   * Attributes defines the set of attributes for this device. The name of each attribute must be unique in that set.
+   *
+   * The maximum number of attributes and capacities combined is 32.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.BasicDevice#attributes
+   */
+  readonly attributes?: { [key: string]: DeviceAttributeV1Alpha3 };
+
+  /**
+   * Capacity defines the set of capacities for this device. The name of each capacity must be unique in that set.
+   *
+   * The maximum number of attributes and capacities combined is 32.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.BasicDevice#capacity
+   */
+  readonly capacity?: { [key: string]: Quantity };
+
+}
+
+/**
+ * Converts an object of type 'BasicDeviceV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BasicDeviceV1Alpha3(obj: BasicDeviceV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'attributes': ((obj.attributes) === undefined) ? undefined : (Object.entries(obj.attributes).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: toJson_DeviceAttributeV1Alpha3(i[1]) }), {})),
+    'capacity': ((obj.capacity) === undefined) ? undefined : (Object.entries(obj.capacity).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1]?.value }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A null or empty node selector term matches no objects. The requirements of them are ANDed. The TopologySelectorTerm type implements a subset of the NodeSelectorTerm.
+ *
+ * @schema io.k8s.api.core.v1.NodeSelectorTerm
+ */
+export interface NodeSelectorTerm {
+  /**
+   * A list of node selector requirements by node's labels.
+   *
+   * @schema io.k8s.api.core.v1.NodeSelectorTerm#matchExpressions
+   */
+  readonly matchExpressions?: NodeSelectorRequirement[];
+
+  /**
+   * A list of node selector requirements by node's fields.
+   *
+   * @schema io.k8s.api.core.v1.NodeSelectorTerm#matchFields
+   */
+  readonly matchFields?: NodeSelectorRequirement[];
+
+}
+
+/**
+ * Converts an object of type 'NodeSelectorTerm' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_NodeSelectorTerm(obj: NodeSelectorTerm | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_NodeSelectorRequirement(y)),
+    'matchFields': obj.matchFields?.map(y => toJson_NodeSelectorRequirement(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OpaqueDeviceConfiguration contains configuration parameters for a driver in a format defined by the driver vendor.
+ *
+ * @schema io.k8s.api.resource.v1beta1.OpaqueDeviceConfiguration
+ */
+export interface OpaqueDeviceConfigurationV1Beta1 {
+  /**
+   * Driver is used to determine which kubelet plugin needs to be passed these configuration parameters.
+   *
+   * An admission policy provided by the driver developer could use this to decide whether it needs to validate them.
+   *
+   * Must be a DNS subdomain and should end with a DNS domain owned by the vendor of the driver.
+   *
+   * @schema io.k8s.api.resource.v1beta1.OpaqueDeviceConfiguration#driver
+   */
+  readonly driver: string;
+
+  /**
+   * Parameters can contain arbitrary data. It is the responsibility of the driver developer to handle validation and versioning. Typically this includes self-identification and a version ("kind" + "apiVersion" for Kubernetes types), with conversion between different versions.
+   *
+   * The length of the raw data must be smaller or equal to 10 Ki.
+   *
+   * @schema io.k8s.api.resource.v1beta1.OpaqueDeviceConfiguration#parameters
+   */
+  readonly parameters: any;
+
+}
+
+/**
+ * Converts an object of type 'OpaqueDeviceConfigurationV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_OpaqueDeviceConfigurationV1Beta1(obj: OpaqueDeviceConfigurationV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'driver': obj.driver,
+    'parameters': obj.parameters,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * CELDeviceSelector contains a CEL expression for selecting a device.
+ *
+ * @schema io.k8s.api.resource.v1beta1.CELDeviceSelector
+ */
+export interface CelDeviceSelectorV1Beta1 {
+  /**
+   * Expression is a CEL expression which evaluates a single device. It must evaluate to true when the device under consideration satisfies the desired criteria, and false when it does not. Any other result is an error and causes allocation of devices to abort.
+   *
+   * The expression's input is an object named "device", which carries the following properties:
+   * - driver (string): the name of the driver which defines this device.
+   * - attributes (map[string]object): the device's attributes, grouped by prefix
+   * (e.g. device.attributes["dra.example.com"] evaluates to an object with all
+   * of the attributes which were prefixed by "dra.example.com".
+   * - capacity (map[string]object): the device's capacities, grouped by prefix.
+   *
+   * Example: Consider a device with driver="dra.example.com", which exposes two attributes named "model" and "ext.example.com/family" and which exposes one capacity named "modules". This input to this expression would have the following fields:
+   *
+   * device.driver
+   * device.attributes["dra.example.com"].model
+   * device.attributes["ext.example.com"].family
+   * device.capacity["dra.example.com"].modules
+   *
+   * The device.driver field can be used to check for a specific driver, either as a high-level precondition (i.e. you only want to consider devices from this driver) or as part of a multi-clause expression that is meant to consider devices from different drivers.
+   *
+   * The value type of each attribute is defined by the device definition, and users who write these expressions must consult the documentation for their specific drivers. The value type of each capacity is Quantity.
+   *
+   * If an unknown prefix is used as a lookup in either device.attributes or device.capacity, an empty map will be returned. Any reference to an unknown field will cause an evaluation error and allocation to abort.
+   *
+   * A robust expression should check for the existence of attributes before referencing them.
+   *
+   * For ease of use, the cel.bind() function is enabled, and can be used to simplify expressions that access multiple attributes with the same domain. For example:
+   *
+   * cel.bind(dra, device.attributes["dra.example.com"], dra.someBool && dra.anotherBool)
+   *
+   * The length of the expression must be smaller or equal to 10 Ki. The cost of evaluating it is also limited based on the estimated number of logical steps.
+   *
+   * @schema io.k8s.api.resource.v1beta1.CELDeviceSelector#expression
+   */
+  readonly expression: string;
+
+}
+
+/**
+ * Converts an object of type 'CelDeviceSelectorV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CelDeviceSelectorV1Beta1(obj: CelDeviceSelectorV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'expression': obj.expression,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceClaimConfiguration is used for configuration parameters in DeviceClaim.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceClaimConfiguration
+ */
+export interface DeviceClaimConfigurationV1Beta1 {
+  /**
+   * Opaque provides driver-specific configuration parameters.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClaimConfiguration#opaque
+   */
+  readonly opaque?: OpaqueDeviceConfigurationV1Beta1;
+
+  /**
+   * Requests lists the names of requests where the configuration applies. If empty, it applies to all requests.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceClaimConfiguration#requests
+   */
+  readonly requests?: string[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceClaimConfigurationV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceClaimConfigurationV1Beta1(obj: DeviceClaimConfigurationV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'opaque': toJson_OpaqueDeviceConfigurationV1Beta1(obj.opaque),
+    'requests': obj.requests?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceConstraint must have exactly one field set besides Requests.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceConstraint
+ */
+export interface DeviceConstraintV1Beta1 {
+  /**
+   * MatchAttribute requires that all devices in question have this attribute and that its type and value are the same across those devices.
+   *
+   * For example, if you specified "dra.example.com/numa" (a hypothetical example!), then only devices in the same NUMA node will be chosen. A device which does not have that attribute will not be chosen. All devices should use a value of the same type for this attribute because that is part of its specification, but if one device doesn't, then it also will not be chosen.
+   *
+   * Must include the domain qualifier.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceConstraint#matchAttribute
+   */
+  readonly matchAttribute?: string;
+
+  /**
+   * Requests is a list of the one or more requests in this claim which must co-satisfy this constraint. If a request is fulfilled by multiple devices, then all of the devices must satisfy the constraint. If this is not specified, this constraint applies to all requests in this claim.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceConstraint#requests
+   */
+  readonly requests?: string[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceConstraintV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceConstraintV1Beta1(obj: DeviceConstraintV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchAttribute': obj.matchAttribute,
+    'requests': obj.requests?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceRequest is a request for devices required for a claim. This is typically a request for a single resource like a device, but can also ask for several identical devices.
+ *
+ * A DeviceClassName is currently required. Clients must check that it is indeed set. It's absence indicates that something changed in a way that is not supported by the client yet, in which case it must refuse to handle the request.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceRequest
+ */
+export interface DeviceRequestV1Beta1 {
+  /**
+   * AdminAccess indicates that this is a claim for administrative access to the device(s). Claims with AdminAccess are expected to be used for monitoring or other management services for a device.  They ignore all ordinary claims to the device with respect to access modes and any resource allocations.
+   *
+   * This is an alpha field and requires enabling the DRAAdminAccess feature gate. Admin access is disabled if this field is unset or set to false, otherwise it is enabled.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceRequest#adminAccess
+   */
+  readonly adminAccess?: boolean;
+
+  /**
+   * AllocationMode and its related fields define how devices are allocated to satisfy this request. Supported values are:
+   *
+   * - ExactCount: This request is for a specific number of devices.
+   * This is the default. The exact number is provided in the
+   * count field.
+   *
+   * - All: This request is for all of the matching devices in a pool.
+   * Allocation will fail if some devices are already allocated,
+   * unless adminAccess is requested.
+   *
+   * If AlloctionMode is not specified, the default mode is ExactCount. If the mode is ExactCount and count is not specified, the default count is one. Any other requests must specify this field.
+   *
+   * More modes may get added in the future. Clients must refuse to handle requests with unknown modes.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceRequest#allocationMode
+   */
+  readonly allocationMode?: string;
+
+  /**
+   * Count is used only when the count mode is "ExactCount". Must be greater than zero. If AllocationMode is ExactCount and this field is not specified, the default is one.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceRequest#count
+   */
+  readonly count?: number;
+
+  /**
+   * DeviceClassName references a specific DeviceClass, which can define additional configuration and selectors to be inherited by this request.
+   *
+   * A class is required. Which classes are available depends on the cluster.
+   *
+   * Administrators may use this to restrict which devices may get requested by only installing classes with selectors for permitted devices. If users are free to request anything without restrictions, then administrators can create an empty DeviceClass for users to reference.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceRequest#deviceClassName
+   */
+  readonly deviceClassName: string;
+
+  /**
+   * Name can be used to reference this request in a pod.spec.containers[].resources.claims entry and in a constraint of the claim.
+   *
+   * Must be a DNS label.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceRequest#name
+   */
+  readonly name: string;
+
+  /**
+   * Selectors define criteria which must be satisfied by a specific device in order for that device to be considered for this request. All selectors must be satisfied for a device to be considered.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceRequest#selectors
+   */
+  readonly selectors?: DeviceSelectorV1Beta1[];
+
+}
+
+/**
+ * Converts an object of type 'DeviceRequestV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceRequestV1Beta1(obj: DeviceRequestV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'adminAccess': obj.adminAccess,
+    'allocationMode': obj.allocationMode,
+    'count': obj.count,
+    'deviceClassName': obj.deviceClassName,
+    'name': obj.name,
+    'selectors': obj.selectors?.map(y => toJson_DeviceSelectorV1Beta1(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * BasicDevice defines one device instance.
+ *
+ * @schema io.k8s.api.resource.v1beta1.BasicDevice
+ */
+export interface BasicDeviceV1Beta1 {
+  /**
+   * Attributes defines the set of attributes for this device. The name of each attribute must be unique in that set.
+   *
+   * The maximum number of attributes and capacities combined is 32.
+   *
+   * @schema io.k8s.api.resource.v1beta1.BasicDevice#attributes
+   */
+  readonly attributes?: { [key: string]: DeviceAttributeV1Beta1 };
+
+  /**
+   * Capacity defines the set of capacities for this device. The name of each capacity must be unique in that set.
+   *
+   * The maximum number of attributes and capacities combined is 32.
+   *
+   * @schema io.k8s.api.resource.v1beta1.BasicDevice#capacity
+   */
+  readonly capacity?: { [key: string]: DeviceCapacityV1Beta1 };
+
+}
+
+/**
+ * Converts an object of type 'BasicDeviceV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BasicDeviceV1Beta1(obj: BasicDeviceV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'attributes': ((obj.attributes) === undefined) ? undefined : (Object.entries(obj.attributes).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: toJson_DeviceAttributeV1Beta1(i[1]) }), {})),
+    'capacity': ((obj.capacity) === undefined) ? undefined : (Object.entries(obj.capacity).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: toJson_DeviceCapacityV1Beta1(i[1]) }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * VolumeNodeResources is a set of resource limits for scheduling of volumes.
@@ -28080,7 +31129,7 @@ export interface VolumeNodeResources {
 /**
  * Converts an object of type 'VolumeNodeResources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeNodeResources(obj: VolumeNodeResources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28089,7 +31138,7 @@ export function toJson_VolumeNodeResources(obj: VolumeNodeResources | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * WebhookConversion describes how to call a conversion webhook
@@ -28116,7 +31165,7 @@ export interface WebhookConversion {
 /**
  * Converts an object of type 'WebhookConversion' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_WebhookConversion(obj: WebhookConversion | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28126,7 +31175,7 @@ export function toJson_WebhookConversion(obj: WebhookConversion | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceColumnDefinition specifies a column for server side printing.
@@ -28181,7 +31230,7 @@ export interface CustomResourceColumnDefinition {
 /**
  * Converts an object of type 'CustomResourceColumnDefinition' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceColumnDefinition(obj: CustomResourceColumnDefinition | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28195,7 +31244,7 @@ export function toJson_CustomResourceColumnDefinition(obj: CustomResourceColumnD
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceValidation is a list of validation methods for CustomResources.
@@ -28215,7 +31264,7 @@ export interface CustomResourceValidation {
 /**
  * Converts an object of type 'CustomResourceValidation' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceValidation(obj: CustomResourceValidation | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28224,7 +31273,36 @@ export function toJson_CustomResourceValidation(obj: CustomResourceValidation | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SelectableField specifies the JSON path of a field that may be used with field selectors.
+ *
+ * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.SelectableField
+ */
+export interface SelectableField {
+  /**
+   * jsonPath is a simple JSON path which is evaluated against each custom resource to produce a field selector value. Only JSON paths without the array notation are allowed. Must point to a field of type string, boolean or integer. Types with enum values and strings with formats are allowed. If jsonPath refers to absent field in a resource, the jsonPath evaluates to an empty string. Must not point to metdata fields. Required.
+   *
+   * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.SelectableField#jsonPath
+   */
+  readonly jsonPath: string;
+
+}
+
+/**
+ * Converts an object of type 'SelectableField' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SelectableField(obj: SelectableField | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'jsonPath': obj.jsonPath,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceSubresources defines the status and scale subresources for CustomResources.
@@ -28251,7 +31329,7 @@ export interface CustomResourceSubresources {
 /**
  * Converts an object of type 'CustomResourceSubresources' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceSubresources(obj: CustomResourceSubresources | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28261,7 +31339,52 @@ export function toJson_CustomResourceSubresources(obj: CustomResourceSubresource
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FieldSelectorRequirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema io.k8s.apimachinery.pkg.apis.meta.v1.FieldSelectorRequirement
+ */
+export interface FieldSelectorRequirement {
+  /**
+   * key is the field selector key that the requirement applies to.
+   *
+   * @schema io.k8s.apimachinery.pkg.apis.meta.v1.FieldSelectorRequirement#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. The list of operators may grow in the future.
+   *
+   * @schema io.k8s.apimachinery.pkg.apis.meta.v1.FieldSelectorRequirement#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty.
+   *
+   * @schema io.k8s.apimachinery.pkg.apis.meta.v1.FieldSelectorRequirement#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'FieldSelectorRequirement' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_FieldSelectorRequirement(obj: FieldSelectorRequirement | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HPAScalingPolicy is a single policy which must hold true for a specified past interval.
@@ -28295,7 +31418,7 @@ export interface HpaScalingPolicyV2 {
 /**
  * Converts an object of type 'HpaScalingPolicyV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HpaScalingPolicyV2(obj: HpaScalingPolicyV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28306,7 +31429,7 @@ export function toJson_HpaScalingPolicyV2(obj: HpaScalingPolicyV2 | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MetricTarget defines the target value, average value, or average utilization of a specific metric
@@ -28347,7 +31470,7 @@ export interface MetricTargetV2 {
 /**
  * Converts an object of type 'MetricTargetV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MetricTargetV2(obj: MetricTargetV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28359,7 +31482,7 @@ export function toJson_MetricTargetV2(obj: MetricTargetV2 | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * MetricIdentifier defines the name and optionally selector for a metric
@@ -28386,7 +31509,7 @@ export interface MetricIdentifierV2 {
 /**
  * Converts an object of type 'MetricIdentifierV2' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_MetricIdentifierV2(obj: MetricIdentifierV2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28396,7 +31519,7 @@ export function toJson_MetricIdentifierV2(obj: MetricIdentifierV2 | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodFailurePolicyOnExitCodesRequirement describes the requirement for handling a failed pod based on its container exit codes. In particular, it lookups the .state.terminated.exitCode for each app container and init container status, represented by the .status.containerStatuses and .status.initContainerStatuses fields in the Pod status, respectively. Containers completed with success (exit code 0) are excluded from the requirement check.
@@ -28438,7 +31561,7 @@ export interface PodFailurePolicyOnExitCodesRequirement {
 /**
  * Converts an object of type 'PodFailurePolicyOnExitCodesRequirement' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodFailurePolicyOnExitCodesRequirement(obj: PodFailurePolicyOnExitCodesRequirement | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28449,7 +31572,7 @@ export function toJson_PodFailurePolicyOnExitCodesRequirement(obj: PodFailurePol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PodFailurePolicyOnPodConditionsPattern describes a pattern for matching an actual pod condition type.
@@ -28477,7 +31600,7 @@ export interface PodFailurePolicyOnPodConditionsPattern {
 /**
  * Converts an object of type 'PodFailurePolicyOnPodConditionsPattern' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodFailurePolicyOnPodConditionsPattern(obj: PodFailurePolicyOnPodConditionsPattern | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28487,7 +31610,7 @@ export function toJson_PodFailurePolicyOnPodConditionsPattern(obj: PodFailurePol
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
@@ -28514,7 +31637,7 @@ export interface PreferredSchedulingTerm {
 /**
  * Converts an object of type 'PreferredSchedulingTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PreferredSchedulingTerm(obj: PreferredSchedulingTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28524,7 +31647,7 @@ export function toJson_PreferredSchedulingTerm(obj: PreferredSchedulingTerm | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
@@ -28551,7 +31674,7 @@ export interface WeightedPodAffinityTerm {
 /**
  * Converts an object of type 'WeightedPodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_WeightedPodAffinityTerm(obj: WeightedPodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28561,7 +31684,7 @@ export function toJson_WeightedPodAffinityTerm(obj: WeightedPodAffinityTerm | un
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key <topologyKey> matches that of any node on which a pod of the set of pods is running
@@ -28577,14 +31700,14 @@ export interface PodAffinityTerm {
   readonly labelSelector?: LabelSelector;
 
   /**
-   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MatchLabelKeys and LabelSelector. Also, MatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both matchLabelKeys and labelSelector. Also, matchLabelKeys cannot be set when labelSelector isn't set. This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema io.k8s.api.core.v1.PodAffinityTerm#matchLabelKeys
    */
   readonly matchLabelKeys?: string[];
 
   /**
-   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `LabelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both MismatchLabelKeys and LabelSelector. Also, MismatchLabelKeys cannot be set when LabelSelector isn't set. This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+   * MismatchLabelKeys is a set of pod label keys to select which pods will be taken into consideration. The keys are used to lookup values from the incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)` to select the group of existing pods which pods will be taken into consideration for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming pod labels will be ignored. The default value is empty. The same key is forbidden to exist in both mismatchLabelKeys and labelSelector. Also, mismatchLabelKeys cannot be set when labelSelector isn't set. This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
    *
    * @schema io.k8s.api.core.v1.PodAffinityTerm#mismatchLabelKeys
    */
@@ -28616,7 +31739,7 @@ export interface PodAffinityTerm {
 /**
  * Converts an object of type 'PodAffinityTerm' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PodAffinityTerm(obj: PodAffinityTerm | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28630,7 +31753,7 @@ export function toJson_PodAffinityTerm(obj: PodAffinityTerm | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EnvVarSource represents a source for the value of an EnvVar.
@@ -28671,7 +31794,7 @@ export interface EnvVarSource {
 /**
  * Converts an object of type 'EnvVarSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvVarSource(obj: EnvVarSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28683,7 +31806,7 @@ export function toJson_EnvVarSource(obj: EnvVarSource | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ConfigMapEnvSource selects a ConfigMap to populate the environment variables with.
@@ -28694,7 +31817,7 @@ export function toJson_EnvVarSource(obj: EnvVarSource | undefined): Record<strin
  */
 export interface ConfigMapEnvSource {
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.ConfigMapEnvSource#name
    */
@@ -28712,7 +31835,7 @@ export interface ConfigMapEnvSource {
 /**
  * Converts an object of type 'ConfigMapEnvSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapEnvSource(obj: ConfigMapEnvSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28722,7 +31845,7 @@ export function toJson_ConfigMapEnvSource(obj: ConfigMapEnvSource | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SecretEnvSource selects a Secret to populate the environment variables with.
@@ -28733,7 +31856,7 @@ export function toJson_ConfigMapEnvSource(obj: ConfigMapEnvSource | undefined): 
  */
 export interface SecretEnvSource {
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.SecretEnvSource#name
    */
@@ -28751,7 +31874,7 @@ export interface SecretEnvSource {
 /**
  * Converts an object of type 'SecretEnvSource' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretEnvSource(obj: SecretEnvSource | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28761,7 +31884,7 @@ export function toJson_SecretEnvSource(obj: SecretEnvSource | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LifecycleHandler defines a specific action that should be taken in a lifecycle hook. One and only one of the fields, except TCPSocket must be specified.
@@ -28770,28 +31893,28 @@ export function toJson_SecretEnvSource(obj: SecretEnvSource | undefined): Record
  */
 export interface LifecycleHandler {
   /**
-   * Exec specifies the action to take.
+   * Exec specifies a command to execute in the container.
    *
    * @schema io.k8s.api.core.v1.LifecycleHandler#exec
    */
   readonly exec?: ExecAction;
 
   /**
-   * HTTPGet specifies the http request to perform.
+   * HTTPGet specifies an HTTP GET request to perform.
    *
    * @schema io.k8s.api.core.v1.LifecycleHandler#httpGet
    */
   readonly httpGet?: HttpGetAction;
 
   /**
-   * Sleep represents the duration that the container should sleep before being terminated.
+   * Sleep represents a duration that the container should sleep.
    *
    * @schema io.k8s.api.core.v1.LifecycleHandler#sleep
    */
   readonly sleep?: SleepAction;
 
   /**
-   * Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for the backward compatibility. There are no validation of this field and lifecycle hooks will fail in runtime when tcp handler is specified.
+   * Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept for backward compatibility. There is no validation of this field and lifecycle hooks will fail at runtime when it is specified.
    *
    * @schema io.k8s.api.core.v1.LifecycleHandler#tcpSocket
    */
@@ -28802,7 +31925,7 @@ export interface LifecycleHandler {
 /**
  * Converts an object of type 'LifecycleHandler' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_LifecycleHandler(obj: LifecycleHandler | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28814,7 +31937,7 @@ export function toJson_LifecycleHandler(obj: LifecycleHandler | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExecAction describes a "run in container" action.
@@ -28834,7 +31957,7 @@ export interface ExecAction {
 /**
  * Converts an object of type 'ExecAction' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ExecAction(obj: ExecAction | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28843,9 +31966,11 @@ export function toJson_ExecAction(obj: ExecAction | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * GRPCAction specifies an action involving a GRPC service.
+ *
  * @schema io.k8s.api.core.v1.GRPCAction
  */
 export interface GrpcAction {
@@ -28870,7 +31995,7 @@ export interface GrpcAction {
 /**
  * Converts an object of type 'GrpcAction' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_GrpcAction(obj: GrpcAction | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28880,7 +32005,7 @@ export function toJson_GrpcAction(obj: GrpcAction | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HTTPGetAction describes an action based on HTTP Get requests.
@@ -28929,7 +32054,7 @@ export interface HttpGetAction {
 /**
  * Converts an object of type 'HttpGetAction' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HttpGetAction(obj: HttpGetAction | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28942,7 +32067,7 @@ export function toJson_HttpGetAction(obj: HttpGetAction | undefined): Record<str
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * TCPSocketAction describes an action based on opening a socket
@@ -28969,7 +32094,7 @@ export interface TcpSocketAction {
 /**
  * Converts an object of type 'TcpSocketAction' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_TcpSocketAction(obj: TcpSocketAction | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -28979,36 +32104,7 @@ export function toJson_TcpSocketAction(obj: TcpSocketAction | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * ResourceClaim references one entry in PodSpec.ResourceClaims.
- *
- * @schema io.k8s.api.core.v1.ResourceClaim
- */
-export interface ResourceClaim {
-  /**
-   * Name must match the name of one entry in pod.spec.resourceClaims of the Pod where this field is used. It makes that resource available inside a container.
-   *
-   * @schema io.k8s.api.core.v1.ResourceClaim#name
-   */
-  readonly name: string;
-
-}
-
-/**
- * Converts an object of type 'ResourceClaim' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_ResourceClaim(obj: ResourceClaim | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'name': obj.name,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Adds and removes POSIX capabilities from running containers.
@@ -29035,7 +32131,7 @@ export interface Capabilities {
 /**
  * Converts an object of type 'Capabilities' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_Capabilities(obj: Capabilities | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29045,7 +32141,7 @@ export function toJson_Capabilities(obj: Capabilities | undefined): Record<strin
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Maps a string key to a path within a volume.
@@ -29079,7 +32175,7 @@ export interface KeyToPath {
 /**
  * Converts an object of type 'KeyToPath' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_KeyToPath(obj: KeyToPath | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29090,7 +32186,7 @@ export function toJson_KeyToPath(obj: KeyToPath | undefined): Record<string, any
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * DownwardAPIVolumeFile represents information to create the file containing the pod field
@@ -29099,7 +32195,7 @@ export function toJson_KeyToPath(obj: KeyToPath | undefined): Record<string, any
  */
 export interface DownwardApiVolumeFile {
   /**
-   * Required: Selects a field of the pod: only annotations, labels, name and namespace are supported.
+   * Required: Selects a field of the pod: only annotations, labels, name, namespace and uid are supported.
    *
    * @schema io.k8s.api.core.v1.DownwardAPIVolumeFile#fieldRef
    */
@@ -29131,7 +32227,7 @@ export interface DownwardApiVolumeFile {
 /**
  * Converts an object of type 'DownwardApiVolumeFile' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DownwardApiVolumeFile(obj: DownwardApiVolumeFile | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29143,7 +32239,7 @@ export function toJson_DownwardApiVolumeFile(obj: DownwardApiVolumeFile | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PersistentVolumeClaimTemplate is used to produce PersistentVolumeClaim objects as part of an EphemeralVolumeSource.
@@ -29170,7 +32266,7 @@ export interface PersistentVolumeClaimTemplate {
 /**
  * Converts an object of type 'PersistentVolumeClaimTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_PersistentVolumeClaimTemplate(obj: PersistentVolumeClaimTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29180,10 +32276,10 @@ export function toJson_PersistentVolumeClaimTemplate(obj: PersistentVolumeClaimT
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Projection that may be projected along with other supported volume types
+ * Projection that may be projected along with other supported volume types. Exactly one of these fields must be set.
  *
  * @schema io.k8s.api.core.v1.VolumeProjection
  */
@@ -29234,7 +32330,7 @@ export interface VolumeProjection {
 /**
  * Converts an object of type 'VolumeProjection' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_VolumeProjection(obj: VolumeProjection | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29247,7 +32343,7 @@ export function toJson_VolumeProjection(obj: VolumeProjection | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * QueuingConfiguration holds the configuration parameters for queuing
@@ -29281,7 +32377,7 @@ export interface QueuingConfiguration {
 /**
  * Converts an object of type 'QueuingConfiguration' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_QueuingConfiguration(obj: QueuingConfiguration | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29292,147 +32388,7 @@ export function toJson_QueuingConfiguration(obj: QueuingConfiguration | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
-
-/**
- * GroupSubject holds detailed information for group-kind subject.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.GroupSubject
- */
-export interface GroupSubjectV1Beta3 {
-  /**
-   * name is the user group that matches, or "*" to match all user groups. See https://github.com/kubernetes/apiserver/blob/master/pkg/authentication/user/user.go for some well-known group names. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.GroupSubject#name
-   */
-  readonly name: string;
-
-}
-
-/**
- * Converts an object of type 'GroupSubjectV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_GroupSubjectV1Beta3(obj: GroupSubjectV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'name': obj.name,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * ServiceAccountSubject holds detailed information for service-account-kind subject.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.ServiceAccountSubject
- */
-export interface ServiceAccountSubjectV1Beta3 {
-  /**
-   * `name` is the name of matching ServiceAccount objects, or "*" to match regardless of name. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ServiceAccountSubject#name
-   */
-  readonly name: string;
-
-  /**
-   * `namespace` is the namespace of matching ServiceAccount objects. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.ServiceAccountSubject#namespace
-   */
-  readonly namespace: string;
-
-}
-
-/**
- * Converts an object of type 'ServiceAccountSubjectV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_ServiceAccountSubjectV1Beta3(obj: ServiceAccountSubjectV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'name': obj.name,
-    'namespace': obj.namespace,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * UserSubject holds detailed information for user-kind subject.
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.UserSubject
- */
-export interface UserSubjectV1Beta3 {
-  /**
-   * `name` is the username that matches, or "*" to match all usernames. Required.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.UserSubject#name
-   */
-  readonly name: string;
-
-}
-
-/**
- * Converts an object of type 'UserSubjectV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_UserSubjectV1Beta3(obj: UserSubjectV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'name': obj.name,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
-
-/**
- * QueuingConfiguration holds the configuration parameters for queuing
- *
- * @schema io.k8s.api.flowcontrol.v1beta3.QueuingConfiguration
- */
-export interface QueuingConfigurationV1Beta3 {
-  /**
-   * `handSize` is a small positive number that configures the shuffle sharding of requests into queues.  When enqueuing a request at this priority level the request's flow identifier (a string pair) is hashed and the hash value is used to shuffle the list of queues and deal a hand of the size specified here.  The request is put into one of the shortest queues in that hand. `handSize` must be no larger than `queues`, and should be significantly smaller (so that a few heavy flows do not saturate most of the queues).  See the user-facing documentation for more extensive guidance on setting this field.  This field has a default value of 8.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.QueuingConfiguration#handSize
-   */
-  readonly handSize?: number;
-
-  /**
-   * `queueLengthLimit` is the maximum number of requests allowed to be waiting in a given queue of this priority level at a time; excess requests are rejected.  This value must be positive.  If not specified, it will be defaulted to 50.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.QueuingConfiguration#queueLengthLimit
-   */
-  readonly queueLengthLimit?: number;
-
-  /**
-   * `queues` is the number of queues for this priority level. The queues exist independently at each apiserver. The value must be positive.  Setting it to 1 effectively precludes shufflesharding and thus makes the distinguisher method of associated flow schemas irrelevant.  This field has a default value of 64.
-   *
-   * @schema io.k8s.api.flowcontrol.v1beta3.QueuingConfiguration#queues
-   */
-  readonly queues?: number;
-
-}
-
-/**
- * Converts an object of type 'QueuingConfigurationV1Beta3' to JSON representation.
- */
-/* eslint-disable max-len, quote-props */
-export function toJson_QueuingConfigurationV1Beta3(obj: QueuingConfigurationV1Beta3 | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'handSize': obj.handSize,
-    'queueLengthLimit': obj.queueLengthLimit,
-    'queues': obj.queues,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceBackendPort is the service port being referenced.
@@ -29459,7 +32415,7 @@ export interface ServiceBackendPort {
 /**
  * Converts an object of type 'ServiceBackendPort' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceBackendPort(obj: ServiceBackendPort | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29469,7 +32425,7 @@ export function toJson_ServiceBackendPort(obj: ServiceBackendPort | undefined): 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HTTPIngressPath associates a path with a backend. Incoming urls matching the path are forwarded to the backend.
@@ -29513,7 +32469,7 @@ export interface HttpIngressPath {
 /**
  * Converts an object of type 'HttpIngressPath' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HttpIngressPath(obj: HttpIngressPath | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29524,7 +32480,7 @@ export function toJson_HttpIngressPath(obj: HttpIngressPath | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * IPBlock describes a particular CIDR (Ex. "192.168.1.0/24","2001:db8::/64") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.
@@ -29551,7 +32507,7 @@ export interface IpBlock {
 /**
  * Converts an object of type 'IpBlock' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_IpBlock(obj: IpBlock | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29561,7 +32517,187 @@ export function toJson_IpBlock(obj: IpBlock | undefined): Record<string, any> | 
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceAttribute must have exactly one field set.
+ *
+ * @schema io.k8s.api.resource.v1alpha3.DeviceAttribute
+ */
+export interface DeviceAttributeV1Alpha3 {
+  /**
+   * BoolValue is a true/false value.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceAttribute#bool
+   */
+  readonly bool?: boolean;
+
+  /**
+   * IntValue is a number.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceAttribute#int
+   */
+  readonly int?: number;
+
+  /**
+   * StringValue is a string. Must not be longer than 64 characters.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceAttribute#string
+   */
+  readonly string?: string;
+
+  /**
+   * VersionValue is a semantic version according to semver.org spec 2.0.0. Must not be longer than 64 characters.
+   *
+   * @schema io.k8s.api.resource.v1alpha3.DeviceAttribute#version
+   */
+  readonly version?: string;
+
+}
+
+/**
+ * Converts an object of type 'DeviceAttributeV1Alpha3' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceAttributeV1Alpha3(obj: DeviceAttributeV1Alpha3 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'bool': obj.bool,
+    'int': obj.int,
+    'string': obj.string,
+    'version': obj.version,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+ *
+ * @schema io.k8s.api.core.v1.NodeSelectorRequirement
+ */
+export interface NodeSelectorRequirement {
+  /**
+   * The label key that the selector applies to.
+   *
+   * @schema io.k8s.api.core.v1.NodeSelectorRequirement#key
+   */
+  readonly key: string;
+
+  /**
+   * Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+   *
+   * @schema io.k8s.api.core.v1.NodeSelectorRequirement#operator
+   */
+  readonly operator: string;
+
+  /**
+   * An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.
+   *
+   * @schema io.k8s.api.core.v1.NodeSelectorRequirement#values
+   */
+  readonly values?: string[];
+
+}
+
+/**
+ * Converts an object of type 'NodeSelectorRequirement' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_NodeSelectorRequirement(obj: NodeSelectorRequirement | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceAttribute must have exactly one field set.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceAttribute
+ */
+export interface DeviceAttributeV1Beta1 {
+  /**
+   * BoolValue is a true/false value.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceAttribute#bool
+   */
+  readonly bool?: boolean;
+
+  /**
+   * IntValue is a number.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceAttribute#int
+   */
+  readonly int?: number;
+
+  /**
+   * StringValue is a string. Must not be longer than 64 characters.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceAttribute#string
+   */
+  readonly string?: string;
+
+  /**
+   * VersionValue is a semantic version according to semver.org spec 2.0.0. Must not be longer than 64 characters.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceAttribute#version
+   */
+  readonly version?: string;
+
+}
+
+/**
+ * Converts an object of type 'DeviceAttributeV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceAttributeV1Beta1(obj: DeviceAttributeV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'bool': obj.bool,
+    'int': obj.int,
+    'string': obj.string,
+    'version': obj.version,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DeviceCapacity describes a quantity associated with a device.
+ *
+ * @schema io.k8s.api.resource.v1beta1.DeviceCapacity
+ */
+export interface DeviceCapacityV1Beta1 {
+  /**
+   * Value defines how much of a certain device capacity is available.
+   *
+   * @schema io.k8s.api.resource.v1beta1.DeviceCapacity#value
+   */
+  readonly value: Quantity;
+
+}
+
+/**
+ * Converts an object of type 'DeviceCapacityV1Beta1' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_DeviceCapacityV1Beta1(obj: DeviceCapacityV1Beta1 | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'value': obj.value?.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * JSONSchemaProps is a JSON-Schema following Specification Draft 4 (http://json-schema.org/).
@@ -29649,7 +32785,7 @@ export interface JsonSchemaProps {
   /**
    * format is an OpenAPI v3 format string. Unknown formats are ignored. The following formats are validated:
    *
-   * - bsonobjectid: a bson object ID, i.e. a 24 characters hex string - uri: an URI as parsed by Golang net/url.ParseRequestURI - email: an email address as parsed by Golang net/mail.ParseAddress - hostname: a valid representation for an Internet host name, as defined by RFC 1034, section 3.1 [RFC1034]. - ipv4: an IPv4 IP as parsed by Golang net.ParseIP - ipv6: an IPv6 IP as parsed by Golang net.ParseIP - cidr: a CIDR as parsed by Golang net.ParseCIDR - mac: a MAC address as parsed by Golang net.ParseMAC - uuid: an UUID that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$ - uuid3: an UUID3 that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?3[0-9a-f]{3}-?[0-9a-f]{4}-?[0-9a-f]{12}$ - uuid4: an UUID4 that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$ - uuid5: an UUID5 that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?5[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$ - isbn: an ISBN10 or ISBN13 number string like "0321751043" or "978-0321751041" - isbn10: an ISBN10 number string like "0321751043" - isbn13: an ISBN13 number string like "978-0321751041" - creditcard: a credit card number defined by the regex ^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$ with any non digit characters mixed in - ssn: a U.S. social security number following the regex ^\d{3}[- ]?\d{2}[- ]?\d{4}$ - hexcolor: an hexadecimal color code like "#FFFFFF: following the regex ^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$ - rgbcolor: an RGB color code like rgb like "rgb(255,255,2559" - byte: base64 encoded binary data - password: any kind of string - date: a date string like "2006-01-02" as defined by full-date in RFC3339 - duration: a duration string like "22 ns" as parsed by Golang time.ParseDuration or compatible with Scala duration format - datetime: a date time string like "2014-12-15T19:30:20.000Z" as defined by date-time in RFC3339.
+   * - bsonobjectid: a bson object ID, i.e. a 24 characters hex string - uri: an URI as parsed by Golang net/url.ParseRequestURI - email: an email address as parsed by Golang net/mail.ParseAddress - hostname: a valid representation for an Internet host name, as defined by RFC 1034, section 3.1 [RFC1034]. - ipv4: an IPv4 IP as parsed by Golang net.ParseIP - ipv6: an IPv6 IP as parsed by Golang net.ParseIP - cidr: a CIDR as parsed by Golang net.ParseCIDR - mac: a MAC address as parsed by Golang net.ParseMAC - uuid: an UUID that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$ - uuid3: an UUID3 that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?3[0-9a-f]{3}-?[0-9a-f]{4}-?[0-9a-f]{12}$ - uuid4: an UUID4 that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$ - uuid5: an UUID5 that allows uppercase defined by the regex (?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?5[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$ - isbn: an ISBN10 or ISBN13 number string like "0321751043" or "978-0321751041" - isbn10: an ISBN10 number string like "0321751043" - isbn13: an ISBN13 number string like "978-0321751041" - creditcard: a credit card number defined by the regex ^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})$ with any non digit characters mixed in - ssn: a U.S. social security number following the regex ^\\d{3}[- ]?\\d{2}[- ]?\\d{4}$ - hexcolor: an hexadecimal color code like "#FFFFFF: following the regex ^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$ - rgbcolor: an RGB color code like rgb like "rgb(255,255,2559" - byte: base64 encoded binary data - password: any kind of string - date: a date string like "2006-01-02" as defined by full-date in RFC3339 - duration: a duration string like "22 ns" as parsed by Golang time.ParseDuration or compatible with Scala duration format - datetime: a date time string like "2014-12-15T19:30:20.000Z" as defined by date-time in RFC3339.
    *
    * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.JSONSchemaProps#format
    */
@@ -29837,7 +32973,7 @@ export interface JsonSchemaProps {
   readonly xKubernetesPreserveUnknownFields?: boolean;
 
   /**
-   * x-kubernetes-validations describes a list of validation rules written in the CEL expression language. This field is an alpha-level. Using this field requires the feature gate `CustomResourceValidationExpressions` to be enabled.
+   * x-kubernetes-validations describes a list of validation rules written in the CEL expression language.
    *
    * @schema io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.JSONSchemaProps#x-kubernetes-validations
    */
@@ -29848,7 +32984,7 @@ export interface JsonSchemaProps {
 /**
  * Converts an object of type 'JsonSchemaProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_JsonSchemaProps(obj: JsonSchemaProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29900,7 +33036,7 @@ export function toJson_JsonSchemaProps(obj: JsonSchemaProps | undefined): Record
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * CustomResourceSubresourceScale defines how to serve the scale subresource for CustomResources.
@@ -29934,7 +33070,7 @@ export interface CustomResourceSubresourceScale {
 /**
  * Converts an object of type 'CustomResourceSubresourceScale' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CustomResourceSubresourceScale(obj: CustomResourceSubresourceScale | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29945,7 +33081,7 @@ export function toJson_CustomResourceSubresourceScale(obj: CustomResourceSubreso
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Selects a key from a ConfigMap.
@@ -29961,7 +33097,7 @@ export interface ConfigMapKeySelector {
   readonly key: string;
 
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.ConfigMapKeySelector#name
    */
@@ -29979,7 +33115,7 @@ export interface ConfigMapKeySelector {
 /**
  * Converts an object of type 'ConfigMapKeySelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapKeySelector(obj: ConfigMapKeySelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -29990,7 +33126,7 @@ export function toJson_ConfigMapKeySelector(obj: ConfigMapKeySelector | undefine
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ObjectFieldSelector selects an APIVersioned field of an object.
@@ -30017,7 +33153,7 @@ export interface ObjectFieldSelector {
 /**
  * Converts an object of type 'ObjectFieldSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ObjectFieldSelector(obj: ObjectFieldSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30027,7 +33163,7 @@ export function toJson_ObjectFieldSelector(obj: ObjectFieldSelector | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ResourceFieldSelector represents container resources (cpu, memory) and their output format
@@ -30061,7 +33197,7 @@ export interface ResourceFieldSelector {
 /**
  * Converts an object of type 'ResourceFieldSelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ResourceFieldSelector(obj: ResourceFieldSelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30072,7 +33208,7 @@ export function toJson_ResourceFieldSelector(obj: ResourceFieldSelector | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SecretKeySelector selects a key of a Secret.
@@ -30088,7 +33224,7 @@ export interface SecretKeySelector {
   readonly key: string;
 
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.SecretKeySelector#name
    */
@@ -30106,7 +33242,7 @@ export interface SecretKeySelector {
 /**
  * Converts an object of type 'SecretKeySelector' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretKeySelector(obj: SecretKeySelector | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30117,7 +33253,7 @@ export function toJson_SecretKeySelector(obj: SecretKeySelector | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SleepAction describes a "sleep" action.
@@ -30137,7 +33273,7 @@ export interface SleepAction {
 /**
  * Converts an object of type 'SleepAction' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SleepAction(obj: SleepAction | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30146,7 +33282,7 @@ export function toJson_SleepAction(obj: SleepAction | undefined): Record<string,
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * HTTPHeader describes a custom header to be used in HTTP probes
@@ -30173,7 +33309,7 @@ export interface HttpHeader {
 /**
  * Converts an object of type 'HttpHeader' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_HttpHeader(obj: HttpHeader | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30183,7 +33319,7 @@ export function toJson_HttpHeader(obj: HttpHeader | undefined): Record<string, a
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ClusterTrustBundleProjection describes how to select a set of ClusterTrustBundle objects and project their contents into the pod filesystem.
@@ -30231,7 +33367,7 @@ export interface ClusterTrustBundleProjection {
 /**
  * Converts an object of type 'ClusterTrustBundleProjection' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ClusterTrustBundleProjection(obj: ClusterTrustBundleProjection | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30244,7 +33380,7 @@ export function toJson_ClusterTrustBundleProjection(obj: ClusterTrustBundleProje
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Adapts a ConfigMap into a projected volume.
@@ -30262,7 +33398,7 @@ export interface ConfigMapProjection {
   readonly items?: KeyToPath[];
 
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.ConfigMapProjection#name
    */
@@ -30280,7 +33416,7 @@ export interface ConfigMapProjection {
 /**
  * Converts an object of type 'ConfigMapProjection' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ConfigMapProjection(obj: ConfigMapProjection | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30291,7 +33427,7 @@ export function toJson_ConfigMapProjection(obj: ConfigMapProjection | undefined)
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Represents downward API info for projecting into a projected volume. Note that this is identical to a downwardAPI volume source without the default mode.
@@ -30311,7 +33447,7 @@ export interface DownwardApiProjection {
 /**
  * Converts an object of type 'DownwardApiProjection' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_DownwardApiProjection(obj: DownwardApiProjection | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30320,7 +33456,7 @@ export function toJson_DownwardApiProjection(obj: DownwardApiProjection | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Adapts a secret into a projected volume.
@@ -30338,7 +33474,7 @@ export interface SecretProjection {
   readonly items?: KeyToPath[];
 
   /**
-   * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   * Name of the referent. This field is effectively required, but due to backwards compatibility is allowed to be empty. Instances of this type with an empty value here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
    *
    * @schema io.k8s.api.core.v1.SecretProjection#name
    */
@@ -30356,7 +33492,7 @@ export interface SecretProjection {
 /**
  * Converts an object of type 'SecretProjection' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecretProjection(obj: SecretProjection | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30367,7 +33503,7 @@ export function toJson_SecretProjection(obj: SecretProjection | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ServiceAccountTokenProjection represents a projected service account token volume. This projection can be used to insert a service account token into the pods runtime filesystem for use against APIs (Kubernetes API Server or otherwise).
@@ -30402,7 +33538,7 @@ export interface ServiceAccountTokenProjection {
 /**
  * Converts an object of type 'ServiceAccountTokenProjection' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ServiceAccountTokenProjection(obj: ServiceAccountTokenProjection | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30413,7 +33549,7 @@ export function toJson_ServiceAccountTokenProjection(obj: ServiceAccountTokenPro
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ExternalDocumentation allows referencing an external resource for extended documentation.
@@ -30436,7 +33572,7 @@ export interface ExternalDocumentation {
 /**
  * Converts an object of type 'ExternalDocumentation' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ExternalDocumentation(obj: ExternalDocumentation | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30446,7 +33582,7 @@ export function toJson_ExternalDocumentation(obj: ExternalDocumentation | undefi
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * ValidationRule describes a validation rule written in the CEL expression language.
@@ -30539,7 +33675,7 @@ export interface ValidationRule {
 /**
  * Converts an object of type 'ValidationRule' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_ValidationRule(obj: ValidationRule | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -30553,5 +33689,5 @@ export function toJson_ValidationRule(obj: ValidationRule | undefined): Record<s
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
