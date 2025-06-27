@@ -356,7 +356,7 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
     const configPath = path.join(dir, "config.yaml");
     await writeFile(configPath, content);
     cmd = [
-      "talosct",
+      "talosctl",
       `--nodes=node-${node}.cluster.bulia`,
       "apply-config",
       `--file=${configPath}`,
@@ -382,8 +382,8 @@ async function talosBootstrap(node: string) {
   const configPatch = parse((await readFile(configPatchPath)).toString());
 
   const role = configPatch["machine"]["env"]["ROLE"];
-  if (role !== "control-plane") {
-    throw new Error(`node ${node} does not have 'control-plane' role.`);
+  if (role !== "controlplane") {
+    throw new Error(`node ${node} does not have 'controlplane' role.`);
   }
 
   let cmd = ["talosctl", `--nodes=node-${node}.cluster.bulia`, "bootstrap"];
@@ -406,7 +406,7 @@ async function talosDownload() {
 /**
  * Obtains the administrative kubeconfig for a talos cluster via the given node
  */
-async function talosGenerateConfig() {
+async function talosGenerateTalosconfig() {
   const secretsPath = talosCloudFiles["talos/secrets.yaml"];
 
   const cmd = [
@@ -625,21 +625,20 @@ async function generateResources(
     .description("download talos config files from cloud storage")
     .action(talosDownload);
   cmdTalos
-    .command("generate-config")
-    .description(
-      "generates talos config files used to initialize a new cluster"
-    )
-    .action(talosGenerateConfig);
-  cmdTalos
     .command("generate-secrets")
     .description(
       "generates talos secret files used to initialize a new cluster"
     )
     .action(talosGenerateSecrets);
   cmdTalos
-    .command("kubeconfig")
+    .command("generate-kubeconfig")
     .description("obtain kubeconfig from talos cluster")
+    .argument("node")
     .action(talosGenerateKubeconfig);
+  cmdTalos
+    .command("generate-talosconfig")
+    .description("generates the talosconfig file for this cluster")
+    .action(talosGenerateTalosconfig);
   cmdTalos
     .command("upgrade")
     .description(
