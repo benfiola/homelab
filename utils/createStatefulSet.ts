@@ -1,5 +1,5 @@
 import { Chart } from "cdk8s";
-import { Quantity, StatefulSet } from "../resources/k8s/k8s";
+import { StatefulSet } from "../resources/k8s/k8s";
 import {
   Container,
   convertContainer,
@@ -20,14 +20,14 @@ type VolumeClaimTemplateMap = { [k: string]: string };
 const convertVolumeClaimTemplateMap = (
   volumeTemplateMap: VolumeClaimTemplateMap
 ): any => {
-  return Object.entries(volumeTemplateMap).map(([name, size], index) => {
+  return Object.entries(volumeTemplateMap).map(([name, size]) => {
     return {
       metadata: { name },
       spec: {
         accessModes: ["ReadWriteOnce"],
         resources: {
           requests: {
-            storage: Quantity.fromString(size),
+            storage: size,
           },
         },
         storageClassName: getStorageClassName(),
