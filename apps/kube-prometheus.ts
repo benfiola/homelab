@@ -71,7 +71,7 @@ const manifests: ManifestsCallback = async (app) => {
       from: { pod: "kube-prometheus-grafana" },
       to: {
         dns: "grafana.com",
-        ports: [[6443, "tcp"]],
+        ports: [[443, "tcp"]],
       },
     },
     {
