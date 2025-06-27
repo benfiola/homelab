@@ -16,7 +16,7 @@ import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLab
 const chartData = {
   chart: "sealed-secrets",
   repo: "https://bitnami-labs.github.io/sealed-secrets",
-  version: "2.15.3",
+  version: "2.17.3",
 };
 
 const baseValues = {

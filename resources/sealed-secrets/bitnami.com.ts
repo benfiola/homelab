@@ -4,7 +4,9 @@ import { Construct } from 'constructs';
 
 
 /**
- * SealedSecret is the K8s representation of a "sealed Secret" - a regular k8s Secret that has been sealed (encrypted) using the controller's key.
+ * SealedSecret is the K8s representation of a "sealed Secret" - a
+regular k8s Secret that has been sealed (encrypted) using the
+controller's key.
  *
  * @schema SealedSecret
  */
@@ -58,7 +60,9 @@ export class SealedSecret extends ApiObject {
 }
 
 /**
- * SealedSecret is the K8s representation of a "sealed Secret" - a regular k8s Secret that has been sealed (encrypted) using the controller's key.
+ * SealedSecret is the K8s representation of a "sealed Secret" - a
+ * regular k8s Secret that has been sealed (encrypted) using the
+ * controller's key.
  *
  * @schema SealedSecret
  */
@@ -69,7 +73,7 @@ export interface SealedSecretProps {
   readonly metadata?: ApiObjectMetadata;
 
   /**
-   * SealedSecretSpec is the specification of a SealedSecret
+   * SealedSecretSpec is the specification of a SealedSecret.
    *
    * @schema SealedSecret#spec
    */
@@ -80,7 +84,7 @@ export interface SealedSecretProps {
 /**
  * Converts an object of type 'SealedSecretProps' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SealedSecretProps(obj: SealedSecretProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -90,10 +94,10 @@ export function toJson_SealedSecretProps(obj: SealedSecretProps | undefined): Re
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * SealedSecretSpec is the specification of a SealedSecret
+ * SealedSecretSpec is the specification of a SealedSecret.
  *
  * @schema SealedSecretSpec
  */
@@ -111,7 +115,8 @@ export interface SealedSecretSpec {
   readonly encryptedData: { [key: string]: string };
 
   /**
-   * Template defines the structure of the Secret that will be created from this sealed secret.
+   * Template defines the structure of the Secret that will be
+   * created from this sealed secret.
    *
    * @schema SealedSecretSpec#template
    */
@@ -122,7 +127,7 @@ export interface SealedSecretSpec {
 /**
  * Converts an object of type 'SealedSecretSpec' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SealedSecretSpec(obj: SealedSecretSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -133,23 +138,35 @@ export function toJson_SealedSecretSpec(obj: SealedSecretSpec | undefined): Reco
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Template defines the structure of the Secret that will be created from this sealed secret.
+ * Template defines the structure of the Secret that will be
+ * created from this sealed secret.
  *
  * @schema SealedSecretSpecTemplate
  */
 export interface SealedSecretSpecTemplate {
   /**
-   * Keys that should be templated using decrypted data
+   * Keys that should be templated using decrypted data.
    *
    * @schema SealedSecretSpecTemplate#data
    */
   readonly data?: { [key: string]: string };
 
   /**
-   * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+   * Immutable, if set to true, ensures that data stored in the Secret cannot
+   * be updated (only object metadata can be modified).
+   * If not set to true, the field can be modified at any time.
+   * Defaulted to nil.
+   *
+   * @schema SealedSecretSpecTemplate#immutable
+   */
+  readonly immutable?: boolean;
+
+  /**
+   * Standard object's metadata.
+   * More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
    *
    * @schema SealedSecretSpecTemplate#metadata
    */
@@ -162,34 +179,28 @@ export interface SealedSecretSpecTemplate {
    */
   readonly type?: string;
 
-  /**
-   * Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified). If not set to true, the field can be modified at any time. Defaulted to nil.
-   *
-   * @schema SealedSecretSpecTemplate#immutable
-   */
-  readonly immutable?: boolean;
-
 }
 
 /**
  * Converts an object of type 'SealedSecretSpecTemplate' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SealedSecretSpecTemplate(obj: SealedSecretSpecTemplate | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'data': ((obj.data) === undefined) ? undefined : (Object.entries(obj.data).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'immutable': obj.immutable,
     'metadata': toJson_SealedSecretSpecTemplateMetadata(obj.metadata),
     'type': obj.type,
-    'immutable': obj.immutable,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+ * Standard object's metadata.
+ * More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
  *
  * @schema SealedSecretSpecTemplateMetadata
  */
@@ -224,7 +235,7 @@ export interface SealedSecretSpecTemplateMetadata {
 /**
  * Converts an object of type 'SealedSecretSpecTemplateMetadata' to JSON representation.
  */
-/* eslint-disable max-len, quote-props */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SealedSecretSpecTemplateMetadata(obj: SealedSecretSpecTemplateMetadata | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
@@ -237,5 +248,5 @@ export function toJson_SealedSecretSpecTemplateMetadata(obj: SealedSecretSpecTem
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
-/* eslint-enable max-len, quote-props */
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 

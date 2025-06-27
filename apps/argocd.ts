@@ -20,7 +20,7 @@ import { parseEnv } from "../utils/parseEnv";
 const appData = {
   chart: "argo-cd",
   repo: "https://argoproj.github.io/argo-helm",
-  version: "6.9.3",
+  version: "8.1.1",
 };
 
 const baseValues = {
