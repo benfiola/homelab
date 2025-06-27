@@ -122,7 +122,7 @@ const manifests: ManifestsCallback = async (app) => {
       },
       storagePools: [
         {
-          name: "lvm-thin",
+          name: "piraeus",
           lvmThinPool: { volumeGroup: "vg", thinPool: "piraeus" },
         },
       ],
@@ -130,25 +130,25 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new StorageClass(chart, "storage-class", {
-    metadata: { name: "lvm-thin" },
+    metadata: { name: "piraeus" },
     provisioner: "linstor.csi.linbit.com",
     allowVolumeExpansion: true,
     volumeBindingMode: "WaitForFirstConsumer",
     parameters: {
       autoPlace: "2",
-      storagePool: "lvm-thin",
+      storagePool: "piraeus",
       "csi.storage.k8s.io/fstype": "ext4",
     },
   });
 
   new StorageClass(chart, "backup-storage-class", {
-    metadata: { name: "lvm-thin-backup" },
+    metadata: { name: "piraeus-backup" },
     provisioner: "linstor.csi.linbit.com",
     allowVolumeExpansion: true,
     volumeBindingMode: "WaitForFirstConsumer",
     parameters: {
       autoPlace: "1",
-      storagePool: "lvm-thin",
+      storagePool: "piraeus",
       "csi.storage.k8s.io/fstype": "ext4",
     },
   });
