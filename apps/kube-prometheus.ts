@@ -332,6 +332,8 @@ const manifests: ManifestsCallback = async (app) => {
           hosts: ["grafana.bulia"],
           ingressClassName: getIngressClassName(),
         },
+        // resources for grafana
+        resources: getPodRequests({ mem: 500 }),
         sidecar: {
           dashboards: {
             // enable dashboard discovery
@@ -348,7 +350,7 @@ const manifests: ManifestsCallback = async (app) => {
             searchNamespace: "ALL",
           },
           // resources for sidecars
-          resources: getPodRequests({ mem: 10000 }),
+          resources: getPodRequests({ mem: 1000 }),
         },
       },
       kubeControllerManager: {
