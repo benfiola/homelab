@@ -91,7 +91,7 @@ const baseValues = {
     // value recommended by argocd ha instructions
     replicas: 2,
     // increase requests for repo-server workloads
-    resources: getPodRequests({ cpu: 200, mem: 200 }),
+    resources: getPodRequests({ cpu: 200, mem: 300 }),
   },
   server: {
     // value recommended by argocd ha instructions
