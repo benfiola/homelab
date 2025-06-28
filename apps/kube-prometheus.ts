@@ -349,8 +349,6 @@ const manifests: ManifestsCallback = async (app) => {
             // search all namespaces for annotated dashboards
             searchNamespace: "ALL",
           },
-          // resources for sidecars
-          resources: getPodRequests({ mem: 200 }),
         },
       },
       kubeControllerManager: {
