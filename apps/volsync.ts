@@ -42,7 +42,7 @@ const manifests: ManifestsCallback = async (app) => {
 
   createNetworkPolicy(chart, (b) => {
     const googleApis = b.target({
-      dns: "*.googleapis.copm",
+      dns: "*.googleapis.com",
       ports: { default: [443, "tcp"] },
     });
 
@@ -243,7 +243,7 @@ const restoreToPvc = async (src: string, opts: RestoreToPvcOpts) => {
           runAsUser: user,
           seccompProfile: { type: "RuntimeDefault" },
         },
-        repository: name,
+        repository: `restic-${name}`,
         restoreAsOf: {
           toJSON: () => "",
           toISOString: () => before.toISOString(),
