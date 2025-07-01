@@ -31,7 +31,7 @@ export type PortsMap = Record<string, SomePort[] | SomePort>;
  * BaseTarget defines common fields between all targets.
  */
 interface BaseTarget<PM extends PortsMap> {
-  ports: PM;
+  ports?: PM;
 }
 
 /**
@@ -235,8 +235,15 @@ const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
   dst: Dst,
   ...portKeys: TargetPortKeys<Dst>[]
 ) => {
+  if (!dst.ports) {
+    throw new Error(`no ports in dst target: ${JSON.stringify(dst)}`);
+  }
   if (portKeys.length === 0) {
-    portKeys.push("default");
+    const keys = Object.keys(dst.ports) as TargetPortKeys<Dst>[];
+    if (keys.length > 1) {
+      throw new Error(`ambiguous default port: ${JSON.stringify(dst)}`);
+    }
+    portKeys.push(keys[0]);
   }
 
   const ports: SomePort[] = [];
