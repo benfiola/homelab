@@ -6,25 +6,32 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 
-const appData = {
+const helmData = {
   chart: "trust-manager",
   repo: "https://charts.jetstack.io",
   version: "v0.18.0",
 };
 
-const manifests: ManifestsCallback = async (app) => {
-  const chart = new Chart(app, "trust-manager", { namespace: "trust-manager" });
+const namespace = "trust-manager";
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "trust-manager" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-  ]);
+const policyTargets = createTargets((b) => ({
+  controller: b.pod(namespace, "trust-manager"),
+}));
+
+const manifests: ManifestsCallback = async (app) => {
+  const chart = new Chart(app, "trust-manager", { namespace });
+
+  createNetworkPolicy(chart, (b) => {
+    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -33,7 +40,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -56,7 +63,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 const resources: ResourcesCallback = async (path) => {
-  const manifest = await exec([...getHelmTemplateCommand(appData)]);
+  const manifest = await exec([...getHelmTemplateCommand(helmData)]);
   await writeFile(path, manifest);
 };
 
