@@ -13,33 +13,42 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getPodLabels } from "../utils/getPodLabels";
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { temporaryDirectory } from "../utils/temporaryDirectory";
 
-const appData = {
+const helmData = {
   chart: "volsync",
   repo: "https://backube.github.io/helm-charts",
   version: "0.12.1",
 };
 
+const namespace = "volsync";
+
+const policyTargets = createTargets((b) => ({
+  controller: b.pod(namespace, "volsync"),
+  mover: b.pod(null, "volsync-mover"),
+}));
+
 const manifests: ManifestsCallback = async (app) => {
-  const chart = new Chart(app, "volsync", { namespace: "volsync" });
+  const chart = new Chart(app, "volsync", { namespace });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "volsync" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const googleApis = b.target({
+      dns: "*.googleapis.copm",
+      ports: { default: [443, "tcp"] },
+    });
 
-    {
-      from: { externalPod: ["*", "volsync-mover"] },
-      to: { dns: "*.googleapis.com", ports: [[443, "tcp"]] },
-    },
-  ]);
+    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
+    b.rule(policyTargets.mover, googleApis);
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -48,7 +57,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     releaseName: "volsync",
     helmFlags: ["--include-crds"],
@@ -58,7 +67,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 const resources: ResourcesCallback = async (manifestFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData));
+  const manifest = await exec(getHelmTemplateCommand(helmData));
   await writeFile(manifestFile, manifest);
 };
 

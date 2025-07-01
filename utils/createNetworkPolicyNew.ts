@@ -248,10 +248,14 @@ const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
       );
     }
 
-    if (Array.isArray(val)) {
+    if (val.length === 0) {
+      continue;
+    }
+
+    if (Array.isArray(val[0])) {
       ports.push(...(val as SomePort[]));
     } else {
-      ports.push(val);
+      ports.push(val as SomePort);
     }
   }
 
@@ -263,6 +267,7 @@ const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
  */
 interface NetworkPolicyBuilder {
   rule: typeof createRule;
+  target: typeof createTarget;
 }
 
 /**
@@ -274,11 +279,10 @@ type NetworkPolicyCallback = (b: NetworkPolicyBuilder) => void;
  * Helper method to create a network policy with the given rule list.
  *
  * @param chart the chart to attach the k8s resource to
- * @param name the name of the network policy resource.  used to derive the cdk8s resource id.
  * @param rules the list of rules that belong to the network policy
  * @returns a CiliumClusterwideNetworkPolicy resource
  */
-const _createNetworkPolicy = (chart: Chart, name: string, rules: Rule[]) => {
+const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
   let specs: any = [];
 
   rules.map((rule) => {
@@ -311,7 +315,7 @@ const _createNetworkPolicy = (chart: Chart, name: string, rules: Rule[]) => {
     const dst = rule[1];
 
     if (isEndpointTarget(src)) {
-      let egress: any = {};
+      let egress: any = { toPorts: [{ ports }] };
       const spec = {
         egress: [egress],
         endpointSelector: { matchLabels: src.endpoint },
@@ -320,7 +324,7 @@ const _createNetworkPolicy = (chart: Chart, name: string, rules: Rule[]) => {
       if (isCidrTarget(dst)) {
         egress["toCIDR"] = [dst.cidr];
       } else if (isDnsTarget(dst)) {
-        egress["toFQDNs"] = [{ matchPattern: dst.dns }];
+        egress["toFqdNs"] = [{ matchPattern: dst.dns }];
       } else if (isEndpointTarget(dst)) {
         egress["toEndpoints"] = [{ matchLabels: dst.endpoint }];
       } else if (isEntityTarget(dst)) {
@@ -333,7 +337,7 @@ const _createNetworkPolicy = (chart: Chart, name: string, rules: Rule[]) => {
     }
 
     if (isEndpointTarget(dst)) {
-      let ingress: any = {};
+      let ingress: any = { toPorts: [{ ports }] };
       const spec = {
         endpointSelector: { matchLabels: dst.endpoint },
         ingress: [ingress],
@@ -353,20 +357,22 @@ const _createNetworkPolicy = (chart: Chart, name: string, rules: Rule[]) => {
     }
   });
 
-  return new CiliumClusterwideNetworkPolicy(chart, name, specs);
+  const name = chart.namespace;
+  return new CiliumClusterwideNetworkPolicy(chart, `netpol-${name}`, {
+    metadata: { name },
+    specs,
+  });
 };
 
 /**
  * Helper method that exposes a builder allowing for simpler creation of network policy resources.
  *
  * @param chart the chart to attach the k8s resource to
- * @param name the name of the network policy resource.  used to derive the cdk8s resource id.
  * @param cb the callback invoked with a builder used to create network policy rules
  * @returns a CiliumClusterwideNetworkPolicy resource
  */
 export const createNetworkPolicy = (
   chart: Chart,
-  name: string,
   cb: NetworkPolicyCallback
 ) => {
   const rules: Rule[] = [];
@@ -376,9 +382,10 @@ export const createNetworkPolicy = (
       rules.push(rule);
       return rule;
     },
+    target: createTarget,
   };
   cb(builder);
-  return _createNetworkPolicy(chart, name, rules);
+  return _createNetworkPolicy(chart, rules);
 };
 
 export const specialTargets = createTargets((b) => ({
