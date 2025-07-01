@@ -6,38 +6,43 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 
-const appData = {
+const helmData = {
   chart: "snapshot-controller",
   repo: "https://piraeus.io/helm-charts/",
   version: "4.1.0",
 };
+
+const namespace = "snapshot-controller";
+
+const policyTargets = createTargets((b) => ({
+  controller: b.pod(namespace, "snapshot-controller"),
+  webhook: b.pod(namespace, "snapshot-validation-webhook"),
+}));
 
 const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "snapshot-controller", {
     namespace: "snapshot-controller",
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "snapshot-controller" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "snapshot-validation-webhook" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-  ]);
+  createNetworkPolicy(chart, (b) => {
+    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
+    b.rule(policyTargets.webhook, specialTargets.kubeApiserver);
+  });
 
   new Namespace(chart, "namespace", {
     metadata: { name: chart.namespace },
   });
 
   new Helm(chart, "helm-operator", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     releaseName: "snapshot-controller",
     helmFlags: ["--include-crds"],
@@ -47,7 +52,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 export const resources: ResourcesCallback = async (manifestsFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData));
+  const manifest = await exec(getHelmTemplateCommand(helmData));
   await writeFile(manifestsFile, manifest);
 };
 
