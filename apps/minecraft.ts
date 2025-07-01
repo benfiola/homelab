@@ -7,7 +7,10 @@ import { createMinioBucket } from "../utils/createMinioBucket";
 import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+} from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createStatefulSet } from "../utils/createStatefulSet";
@@ -17,42 +20,44 @@ import { getMinioUrl } from "../utils/getMinioUrl";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
 
+const namespace = "minecraft";
+
+const policyTargets = createTargets((b) => ({
+  server: b.pod(namespace, "minecraft", { default: [25565, "any"] }),
+}));
+
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: minioTargets } = await import("./minio");
+
   const env = parseEnv((zod) => ({
     MINECRAFT_ACCESS_PASSWORD: zod.string(),
     MINECRAFT_MINIO_SECRET_KEY: zod.string(),
   }));
 
   const chart = new Chart(app, "minecraft", {
-    namespace: "minecraft",
+    namespace,
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "minecraft" },
-      to: { dns: "*.mojang.com", ports: [[443, "tcp"]] },
-    },
-    {
-      from: { pod: "minecraft" },
-      to: { dns: "*.googleapis.com", ports: [[443, "tcp"]] },
-    },
-    {
-      from: { pod: "minecraft" },
-      to: { dns: "*.fabricmc.net", ports: [[443, "tcp"]] },
-    },
-    {
-      from: { pod: "minecraft" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-
-    {
-      from: { homeNetwork: null },
-      to: { pod: "minecraft", ports: [[25565, "any"]] },
-    },
-  ]);
+  createNetworkPolicy(chart, (b) => {
+    const homeNetwork = b.target({ cidr: "192.168.0.0/16", ports: {} });
+    const mojang = b.target({
+      dns: "*.mojang.com",
+      ports: { default: [443, "tcp"] },
+    });
+    const googleApis = b.target({
+      dns: "*.googleapis.com",
+      ports: { default: [443, "tcp"] },
+    });
+    const fabric = b.target({
+      dns: "*.fabricmc.net",
+      ports: { default: [443, "tcp"] },
+    });
+    b.rule(homeNetwork, policyTargets.server);
+    b.rule(policyTargets.server, fabric);
+    b.rule(policyTargets.server, googleApis);
+    b.rule(policyTargets.server, minioTargets.tenant);
+    b.rule(policyTargets.server, mojang);
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {

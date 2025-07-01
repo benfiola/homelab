@@ -45,12 +45,12 @@ const helmData = {
 
 const namespace = "minio";
 
-const policyTargets = createTargets((b) => ({
+export const policyTargets = createTargets((b) => ({
   operator: b.pod(namespace, "minio-operator"),
   operatorExt: b.pod(namespace, "minio-operator-ext"),
   tenant: b.pod(namespace, "minio-tenant", {
     default: [9000, "tcp"],
-    web: [9090, "tcp"],
+    console: [9090, "tcp"],
   }),
 }));
 
@@ -63,7 +63,7 @@ const manifests: ManifestsCallback = async (app) => {
 
   createNetworkPolicy(chart, (b) => {
     const ingress = b.target({ entity: "ingress", ports: {} });
-    b.rule(ingress, policyTargets.tenant, "default", "web");
+    b.rule(ingress, policyTargets.tenant, "default", "console");
     b.rule(policyTargets.operator, policyTargets.tenant);
     b.rule(policyTargets.operator, specialTargets.kubeApiserver);
     b.rule(policyTargets.operatorExt, policyTargets.tenant);
