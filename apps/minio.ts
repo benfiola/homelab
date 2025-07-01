@@ -6,7 +6,12 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {} from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -15,7 +20,7 @@ import { getPodRequests } from "../utils/getPodRequests";
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
 
-const appData = {
+const helmData = {
   operator: {
     chart: "operator",
     repo: "https://operator.min.io",
@@ -38,57 +43,41 @@ const appData = {
   },
 };
 
+const namespace = "minio";
+
+const policyTargets = createTargets((b) => ({
+  operator: b.pod(namespace, "minio-operator"),
+  operatorExt: b.pod(namespace, "minio-operator-ext"),
+  tenant: b.pod(namespace, "minio-tenant", {
+    default: [9000, "tcp"],
+    web: [9090, "tcp"],
+  }),
+}));
+
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     MINIO_TENANT_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "minio", { namespace: "minio" });
+  const chart = new Chart(app, "minio", { namespace });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "minio-operator" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "minio-operator-ext" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "minio-tenant" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-
-    {
-      from: { entity: "ingress" },
-      to: {
-        pod: "minio-tenant",
-        ports: [
-          [9000, "tcp"],
-          [9090, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "minio-operator" },
-      to: { pod: "minio-tenant", ports: [[9000, "tcp"]] },
-    },
-    {
-      from: { pod: "minio-operator-ext" },
-      to: { pod: "minio-tenant", ports: [[9000, "tcp"]] },
-    },
-    {
-      from: { pod: "minio-tenant" },
-      to: { pod: "minio-tenant", ports: [[9000, "tcp"]] },
-    },
-  ]);
+  createNetworkPolicy(chart, (b) => {
+    const ingress = b.target({ entity: "ingress", ports: {} });
+    b.rule(ingress, policyTargets.tenant, "default", "web");
+    b.rule(policyTargets.operator, policyTargets.tenant);
+    b.rule(policyTargets.operator, specialTargets.kubeApiserver);
+    b.rule(policyTargets.operatorExt, policyTargets.tenant);
+    b.rule(policyTargets.operatorExt, specialTargets.kubeApiserver);
+    b.rule(policyTargets.tenant, policyTargets.tenant);
+    b.rule(policyTargets.tenant, specialTargets.kubeApiserver);
+  });
 
   new Namespace(chart, "namespace", {
     metadata: { name: chart.namespace },
   });
 
   new Helm(chart, "helm-operator", {
-    ...appData.operator,
+    ...helmData.operator,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -110,7 +99,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm-tenant", {
-    ...appData.tenant,
+    ...helmData.tenant,
     namespace: chart.namespace,
     values: {
       ingress: {
@@ -169,13 +158,13 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "minio-operator-ext-crds", {
-    ...appData.operatorExtCrds,
+    ...helmData.operatorExtCrds,
     namespace: chart.namespace,
     values: {},
   });
 
   new Helm(chart, "minio-operator-ext", {
-    ...appData.operatorExt,
+    ...helmData.operatorExt,
     namespace: chart.namespace,
     values: {
       // give all resources a static prefix
@@ -190,8 +179,8 @@ const manifests: ManifestsCallback = async (app) => {
 
 const resources: ResourcesCallback = async (manifestsFile) => {
   const manifest = [
-    await exec(getHelmTemplateCommand(appData.operator)),
-    await exec(getHelmTemplateCommand(appData.operatorExtCrds)),
+    await exec(getHelmTemplateCommand(helmData.operator)),
+    await exec(getHelmTemplateCommand(helmData.operatorExtCrds)),
   ].join("\n");
   await writeFile(manifestsFile, manifest);
 };

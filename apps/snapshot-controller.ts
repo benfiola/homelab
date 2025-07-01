@@ -29,7 +29,7 @@ const policyTargets = createTargets((b) => ({
 
 const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "snapshot-controller", {
-    namespace: "snapshot-controller",
+    namespace,
   });
 
   createNetworkPolicy(chart, (b) => {

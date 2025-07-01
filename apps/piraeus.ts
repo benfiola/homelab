@@ -18,6 +18,7 @@ const appData = {
   version: "2.9.0",
 };
 
+// NOTE: do not change this - it's baked into the manifest that installs the operator
 const namespace = "piraeus-datastore";
 
 const policyTargets = createTargets((b) => {
@@ -52,8 +53,7 @@ const manifests: ManifestsCallback = async (app) => {
   const { LinstorCluster } = await import("../resources/piraeus/piraeus.io");
 
   const chart = new Chart(app, "piraeus", {
-    // NOTE: do not change this - it's baked into the manifest that installs the operator
-    namespace: "piraeus-datastore",
+    namespace,
   });
 
   createNetworkPolicy(chart, (b) => {

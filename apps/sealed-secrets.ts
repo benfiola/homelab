@@ -38,7 +38,7 @@ const baseValues = {
 
 const bootstrap: BootstrapCallback = async (app) => {
   const chart = new Chart(app, "sealed-secrets", {
-    namespace: "sealed-secrets",
+    namespace,
   });
 
   new Namespace(chart, "namespace", {
@@ -62,7 +62,7 @@ const bootstrap: BootstrapCallback = async (app) => {
 
 const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "sealed-secrets", {
-    namespace: "sealed-secrets",
+    namespace,
   });
 
   createNetworkPolicy(chart, (b) => {
