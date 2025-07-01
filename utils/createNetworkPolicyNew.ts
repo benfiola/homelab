@@ -25,7 +25,7 @@ type SomePort = Port | PortRange;
 /**
  * PortsMap represents a labelled port collection as stored within a Target.
  */
-type PortsMap = Record<string, SomePort[] | SomePort>;
+export type PortsMap = Record<string, SomePort[] | SomePort>;
 
 /**
  * BaseTarget defines common fields between all targets.

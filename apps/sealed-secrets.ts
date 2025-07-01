@@ -8,16 +8,26 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLabels";
 
-const chartData = {
+const helmData = {
   chart: "sealed-secrets",
   repo: "https://bitnami-labs.github.io/sealed-secrets",
   version: "2.17.3",
 };
+
+const namespace = "sealed-secrets";
+
+const policyTargets = createTargets((b) => ({
+  controller: b.pod(namespace, "sealed-secrets", { default: [8080, "tcp"] }),
+}));
 
 const baseValues = {
   // give all resources a static prefix
@@ -39,7 +49,7 @@ const bootstrap: BootstrapCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...chartData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -55,17 +65,11 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: "sealed-secrets",
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "sealed-secrets" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-
-    {
-      from: { entity: "remote-node" },
-      to: { pod: "sealed-secrets", ports: [[8080, "tcp"]] },
-    },
-  ]);
+  createNetworkPolicy(chart, (b) => {
+    const remoteNode = b.target({ entity: "remote-node", ports: {} });
+    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
+    b.rule(remoteNode, policyTargets.controller);
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -77,7 +81,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...chartData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -89,7 +93,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 const resources: ResourcesCallback = async (manifestFile) => {
-  const manifest = await exec(getHelmTemplateCommand(chartData));
+  const manifest = await exec(getHelmTemplateCommand(helmData));
   await writeFile(manifestFile, manifest);
 };
 

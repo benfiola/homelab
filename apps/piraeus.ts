@@ -7,11 +7,46 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  PortsMap,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 
 const appData = {
   version: "2.9.0",
 };
+
+const namespace = "piraeus-datastore";
+
+const policyTargets = createTargets((b) => {
+  const piraeus = <PM extends PortsMap>(component: string, ports?: PM) => {
+    return b.target({
+      endpoint: {
+        "app.kubernetes.io/component": component,
+        "io.kubernetes.pod.namespace": namespace,
+        "app.kubernetes.io/name": "piraeus-datastore",
+      },
+      ports: (ports || {}) as PM,
+    });
+  };
+
+  return {
+    gencert: piraeus("piraeus-operator-gencert"),
+    haController: piraeus("ha-controller", { default: [3370, "tcp"] }),
+    linstorController: piraeus("linstor-controller", {
+      default: [3370, "tcp"],
+    }),
+    linstorCsiController: piraeus("linstor-csi-controller"),
+    linstorCsiNode: piraeus("linstor-csi-node"),
+    linstorSatellite: piraeus("linstor-satellite", {
+      default: [3366, 3367, "tcp"],
+      drbd: [7000, 7999, "tcp"],
+    }),
+    operator: piraeus("piraeus-operator", { default: [9443, "tcp"] }),
+  };
+});
 
 const manifests: ManifestsCallback = async (app) => {
   const { LinstorCluster } = await import("../resources/piraeus/piraeus.io");
@@ -21,64 +56,25 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: "piraeus-datastore",
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { piraeus: "ha-controller" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { piraeus: "linstor-controller" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { piraeus: "linstor-csi-controller" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { piraeus: "piraeus-operator" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { piraeus: "piraeus-operator-gencert" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-
-    {
-      from: { piraeus: "linstor-controller" },
-      to: { piraeus: "ha-controller", ports: [[3370, "tcp"]] },
-    },
-    {
-      from: { piraeus: "linstor-csi-node" },
-      to: { piraeus: "linstor-controller", ports: [[3370, "tcp"]] },
-    },
-    {
-      from: { piraeus: "linstor-csi-controller" },
-      to: { piraeus: "linstor-controller", ports: [[3370, "tcp"]] },
-    },
-    {
-      from: { piraeus: "piraeus-operator" },
-      to: { piraeus: "linstor-controller", ports: [[3370, "tcp"]] },
-    },
-    {
-      from: { piraeus: "linstor-controller" },
-      to: { piraeus: "linstor-satellite", ports: [[3366, "tcp"]] },
-    },
-    {
-      from: { piraeus: "linstor-satellite" },
-      to: {
-        piraeus: "linstor-satellite",
-        ports: [[[7000, 7999], "tcp"]],
-      },
-    },
-
-    {
-      from: { entity: "remote-node" },
-      to: {
-        piraeus: "piraeus-operator",
-        ports: [[9443, "tcp"]],
-      },
-    },
-  ]);
+  createNetworkPolicy(chart, (b) => {
+    const remoteNode = b.target({ entity: "remote-node", ports: {} });
+    b.rule(policyTargets.gencert, specialTargets.kubeApiserver);
+    b.rule(policyTargets.haController, specialTargets.kubeApiserver);
+    b.rule(policyTargets.linstorController, specialTargets.kubeApiserver);
+    b.rule(policyTargets.linstorController, policyTargets.haController);
+    b.rule(policyTargets.linstorController, policyTargets.linstorSatellite);
+    b.rule(policyTargets.linstorCsiController, specialTargets.kubeApiserver);
+    b.rule(policyTargets.linstorCsiController, policyTargets.linstorController);
+    b.rule(policyTargets.linstorCsiNode, policyTargets.linstorController);
+    b.rule(
+      policyTargets.linstorSatellite,
+      policyTargets.linstorSatellite,
+      "drbd"
+    );
+    b.rule(policyTargets.operator, specialTargets.kubeApiserver);
+    b.rule(policyTargets.operator, policyTargets.linstorController);
+    b.rule(remoteNode, policyTargets.operator);
+  });
 
   new Include(chart, "manifest", {
     url: `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${appData.version}/manifest.yaml`,
