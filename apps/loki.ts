@@ -14,8 +14,6 @@ import {
 import { getPodRequests } from "../utils/getPodRequests";
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
-import { policyTargets as promTargets } from "./kube-prometheus";
-import { policyTargets as minioTargets } from "./minio";
 
 const helmData = {
   chart: "loki",
@@ -46,6 +44,9 @@ export const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: promTargets } = await import("./kube-prometheus");
+  const { policyTargets: minioTargets } = await import("./minio");
+
   const env = parseEnv((zod) => ({
     LOKI_MINIO_SECRET_KEY: zod.string(),
   }));

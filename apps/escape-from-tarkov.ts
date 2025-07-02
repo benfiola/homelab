@@ -18,7 +18,6 @@ import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getMinioUrl } from "../utils/getMinioUrl";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
-import { policyTargets as minioTargets } from "./minio";
 
 const namespace = "escape-from-tarkov";
 
@@ -32,6 +31,8 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: minioTargets } = await import("./minio");
+
   const env = parseEnv((zod) => ({
     ESCAPE_FROM_TARKOV_MINIO_SECRET_KEY: zod.string(),
     ESCAPE_FROM_TARKOV_ACCESS_PASSWORD: zod.string(),
