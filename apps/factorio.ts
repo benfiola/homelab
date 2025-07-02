@@ -2,7 +2,10 @@ import { Chart } from "cdk8s";
 import { AccessClaim } from "../resources/access-operator/bfiola.dev";
 import { ConfigMap, Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+} from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createStatefulSet } from "../utils/createStatefulSet";
@@ -11,6 +14,12 @@ import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
 
+const namespace = "factorio";
+
+const policyTargets = createTargets((b) => ({
+  server: b.pod(namespace, "factorio", { game: [34197, "udp"] }),
+}));
+
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     FACTORIO_ACCESS_PASSWORD: zod.string(),
@@ -18,29 +27,20 @@ const manifests: ManifestsCallback = async (app) => {
   }));
 
   const chart = new Chart(app, "factorio", {
-    namespace: "factorio",
+    namespace,
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "factorio" },
-      to: {
-        dns: "*.factorio.com",
-        ports: [
-          [443, "tcp"],
-          [34197, "udp"],
-        ],
-      },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const factorio = b.target({
+      dns: "*.factorio.com",
+      ports: { api: [443, "tcp"], game: [34197, "udp"] },
+    });
+    const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
 
-    {
-      from: { homeNetwork: null },
-      to: {
-        pod: "factorio",
-        ports: [[34197, "udp"]],
-      },
-    },
-  ]);
+    b.rule(homeNetwork, factorio, "game");
+    b.rule(pt.server, factorio, "api", "game");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {

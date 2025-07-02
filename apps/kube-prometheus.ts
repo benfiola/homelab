@@ -12,7 +12,11 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -23,11 +27,30 @@ import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLab
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
 
-const appData = {
+const helmData = {
   chart: "kube-prometheus-stack",
   version: "75.6.0",
   repo: "https://prometheus-community.github.io/helm-charts",
 };
+
+const namespace = "kube-prometheus";
+
+export const policyTargets = createTargets((b) => ({
+  alertmanager: b.pod(namespace, "alertmanager-kube-prometheus", {
+    mgmt: [8080, "tcp"],
+    api: [9093, "tcp"],
+  }),
+  grafana: b.pod(namespace, "kube-prometheus-grafana", { api: [3000, "tcp"] }),
+  kubeStateMetrics: b.pod(namespace, "kube-prometheus-kube-state-metrics", {
+    api: [8080, "tcp"],
+  }),
+  operator: b.pod(namespace, "kube-prometheus-operator", {
+    api: [10250, "tcp"],
+  }),
+  prometheus: b.pod(namespace, "prometheus-kube-prometheus", {
+    api: [9090, "tcp"],
+  }),
+}));
 
 const manifests: ManifestsCallback = async (app) => {
   const { PrometheusRule } = await import(
@@ -40,111 +63,42 @@ const manifests: ManifestsCallback = async (app) => {
   }));
 
   const chart = new Chart(app, "kube-prometheus", {
-    namespace: "kube-prometheus",
+    namespace,
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "alertmanager-kube-prometheus" },
-      to: { dns: "smtp.gmail.com", ports: [[587, "tcp"]] },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
+    const gmail = b.target({
+      dns: "smtp.gmail.com",
+      ports: { smtp: [587, "tcp"] },
+    });
+    const grafana = b.target({
+      dns: "grafana.com",
+      ports: { api: [443, "tcp"] },
+    });
+    const googleApis = b.target({
+      dns: "storage.googleapis.com",
+      ports: { api: [443, "tcp"] },
+    });
+    const ingress = b.target({ entity: "ingress" });
 
-    {
-      from: { pod: "prometheus-kube-prometheus" },
-      to: {
-        entity: "cluster",
-        ports: [
-          [9100, "tcp"],
-          [9153, "tcp"],
-          [10250, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "kube-prometheus-grafana" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "kube-prometheus-grafana" },
-      to: {
-        dns: "grafana.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "kube-prometheus-grafana" },
-      to: {
-        dns: "storage.googleapis.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "kube-prometheus-kube-state-metrics" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "kube-prometheus-operator" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "prometheus-kube-prometheus" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-
-    {
-      from: { entity: "ingress" },
-      to: {
-        pod: "alertmanager-kube-prometheus",
-        ports: [[9093, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "prometheus-kube-prometheus" },
-      to: {
-        pod: "alertmanager-kube-prometheus",
-        ports: [
-          [8080, "tcp"],
-          [9093, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { entity: "ingress" },
-      to: { pod: "kube-prometheus-grafana", ports: [[3000, "tcp"]] },
-    },
-    {
-      from: { pod: "prometheus-kube-prometheus" },
-      to: { pod: "kube-prometheus-grafana", ports: [[3000, "tcp"]] },
-    },
-    {
-      from: { pod: "prometheus-kube-prometheus" },
-      to: { pod: "kube-prometheus-kube-state-metrics", ports: [[8080, "tcp"]] },
-    },
-    {
-      from: { pod: "prometheus-kube-prometheus" },
-      to: { pod: "kube-prometheus-operator", ports: [[10250, "tcp"]] },
-    },
-    {
-      from: { entity: "ingress" },
-      to: { pod: "prometheus-kube-prometheus", ports: [[9090, "tcp"]] },
-    },
-    {
-      from: { pod: "kube-prometheus-grafana" },
-      to: { pod: "prometheus-kube-prometheus", ports: [[9090, "tcp"]] },
-    },
-  ]);
+    b.rule(ingress, pt.alertmanager, "api");
+    b.rule(ingress, pt.grafana, "api");
+    b.rule(ingress, pt.prometheus, "api");
+    b.rule(pt.alertmanager, gmail, "smtp");
+    b.rule(pt.grafana, googleApis, "api");
+    b.rule(pt.grafana, grafana, "api");
+    b.rule(pt.grafana, pt.prometheus, "api");
+    b.rule(pt.grafana, st.kubeApiserver, "api");
+    b.rule(pt.kubeStateMetrics, st.kubeApiserver, "api");
+    b.rule(pt.operator, st.kubeApiserver, "api");
+    b.rule(pt.prometheus, pt.alertmanager, "api", "mgmt");
+    b.rule(pt.prometheus, pt.grafana, "api");
+    b.rule(pt.prometheus, pt.kubeStateMetrics, "api");
+    b.rule(pt.prometheus, pt.operator, "api");
+    b.rule(pt.prometheus, st.kubeApiserver, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -269,7 +223,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm-kube-prometheus", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -470,7 +424,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 const resources: ResourcesCallback = async (manifestsFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData));
+  const manifest = await exec(getHelmTemplateCommand(helmData));
   await writeFile(manifestsFile, manifest);
 };
 

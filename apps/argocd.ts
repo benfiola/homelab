@@ -10,14 +10,18 @@ import {
   ResourcesCallback,
 } from "../utils/CliContext";
 import { codeblock } from "../utils/codeblock";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodRequests } from "../utils/getPodRequests";
 import { parseEnv } from "../utils/parseEnv";
 
-const appData = {
+const helmData = {
   chart: "argo-cd",
   repo: "https://argoproj.github.io/argo-helm",
   version: "8.1.1",
@@ -101,15 +105,35 @@ const baseValues = {
   },
 };
 
+const namespace = "argocd";
+
+const policyTargets = createTargets((b) => ({
+  applicationController: b.pod(namespace, "argocd-application-controller"),
+  applicationSetController: b.pod(
+    namespace,
+    "argocd-applicationset-controller"
+  ),
+  dexServer: b.pod(namespace, "argocd-dex-server"),
+  notificationsController: b.pod(namespace, "argocd-notifications-controller"),
+  redisHaproxy: b.pod(namespace, "redis-ha-haproxy", { db: [6379, "tcp"] }),
+  redisSecretInit: b.pod(namespace, "argocd-redis-secret-init"),
+  redisServer: b.pod(namespace, "redis-ha-server", {
+    db: [6379, "tcp"],
+    sentinel: [26379, "tcp"],
+  }),
+  repoServer: b.pod(namespace, "argocd-repo-server", { api: [8081, "tcp"] }),
+  server: b.pod(namespace, "argocd-server", { api: [8080, "tcp"] }),
+}));
+
 const bootstrap: BootstrapCallback = async (app) => {
-  const chart = new Chart(app, "argocd", { namespace: "argocd" });
+  const chart = new Chart(app, "argocd", { namespace });
 
   new Namespace(chart, "namespace", {
     metadata: { name: chart.namespace },
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -121,103 +145,34 @@ const bootstrap: BootstrapCallback = async (app) => {
 };
 
 const manifests: ManifestsCallback = async (app) => {
-  const chart = new Chart(app, "argocd", { namespace: "argocd" });
+  const chart = new Chart(app, "argocd", { namespace });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "argocd-repo-server" },
-      to: { dns: "github.com", ports: [[443, "tcp"]] },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
+    const github = b.target({
+      dns: "github.com",
+      ports: { api: [443, "tcp"] },
+    });
+    const ingress = b.target({ entity: "ingress" });
 
-    {
-      from: { pod: "argocd-application-controller" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "argocd-applicationset-controller" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "argocd-dex-server" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "argocd-notifications-controller" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "argocd-redis-secret-init" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "argocd-server" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
-
-    {
-      from: { pod: "argocd-application-controller" },
-      to: { pod: "argocd-repo-server", ports: [[8081, "tcp"]] },
-    },
-    {
-      from: { pod: "argocd-notifications-controller" },
-      to: { pod: "argocd-repo-server", ports: [[8081, "tcp"]] },
-    },
-    {
-      from: { pod: "argocd-server" },
-      to: { pod: "argocd-repo-server", ports: [[8081, "tcp"]] },
-    },
-    {
-      from: { entity: "ingress" },
-      to: { pod: "argocd-server", ports: [[8080, "tcp"]] },
-    },
-    {
-      from: { pod: "argocd-application-controller" },
-      to: { pod: "redis-ha-haproxy", ports: [[6379, "tcp"]] },
-    },
-    {
-      from: { pod: "argocd-repo-server" },
-      to: { pod: "redis-ha-haproxy", ports: [[6379, "tcp"]] },
-    },
-    {
-      from: { pod: "argocd-server" },
-      to: { pod: "redis-ha-haproxy", ports: [[6379, "tcp"]] },
-    },
-    {
-      from: { pod: "redis-ha-server" },
-      to: {
-        pod: "redis-ha-server",
-        ports: [
-          [6379, "tcp"],
-          [26379, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "redis-ha-haproxy" },
-      to: {
-        pod: "redis-ha-server",
-        ports: [
-          [6379, "tcp"],
-          [26379, "tcp"],
-        ],
-      },
-    },
-  ]);
+    b.rule(ingress, pt.server, "api");
+    b.rule(pt.applicationController, pt.redisHaproxy, "db");
+    b.rule(pt.applicationController, pt.repoServer, "api");
+    b.rule(pt.applicationController, st.kubeApiserver, "api");
+    b.rule(pt.applicationSetController, st.kubeApiserver, "api");
+    b.rule(pt.dexServer, st.kubeApiserver, "api");
+    b.rule(pt.notificationsController, pt.repoServer, "api");
+    b.rule(pt.notificationsController, st.kubeApiserver, "api");
+    b.rule(pt.redisHaproxy, pt.redisServer, "db", "sentinel");
+    b.rule(pt.redisSecretInit, st.kubeApiserver, "api");
+    b.rule(pt.redisServer, pt.redisServer, "db", "sentinel");
+    b.rule(pt.repoServer, github, "api");
+    b.rule(pt.repoServer, pt.redisHaproxy, "db");
+    b.rule(pt.server, pt.redisHaproxy, "db");
+    b.rule(pt.server, pt.repoServer, "api");
+    b.rule(pt.server, st.kubeApiserver, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -226,7 +181,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -253,7 +208,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 const resources: ResourcesCallback = async (manifestFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData));
+  const manifest = await exec(getHelmTemplateCommand(helmData));
   await writeFile(manifestFile, manifest);
 };
 
@@ -281,7 +236,7 @@ const setAdminPassword = async () => {
   await exec([
     "kubectl",
     "-n",
-    "argocd",
+    namespace,
     "patch",
     "secret",
     "argocd-secret",

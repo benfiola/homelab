@@ -2,31 +2,40 @@ import { Chart, Helm } from "cdk8s";
 import { Namespace } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { codeblock } from "../utils/codeblock";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { getPodRequests } from "../utils/getPodRequests";
 
-const appData = {
+const helmData = {
   chart: "alloy",
   version: "1.1.1",
   repo: "https://grafana.github.io/helm-charts",
 };
 
+const namespace = "alloy";
+
+const policyTargets = createTargets((b) => ({
+  collector: b.pod(namespace, "alloy"),
+}));
+
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: lokiTargets } = await import("./loki");
+
   const chart = new Chart(app, "alloy", {
-    namespace: "alloy",
+    namespace,
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "alloy" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const lt = lokiTargets;
+    const pt = policyTargets;
+    const st = specialTargets;
 
-    {
-      from: { pod: "alloy" },
-      to: { externalPod: ["loki", "loki-gateway"], ports: [[8080, "tcp"]] },
-    },
-  ]);
+    b.rule(pt.collector, st.kubeApiserver, "api");
+    b.rule(pt.collector, lt.gateway, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -35,7 +44,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     values: {
       alloy: {

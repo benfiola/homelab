@@ -6,16 +6,44 @@ import { createMinioBucket } from "../utils/createMinioBucket";
 import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { getPodRequests } from "../utils/getPodRequests";
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";
+import { policyTargets as promTargets } from "./kube-prometheus";
+import { policyTargets as minioTargets } from "./minio";
 
-const appData = {
+const helmData = {
   chart: "loki",
   version: "6.30.1",
   repo: "https://grafana.github.io/helm-charts",
 };
+
+const namespace = "loki";
+
+export const policyTargets = createTargets((b) => ({
+  chunksCache: b.pod(namespace, "loki-chunks-cache", { api: [11211, "tcp"] }),
+  backend: b.pod(namespace, "loki-backend", {
+    ad: [7946, "tcp"],
+    grpc: [9095, "tcp"],
+  }),
+  gateway: b.pod(namespace, "loki-gateway", { api: [8080, "tcp"] }),
+  read: b.pod(namespace, "loki-read", {
+    ad: [7946, "tcp"],
+    grpc: [9095, "tcp"],
+    http: [3100, "tcp"],
+  }),
+  resultsCache: b.pod(namespace, "loki-results-cache", { api: [11211, "tcp"] }),
+  write: b.pod(namespace, "loki-write", {
+    ad: [7946, "tcp"],
+    grpc: [9095, "tcp"],
+    http: [3100, "tcp"],
+  }),
+}));
 
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
@@ -23,158 +51,35 @@ const manifests: ManifestsCallback = async (app) => {
   }));
 
   const chart = new Chart(app, "loki", {
-    namespace: "loki",
+    namespace,
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        entity: "kube-apiserver",
-        ports: [[6443, "tcp"]],
-      },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const mt = minioTargets;
+    const pt = policyTargets;
+    const prt = promTargets;
+    const st = specialTargets;
 
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-backend",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-backend",
-        ports: [
-          [7946, "tcp"],
-          [9095, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-backend",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-chunks-cache",
-        ports: [[11211, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-chunks-cache",
-        ports: [[11211, "tcp"]],
-      },
-    },
-    {
-      from: { externalPod: ["kube-prometheus", "kube-prometheus-grafana"] },
-      to: {
-        pod: "loki-gateway",
-        ports: [[8080, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-read",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-gateway" },
-      to: {
-        pod: "loki-read",
-        ports: [[3100, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-read",
-        ports: [
-          [7946, "tcp"],
-          [9095, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-read",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-results-cache",
-        ports: [[11211, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-backend" },
-      to: {
-        pod: "loki-write",
-        ports: [[7946, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-gateway" },
-      to: {
-        pod: "loki-write",
-        ports: [[3100, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "loki-read" },
-      to: {
-        pod: "loki-write",
-        ports: [
-          [7946, "tcp"],
-          [9095, "tcp"],
-        ],
-      },
-    },
-    {
-      from: { pod: "loki-write" },
-      to: {
-        pod: "loki-write",
-        ports: [
-          [7946, "tcp"],
-          [9095, "tcp"],
-        ],
-      },
-    },
-  ]);
+    b.rule(prt.grafana, pt.gateway, "api");
+    b.rule(pt.backend, mt.tenant, "api");
+    b.rule(pt.backend, pt.backend, "ad");
+    b.rule(pt.backend, pt.read, "ad");
+    b.rule(pt.backend, pt.write, "ad");
+    b.rule(pt.backend, st.kubeApiserver, "api");
+    b.rule(pt.gateway, pt.read, "http");
+    b.rule(pt.gateway, pt.write, "http");
+    b.rule(pt.read, mt.tenant, "api");
+    b.rule(pt.read, pt.backend, "ad", "grpc");
+    b.rule(pt.read, pt.chunksCache, "api");
+    b.rule(pt.read, pt.read, "ad", "grpc");
+    b.rule(pt.read, pt.resultsCache, "api");
+    b.rule(pt.read, pt.write, "ad", "grpc");
+    b.rule(pt.write, mt.tenant, "api");
+    b.rule(pt.write, pt.backend, "ad");
+    b.rule(pt.write, pt.read, "ad");
+    b.rule(pt.write, pt.write, "ad", "grpc");
+    b.rule(pt.write, pt.chunksCache, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -219,7 +124,7 @@ const manifests: ManifestsCallback = async (app) => {
   );
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     values: {
       backend: {

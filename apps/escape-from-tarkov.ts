@@ -6,7 +6,10 @@ import { createMinioBucket } from "../utils/createMinioBucket";
 import { createMinioBucketAdminPolicy } from "../utils/createMinioBucketAdminPolicy";
 import { createMinioPolicyBinding } from "../utils/createMinioPolicyBinding";
 import { createMinioUser } from "../utils/createMinioUser";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+} from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createStatefulSet } from "../utils/createStatefulSet";
@@ -15,6 +18,18 @@ import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getMinioUrl } from "../utils/getMinioUrl";
 import { getPodLabels } from "../utils/getPodLabels";
 import { parseEnv } from "../utils/parseEnv";
+import { policyTargets as minioTargets } from "./minio";
+
+const namespace = "escape-from-tarkov";
+
+const policyTargets = createTargets((b) => ({
+  server: b.pod(namespace, "escape-from-tarkov", {
+    spt: [6969, "tcp"],
+    chisel: [8080, "tcp"],
+    fika: [26969, "udp"],
+    raidReview: [7828, 7829, "tcp"],
+  }),
+}));
 
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
@@ -23,68 +38,37 @@ const manifests: ManifestsCallback = async (app) => {
   }));
 
   const chart = new Chart(app, "escape-from-tarkov", {
-    namespace: "escape-from-tarkov",
+    namespace,
   });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { homeNetwork: null },
-      to: {
-        pod: "escape-from-tarkov",
-        ports: [
-          [6969, "tcp"],
-          [8080, "tcp"],
-          [26969, "udp"],
-          [7828, "tcp"],
-          [7829, "tcp"],
-        ],
-      },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const mt = minioTargets;
+    const github = b.target({
+      dns: "github.com",
+      ports: { api: [443, "tcp"] },
+    });
+    const githubObjects = b.target({
+      dns: "*.githubusercontent.com",
+      ports: { api: [443, "tcp"] },
+    });
+    const npm = b.target({
+      dns: "registry.npmjs.org",
+      ports: { api: [443, "tcp"] },
+    });
+    const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
+    const sptLfs = b.target({
+      dns: "lfs.sp-tarkov.com",
+      ports: { api: [443, "tcp"] },
+    });
 
-    {
-      from: { pod: "escape-from-tarkov" },
-      to: {
-        dns: "github.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "escape-from-tarkov" },
-      to: {
-        dns: "lfs.sp-tarkov.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "escape-from-tarkov" },
-      to: {
-        dns: "objects.githubusercontent.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "escape-from-tarkov" },
-      to: {
-        dns: "raw.githubusercontent.com",
-        ports: [[443, "tcp"]],
-      },
-    },
-    {
-      from: { pod: "escape-from-tarkov" },
-      to: {
-        dns: "registry.npmjs.org",
-        ports: [[443, "tcp"]],
-      },
-    },
-
-    {
-      from: { pod: "escape-from-tarkov" },
-      to: {
-        externalPod: ["minio", "minio-tenant"],
-        ports: [[9000, "tcp"]],
-      },
-    },
-  ]);
+    b.rule(homeNetwork, pt.server, "chisel", "fika", "spt", "raidReview");
+    b.rule(pt.server, github, "api");
+    b.rule(pt.server, githubObjects, "api");
+    b.rule(pt.server, mt.tenant, "api");
+    b.rule(pt.server, npm, "api");
+    b.rule(pt.server, sptLfs, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {

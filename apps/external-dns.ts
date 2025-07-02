@@ -2,7 +2,11 @@ import { Chart } from "cdk8s";
 import { Namespace } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { parseEnv } from "../utils/parseEnv";
@@ -12,28 +16,34 @@ const appData = {
   webhookVersion: "2.0.1",
 };
 
+const namespace = "external-dns";
+
+const policyTargets = createTargets((b) => ({
+  controller: b.pod(namespace, "external-dns"),
+}));
+
 const manifests: ManifestsCallback = async (app) => {
   const env = parseEnv((zod) => ({
     EXTERNAL_DNS_ROUTEROS_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "external-dns", { namespace: "external-dns" });
+  const chart = new Chart(app, "external-dns", { namespace });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "external-dns" },
-      to: { dns: "router.bulia", ports: [[8728, "tcp"]] },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
+    const router = b.target({
+      dns: "router.bulia",
+      ports: { api: [8728, "tcp"] },
+    });
 
-    {
-      from: { pod: "external-dns" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-  ]);
+    b.rule(pt.controller, router, "api");
+    b.rule(pt.controller, st.kubeApiserver, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
-      name: "external-dns",
+      name: chart.namespace,
     },
   });
 

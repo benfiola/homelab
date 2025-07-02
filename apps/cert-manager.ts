@@ -6,46 +6,47 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { createNetworkPolicy } from "../utils/createNetworkPolicy";
+import {
+  createNetworkPolicy,
+  createTargets,
+  specialTargets,
+} from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 
-const appData = {
+const helmData = {
   chart: "cert-manager",
   repo: "https://charts.jetstack.io",
   version: "v1.18.1",
 };
+
+const namespace = "cert-manager";
+
+const policyTargets = createTargets((b) => ({
+  caInjector: b.pod(namespace, "cert-manager-cainjector"),
+  controller: b.pod(namespace, "cert-manager"),
+  startupiApiCheck: b.pod(namespace, "cert-manager-startupapicheck"),
+  webhook: b.pod(namespace, "cert-manager-webhook", { api: [10250, "tcp"] }),
+}));
 
 const manifests: ManifestsCallback = async (app) => {
   const { ClusterIssuer } = await import(
     "../resources/cert-manager/cert-manager.io"
   );
 
-  const chart = new Chart(app, "cert-manager", { namespace: "cert-manager" });
+  const chart = new Chart(app, "cert-manager", { namespace });
 
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: { pod: "cert-manager" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "cert-manager-cainjector" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "cert-manager-startupapicheck" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: { pod: "cert-manager-webhook" },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
+  createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
+    const remoteNode = b.target({ entity: "remote-node" });
 
-    {
-      from: { entity: "remote-node" },
-      to: { pod: "cert-manager-webhook", ports: [[10250, "tcp"]] },
-    },
-  ]);
+    b.rule(pt.caInjector, st.kubeApiserver, "api");
+    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(pt.startupiApiCheck, st.kubeApiserver, "api");
+    b.rule(pt.webhook, st.kubeApiserver, "api");
+    b.rule(remoteNode, pt.webhook, "api");
+  });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -54,7 +55,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...appData,
+    ...helmData,
     namespace: chart.namespace,
     values: {
       crds: {
@@ -83,7 +84,7 @@ const manifests: ManifestsCallback = async (app) => {
 
 const resources: ResourcesCallback = async (path) => {
   const manifest = await exec([
-    ...getHelmTemplateCommand(appData),
+    ...getHelmTemplateCommand(helmData),
     "--set",
     "crds.enabled=true",
   ]);
