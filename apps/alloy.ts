@@ -5,7 +5,6 @@ import { codeblock } from "../utils/codeblock";
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { getPodRequests } from "../utils/getPodRequests";
 
@@ -22,6 +21,7 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
   const { policyTargets: lokiTargets } = await import("./loki");
 
   const chart = new Chart(app, "alloy", {
@@ -29,11 +29,11 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const lt = lokiTargets;
     const pt = policyTargets;
-    const st = specialTargets;
 
-    b.rule(pt.collector, st.kubeApiserver, "api");
+    b.rule(pt.collector, kt.apiServer, "api");
     b.rule(pt.collector, lt.gateway, "api");
   });
 

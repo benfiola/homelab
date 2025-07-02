@@ -10,7 +10,6 @@ import { createCloudflareTunnel } from "../utils/createCloudflareTunnel";
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
@@ -40,6 +39,8 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const env = parseEnv((zod) => ({
     ACCESS_OPERATOR_CLOUDFLARE_API_TOKEN: zod.string(),
     ACCESS_OPERATOR_CLOUDFLARE_TUNNEL_TOKEN: zod.string(),
@@ -51,8 +52,8 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const akamai = b.target({
       dns: "whatismyip.akamai.com",
       ports: { api: [80, "tcp"] },
@@ -75,8 +76,8 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.operator, cloudflare, "api");
     b.rule(pt.operator, akamai, "api");
     b.rule(pt.operator, router, "api");
-    b.rule(pt.operator, st.kubeApiserver, "api");
-    b.rule(pt.server, st.kubeApiserver, "api");
+    b.rule(pt.operator, kt.apiServer, "api");
+    b.rule(pt.server, kt.apiServer, "api");
     b.rule(pt.tunnel, pt.server, "api");
     b.rule(pt.tunnel, tunnel, "tunnel");
   });

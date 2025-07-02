@@ -11,7 +11,6 @@ import {
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -61,16 +60,18 @@ const bootstrap: BootstrapCallback = async (app) => {
 };
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const chart = new Chart(app, "sealed-secrets", {
     namespace,
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const remoteNode = b.target({ entity: "remote-node", ports: {} });
 
-    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(pt.controller, kt.apiServer, "api");
     b.rule(remoteNode, pt.controller, "api");
   });
 

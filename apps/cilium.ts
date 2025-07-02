@@ -12,15 +12,26 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
+import {
+  createNetworkPolicy,
+  createTargets,
+} from "../utils/createNetworkPolicyNew";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodRequests } from "../utils/getPodRequests";
 import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLabels";
 
-const chartData = {
+const helmData = {
   chart: "cilium",
   version: "1.17.5",
   repo: "https://helm.cilium.io/",
 };
+
+const namespace = "cilium";
+
+const policyTargets = createTargets((b) => ({
+  hubbleRelay: b.pod(namespace, "hubble-relay", { api: [4245, "tcp"] }),
+  hubbleUi: b.pod(namespace, "hubble-ui", { api: [8081, "tcp"] }),
+}));
 
 const baseChartValues = {
   cgroup: {
@@ -71,7 +82,7 @@ const baseChartValues = {
 };
 
 const bootstrap: BootstrapCallback = async (app) => {
-  const chart = new Chart(app, "cilium", { namespace: "cilium" });
+  const chart = new Chart(app, "cilium", { namespace });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -81,7 +92,7 @@ const bootstrap: BootstrapCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...chartData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -93,15 +104,13 @@ const bootstrap: BootstrapCallback = async (app) => {
 };
 
 const manifests: ManifestsCallback = async (app) => {
-  const {
-    CiliumClusterwideNetworkPolicy,
-    CiliumLoadBalancerIpPool,
-    CiliumBgpPeeringPolicy,
-  } = await import("../resources/cilium/cilium.io");
-  const { createNetworkPolicy } = await import("../utils/createNetworkPolicy");
+  const { policyTargets: kubeTargets } = await import("./k8s");
+  const { CiliumLoadBalancerIpPool, CiliumBgpPeeringPolicy } = await import(
+    "../resources/cilium/cilium.io"
+  );
 
   const chart = new Chart(app, "cilium", {
-    namespace: "cilium",
+    namespace,
   });
 
   new Namespace(chart, "namespace", {
@@ -147,7 +156,7 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   new Helm(chart, "helm", {
-    ...chartData,
+    ...helmData,
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
@@ -272,152 +281,39 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  new CiliumClusterwideNetworkPolicy(chart, "default", {
-    metadata: {
-      name: `default`,
-    },
-    specs: [
-      {
-        description: "kube-dns",
-        endpointSelector: {
-          matchLabels: {
-            "io.kubernetes.pod.namespace": "kube-system",
-            "k8s-app": "kube-dns",
-          },
-        },
-        ingress: [
-          {
-            fromEndpoints: [{}],
-            toPorts: [
-              {
-                ports: [{ port: "53", protocol: "ANY" as any }],
-              },
-            ],
-          },
-          {
-            fromEndpoints: [
-              {
-                matchLabels: {
-                  "io.kubernetes.pod.namespace": "kube-prometheus",
-                  "bfiola.dev/pod-name": "prometheus-kube-prometheus",
-                },
-              },
-            ],
-            toPorts: [
-              {
-                ports: [{ port: "9153", protocol: "TCP" as any }],
-              },
-            ],
-          },
-        ],
-        egress: [
-          {
-            toEntities: ["world" as any],
-            toPorts: [
-              {
-                ports: [{ port: "53", protocol: "ANY" as any }],
-              },
-            ],
-          },
-          {
-            toEntities: ["kube-apiserver" as any],
-            toPorts: [
-              {
-                ports: [{ port: "6443", protocol: "TCP" as any }],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        description: "all pods",
-        endpointSelector: {},
-        egress: [
-          {
-            toEndpoints: [
-              {
-                matchLabels: {
-                  "io.kubernetes.pod.namespace": "kube-system",
-                  "k8s-app": "kube-dns",
-                },
-              },
-            ],
-            toPorts: [
-              {
-                ports: [{ port: "53", protocol: "ANY" as any }],
-                rules: { dns: [{ matchPattern: "*" }] },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        description: "health",
-        endpointSelector: { matchLabels: { "reserved:health": "" } },
-        ingress: [{ fromEntities: ["remote-node" as any] }],
-        egress: [{ toEntities: ["remote-node" as any] }],
-      },
-      {
-        description: "ingress",
-        endpointSelector: {
-          matchExpressions: [
-            {
-              key: "reserved:ingress",
-              operator: "Exists" as any,
-            },
-          ],
-        },
-        ingress: [{ fromCidr: ["192.168.0.0/16"] }],
-        egress: [{ toEntities: ["cluster" as any] }],
-      },
-    ],
+  createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
+    const pt = policyTargets;
+    const cluster = b.target({ entity: "cluster" });
+    const health = b.target({ endpoint: { "reserved:health": "" } });
+    const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
+    const host = b.target({
+      entity: "host",
+      ports: { hubble: [4244, "tcp"] },
+    });
+    const ingressInt = b.target({ endpoint: { "reserved:ingress": "" } });
+    const ingress = b.target({ entity: "ingress" });
+    const pods = b.target({ endpoint: {} });
+    const remoteNode = b.target({
+      entity: "remote-node",
+      ports: { hubble: [4244, "tcp"] },
+    });
+    const world = b.target({ entity: "world", ports: { dns: [53, "any"] } });
+
+    const r = b.rule(pods, kt.dns, "dns");
+    (r as any)._addDnsRule = true;
+    b.rule(remoteNode, health);
+    b.rule(health, remoteNode);
+    b.rule(ingress, pt.hubbleUi, "api");
+    b.rule(homeNetwork, ingressInt);
+    b.rule(ingressInt, cluster);
+    b.rule(kt.dns, kt.apiServer, "api");
+    b.rule(kt.dns, world, "dns");
+    b.rule(pt.hubbleRelay, host, "hubble");
+    b.rule(pt.hubbleRelay, remoteNode, "hubble");
+    b.rule(pt.hubbleRelay, kt.apiServer, "api");
+    b.rule(pt.hubbleUi, kt.apiServer, "api");
   });
-
-  createNetworkPolicy(chart, "network-policy", [
-    {
-      from: {
-        pod: "hubble-relay",
-      },
-      to: {
-        entity: "host",
-        ports: [[4244, "tcp"]],
-      },
-    },
-    {
-      from: {
-        pod: "hubble-relay",
-      },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: {
-        pod: "hubble-ui",
-      },
-      to: { entity: "kube-apiserver", ports: [[6443, "tcp"]] },
-    },
-    {
-      from: {
-        pod: "hubble-relay",
-      },
-      to: {
-        entity: "remote-node",
-        ports: [[4244, "tcp"]],
-      },
-    },
-
-    {
-      from: {
-        pod: "hubble-ui",
-      },
-      to: { pod: "hubble-relay", ports: [[4245, "tcp"]] },
-    },
-    {
-      from: {
-        entity: "ingress",
-      },
-      to: { pod: "hubble-ui", ports: [[8081, "tcp"]] },
-    },
-  ]);
 
   return chart;
 };
@@ -446,7 +342,7 @@ const resources: ResourcesCallback = async (manifestFile) => {
   ];
   const manifests: string[] = [];
   for (const [resourceVersion, resource] of resources) {
-    const url = `https://raw.githubusercontent.com/cilium/cilium/v${chartData.version}/pkg/k8s/apis/cilium.io/client/crds/${resourceVersion}/${resource}.yaml`;
+    const url = `https://raw.githubusercontent.com/cilium/cilium/v${helmData.version}/pkg/k8s/apis/cilium.io/client/crds/${resourceVersion}/${resource}.yaml`;
     const manifest = await fetch(url).then((r) => r.text());
     manifests.push(manifest);
   }

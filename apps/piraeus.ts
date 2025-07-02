@@ -11,7 +11,6 @@ import {
   createNetworkPolicy,
   createTargets,
   PortsMap,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 
 const appData = {
@@ -50,6 +49,7 @@ const policyTargets = createTargets((b) => {
 });
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
   const { LinstorCluster } = await import("../resources/piraeus/piraeus.io");
 
   const chart = new Chart(app, "piraeus", {
@@ -57,20 +57,20 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
-    const remoteNode = b.target({ entity: "remote-node", ports: {} });
+    const remoteNode = b.target({ entity: "remote-node" });
 
-    b.rule(pt.gencert, st.kubeApiserver, "api");
-    b.rule(pt.haController, st.kubeApiserver, "api");
-    b.rule(pt.linstorController, st.kubeApiserver, "api");
+    b.rule(pt.gencert, kt.apiServer, "api");
+    b.rule(pt.haController, kt.apiServer, "api");
+    b.rule(pt.linstorController, kt.apiServer, "api");
     b.rule(pt.linstorController, pt.haController, "svc");
     b.rule(pt.linstorController, pt.linstorSatellite, "svc");
-    b.rule(pt.linstorCsiController, specialTargets.kubeApiserver, "api");
+    b.rule(pt.linstorCsiController, kt.apiServer, "api");
     b.rule(pt.linstorCsiController, pt.linstorController, "svc");
     b.rule(pt.linstorCsiNode, pt.linstorController, "svc");
     b.rule(pt.linstorSatellite, pt.linstorSatellite, "drbd");
-    b.rule(pt.operator, st.kubeApiserver, "api");
+    b.rule(pt.operator, kt.apiServer, "api");
     b.rule(pt.operator, pt.linstorController, "svc");
     b.rule(remoteNode, pt.operator, "webhook");
   });

@@ -16,7 +16,6 @@ import {
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -38,17 +37,19 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const chart = new Chart(app, "volsync", { namespace });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const googleApis = b.target({
       dns: "*.googleapis.com",
       ports: { api: [443, "tcp"] },
     });
 
-    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(pt.controller, kt.apiServer, "api");
     b.rule(pt.mover, googleApis, "api");
   });
 

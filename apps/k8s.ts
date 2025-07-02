@@ -1,7 +1,21 @@
 import { CliContext, ResourcesCallback } from "../utils/CliContext";
+import { createTargets } from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 
 const version = "1.32.0";
+
+const namespace = "kube-system";
+
+export const policyTargets = createTargets((b) => ({
+  apiServer: b.target({
+    entity: "kube-apiserver",
+    ports: { api: [6443, "tcp"] },
+  }),
+  dns: b.pod(namespace, "kube-dns", {
+    dns: [53, "any"],
+    metrics: [9153, "tcp"],
+  }),
+}));
 
 const resources: ResourcesCallback = async (directory) => {
   await exec([

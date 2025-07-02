@@ -6,11 +6,10 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import {} from "../utils/createNetworkPolicy";
+import { } from "../utils/createNetworkPolicy";
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
@@ -55,6 +54,8 @@ export const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const env = parseEnv((zod) => ({
     MINIO_TENANT_PASSWORD: zod.string(),
   }));
@@ -62,17 +63,17 @@ const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "minio", { namespace });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const ingress = b.target({ entity: "ingress", ports: {} });
 
     b.rule(ingress, pt.tenant, "api", "console");
     b.rule(pt.operator, pt.tenant, "api");
-    b.rule(pt.operator, st.kubeApiserver, "api");
+    b.rule(pt.operator, kt.apiServer, "api");
     b.rule(pt.operatorExt, pt.tenant, "api");
-    b.rule(pt.operatorExt, st.kubeApiserver, "api");
+    b.rule(pt.operatorExt, kt.apiServer, "api");
     b.rule(pt.tenant, pt.tenant, "api");
-    b.rule(pt.tenant, st.kubeApiserver, "api");
+    b.rule(pt.tenant, kt.apiServer, "api");
   });
 
   new Namespace(chart, "namespace", {

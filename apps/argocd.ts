@@ -13,7 +13,6 @@ import { codeblock } from "../utils/codeblock";
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -145,11 +144,13 @@ const bootstrap: BootstrapCallback = async (app) => {
 };
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const chart = new Chart(app, "argocd", { namespace });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const github = b.target({
       dns: "github.com",
       ports: { api: [443, "tcp"] },
@@ -159,19 +160,19 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(ingress, pt.server, "api");
     b.rule(pt.applicationController, pt.redisHaproxy, "db");
     b.rule(pt.applicationController, pt.repoServer, "api");
-    b.rule(pt.applicationController, st.kubeApiserver, "api");
-    b.rule(pt.applicationSetController, st.kubeApiserver, "api");
-    b.rule(pt.dexServer, st.kubeApiserver, "api");
+    b.rule(pt.applicationController, kt.apiServer, "api");
+    b.rule(pt.applicationSetController, kt.apiServer, "api");
+    b.rule(pt.dexServer, kt.apiServer, "api");
     b.rule(pt.notificationsController, pt.repoServer, "api");
-    b.rule(pt.notificationsController, st.kubeApiserver, "api");
+    b.rule(pt.notificationsController, kt.apiServer, "api");
     b.rule(pt.redisHaproxy, pt.redisServer, "db", "sentinel");
-    b.rule(pt.redisSecretInit, st.kubeApiserver, "api");
+    b.rule(pt.redisSecretInit, kt.apiServer, "api");
     b.rule(pt.redisServer, pt.redisServer, "db", "sentinel");
     b.rule(pt.repoServer, github, "api");
     b.rule(pt.repoServer, pt.redisHaproxy, "db");
     b.rule(pt.server, pt.redisHaproxy, "db");
     b.rule(pt.server, pt.repoServer, "api");
-    b.rule(pt.server, st.kubeApiserver, "api");
+    b.rule(pt.server, kt.apiServer, "api");
   });
 
   new Namespace(chart, "namespace", {

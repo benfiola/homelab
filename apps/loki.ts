@@ -9,7 +9,6 @@ import { createMinioUser } from "../utils/createMinioUser";
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { getPodRequests } from "../utils/getPodRequests";
 import { getStorageClassName } from "../utils/getStorageClassName";
@@ -44,7 +43,8 @@ export const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
-  const { policyTargets: promTargets } = await import("./kube-prometheus");
+  const { policyTargets: kubeTargets } = await import("./k8s");
+  const { policyTargets: kpromTargets } = await import("./kube-prometheus");
   const { policyTargets: minioTargets } = await import("./minio");
 
   const env = parseEnv((zod) => ({
@@ -56,17 +56,17 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
+    const kpt = kpromTargets;
     const mt = minioTargets;
     const pt = policyTargets;
-    const prt = promTargets;
-    const st = specialTargets;
 
-    b.rule(prt.grafana, pt.gateway, "api");
+    b.rule(kpt.grafana, pt.gateway, "api");
     b.rule(pt.backend, mt.tenant, "api");
     b.rule(pt.backend, pt.backend, "ad");
     b.rule(pt.backend, pt.read, "ad");
     b.rule(pt.backend, pt.write, "ad");
-    b.rule(pt.backend, st.kubeApiserver, "api");
+    b.rule(pt.backend, kt.apiServer, "api");
     b.rule(pt.gateway, pt.read, "http");
     b.rule(pt.gateway, pt.write, "http");
     b.rule(pt.read, mt.tenant, "api");

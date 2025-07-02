@@ -5,7 +5,6 @@ import { createDeployment } from "../utils/createDeployment";
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
@@ -23,6 +22,8 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const env = parseEnv((zod) => ({
     EXTERNAL_DNS_ROUTEROS_PASSWORD: zod.string(),
   }));
@@ -30,15 +31,15 @@ const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "external-dns", { namespace });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const router = b.target({
       dns: "router.bulia",
       ports: { api: [8728, "tcp"] },
     });
 
     b.rule(pt.controller, router, "api");
-    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(pt.controller, kt.apiServer, "api");
   });
 
   new Namespace(chart, "namespace", {

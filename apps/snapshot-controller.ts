@@ -9,7 +9,6 @@ import {
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -28,16 +27,18 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
+
   const chart = new Chart(app, "snapshot-controller", {
     namespace,
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
 
-    b.rule(pt.controller, st.kubeApiserver, "api");
-    b.rule(pt.webhook, st.kubeApiserver, "api");
+    b.rule(pt.controller, kt.apiServer, "api");
+    b.rule(pt.webhook, kt.apiServer, "api");
   });
 
   new Namespace(chart, "namespace", {

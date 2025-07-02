@@ -95,7 +95,8 @@ type EntityValue =
   | "host"
   | "ingress"
   | "kube-apiserver"
-  | "remote-node";
+  | "remote-node"
+  | "world";
 
 /**
  * EntityTarget represents a entity-based ACL rule.
@@ -234,25 +235,13 @@ type Rule = [SomeTarget, SomeTarget, SomePort[]];
 const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
   src: SomeTarget,
   dst: Dst,
-  firstPortKey: TargetPortKeys<Dst>,
-  ...restPortKeys: TargetPortKeys<Dst>[]
+  ...portKeys: TargetPortKeys<Dst>[]
 ) => {
-  const portKeys = [firstPortKey, ...restPortKeys];
-  if (!dst.ports) {
-    throw new Error(`no ports in dst target: ${JSON.stringify(dst)}`);
-  }
-  if (portKeys.length === 0) {
-    const keys = Object.keys(dst.ports) as TargetPortKeys<Dst>[];
-    if (keys.length > 1) {
-      throw new Error(`ambiguous default port: ${JSON.stringify(dst)}`);
-    }
-    portKeys.push(keys[0]);
-  }
-
+  const dstPorts: any = dst.ports || {};
   const ports: SomePort[] = [];
   for (const portKey of Array.from(new Set(portKeys))) {
-    const val = dst.ports[portKey];
-    if (val === undefined) {
+    const val = dstPorts[portKey];
+    if (!val === undefined) {
       throw new Error(
         `port key '${portKey.toString()}' not in target ${JSON.stringify(dst)}`
       );
@@ -263,13 +252,13 @@ const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
     }
 
     if (Array.isArray(val[0])) {
-      ports.push(...(val as SomePort[]));
+      ports.push(...val);
     } else {
-      ports.push(val as SomePort);
+      ports.push(val);
     }
   }
 
-  return [src, dst, ports] as Rule;
+  return [src, dst, ports];
 };
 
 /**
@@ -296,7 +285,11 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
   let specs: any = [];
 
   rules.map((rule) => {
+    const addDnsRule = (rule as any)._addDnsRule === true;
+
+    const portRules: any = {};
     const ports: any = [];
+
     const rulePorts = rule[2];
     rulePorts.map((rulePort) => {
       let startPort;
@@ -321,15 +314,24 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
       });
     });
 
+    if (addDnsRule) {
+      portRules["dns"] = [{ matchPattern: "*" }];
+    }
+
     const src = rule[0];
     const dst = rule[1];
 
     if (isEndpointTarget(src)) {
-      let egress: any = { toPorts: [{ ports }] };
+      let egress: any = {};
+
       const spec = {
         egress: [egress],
         endpointSelector: { matchLabels: src.endpoint },
       };
+
+      if (ports.length > 0) {
+        egress["toPorts"] = [{ ports, rules: portRules }];
+      }
 
       if (isCidrTarget(dst)) {
         egress["toCIDR"] = [dst.cidr];
@@ -347,11 +349,16 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
     }
 
     if (isEndpointTarget(dst)) {
-      let ingress: any = { toPorts: [{ ports }] };
+      let ingress: any = {};
+
       const spec = {
         endpointSelector: { matchLabels: dst.endpoint },
         ingress: [ingress],
       };
+
+      if (ports.length > 0) {
+        ingress["toPorts"] = [{ ports, rules: portRules }];
+      }
 
       if (isCidrTarget(src)) {
         ingress["fromCIDR"] = [src.cidr];
@@ -397,10 +404,3 @@ export const createNetworkPolicy = (
   cb(builder);
   return _createNetworkPolicy(chart, rules);
 };
-
-export const specialTargets = createTargets((b) => ({
-  kubeApiserver: b.target({
-    entity: "kube-apiserver",
-    ports: { api: [6443, "tcp"] },
-  }),
-}));

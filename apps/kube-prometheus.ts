@@ -15,7 +15,6 @@ import {
 import {
   createNetworkPolicy,
   createTargets,
-  specialTargets,
 } from "../utils/createNetworkPolicyNew";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
@@ -53,6 +52,7 @@ export const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const { policyTargets: kubeTargets } = await import("./k8s");
   const { PrometheusRule } = await import(
     "../resources/kube-prometheus/monitoring.coreos.com"
   );
@@ -67,8 +67,8 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const kt = kubeTargets;
     const pt = policyTargets;
-    const st = specialTargets;
     const gmail = b.target({
       dns: "smtp.gmail.com",
       ports: { smtp: [587, "tcp"] },
@@ -90,14 +90,15 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.grafana, googleApis, "api");
     b.rule(pt.grafana, grafana, "api");
     b.rule(pt.grafana, pt.prometheus, "api");
-    b.rule(pt.grafana, st.kubeApiserver, "api");
-    b.rule(pt.kubeStateMetrics, st.kubeApiserver, "api");
-    b.rule(pt.operator, st.kubeApiserver, "api");
+    b.rule(pt.grafana, kt.apiServer, "api");
+    b.rule(pt.kubeStateMetrics, kt.apiServer, "api");
+    b.rule(pt.operator, kt.apiServer, "api");
     b.rule(pt.prometheus, pt.alertmanager, "api", "mgmt");
     b.rule(pt.prometheus, pt.grafana, "api");
     b.rule(pt.prometheus, pt.kubeStateMetrics, "api");
     b.rule(pt.prometheus, pt.operator, "api");
-    b.rule(pt.prometheus, st.kubeApiserver, "api");
+    b.rule(pt.prometheus, kt.apiServer, "api");
+    b.rule(pt.prometheus, kt.dns, "metrics");
   });
 
   new Namespace(chart, "namespace", {
