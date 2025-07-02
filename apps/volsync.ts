@@ -41,13 +41,15 @@ const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "volsync", { namespace });
 
   createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
     const googleApis = b.target({
       dns: "*.googleapis.com",
-      ports: { default: [443, "tcp"] },
+      ports: { api: [443, "tcp"] },
     });
 
-    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
-    b.rule(policyTargets.mover, googleApis);
+    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(pt.mover, googleApis, "api");
   });
 
   new Namespace(chart, "namespace", {

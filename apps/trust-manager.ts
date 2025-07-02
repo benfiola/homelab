@@ -30,7 +30,10 @@ const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "trust-manager", { namespace });
 
   createNetworkPolicy(chart, (b) => {
-    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
+    const pt = policyTargets;
+    const st = specialTargets;
+
+    b.rule(pt.controller, st.kubeApiserver, "api");
   });
 
   new Namespace(chart, "namespace", {

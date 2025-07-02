@@ -26,7 +26,7 @@ const helmData = {
 const namespace = "sealed-secrets";
 
 const policyTargets = createTargets((b) => ({
-  controller: b.pod(namespace, "sealed-secrets", { default: [8080, "tcp"] }),
+  controller: b.pod(namespace, "sealed-secrets", { api: [8080, "tcp"] }),
 }));
 
 const baseValues = {
@@ -66,9 +66,12 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
     const remoteNode = b.target({ entity: "remote-node", ports: {} });
-    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
-    b.rule(remoteNode, policyTargets.controller);
+
+    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(remoteNode, pt.controller, "api");
   });
 
   new Namespace(chart, "namespace", {

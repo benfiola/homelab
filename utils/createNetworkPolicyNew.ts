@@ -227,14 +227,17 @@ type Rule = [SomeTarget, SomeTarget, SomePort[]];
  *
  * @param src the source target
  * @param dst the destination target
- * @param portKeys the port keys to include in the ACL
+ * @param firstPortKey the first port keys to include in the ACL (requires at least one port key)
+ * @param restPortKeys additional port keys to include in the ACL
  * @returns a rule
  */
 const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
   src: SomeTarget,
   dst: Dst,
-  ...portKeys: TargetPortKeys<Dst>[]
+  firstPortKey: TargetPortKeys<Dst>,
+  ...restPortKeys: TargetPortKeys<Dst>[]
 ) => {
+  const portKeys = [firstPortKey, ...restPortKeys];
   if (!dst.ports) {
     throw new Error(`no ports in dst target: ${JSON.stringify(dst)}`);
   }
@@ -398,6 +401,6 @@ export const createNetworkPolicy = (
 export const specialTargets = createTargets((b) => ({
   kubeApiserver: b.target({
     entity: "kube-apiserver",
-    ports: { default: [6443, "tcp"] },
+    ports: { api: [6443, "tcp"] },
   }),
 }));

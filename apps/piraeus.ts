@@ -35,17 +35,17 @@ const policyTargets = createTargets((b) => {
 
   return {
     gencert: piraeus("piraeus-operator-gencert"),
-    haController: piraeus("ha-controller", { default: [3370, "tcp"] }),
+    haController: piraeus("ha-controller", { svc: [3370, "tcp"] }),
     linstorController: piraeus("linstor-controller", {
-      default: [3370, "tcp"],
+      svc: [3370, "tcp"],
     }),
     linstorCsiController: piraeus("linstor-csi-controller"),
     linstorCsiNode: piraeus("linstor-csi-node"),
     linstorSatellite: piraeus("linstor-satellite", {
-      default: [3366, 3367, "tcp"],
+      svc: [3366, 3367, "tcp"],
       drbd: [7000, 7999, "tcp"],
     }),
-    operator: piraeus("piraeus-operator", { default: [9443, "tcp"] }),
+    operator: piraeus("piraeus-operator", { webhook: [9443, "tcp"] }),
   };
 });
 
@@ -57,23 +57,22 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
     const remoteNode = b.target({ entity: "remote-node", ports: {} });
-    b.rule(policyTargets.gencert, specialTargets.kubeApiserver);
-    b.rule(policyTargets.haController, specialTargets.kubeApiserver);
-    b.rule(policyTargets.linstorController, specialTargets.kubeApiserver);
-    b.rule(policyTargets.linstorController, policyTargets.haController);
-    b.rule(policyTargets.linstorController, policyTargets.linstorSatellite);
-    b.rule(policyTargets.linstorCsiController, specialTargets.kubeApiserver);
-    b.rule(policyTargets.linstorCsiController, policyTargets.linstorController);
-    b.rule(policyTargets.linstorCsiNode, policyTargets.linstorController);
-    b.rule(
-      policyTargets.linstorSatellite,
-      policyTargets.linstorSatellite,
-      "drbd"
-    );
-    b.rule(policyTargets.operator, specialTargets.kubeApiserver);
-    b.rule(policyTargets.operator, policyTargets.linstorController);
-    b.rule(remoteNode, policyTargets.operator);
+
+    b.rule(pt.gencert, st.kubeApiserver, "api");
+    b.rule(pt.haController, st.kubeApiserver, "api");
+    b.rule(pt.linstorController, st.kubeApiserver, "api");
+    b.rule(pt.linstorController, pt.haController, "svc");
+    b.rule(pt.linstorController, pt.linstorSatellite, "svc");
+    b.rule(pt.linstorCsiController, specialTargets.kubeApiserver, "api");
+    b.rule(pt.linstorCsiController, pt.linstorController, "svc");
+    b.rule(pt.linstorCsiNode, pt.linstorController, "svc");
+    b.rule(pt.linstorSatellite, pt.linstorSatellite, "drbd");
+    b.rule(pt.operator, st.kubeApiserver, "api");
+    b.rule(pt.operator, pt.linstorController, "svc");
+    b.rule(remoteNode, pt.operator, "webhook");
   });
 
   new Include(chart, "manifest", {

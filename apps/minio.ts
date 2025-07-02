@@ -49,7 +49,7 @@ export const policyTargets = createTargets((b) => ({
   operator: b.pod(namespace, "minio-operator"),
   operatorExt: b.pod(namespace, "minio-operator-ext"),
   tenant: b.pod(namespace, "minio-tenant", {
-    default: [9000, "tcp"],
+    api: [9000, "tcp"],
     console: [9090, "tcp"],
   }),
 }));
@@ -62,14 +62,17 @@ const manifests: ManifestsCallback = async (app) => {
   const chart = new Chart(app, "minio", { namespace });
 
   createNetworkPolicy(chart, (b) => {
+    const pt = policyTargets;
+    const st = specialTargets;
     const ingress = b.target({ entity: "ingress", ports: {} });
-    b.rule(ingress, policyTargets.tenant, "default", "console");
-    b.rule(policyTargets.operator, policyTargets.tenant);
-    b.rule(policyTargets.operator, specialTargets.kubeApiserver);
-    b.rule(policyTargets.operatorExt, policyTargets.tenant);
-    b.rule(policyTargets.operatorExt, specialTargets.kubeApiserver);
-    b.rule(policyTargets.tenant, policyTargets.tenant);
-    b.rule(policyTargets.tenant, specialTargets.kubeApiserver);
+
+    b.rule(ingress, pt.tenant, "api", "console");
+    b.rule(pt.operator, pt.tenant, "api");
+    b.rule(pt.operator, st.kubeApiserver, "api");
+    b.rule(pt.operatorExt, pt.tenant, "api");
+    b.rule(pt.operatorExt, st.kubeApiserver, "api");
+    b.rule(pt.tenant, pt.tenant, "api");
+    b.rule(pt.tenant, st.kubeApiserver, "api");
   });
 
   new Namespace(chart, "namespace", {

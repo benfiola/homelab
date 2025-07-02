@@ -23,7 +23,7 @@ import { parseEnv } from "../utils/parseEnv";
 const namespace = "minecraft";
 
 const policyTargets = createTargets((b) => ({
-  server: b.pod(namespace, "minecraft", { default: [25565, "any"] }),
+  server: b.pod(namespace, "minecraft", { game: [25565, "any"] }),
 }));
 
 const manifests: ManifestsCallback = async (app) => {
@@ -39,24 +39,27 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
-    const homeNetwork = b.target({ cidr: "192.168.0.0/16", ports: {} });
+    const pt = policyTargets;
+    const mt = minioTargets;
+    const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
     const mojang = b.target({
       dns: "*.mojang.com",
-      ports: { default: [443, "tcp"] },
+      ports: { api: [443, "tcp"] },
     });
     const googleApis = b.target({
       dns: "*.googleapis.com",
-      ports: { default: [443, "tcp"] },
+      ports: { api: [443, "tcp"] },
     });
     const fabric = b.target({
       dns: "*.fabricmc.net",
-      ports: { default: [443, "tcp"] },
+      ports: { api: [443, "tcp"] },
     });
-    b.rule(homeNetwork, policyTargets.server);
-    b.rule(policyTargets.server, fabric);
-    b.rule(policyTargets.server, googleApis);
-    b.rule(policyTargets.server, minioTargets.tenant);
-    b.rule(policyTargets.server, mojang);
+
+    b.rule(homeNetwork, pt.server, "game");
+    b.rule(pt.server, fabric, "api");
+    b.rule(pt.server, googleApis, "api");
+    b.rule(pt.server, mt.tenant, "api");
+    b.rule(pt.server, mojang, "api");
   });
 
   new Namespace(chart, "namespace", {

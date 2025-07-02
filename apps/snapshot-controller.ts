@@ -33,8 +33,11 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createNetworkPolicy(chart, (b) => {
-    b.rule(policyTargets.controller, specialTargets.kubeApiserver);
-    b.rule(policyTargets.webhook, specialTargets.kubeApiserver);
+    const pt = policyTargets;
+    const st = specialTargets;
+
+    b.rule(pt.controller, st.kubeApiserver, "api");
+    b.rule(pt.webhook, st.kubeApiserver, "api");
   });
 
   new Namespace(chart, "namespace", {
