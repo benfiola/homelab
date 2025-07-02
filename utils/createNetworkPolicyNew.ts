@@ -28,10 +28,20 @@ type SomePort = Port | PortRange;
 export type PortsMap = Record<string, SomePort[] | SomePort>;
 
 /**
+ * TargetMeta contains additional metadata used when constructing network policy rules.
+ * This is intended to accommodate endpoint target-level edge cases.
+ */
+interface TargetMeta {
+  // reserved:ingress rules require matchExpression clauses
+  useMatchExpressions?: boolean;
+}
+
+/**
  * BaseTarget defines common fields between all targets.
  */
 interface BaseTarget<PM extends PortsMap> {
   ports?: PM;
+  meta?: TargetMeta;
 }
 
 /**
@@ -219,9 +229,20 @@ export const createTargets = <RV extends any>(
 type TargetPortKeys<T extends SomeTarget> = keyof T["ports"];
 
 /**
+ * RuleMeta contains additional metadata used when constructing network policy rules.
+ * This is intended to accommodate rule-level edge cases.
+ */
+interface RuleMeta {
+  // cilium needs a specific kube dns rule to match all dns
+  addDnsPortRule?: boolean;
+}
+
+/**
  * Rule contains a source, a destination and the ports that comprise an ACL
  */
-type Rule = [SomeTarget, SomeTarget, SomePort[]];
+type Rule =
+  | [SomeTarget, SomeTarget, SomePort[]]
+  | [SomeTarget, SomeTarget, SomePort[], RuleMeta];
 
 /**
  * Helper method that simplifies the creation of rules by referencing known port labels for the destination.
@@ -236,7 +257,7 @@ const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
   src: SomeTarget,
   dst: Dst,
   ...portKeys: TargetPortKeys<Dst>[]
-) => {
+): Rule => {
   const dstPorts: any = dst.ports || {};
   const ports: SomePort[] = [];
   for (const portKey of Array.from(new Set(portKeys))) {
@@ -274,6 +295,26 @@ interface NetworkPolicyBuilder {
  */
 type NetworkPolicyCallback = (b: NetworkPolicyBuilder) => void;
 
+/** Gets a cilium endpoint selector from a given endpoint target */
+const getEndpointSelector = (value: EndpointTarget<any>) => {
+  if (Object.keys(value.endpoint).length === 0) {
+    return {};
+  }
+
+  if (!value?.meta?.useMatchExpressions) {
+    return { matchLabels: value.endpoint };
+  }
+
+  const matchExpressions: Record<string, string>[] = [];
+  Object.entries(value.endpoint).map(([key, value]) => {
+    if (value !== "") {
+      throw new Error(`unsupported expression value: ${JSON.stringify(value)}`);
+    }
+    matchExpressions.push({ key, operator: "Exists" });
+  });
+  return { matchExpressions };
+};
+
 /**
  * Helper method to create a network policy with the given rule list.
  *
@@ -285,9 +326,8 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
   let specs: any = [];
 
   rules.map((rule) => {
-    const addDnsRule = (rule as any)._addDnsRule === true;
+    const ruleMeta = rule.length === 4 ? rule[3] : {};
 
-    const portRules: any = {};
     const ports: any = [];
 
     const rulePorts = rule[2];
@@ -314,10 +354,6 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
       });
     });
 
-    if (addDnsRule) {
-      portRules["dns"] = [{ matchPattern: "*" }];
-    }
-
     const src = rule[0];
     const dst = rule[1];
 
@@ -326,19 +362,24 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
 
       const spec = {
         egress: [egress],
-        endpointSelector: { matchLabels: src.endpoint },
+        endpointSelector: getEndpointSelector(src),
       };
+
+      let portRules: any = undefined;
+      if (ruleMeta.addDnsPortRule) {
+        portRules = { dns: [{ matchPattern: "*" }] };
+      }
 
       if (ports.length > 0) {
         egress["toPorts"] = [{ ports, rules: portRules }];
       }
 
       if (isCidrTarget(dst)) {
-        egress["toCIDR"] = [dst.cidr];
+        egress["toCidr"] = [dst.cidr];
       } else if (isDnsTarget(dst)) {
         egress["toFqdNs"] = [{ matchPattern: dst.dns }];
       } else if (isEndpointTarget(dst)) {
-        egress["toEndpoints"] = [{ matchLabels: dst.endpoint }];
+        egress["toEndpoints"] = [getEndpointSelector(dst)];
       } else if (isEntityTarget(dst)) {
         egress["toEntities"] = [dst.entity];
       } else {
@@ -352,18 +393,20 @@ const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
       let ingress: any = {};
 
       const spec = {
-        endpointSelector: { matchLabels: dst.endpoint },
+        endpointSelector: getEndpointSelector(dst),
         ingress: [ingress],
       };
+
+      let portRules: any = undefined;
 
       if (ports.length > 0) {
         ingress["toPorts"] = [{ ports, rules: portRules }];
       }
 
       if (isCidrTarget(src)) {
-        ingress["fromCIDR"] = [src.cidr];
+        ingress["fromCidr"] = [src.cidr];
       } else if (isEndpointTarget(src)) {
-        ingress["fromEndpoints"] = [{ matchLabels: src.endpoint }];
+        ingress["fromEndpoints"] = [getEndpointSelector(src)];
       } else if (isEntityTarget(src)) {
         ingress["fromEntities"] = [src.entity];
       } else {

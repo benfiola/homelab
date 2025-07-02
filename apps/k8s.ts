@@ -11,9 +11,15 @@ export const policyTargets = createTargets((b) => ({
     entity: "kube-apiserver",
     ports: { api: [6443, "tcp"] },
   }),
-  dns: b.pod(namespace, "kube-dns", {
-    dns: [53, "any"],
-    metrics: [9153, "tcp"],
+  dns: b.target({
+    endpoint: {
+      "io.kubernetes.pod.namespace": namespace,
+      "k8s-app": "kube-dns",
+    },
+    ports: {
+      dns: [53, "any"],
+      metrics: [9153, "tcp"],
+    },
   }),
 }));
 

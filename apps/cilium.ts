@@ -291,7 +291,10 @@ const manifests: ManifestsCallback = async (app) => {
       entity: "host",
       ports: { hubble: [4244, "tcp"] },
     });
-    const ingressInt = b.target({ endpoint: { "reserved:ingress": "" } });
+    const ingressInt = b.target({
+      endpoint: { "reserved:ingress": "" },
+      meta: { useMatchExpressions: true },
+    });
     const ingress = b.target({ entity: "ingress" });
     const pods = b.target({ endpoint: {} });
     const remoteNode = b.target({
@@ -300,8 +303,8 @@ const manifests: ManifestsCallback = async (app) => {
     });
     const world = b.target({ entity: "world", ports: { dns: [53, "any"] } });
 
-    const r = b.rule(pods, kt.dns, "dns");
-    (r as any)._addDnsRule = true;
+    let r = b.rule(pods, kt.dns, "dns");
+    r[3] = { addDnsPortRule: true };
     b.rule(remoteNode, health);
     b.rule(health, remoteNode);
     b.rule(ingress, pt.hubbleUi, "api");
