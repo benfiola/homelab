@@ -1,316 +1,449 @@
 import { Chart } from "cdk8s";
-import {
-  CiliumClusterwideNetworkPolicy,
-  CiliumClusterwideNetworkPolicySpecs,
-  CiliumClusterwideNetworkPolicySpecsEgress,
-  CiliumClusterwideNetworkPolicySpecsIngress,
-} from "../resources/cilium/cilium.io";
+import { CiliumClusterwideNetworkPolicy } from "../resources/cilium/cilium.io";
 import { getPodLabels } from "./getPodLabels";
 
-type Protocol = "tcp" | "udp" | "any";
-type Port = [number | [number, number], Protocol];
+/**
+ * Protocol defines a port's protocol
+ */
+type Protocol = "any" | "tcp" | "udp";
 
-interface WithPorts {
-  ports: Port[];
+/**
+ * Port defines a port number and protocol as a tuple.
+ */
+type Port = [number, Protocol];
+
+/**
+ * PortRange defines a start port, end port and a protocol as a tuple.
+ */
+type PortRange = [number, number, Protocol];
+
+/**
+ * SomePort represents the different ways to express a port-like value.
+ */
+type SomePort = Port | PortRange;
+
+/**
+ * PortsMap represents a labelled port collection as stored within a Target.
+ */
+export type PortsMap = Record<string, SomePort[] | SomePort>;
+
+/**
+ * TargetMeta contains additional metadata used when constructing network policy rules.
+ * This is intended to accommodate endpoint target-level edge cases.
+ */
+interface TargetMeta {
+  // reserved:ingress rules require matchExpression clauses
+  useMatchExpressions?: boolean;
 }
 
-interface Cidr {
+/**
+ * BaseTarget defines common fields between all targets.
+ */
+interface BaseTarget<PM extends PortsMap> {
+  ports?: PM;
+  meta?: TargetMeta;
+}
+
+/**
+ * CidrTarget represents a CIDR-based ACL rule
+ */
+interface CidrTarget<PM extends PortsMap> extends BaseTarget<PM> {
   cidr: string;
 }
 
 /**
- * Typeguard ensuring an object is a Cidr
- * @param v the object to check
- * @returns true if v is a Cidr
+ * Type guard that ensures an object is of type CidrTarget
+ *
+ * @param v an object
+ * @returns true if the object is of type CidrTarget
  */
-const isCidr = (v: any): v is Cidr => {
+const isCidrTarget = (v: any): v is CidrTarget<PortsMap> => {
   return v["cidr"] !== undefined;
 };
 
-interface Dns {
+/**
+ * DnsTarget represents a DNS-based ACL rule
+ */
+interface DnsTarget<PM extends PortsMap> extends BaseTarget<PM> {
   dns: string;
 }
 
 /**
- * Typeguard ensuring an object is a Dns
- * @param v the object to check
- * @returns true if v is a Dns
+ * Type guard that ensures an object is of type DnsTarget
+ *
+ * @param v an object
+ * @returns true if the object is of type DnsTarget
  */
-const isDns = (v: any): v is Dns => {
+const isDnsTarget = (v: any): v is DnsTarget<PortsMap> => {
   return v["dns"] !== undefined;
 };
 
-interface Endpoint {
+/**
+ * EndpointTarget represents a endpoint-based ACL rule.
+ * Endpoints often represent either a namespace or a pod within a cluster.
+ */
+interface EndpointTarget<PM extends PortsMap> extends BaseTarget<PM> {
   endpoint: Record<string, string>;
 }
 
 /**
- * Typeguard ensuring an object is a Endpoint
- * @param v the object to check
- * @returns true if v is a Endpoint
+ * Type guard that ensures an object is of type EndpointTarget
+ *
+ * @param v an object
+ * @returns true if the object is of type EndpointTarget
  */
-const isEndpoint = (v: any): v is Endpoint => {
+const isEndpointTarget = (v: any): v is EndpointTarget<PortsMap> => {
   return v["endpoint"] !== undefined;
 };
 
-// See: https://docs.cilium.io/en/stable/security/policy/language/#entities-based
+/**
+ * EntityValue is known entity constants
+ * See: https://docs.cilium.io/en/stable/security/policy/language/#entities-based
+ */
 type EntityValue =
   | "cluster"
   | "host"
   | "ingress"
   | "kube-apiserver"
-  | "remote-node";
+  | "remote-node"
+  | "world";
 
-interface Entity {
+/**
+ * EntityTarget represents a entity-based ACL rule.
+ * Entities represent special entities within a cluster (defined by Cilium).
+ */
+interface EntityTarget<PM extends PortsMap> extends BaseTarget<PM> {
   entity: EntityValue;
 }
 
 /**
- * Typeguard ensuring an object is a Entity
- * @param v the object to check
- * @returns true if v is a Entity
+ * Type guard that ensures an object is of type EntityTarget
+ *
+ * @param v an object
+ * @returns true if the object is of type EntityTarget
  */
-const isEntity = (v: any): v is Entity => {
+const isEntityTarget = (v: any): v is EntityTarget<PortsMap> => {
   return v["entity"] !== undefined;
 };
 
-interface ExternalPod {
-  externalPod: [string, string];
-}
-
 /**
- * Typeguard ensuring an object is a ExternalPod
- * @param v the object to check
- * @returns true if v is a ExternalPod
+ * Target is the union of all *Target types.
  */
-const isExternalPod = (v: any): v is ExternalPod => {
-  return v["externalPod"] !== undefined;
-};
-
-interface HomeNetwork {
-  homeNetwork: null;
-}
+type Target<PM extends PortsMap> =
+  | CidrTarget<PM>
+  | DnsTarget<PM>
+  | EndpointTarget<PM>
+  | EntityTarget<PM>;
 
 /**
- * Typeguard ensuring an object is a HomeNetwork
- * @param v the object to check
- * @returns true if v is a HomeNetwork
+ * SomeTarget is a non-generic version of Target.
  */
-const isHomeNetwork = (v: any): v is HomeNetwork => {
-  return v["homeNetwork"] !== undefined;
-};
-
-interface KubeDns {
-  kubeDns: null;
-}
+type SomeTarget = Target<PortsMap>;
 
 /**
- * Typeguard ensuring an object is a KubeDns
- * @param v the object to check
- * @returns true if v is a KubeDns
- */
-const isKubeDns = (v: any): v is KubeDns => {
-  return v["kubeDns"] !== undefined;
-};
-
-// Piraeus is a special case whose pods don't have bfiola.dev/pod-name labels
-interface Piraeus {
-  piraeus: string;
-}
-
-/**
- * Typeguard ensuring an object is a Piraeus
- * @param v the object to check
- * @returns true if v is a Piraeus
- */
-const isPiraeus = (v: any): v is Piraeus => {
-  return v["piraeus"] !== undefined;
-};
-
-interface Pod {
-  pod: string;
-}
-
-/**
- * Typeguard ensuring an object is a Pod
- * @param v the object to check
- * @returns true if v is a Pod
- */
-const isPod = (v: any): v is Pod => {
-  return v["pod"] !== undefined;
-};
-
-/**
- * Processes a Resource - translating EndpointLike resources into actual Endpoint resources
+ * Helper method that ensures a properly typed target is returned
  *
- * @param r the resource to convert
- * @param namespace the current namespace
- * @returns the processed resource
+ * @param target a target
+ * @returns a type-constrained target
  */
-const processResource = <T extends Resource | (Resource & WithPorts)>(
-  r: T,
-  namespace: string
-): T => {
-  let v: any = { ...r };
-  if (isExternalPod(r)) {
-    v["endpoint"] = getPodLabels(r.externalPod[1]);
-    if (r.externalPod[0] !== "*") {
-      v["endpoint"]["io.kubernetes.pod.namespace"] = r.externalPod[0];
-    }
-    delete v["externalPod"];
-  } else if (isKubeDns(r)) {
-    v["endpoint"] = {
-      "io.kubernetes.pod.namespace": "kube-system",
-      "k8s-app": "kube-dns",
-    };
-    delete v["kubeDns"];
-  } else if (isHomeNetwork(r)) {
-    v["cidr"] = "192.168.0.0/16";
-    delete v["homeNetwork"];
-  } else if (isPiraeus(r)) {
-    v["endpoint"] = {
-      "app.kubernetes.io/component": r.piraeus,
+const createTarget = <PM extends PortsMap, T extends Target<PM>>(
+  target: T
+): T => target;
+
+/**
+ * Helper method that returns a namespace target (defining common labels).
+ *
+ * @param namespace the namespace
+ * @param ports the ports to attach to this target
+ * @returns a namespace endpoint target
+ */
+const createNamespaceTarget = <PM extends PortsMap = {}>(
+  namespace: string,
+  ports?: PM
+) => {
+  return createTarget({
+    endpoint: {
       "io.kubernetes.pod.namespace": namespace,
-      "app.kubernetes.io/name": "piraeus-datastore",
-    };
-    delete v["piraeus"];
-  } else if (isPod(r)) {
-    v["endpoint"] = {
-      "io.kubernetes.pod.namespace": namespace,
-      ...getPodLabels(r.pod),
-    };
-    delete v["pod"];
+    },
+    ports: (ports || {}) as PM,
+  });
+};
+
+/**
+ * Helper method that returns a namespace target (defining common labels).
+ *
+ * @param namespace the namespace.  if null, matches pods across all namespaces.
+ * @param pod the pod name
+ * @param ports the ports to attach to this target
+ * @returns a pod endpoint target
+ */
+const createPodTarget = <PM extends PortsMap = {}>(
+  namespace: string | null,
+  pod: string,
+  ports?: PM
+) => {
+  let endpoint: Record<string, string> = getPodLabels(pod);
+  if (namespace !== null) {
+    endpoint["io.kubernetes.pod.namespace"] = namespace;
   }
-  return v;
+  return createTarget({
+    endpoint,
+    ports: (ports || {}) as PM,
+  });
 };
 
-type CidrLike = HomeNetwork;
-type EndpointLike = ExternalPod | KubeDns | Piraeus | Pod;
-type Resource = Cidr | CidrLike | Dns | Endpoint | EndpointLike | Entity;
-
-export interface CreateNetworkPolicyRule {
-  from: Resource;
-  to: Resource & WithPorts;
+/**
+ * TargetBuilder helps build targets.  Primarily provides common helper target methods
+ * without requiring importing all long-named functions.
+ */
+interface TargetBuilder {
+  target: typeof createTarget;
+  pod: typeof createPodTarget;
+  namespace: typeof createNamespaceTarget;
 }
 
 /**
- * Creates a CiliumClusterwideNetworkPolicy with the provided rules.
+ * Callback supplied to createTargets
+ */
+type TargetBuilderCallback<RV extends any> = (b: TargetBuilder) => RV;
+
+/**
+ * Builder method that simplifies target creation
+ * @param cb callback used to build targets
+ * @returns the return value of the callback
+ */
+export const createTargets = <RV extends any>(
+  cb: TargetBuilderCallback<RV>
+): RV => {
+  const builder: TargetBuilder = {
+    namespace: createNamespaceTarget,
+    pod: createPodTarget,
+    target: createTarget,
+  };
+  return cb(builder);
+};
+
+/**
+ * TargetPortKeys helps extract the port labels for the given target
+ */
+type TargetPortKeys<T extends SomeTarget> = keyof T["ports"];
+
+/**
+ * RuleMeta contains additional metadata used when constructing network policy rules.
+ * This is intended to accommodate rule-level edge cases.
+ */
+interface RuleMeta {
+  // cilium needs a specific kube dns rule to match all dns
+  addDnsPortRule?: boolean;
+}
+
+/**
+ * Rule contains a source, a destination and the ports that comprise an ACL
+ */
+type Rule =
+  | [SomeTarget, SomeTarget, SomePort[]]
+  | [SomeTarget, SomeTarget, SomePort[], RuleMeta];
+
+/**
+ * Helper method that simplifies the creation of rules by referencing known port labels for the destination.
  *
- * Intended to be *the* network policy for the entire namespace and is named after the namespace itself.
- * Will create rules when rules[].to points to an endpoint
- * Will create rules when rules[].from points to an endpoint.
+ * @param src the source target
+ * @param dst the destination target
+ * @param firstPortKey the first port keys to include in the ACL (requires at least one port key)
+ * @param restPortKeys additional port keys to include in the ACL
+ * @returns a rule
+ */
+const createRule = <PM extends PortsMap, Dst extends Target<PM>>(
+  src: SomeTarget,
+  dst: Dst,
+  ...portKeys: TargetPortKeys<Dst>[]
+): Rule => {
+  const dstPorts: any = dst.ports || {};
+  const ports: SomePort[] = [];
+  for (const portKey of Array.from(new Set(portKeys))) {
+    const val = dstPorts[portKey];
+    if (!val === undefined) {
+      throw new Error(
+        `port key '${portKey.toString()}' not in target ${JSON.stringify(dst)}`
+      );
+    }
+
+    if (val.length === 0) {
+      continue;
+    }
+
+    if (Array.isArray(val[0])) {
+      ports.push(...val);
+    } else {
+      ports.push(val);
+    }
+  }
+
+  return [src, dst, ports];
+};
+
+/**
+ * NetworkPolicyBuilder helps create network policies
+ */
+interface NetworkPolicyBuilder {
+  rule: typeof createRule;
+  target: typeof createTarget;
+}
+
+/**
+ * NetworkPolicyCallback is invoked by createNetworkPolicy and helps build a network policy.
+ */
+type NetworkPolicyCallback = (b: NetworkPolicyBuilder) => void;
+
+/** Gets a cilium endpoint selector from a given endpoint target */
+const getEndpointSelector = (value: EndpointTarget<any>) => {
+  if (Object.keys(value.endpoint).length === 0) {
+    return {};
+  }
+
+  if (!value?.meta?.useMatchExpressions) {
+    return { matchLabels: value.endpoint };
+  }
+
+  const matchExpressions: Record<string, string>[] = [];
+  Object.entries(value.endpoint).map(([key, value]) => {
+    if (value !== "") {
+      throw new Error(`unsupported expression value: ${JSON.stringify(value)}`);
+    }
+    matchExpressions.push({ key, operator: "Exists" });
+  });
+  return { matchExpressions };
+};
+
+/**
+ * Helper method to create a network policy with the given rule list.
  *
- * @param chart the chart to attach to (NOTE: uses the chart.namespace field)
- * @param rules the rules to insert into the network policy
- * @returns the constructed network policy
+ * @param chart the chart to attach the k8s resource to
+ * @param rules the list of rules that belong to the network policy
+ * @returns a CiliumClusterwideNetworkPolicy resource
+ */
+const _createNetworkPolicy = (chart: Chart, rules: Rule[]) => {
+  let specs: any = [];
+
+  rules.map((rule) => {
+    const ruleMeta = rule.length === 4 ? rule[3] : {};
+
+    const ports: any = [];
+
+    const rulePorts = rule[2];
+    rulePorts.map((rulePort) => {
+      let startPort;
+      let endPort;
+      let protocol;
+
+      if (rulePort.length === 2) {
+        startPort = rulePort[0];
+        protocol = rulePort[1];
+      } else if (rulePort.length === 3) {
+        startPort = rulePort[0];
+        endPort = rulePort[1];
+        protocol = rulePort[2];
+      } else {
+        throw new Error(`invalid port: ${JSON.stringify(rulePort)}`);
+      }
+
+      ports.push({
+        port: `${startPort}`,
+        endPort,
+        protocol: protocol.toUpperCase(),
+      });
+    });
+
+    const src = rule[0];
+    const dst = rule[1];
+
+    if (isEndpointTarget(src)) {
+      let egress: any = {};
+
+      const spec = {
+        egress: [egress],
+        endpointSelector: getEndpointSelector(src),
+      };
+
+      let portRules: any = undefined;
+      if (ruleMeta.addDnsPortRule) {
+        portRules = { dns: [{ matchPattern: "*" }] };
+      }
+
+      if (ports.length > 0) {
+        egress["toPorts"] = [{ ports, rules: portRules }];
+      }
+
+      if (isCidrTarget(dst)) {
+        egress["toCidr"] = [dst.cidr];
+      } else if (isDnsTarget(dst)) {
+        egress["toFqdNs"] = [{ matchPattern: dst.dns }];
+      } else if (isEndpointTarget(dst)) {
+        egress["toEndpoints"] = [getEndpointSelector(dst)];
+      } else if (isEntityTarget(dst)) {
+        egress["toEntities"] = [dst.entity];
+      } else {
+        throw new Error(`invalid dst target: ${JSON.stringify(dst)}`);
+      }
+
+      specs.push(spec);
+    }
+
+    if (isEndpointTarget(dst)) {
+      let ingress: any = {};
+
+      const spec = {
+        endpointSelector: getEndpointSelector(dst),
+        ingress: [ingress],
+      };
+
+      let portRules: any = undefined;
+
+      if (ports.length > 0) {
+        ingress["toPorts"] = [{ ports, rules: portRules }];
+      }
+
+      if (isCidrTarget(src)) {
+        ingress["fromCidr"] = [src.cidr];
+      } else if (isEndpointTarget(src)) {
+        ingress["fromEndpoints"] = [getEndpointSelector(src)];
+      } else if (isEntityTarget(src)) {
+        ingress["fromEntities"] = [src.entity];
+      } else {
+        throw new Error(`invalid src target: ${JSON.stringify(src)}`);
+      }
+
+      specs.push(spec);
+    }
+  });
+
+  const name = chart.namespace;
+  return new CiliumClusterwideNetworkPolicy(chart, `netpol-${name}`, {
+    metadata: { name },
+    specs,
+  });
+};
+
+/**
+ * Helper method that exposes a builder allowing for simpler creation of network policy resources.
+ *
+ * @param chart the chart to attach the k8s resource to
+ * @param cb the callback invoked with a builder used to create network policy rules
+ * @returns a CiliumClusterwideNetworkPolicy resource
  */
 export const createNetworkPolicy = (
   chart: Chart,
-  id: string,
-  rules: CreateNetworkPolicyRule[]
-): CiliumClusterwideNetworkPolicy => {
-  if (chart.namespace === undefined) {
-    throw new Error("chart namespace undefined");
-  }
-
-  let specs: CiliumClusterwideNetworkPolicySpecs[] = [];
-
-  for (const rule of rules) {
-    const ruleTo = processResource(rule.to, chart.namespace);
-    const ruleFrom = processResource(rule.from, chart.namespace);
-
-    type Port = {
-      port: string;
-      endPort: number | undefined;
-      protocol: string;
-    };
-    let ports: Port[] = [];
-    for (const portData of ruleTo.ports) {
-      let port: number;
-      let endPort: number | undefined;
-      if (Array.isArray(portData[0])) {
-        port = portData[0][0];
-        endPort = portData[0][1];
-      } else {
-        port = portData[0];
-      }
-      ports.push({
-        port: `${port}`,
-        endPort,
-        protocol: portData[1].toUpperCase(),
-      });
-    }
-
-    if (isEndpoint(ruleTo)) {
-      let ingress: CiliumClusterwideNetworkPolicySpecsIngress[] = [];
-      if (isCidr(ruleFrom)) {
-        ingress.push({
-          fromCidr: [ruleFrom.cidr],
-        });
-      } else if (isEndpoint(ruleFrom)) {
-        ingress.push({
-          fromEndpoints: [{ matchLabels: ruleFrom.endpoint }],
-        });
-      } else if (isEntity(ruleFrom)) {
-        ingress.push({
-          fromEntities: [ruleFrom.entity as any],
-        });
-      } else {
-        throw new Error(`unimplemented: ${JSON.stringify(rule.from)}`);
-      }
-
-      (ingress[0].toPorts as any) = [{ ports }];
-
-      specs.push({
-        endpointSelector: {
-          matchLabels: ruleTo.endpoint,
-        },
-        ingress,
-      });
-    }
-
-    if (isEndpoint(ruleFrom)) {
-      let egress: CiliumClusterwideNetworkPolicySpecsEgress[] = [];
-      if (isCidr(ruleTo)) {
-        egress.push({
-          toCidr: [ruleTo.cidr],
-        });
-      } else if (isDns(ruleTo)) {
-        let rule;
-        if (ruleTo.dns.indexOf("*") === -1) {
-          rule = { matchName: ruleTo.dns };
-        } else {
-          rule = { matchPattern: ruleTo.dns };
-        }
-        egress.push({
-          toFqdNs: [rule],
-        });
-      } else if (isEndpoint(ruleTo)) {
-        egress.push({
-          toEndpoints: [{ matchLabels: ruleTo.endpoint }],
-        });
-      } else if (isEntity(ruleTo)) {
-        egress.push({
-          toEntities: [ruleTo.entity as any],
-        });
-      } else {
-        throw new Error(`unimplemented: ${JSON.stringify(ruleTo)}`);
-      }
-      (egress[0].toPorts as any) = [{ ports }];
-
-      specs.push({
-        endpointSelector: {
-          matchLabels: ruleFrom.endpoint,
-        },
-        egress,
-      });
-    }
-  }
-
-  return new CiliumClusterwideNetworkPolicy(chart, id, {
-    metadata: {
-      name: chart.namespace,
+  cb: NetworkPolicyCallback
+) => {
+  const rules: Rule[] = [];
+  const builder: NetworkPolicyBuilder = {
+    rule: (src, dst, ...portKeys) => {
+      const rule = createRule(src, dst, ...portKeys);
+      rules.push(rule);
+      return rule;
     },
-    specs: specs,
-  });
+    target: createTarget,
+  };
+  cb(builder);
+  return _createNetworkPolicy(chart, rules);
 };
