@@ -67,6 +67,7 @@ const manifests: ManifestsCallback = async (app) => {
     {
       metadata: {
         name: "cloudflare-api-token",
+        namespace: chart.namespace,
       },
       stringData: {
         [`${apiTokenSecretKey}`]: env.CERT_MANAGER_CLOUDFLARE_API_TOKEN,

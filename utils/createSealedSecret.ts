@@ -1,5 +1,4 @@
 import { App, Chart } from "cdk8s";
-import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import path from "path";
 import { ObjectMeta, Secret, SecretProps } from "../resources/k8s/k8s";
@@ -37,7 +36,7 @@ const getBaseKubesealCmd = () => {
 };
 
 interface CreateSealedSecretPropsMeta extends ObjectMeta {
-  namespace?: string | undefined;
+  namespace: string | undefined;
 }
 
 interface CreateSealedSecretProps extends SecretProps {
@@ -55,7 +54,7 @@ interface CreateSealedSecretProps extends SecretProps {
  * @returns a `SealedSecret`
  */
 export const createSealedSecret = async (
-  construct: Construct,
+  construct: Chart,
   id: string,
   props: CreateSealedSecretProps
 ) => {
