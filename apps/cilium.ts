@@ -16,6 +16,7 @@ import {
   createNetworkPolicy,
   createTargets,
 } from "../utils/createNetworkPolicy";
+import { getCertIssuerAnnotations } from "../utils/getCertIssuerAnnotation";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodRequests } from "../utils/getPodRequests";
 import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLabels";
@@ -211,12 +212,16 @@ const manifests: ManifestsCallback = async (app) => {
           // enables the hubble ui
           enabled: true,
           ingress: {
+            // add cert-issuer annotations
+            annotations: getCertIssuerAnnotations(),
             // enable ingress to the frontend
             enabled: true,
             // use cluster ingress class
             className: getIngressClassName(),
             // give the ingress an accessible domain
             hosts: ["cilium.bulia.dev"],
+            // enable tls for the ingress
+            tls: [{ hosts: ["cilium.bulia.dev"], secretName: "hubble-ui-tls" }],
           },
         },
       },
