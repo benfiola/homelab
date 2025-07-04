@@ -18,6 +18,7 @@ import {
 } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
+import { getCertIssuerAnnotations } from "../utils/getCertIssuerAnnotation";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodLabels } from "../utils/getPodLabels";
@@ -255,10 +256,17 @@ const manifests: ManifestsCallback = async (app) => {
         },
         // expose alertmanager via ingress
         ingress: {
+          annotations: getCertIssuerAnnotations(),
           enabled: true,
           hosts: ["alertmanager.bulia.dev"],
           ingressClassName: getIngressClassName(),
           pathType: "Prefix",
+          tls: [
+            {
+              hosts: ["alertmanager.bulia.dev"],
+              secretName: "alertmanager-tls",
+            },
+          ],
         },
       },
       // produce cleaner resource names
@@ -283,9 +291,11 @@ const manifests: ManifestsCallback = async (app) => {
         },
         // expose grafana via ingress
         ingress: {
+          annotations: getCertIssuerAnnotations(),
           enabled: true,
           hosts: ["grafana.bulia.dev"],
           ingressClassName: getIngressClassName(),
+          tls: [{ hosts: ["grafana.bulia.dev"], secretName: "grafana-tls" }],
         },
         // resources for grafana
         resources: getPodRequests({ mem: 500 }),
@@ -325,10 +335,14 @@ const manifests: ManifestsCallback = async (app) => {
       prometheus: {
         // expose prometheus via ingress
         ingress: {
+          annotations: getCertIssuerAnnotations(),
           enabled: true,
           hosts: ["prometheus.bulia.dev"],
           ingressClassName: getIngressClassName(),
           pathType: "Prefix",
+          tls: [
+            { hosts: ["prometheus.bulia.dev"], secretName: "prometheus-tls" },
+          ],
         },
         prometheusSpec: {
           podMetadata: {
