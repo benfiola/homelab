@@ -45,10 +45,21 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;
     const pt = policyTargets;
-    const cloudflare = b.target({
+    const cloudflareApi = b.target({
       dns: "api.cloudflare.com",
       ports: { api: [443, "tcp"] },
     });
+    // `dig <nameserver>` was used to obtain these IP addresses
+    // see: https://developers.cloudflare.com/dns/troubleshooting/faq/#where-can-i-find-my-cloudflare-nameservers
+    const cloudflareNs = [
+      "108.162.193.94/32", // curt.ns.cloudflare.com
+      "108.162.194.219/32", // clara.ns.cloudflare.com
+      "162.159.38.219/32", // clara.ns.cloudflare.com
+      "172.64.33.94/32", // curt.ns.cloudflare.com
+      "172.64.34.219/32", // clara.ns.cloudflare.com
+      "173.245.59.94/32", // curt.ns.cloudflare.com
+    ].map((cidr) => b.target({ cidr, ports: { dns: [53, "any"] } }));
+
     const letsEncrypt = b.target({
       dns: "*.api.letsencrypt.org",
       ports: { api: [443, "tcp"] },
@@ -56,7 +67,10 @@ const manifests: ManifestsCallback = async (app) => {
     const remoteNode = b.target({ entity: "remote-node" });
 
     b.rule(pt.caInjector, kt.apiServer, "api");
-    b.rule(pt.controller, cloudflare, "api");
+    b.rule(pt.controller, cloudflareApi, "api");
+    for (const ns of cloudflareNs) {
+      b.rule(pt.controller, ns, "dns");
+    }
     b.rule(pt.controller, kt.apiServer, "api");
     b.rule(pt.controller, letsEncrypt, "api");
     b.rule(pt.startupiApiCheck, kt.apiServer, "api");
