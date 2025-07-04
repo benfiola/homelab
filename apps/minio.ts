@@ -12,6 +12,7 @@ import {
 } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
+import { getCertIssuerAnnotations } from "../utils/getCertIssuerAnnotation";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodRequests } from "../utils/getPodRequests";
@@ -108,15 +109,24 @@ const manifests: ManifestsCallback = async (app) => {
       ingress: {
         api: {
           // enable ingress to the minio tenant's api (for other application access)
+          annotations: getCertIssuerAnnotations(),
           enabled: true,
-          ingressClassName: getIngressClassName(),
           host: "minio.bulia.dev",
+          ingressClassName: getIngressClassName(),
+          tls: [{ hosts: ["minio.bulia.dev"], secretName: "minio-tls" }],
         },
         console: {
           // enable ingress to the minio tenant's console (presents a nice ui to interact with this minio server)
+          annotations: getCertIssuerAnnotations(),
           enabled: true,
+          host: "console.minio.bulia.dev",
           ingressClassName: getIngressClassName(),
-          host: "console.minio.bulia",
+          tls: [
+            {
+              hosts: ["console.minio.bulia.dev"],
+              secretName: "minio-console-tls",
+            },
+          ],
         },
       },
       // secrets is deprecated but has a default value - set to a falsy value (configure via tenants.secrets instead)
