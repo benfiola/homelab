@@ -10,7 +10,7 @@ import { createCloudflareTunnel } from "../utils/createCloudflareTunnel";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -64,7 +64,7 @@ const manifests: ManifestsCallback = async (app) => {
     });
     const ingress = b.target({ entity: "ingress" });
     const router = b.target({
-      dns: "router.bulia",
+      dns: "router.bulia.dev",
       ports: { api: [8728, "tcp"] },
     });
     const tunnel = b.target({
@@ -100,7 +100,7 @@ const manifests: ManifestsCallback = async (app) => {
       ACCESS_OPERATOR_CLOUDFLARE_TOKEN:
         env.ACCESS_OPERATOR_CLOUDFLARE_API_TOKEN,
       ACCESS_OPERATOR_LOG_LEVEL: "debug",
-      ACCESS_OPERATOR_ROUTEROS_ADDRESS: "router.bulia:8728",
+      ACCESS_OPERATOR_ROUTEROS_ADDRESS: "router.bulia.dev:8728",
       ACCESS_OPERATOR_ROUTEROS_PASSWORD: env.ACCESS_OPERATOR_ROUTEROS_PASSWORD,
       ACCESS_OPERATOR_ROUTEROS_USERNAME: "access-operator",
     },
@@ -128,7 +128,7 @@ const manifests: ManifestsCallback = async (app) => {
         // enable ingress for server
         ingress: {
           enabled: true,
-          hostname: "access.bulia",
+          hostname: "access.bulia.dev",
           ingressClassName: getIngressClassName(),
         },
       },

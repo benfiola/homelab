@@ -5,7 +5,7 @@ import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createStatefulSet } from "../utils/createStatefulSet";
@@ -154,7 +154,7 @@ const manifests: ManifestsCallback = async (app) => {
     metadata: {
       namespace: chart.namespace,
       name: "factorio",
-      annotations: getDnsAnnotation("factorio.bulia"),
+      annotations: getDnsAnnotation("factorio.bulia.dev"),
     },
     spec: {
       type: "LoadBalancer",

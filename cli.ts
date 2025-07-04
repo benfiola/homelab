@@ -27,6 +27,7 @@ import { temporaryDirectory } from "./utils/temporaryDirectory";
 const baseFolder = __dirname;
 
 const bucketName = "homelab-8hxm62";
+const cluster = "cluster.bulia.dev";
 
 /**
  * Uses 'glob' but returns an iterable of absolute file paths.
@@ -309,7 +310,7 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
   const machinePatchPath = path.join(
     __dirname,
     "talos",
-    `node-${node}.cluster.bulia.yaml`
+    `node-${node}.${cluster}.yaml`
   );
   const machinePatch = parse((await readFile(machinePatchPath)).toString());
 
@@ -325,7 +326,7 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
     "talosctl",
     "gen",
     "config",
-    "--additional-sans=cluster.bulia",
+    `--additional-sans=${cluster}`,
     `--install-image=${installImage}`,
     `--kubernetes-version=${kubernetesVersion}`,
     "--output=-",
@@ -335,8 +336,8 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
     "--with-examples=false",
     "--with-kubespan=false",
     `--with-secrets=${secretsPath}`,
-    "cluster.bulia",
-    "https://cluster.bulia:6443",
+    `${cluster}`,
+    `https://${cluster}:6443`,
   ];
   const baseConfig = parse(
     execSync(join(cmd), {
@@ -357,7 +358,7 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
     await writeFile(configPath, content);
     cmd = [
       "talosctl",
-      `--nodes=node-${node}.cluster.bulia`,
+      `--nodes=node-${node}.${cluster}`,
       "apply-config",
       `--file=${configPath}`,
     ];
@@ -377,7 +378,7 @@ async function talosBootstrap(node: string) {
   const configPatchPath = path.join(
     __dirname,
     "talos",
-    `node-${node}.cluster.bulia.yaml`
+    `node-${node}.${cluster}.yaml`
   );
   const configPatch = parse((await readFile(configPatchPath)).toString());
 
@@ -386,7 +387,7 @@ async function talosBootstrap(node: string) {
     throw new Error(`node ${node} does not have 'controlplane' role.`);
   }
 
-  let cmd = ["talosctl", `--nodes=node-${node}.cluster.bulia`, "bootstrap"];
+  let cmd = ["talosctl", `--nodes=node-${node}.${cluster}`, "bootstrap"];
   execSync(join(cmd), { stdio: "inherit" });
 }
 
@@ -411,15 +412,15 @@ async function talosGenerateTalosconfig() {
 
   const cmd = [
     "talosctl",
-    "--endpoints=cluster.bulia",
+    `--endpoints=${cluster}`,
     "gen",
     "config",
     "--force",
     `--output=-`,
     "--output-types=talosconfig",
     `--with-secrets=${secretsPath}`,
-    "cluster.bulia",
-    "https://cluster.bulia:6443",
+    cluster,
+    `https://${cluster}:6443`,
   ];
   const config = parse(
     execSync(join(cmd), {
@@ -428,15 +429,15 @@ async function talosGenerateTalosconfig() {
   );
 
   const nodes = [];
-  const nodePatchPaths = await glob("talos/*.cluster.bulia.yaml");
+  const nodePatchPaths = await glob(`talos/*.${cluster}.yaml`);
   for (const nodePatchPath of nodePatchPaths) {
     const nodePatch = parse((await readFile(nodePatchPath)).toString());
     const node = nodePatch["machine"]["network"]["hostname"];
     nodes.push(node);
   }
 
-  const context = config["contexts"]["cluster.bulia"];
-  context["endpoints"] = ["cluster.bulia"];
+  const context = config["contexts"][cluster];
+  context["endpoints"] = [cluster];
   context["nodes"] = nodes;
 
   const configPath = path.join(__dirname, "talos", "config");
@@ -449,7 +450,7 @@ async function talosGenerateTalosconfig() {
  * @param node the target node
  */
 async function talosGenerateKubeconfig(node: string) {
-  const cmd = ["talosctl", `--nodes=node-${node}.cluster.bulia`, "kubeconfig"];
+  const cmd = ["talosctl", `--nodes=node-${node}.${cluster}`, "kubeconfig"];
   execSync(join(cmd), { stdio: "inherit" });
 }
 
@@ -494,7 +495,7 @@ async function talosUpgradeK8s(node: string) {
 
   const cmd = [
     "talosctl",
-    `--nodes=node-${node}.cluster.bulia`,
+    `--nodes=node-${node}.${cluster}`,
     "upgrade-k8s",
     `--to=${kubernetesVersion}`,
   ];

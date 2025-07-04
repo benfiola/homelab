@@ -15,7 +15,7 @@ import {
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodRequests } from "../utils/getPodRequests";
 import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLabels";
@@ -216,7 +216,7 @@ const manifests: ManifestsCallback = async (app) => {
             // use cluster ingress class
             className: getIngressClassName(),
             // give the ingress an accessible domain
-            hosts: ["cilium.bulia"],
+            hosts: ["cilium.bulia.dev"],
           },
         },
       },

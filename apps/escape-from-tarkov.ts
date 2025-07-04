@@ -9,7 +9,7 @@ import { createMinioUser } from "../utils/createMinioUser";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { createStatefulSet } from "../utils/createStatefulSet";
@@ -203,7 +203,7 @@ const manifests: ManifestsCallback = async (app) => {
     metadata: {
       namespace: chart.namespace,
       name: "escape-from-tarkov",
-      annotations: getDnsAnnotation("eft.bulia"),
+      annotations: getDnsAnnotation("eft.bulia.dev"),
     },
     spec: {
       type: "LoadBalancer",

@@ -5,7 +5,7 @@ import { codeblock } from "../utils/codeblock";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { getPodRequests } from "../utils/getPodRequests";
 
 const helmData = {

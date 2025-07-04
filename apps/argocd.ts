@@ -13,7 +13,7 @@ import { codeblock } from "../utils/codeblock";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
@@ -189,7 +189,7 @@ const manifests: ManifestsCallback = async (app) => {
       ...baseValues,
       global: {
         // define the ingress hostname for the workload
-        domain: "argocd.bulia",
+        domain: "argocd.bulia.dev",
       },
       server: {
         ...baseValues.server,

@@ -5,7 +5,7 @@ import { createDeployment } from "../utils/createDeployment";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { parseEnv } from "../utils/parseEnv";
@@ -34,7 +34,7 @@ const manifests: ManifestsCallback = async (app) => {
     const kt = kubeTargets;
     const pt = policyTargets;
     const router = b.target({
-      dns: "router.bulia",
+      dns: "router.bulia.dev",
       ports: { api: [8728, "tcp"] },
     });
 
@@ -67,7 +67,7 @@ const manifests: ManifestsCallback = async (app) => {
     },
     stringData: {
       EXTERNAL_DNS_ROUTEROS_PROVIDER_LOG_LEVEL: "debug",
-      EXTERNAL_DNS_ROUTEROS_PROVIDER_ROUTEROS_ADDRESS: "router.bulia:8728",
+      EXTERNAL_DNS_ROUTEROS_PROVIDER_ROUTEROS_ADDRESS: "router.bulia.dev:8728",
       EXTERNAL_DNS_ROUTEROS_PROVIDER_ROUTEROS_PASSWORD:
         env.EXTERNAL_DNS_ROUTEROS_PASSWORD,
       EXTERNAL_DNS_ROUTEROS_PROVIDER_ROUTEROS_USERNAME: "external-dns",

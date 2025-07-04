@@ -15,7 +15,7 @@ import {
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -256,7 +256,7 @@ const manifests: ManifestsCallback = async (app) => {
         // expose alertmanager via ingress
         ingress: {
           enabled: true,
-          hosts: ["alertmanager.bulia"],
+          hosts: ["alertmanager.bulia.dev"],
           ingressClassName: getIngressClassName(),
           pathType: "Prefix",
         },
@@ -284,7 +284,7 @@ const manifests: ManifestsCallback = async (app) => {
         // expose grafana via ingress
         ingress: {
           enabled: true,
-          hosts: ["grafana.bulia"],
+          hosts: ["grafana.bulia.dev"],
           ingressClassName: getIngressClassName(),
         },
         // resources for grafana
@@ -326,7 +326,7 @@ const manifests: ManifestsCallback = async (app) => {
         // expose prometheus via ingress
         ingress: {
           enabled: true,
-          hosts: ["prometheus.bulia"],
+          hosts: ["prometheus.bulia.dev"],
           ingressClassName: getIngressClassName(),
           pathType: "Prefix",
         },

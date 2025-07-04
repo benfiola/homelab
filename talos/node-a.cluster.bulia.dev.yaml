@@ -4,5 +4,4 @@ machine:
   install:
     disk: /dev/sda
   network:
-    hostname: node-a.cluster.bulia
-  
+    hostname: node-a.cluster.bulia.dev

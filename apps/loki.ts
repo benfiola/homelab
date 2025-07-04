@@ -9,7 +9,7 @@ import { createMinioUser } from "../utils/createMinioUser";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { getPodRequests } from "../utils/getPodRequests";
 import { getStorageClassName } from "../utils/getStorageClassName";
 import { parseEnv } from "../utils/parseEnv";

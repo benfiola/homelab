@@ -11,7 +11,7 @@ import {
   createNetworkPolicy,
   createTargets,
   PortsMap,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 
 const appData = {
   version: "2.9.0",

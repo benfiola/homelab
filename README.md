@@ -156,7 +156,7 @@ homelab talos generate-secrets
 Use these secrets to generate a local talosconfig file to communicate with the cluster
 
 ```shell
-homelab talos generate-config
+homelab talos generate-talosconfig
 ```
 
 ### Initial Node Setup
@@ -165,7 +165,7 @@ homelab talos generate-config
 > Raspberry PI machines need to be set up with [UEFI firmware](https://github.com/pftf/RPi4) before proceeding. Once done, ensure that the 3GB RAM limit is disabled within the UEFI menu.
 
 > [!NOTE]
-> The cluster endpoint is `cluster.bulia` - whose DNS A points to _all_ controlplane worker node IPs. Each node has a domain `node-[name].cluster.bulia` as an additional DNS A record.
+> The cluster endpoint is `cluster.bulia.dev` - whose DNS A points to _all_ controlplane worker node IPs. Each node has a domain `node-[name].cluster.bulia.dev` as an additional DNS A record.
 
 Each node is running [Talos Linux](https://www.talos.dev/) - a Linux distribution designed purely to run Kubernetes.
 
@@ -174,7 +174,7 @@ To install Talos Linux onto a node, prepare USB installation media with [Ventoy]
 Boot into the installation media on each node - which then launches Talos Linux in maintenance mode. This allows you to 'apply configuration' to these machines - which triggers installation/repair processes. Use the `homelab` CLI to apply configuration to the nodes. This starts the installation process.
 
 > [!NOTE]
-> The node configuration can be found at `./talos/node-[name].cluster.bulia.yaml`. Take note of the `ROLE` field. These configuration files are overlaid on top of `./talos/[role].yaml` to produce the full configuration.
+> The node configuration can be found at `./talos/node-[name].cluster.bulia.dev.yaml`. Take note of the `ROLE` field. These configuration files are overlaid on top of `./talos/[role].yaml` to produce the full configuration.
 
 ```shell
 homelab talos apply [name] --insecure
@@ -184,6 +184,23 @@ Once complete, the nodes should reboot automatically - booting off of the partit
 
 > [!IMPORTANT]
 > Raspberry PI machines do not automatically reboot after installation. Manually power cycle them.
+
+### Initial Cluster Setup
+
+> [!IMPORTANT]
+> You must specify a control plane node when bootstrapping the cluster
+
+When all nodes have been prepared, start Kubernetes by bootstrapping the cluster:
+
+```shell
+homelab talos bootstrap a
+```
+
+This starts Kubernetes - and all nodes will then join the cluster. You can then obtain the administrative kubeconfig for the cluster using the `homelab` CLI:
+
+```shell
+homelab talos kubeconfig
+```
 
 #### Piraeus-specific setup
 
@@ -206,23 +223,6 @@ parted <block-device>
 pvcreate <partition>
 vgcreate vg <partition>
 lvcreate -L <pool-size> -T vg/piraeus
-```
-
-### Initial Cluster Setup
-
-> [!IMPORTANT]
-> You must specify a control plane node when bootstrapping the cluster
-
-When all nodes have been prepared, start Kubernetes by bootstrapping the cluster:
-
-```shell
-homelab talos bootstrap a
-```
-
-This starts Kubernetes - and all nodes will then join the cluster. You can then obtain the administrative kubeconfig for the cluster using the `homelab` CLI:
-
-```shell
-homelab talos kubeconfig
 ```
 
 You can then use the `homelab` CLI to bootstrap the cluster with required applications:
@@ -250,7 +250,7 @@ ArgoCD should begin deploying all manifests and will _eventually_ reconcile them
 
 Modifications made to the:
 
-- `./talos/node-*.cluster.bulia.yaml`
+- `./talos/node-*.cluster.bulia.dev.yaml`
 - `./talos/node.yaml`
 - `./talos/system-disk.yaml`
 

@@ -4,4 +4,4 @@ machine:
   install:
     disk: /dev/nvme0n1
   network:
-    hostname: node-e.cluster.bulia
+    hostname: node-e.cluster.bulia.dev

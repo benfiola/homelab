@@ -6,11 +6,10 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
-import { } from "../utils/createNetworkPolicy";
 import {
   createNetworkPolicy,
   createTargets,
-} from "../utils/createNetworkPolicyNew";
+} from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
@@ -111,7 +110,7 @@ const manifests: ManifestsCallback = async (app) => {
           // enable ingress to the minio tenant's api (for other application access)
           enabled: true,
           ingressClassName: getIngressClassName(),
-          host: "minio.bulia",
+          host: "minio.bulia.dev",
         },
         console: {
           // enable ingress to the minio tenant's console (presents a nice ui to interact with this minio server)

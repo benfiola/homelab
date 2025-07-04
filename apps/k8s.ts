@@ -1,5 +1,5 @@
 import { CliContext, ResourcesCallback } from "../utils/CliContext";
-import { createTargets } from "../utils/createNetworkPolicyNew";
+import { createTargets } from "../utils/createNetworkPolicy";
 import { exec } from "../utils/exec";
 
 const version = "1.32.0";
