@@ -61,7 +61,7 @@ const manifests: ManifestsCallback = async (app) => {
     ].map((cidr) => b.target({ cidr, ports: { dns: [53, "any"] } }));
 
     const letsEncrypt = b.target({
-      dns: "*.api.letsencrypt.org",
+      dns: "acme-v02.api.letsencrypt.org",
       ports: { api: [443, "tcp"] },
     });
     const remoteNode = b.target({ entity: "remote-node" });
@@ -134,7 +134,7 @@ const manifests: ManifestsCallback = async (app) => {
         privateKeySecretRef: {
           name: "acme-identity",
         },
-        server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+        server: "https://acme-v02.api.letsencrypt.org/directory",
         solvers: [
           {
             dns01: {
