@@ -225,7 +225,7 @@ vgcreate vg <partition>
 lvcreate -L <pool-size> -T vg/piraeus
 ```
 
-You can then use the `homelab` CLI to bootstrap the cluster with required applications:
+Once this is complete, you can then use the `homelab` CLI to bootstrap the cluster with required applications:
 
 ```shell
 # provides the cluster CNI
@@ -235,6 +235,11 @@ homelab bootstrap argocd
 # provides basic secrets management
 homelab bootstrap sealed-secrets
 ```
+
+> [!IMPORTANT]
+> Once sealed-secrets is bootstrapped, obtain its certificate via `homelab apps sealed-secrets get-certificate`.
+> Update the `homelab` Github workflow secret `SEALED_SECRETS_CERT` with this value.
+> Re-run the publish job to re-encrypt SealedSecret resources with this new cert.
 
 Once these workoads are all running, hand over deployments to _ArgoCD_ by running the following command:
 
