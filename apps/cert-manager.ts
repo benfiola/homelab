@@ -45,10 +45,15 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;
     const pt = policyTargets;
+    const letsEncrypt = b.target({
+      dns: "*.api.letsencrypt.org",
+      ports: { api: [443, "tcp"] },
+    });
     const remoteNode = b.target({ entity: "remote-node" });
 
     b.rule(pt.caInjector, kt.apiServer, "api");
     b.rule(pt.controller, kt.apiServer, "api");
+    b.rule(pt.controller, letsEncrypt, "api");
     b.rule(pt.startupiApiCheck, kt.apiServer, "api");
     b.rule(pt.webhook, kt.apiServer, "api");
     b.rule(remoteNode, pt.webhook, "api");
