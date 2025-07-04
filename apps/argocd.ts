@@ -15,6 +15,7 @@ import {
   createTargets,
 } from "../utils/createNetworkPolicy";
 import { exec } from "../utils/exec";
+import { getCertIssuerAnnotations } from "../utils/getCertIssuerAnnotation";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodRequests } from "../utils/getPodRequests";
@@ -194,12 +195,14 @@ const manifests: ManifestsCallback = async (app) => {
       server: {
         ...baseValues.server,
         ingress: {
+          // use cluster cert-issuer
+          annotations: getCertIssuerAnnotations(),
           // enable ingress generation
           enabled: true,
           // ensure ingress class utilizes the installed ingress controller
           ingressClassName: getIngressClassName(),
-          // disable tls
-          tls: false,
+          // enable tls
+          tls: true,
         },
       },
     },

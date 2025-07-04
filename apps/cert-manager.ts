@@ -10,8 +10,10 @@ import {
   createNetworkPolicy,
   createTargets,
 } from "../utils/createNetworkPolicy";
+import { createSealedSecret } from "../utils/createSealedSecret";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
+import { parseEnv } from "../utils/parseEnv";
 
 const helmData = {
   chart: "cert-manager",
@@ -29,6 +31,10 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const manifests: ManifestsCallback = async (app) => {
+  const env = parseEnv((zod) => ({
+    CERT_MANAGER_CLOUDFLARE_API_TOKEN: zod.string(),
+  }));
+
   const { policyTargets: kubeTargets } = await import("./k8s");
   const { ClusterIssuer } = await import(
     "../resources/cert-manager/cert-manager.io"
@@ -54,6 +60,20 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
+  const apiTokenSecretKey = "apiToken";
+  const apiTokenSecret = await createSealedSecret(
+    chart,
+    "cloudflare-api-token",
+    {
+      metadata: {
+        name: "cloudflare-api-token",
+      },
+      stringData: {
+        [`${apiTokenSecretKey}`]: env.CERT_MANAGER_CLOUDFLARE_API_TOKEN,
+      },
+    }
+  );
+
   new Helm(chart, "helm", {
     ...helmData,
     namespace: chart.namespace,
@@ -76,6 +96,33 @@ const manifests: ManifestsCallback = async (app) => {
     },
     spec: {
       selfSigned: {},
+    },
+  });
+
+  new ClusterIssuer(chart, "cloudflare-issuer", {
+    metadata: {
+      name: "cloudflare",
+    },
+    spec: {
+      acme: {
+        email: "benfiola@gmail.com",
+        privateKeySecretRef: {
+          name: "acme-identity",
+        },
+        server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+        solvers: [
+          {
+            dns01: {
+              cloudflare: {
+                apiTokenSecretRef: {
+                  name: apiTokenSecret.metadata.name!,
+                  key: apiTokenSecretKey,
+                },
+              },
+            },
+          },
+        ],
+      },
     },
   });
 

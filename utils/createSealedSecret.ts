@@ -37,7 +37,7 @@ const getBaseKubesealCmd = () => {
 };
 
 interface CreateSealedSecretPropsMeta extends ObjectMeta {
-  namespace: string | undefined;
+  namespace?: string | undefined;
 }
 
 interface CreateSealedSecretProps extends SecretProps {
