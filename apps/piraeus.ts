@@ -1,4 +1,4 @@
-import { Chart, Include } from "cdk8s";
+import { Chart } from "cdk8s";
 import { writeFile } from "fs/promises";
 import { StorageClass } from "../resources/k8s/k8s";
 import { LinstorSatelliteConfiguration } from "../resources/piraeus/piraeus.io";
@@ -7,6 +7,7 @@ import {
   ManifestsCallback,
   ResourcesCallback,
 } from "../utils/CliContext";
+import { createKustomization } from "../utils/createKustomization";
 import {
   createNetworkPolicy,
   createTargets,
@@ -14,10 +15,11 @@ import {
 } from "../utils/createNetworkPolicy";
 
 const appData = {
+  manifest: "",
   version: "2.9.0",
 };
+appData.manifest = `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${appData.version}/manifest.yaml`;
 
-// NOTE: do not change this - it's baked into the manifest that installs the operator
 const namespace = "piraeus-datastore";
 
 const policyTargets = createTargets((b) => {
@@ -75,8 +77,9 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(remoteNode, pt.operator, "webhook");
   });
 
-  new Include(chart, "manifest", {
-    url: `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${appData.version}/manifest.yaml`,
+  await createKustomization(chart, "manifest", {
+    namespace: chart.namespace,
+    resources: [appData.manifest],
   });
 
   new LinstorCluster(chart, "cluster", {
@@ -152,8 +155,7 @@ const manifests: ManifestsCallback = async (app) => {
 };
 
 export const resources: ResourcesCallback = async (manifestsFile) => {
-  const url = `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${appData.version}/manifest.yaml`;
-  const manifest = await fetch(url).then((r) => r.text());
+  const manifest = await fetch(appData.manifest).then((r) => r.text());
   await writeFile(manifestsFile, manifest);
 };
 

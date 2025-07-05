@@ -7,6 +7,7 @@ HELM_VERSION ?= 3.18.3
 K9S_VERSION ?= 0.50.6
 KUBERNETES_VERSION ?= 1.33.2
 KUBESEAL_VERSION ?= 0.30.0
+KUSTOMIZE_VERSION ?= 5.7.0
 MC_VERSION ?= RELEASE.2025-05-21T01-59-54Z
 TALOS_VERSION ?= 1.10.4
 
@@ -43,6 +44,8 @@ kubectl = $(dot_dev)/kubectl
 kubectl_url = https://dl.k8s.io/release/v$(KUBERNETES_VERSION)/bin/linux/$(arch)/kubectl
 kubeseal = $(dot_dev)/kubeseal
 kubeseal_url = https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-$(KUBESEAL_VERSION)-linux-$(arch).tar.gz
+kustomize = $(dot_dev)/kustomize
+kustomize_url = https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv$(KUSTOMIZE_VERSION)/kustomize_v$(KUSTOMIZE_VERSION)_linux_$(arch).tar.gz
 mc = $(dot_dev)/mc
 mc_url = https://dl.min.io/client/mc/release/linux-$(arch)/archive/mc.$(MC_VERSION)
 talosctl = $(dot_dev)/talosctl
@@ -76,6 +79,7 @@ $(eval $(call create-download-tool-from-archive,helm,1))
 $(eval $(call create-download-tool-from-archive,k9s,0))
 $(eval $(call create-download-tool-from-binary,kubectl))
 $(eval $(call create-download-tool-from-archive,kubeseal,0))
+$(eval $(call create-download-tool-from-archive,kustomize, 0))
 $(eval $(call create-download-tool-from-binary,mc))
 $(eval $(call create-download-tool-from-binary,talosctl))
 
