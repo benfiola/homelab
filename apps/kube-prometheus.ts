@@ -98,7 +98,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.prometheus, pt.grafana, "api");
     b.rule(pt.prometheus, pt.kubeStateMetrics, "api");
     b.rule(pt.prometheus, pt.operator, "api");
-    b.rule(pt.prometheus, kt.apiServer, "api");
+    b.rule(pt.prometheus, kt.apiServer, "api", "exporter", "metrics");
     b.rule(pt.prometheus, kt.dns, "metrics");
   });
 

@@ -9,7 +9,11 @@ const namespace = "kube-system";
 export const policyTargets = createTargets((b) => ({
   apiServer: b.target({
     entity: "kube-apiserver",
-    ports: { api: [6443, "tcp"] },
+    ports: {
+      api: [6443, "tcp"],
+      exporter: [9100, "tcp"],
+      metrics: [10250, "tcp"],
+    },
   }),
   dns: b.target({
     endpoint: {
