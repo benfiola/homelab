@@ -87,7 +87,10 @@ const manifests: ManifestsCallback = async (app) => {
       ports: { api: [443, "tcp"] },
     });
     const ingress = b.target({ entity: "ingress" });
-
+    const remoteNode = b.target({
+      entity: "remote-node",
+      ports: { metrics: [9100, "tcp"], exporter: [10250, "tcp"] },
+    });
     b.rule(ingress, pt.alertmanager, "api");
     b.rule(ingress, pt.grafana, "api");
     b.rule(ingress, pt.prometheus, "api");
@@ -105,6 +108,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.prometheus, pt.operator, "api");
     b.rule(pt.prometheus, kt.apiServer, "api", "exporter", "metrics");
     b.rule(pt.prometheus, kt.dns, "metrics");
+    b.rule(pt.prometheus, remoteNode, "exporter", "metrics");
   });
 
   new Namespace(chart, "namespace", {
