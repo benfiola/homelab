@@ -298,7 +298,7 @@ const manifests: ManifestsCallback = async (app) => {
           tls: [{ hosts: ["grafana.bulia.dev"], secretName: "grafana-tls" }],
         },
         // resources for grafana
-        resources: getPodRequests({ mem: 500 }),
+        resources: getPodRequests({ mem: 300 }),
         sidecar: {
           dashboards: {
             // enable dashboard discovery
@@ -314,6 +314,7 @@ const manifests: ManifestsCallback = async (app) => {
             // search all namespaces for annotated dashboards
             searchNamespace: "ALL",
           },
+          resources: getPodRequests({ mem: 200 }),
         },
       },
       kubeControllerManager: {

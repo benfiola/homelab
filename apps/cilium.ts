@@ -321,6 +321,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.hubbleRelay, remoteNode, "hubble");
     b.rule(pt.hubbleRelay, kt.apiServer, "api");
     b.rule(pt.hubbleUi, kt.apiServer, "api");
+    b.rule(pt.hubbleUi, pt.hubbleRelay, "api");
   });
 
   return chart;
