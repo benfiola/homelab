@@ -70,6 +70,10 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;
     const pt = policyTargets;
+    const host = b.target({
+      entity: "host",
+      ports: { exporter: [9100, "tcp"], metrics: [10250, "tcp"] },
+    });
     const gmail = b.target({
       dns: "smtp.gmail.com",
       ports: { smtp: [587, "tcp"] },
@@ -94,6 +98,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.grafana, kt.apiServer, "api");
     b.rule(pt.kubeStateMetrics, kt.apiServer, "api");
     b.rule(pt.operator, kt.apiServer, "api");
+    b.rule(pt.prometheus, host, "exporter", "metrics");
     b.rule(pt.prometheus, pt.alertmanager, "api", "mgmt");
     b.rule(pt.prometheus, pt.grafana, "api");
     b.rule(pt.prometheus, pt.kubeStateMetrics, "api");
