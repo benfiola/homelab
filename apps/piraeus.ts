@@ -19,7 +19,7 @@ const appData = {
   manifest: `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${version}/manifest.yaml`,
 };
 
-const namespace = "piraeus-datastore";
+const namespace = "piraeus";
 
 const policyTargets = createTargets((b) => {
   const piraeus = <PM extends PortsMap>(component: string, ports?: PM) => {
