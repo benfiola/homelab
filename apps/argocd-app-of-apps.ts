@@ -10,16 +10,28 @@ import { createSealedSecret } from "../utils/createSealedSecret";
 import { parseEnv } from "../utils/parseEnv";
 
 /**
+ * Additional options supplied to the `createApp` function
+ */
+interface CreateAppOpts {
+  wave?: number;
+}
+
+/**
  * Creates an Application resource with common settings.
  *
  * @param chart the chart to attach the application resource to
  * @param name the name of the application
  * @returns the created Application resource
  */
-const createApp = (chart: Construct, name: string) => {
+const createApp = (chart: Construct, name: string, opts?: CreateAppOpts) => {
+  const annotations: Record<string, string> = {};
+  if (opts?.wave !== undefined) {
+    annotations["argocd.argoproj.io/sync-wave"] = `${opts.wave}`;
+  }
   return new Application(chart, name, {
     metadata: {
       name: name,
+      annotations,
       finalizers: ["resources-finalizer.argocd.argoproj.io"],
     },
     spec: {
@@ -94,12 +106,12 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  const apps = [
+  const apps: (string | [string, CreateAppOpts])[] = [
     "access-operator",
     "alloy",
     "argocd",
     "cert-manager",
-    "cilium",
+    ["cilium", { wave: 0 }],
     "escape-from-tarkov",
     "external-dns",
     "factorio",
@@ -113,10 +125,30 @@ const manifests: ManifestsCallback = async (app) => {
     "trust-manager",
     "volsync",
   ];
+  let defaultWave = 0;
   for (const app of apps) {
-    createApp(chart, app);
+    if (!Array.isArray(app)) {
+      continue;
+    }
+    const wave = app[1].wave;
+    if (wave === undefined) {
+      continue;
+    }
+    defaultWave = Math.max(defaultWave, wave + 1);
   }
-
+  for (const app of apps) {
+    let name: string;
+    let opts: CreateAppOpts;
+    if (!Array.isArray(app)) {
+      name = app;
+      opts = {};
+    } else {
+      name = app[0];
+      opts = app[1] || {};
+    }
+    opts.wave = opts.wave !== undefined ? opts.wave : defaultWave;
+    createApp(chart, name, opts);
+  }
   return chart;
 };
 

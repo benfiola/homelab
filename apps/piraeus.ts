@@ -14,11 +14,10 @@ import {
   PortsMap,
 } from "../utils/createNetworkPolicy";
 
+const version = "2.9.0";
 const appData = {
-  manifest: "",
-  version: "2.9.0",
+  manifest: `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${version}/manifest.yaml`,
 };
-appData.manifest = `https://github.com/piraeusdatastore/piraeus-operator/releases/download/v${appData.version}/manifest.yaml`;
 
 const namespace = "piraeus-datastore";
 
