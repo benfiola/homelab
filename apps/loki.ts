@@ -51,9 +51,7 @@ const manifests: ManifestsCallback = async (app) => {
     LOKI_MINIO_SECRET_KEY: zod.string(),
   }));
 
-  const chart = new Chart(app, "loki", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

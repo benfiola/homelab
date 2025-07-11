@@ -38,9 +38,7 @@ const manifests: ManifestsCallback = async (app) => {
     ESCAPE_FROM_TARKOV_ACCESS_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "escape-from-tarkov", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;

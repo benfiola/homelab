@@ -63,9 +63,7 @@ const manifests: ManifestsCallback = async (app) => {
     GRAFANA_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "kube-prometheus", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

@@ -53,9 +53,7 @@ const manifests: ManifestsCallback = async (app) => {
   const { policyTargets: kubeTargets } = await import("./k8s");
   const { LinstorCluster } = await import("../resources/piraeus/piraeus.io");
 
-  const chart = new Chart(app, "piraeus", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

@@ -36,9 +36,7 @@ const baseValues = {
 };
 
 const bootstrap: BootstrapCallback = async (app) => {
-  const chart = new Chart(app, "sealed-secrets", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -62,9 +60,7 @@ const bootstrap: BootstrapCallback = async (app) => {
 const manifests: ManifestsCallback = async (app) => {
   const { policyTargets: kubeTargets } = await import("./k8s");
 
-  const chart = new Chart(app, "sealed-secrets", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

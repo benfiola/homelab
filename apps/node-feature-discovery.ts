@@ -12,17 +12,21 @@ import {
 } from "../utils/createNetworkPolicy";
 import { exec } from "../utils/exec";
 import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
+import { getPrivilegedNamespaceLabels } from "../utils/getPrivilegedNamespaceLabels";
 
 const helmData = {
-  chart: "trust-manager",
-  repo: "https://charts.jetstack.io",
-  version: "v0.18.0",
+  chart: "node-feature-discovery",
+  repo: "https://kubernetes-sigs.github.io/node-feature-discovery/charts",
+  version: "v0.17.3",
 };
 
-const namespace = "trust-manager";
+const namespace = "node-feature-discovery";
 
 const policyTargets = createTargets((b) => ({
-  controller: b.pod(namespace, "trust-manager"),
+  gc: b.pod(namespace, "node-feature-discovery-gc"),
+  master: b.pod(namespace, "node-feature-discovery-master"),
+  prune: b.pod(namespace, "node-feature-discovery-prune"),
+  worker: b.pod(namespace, "node-feature-discovery-worker"),
 }));
 
 const manifests: ManifestsCallback = async (app) => {
@@ -34,12 +38,16 @@ const manifests: ManifestsCallback = async (app) => {
     const kt = kubeTargets;
     const pt = policyTargets;
 
-    b.rule(pt.controller, kt.apiServer, "api");
+    b.rule(pt.gc, kt.apiServer, "api");
+    b.rule(pt.master, kt.apiServer, "api");
+    b.rule(pt.prune, kt.apiServer, "api");
+    b.rule(pt.worker, kt.apiServer, "api");
   });
 
   new Namespace(chart, "namespace", {
     metadata: {
       name: chart.namespace,
+      labels: getPrivilegedNamespaceLabels(),
     },
   });
 
@@ -48,18 +56,7 @@ const manifests: ManifestsCallback = async (app) => {
     namespace: chart.namespace,
     helmFlags: ["--include-crds"],
     values: {
-      app: {
-        trust: {
-          // configure trust-manager to only trust resources originating from cert-manager's namespace
-          namespace: "cert-manager",
-        },
-      },
-      crds: {
-        // remove helm 'keep' annotation to delete crds when helm release is uninstalled
-        keep: false,
-      },
-      // give all resources a static prefix
-      nameOverride: "trust-manager",
+      fullnameOverride: "node-feature-discovery",
     },
   });
 

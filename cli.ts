@@ -5,7 +5,6 @@ import { configDotenv } from "dotenv";
 import { cp, mkdir, readFile, rm, writeFile } from "fs/promises";
 import { glob as baseGlob } from "glob";
 import path from "path";
-import { setTimeout } from "timers";
 
 import { Storage } from "@google-cloud/storage";
 import { execSync } from "child_process";
@@ -39,16 +38,6 @@ const clusterDns = "cluster.bulia.dev";
 const glob = async (pattern: string) => {
   const files = await baseGlob(pattern, { cwd: __dirname });
   return files.map((f) => path.join(__dirname, f));
-};
-
-/**
- * Performs an async sleep
- *
- * @param duration sleep duration
- * @returns
- */
-const sleep = (duration: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, duration * 1000));
 };
 
 /**
@@ -291,39 +280,49 @@ async function nodeShell(node: string) {
   });
 }
 
-interface NodeApplyConfigOpts {
-  dryRun?: boolean;
-  insecure?: boolean;
+/**
+ * Obtains the 'global' patch - a machine configuration patch applied to all nodes.
+ * As a result, it contains cluster-wide information.
+ * @returns the global patch
+ */
+async function getGlobalPatch(): Promise<any> {
+  const patchPath = path.join(__dirname, "talos", "node.yaml");
+  const patch = parse((await readFile(patchPath)).toString());
+  return patch;
 }
 
 /**
- * Applies updated talos config to the target node
- *
- * @param node the target node
+ * Obtains a node patch - a node-specific patch overlaid on the global patch.
+ * As a result, it contains node-specific configuration
+ * @param node the node
+ * @returns the global + node patch
  */
-async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
-  const dryRun = opts.dryRun !== undefined ? opts.dryRun : false;
-  const insecure = opts.insecure !== undefined ? opts.insecure : false;
-
-  const nodePatchPath = path.join(__dirname, "talos", "node.yaml");
-  const nodePatch = parse((await readFile(nodePatchPath)).toString());
-
-  const machinePatchPath = path.join(
+async function getNodePatch(node: string): Promise<any> {
+  const globalPatch = await getGlobalPatch();
+  const patchPath = path.join(
     __dirname,
     "talos",
     `node-${node}.${clusterDns}.yaml`
   );
-  const machinePatch = parse((await readFile(machinePatchPath)).toString());
+  const patch = parse((await readFile(patchPath)).toString());
+  return deepmerge(globalPatch, patch);
+}
 
-  const systemDiskPath = path.join(__dirname, "talos", "system-disk.yaml");
-  const systemDisk = parse((await readFile(systemDiskPath)).toString());
+/**
+ * Obtains node machine configuration - talosctl generated configuration with global ande node patches overlaid.
+ * This is the complete machine configuration applied onto a node.
+ *
+ * @param node the node name
+ * @returns the machine configuration
+ */
+async function getNodeConfig(node: string): Promise<any> {
+  const patch = await getNodePatch(node);
 
-  const kubernetesVersion = nodePatch["machine"]["env"]["K8S"];
-  const installImage = nodePatch["machine"]["env"]["IMAGE"];
-  const role = machinePatch["machine"]["env"]["ROLE"];
+  const installImage = patch["machine"]["env"]["IMAGE"];
+  const kubernetesVersion = patch["machine"]["env"]["K8S"];
+  const role = patch["machine"]["env"]["ROLE"];
   const secretsPath = talosCloudFiles["talos/secrets.yaml"];
-
-  let cmd = [
+  const cmd = [
     "talosctl",
     "gen",
     "config",
@@ -340,14 +339,35 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
     clusterName,
     `https://${clusterDns}:6443`,
   ];
-  const baseConfig = parse(
+  const config = parse(
     execSync(join(cmd), {
       stdio: ["inherit", "pipe", "inherit"],
     }).toString()
   );
+  return config;
+}
 
-  const config = deepmerge(baseConfig, nodePatch, machinePatch);
-  const content = [config, systemDisk].map((v) => stringify(v)).join("---\n");
+interface NodeApplyConfigOpts {
+  dryRun?: boolean;
+  insecure?: boolean;
+}
+
+/**
+ * Applies updated talos config to the target node
+ *
+ * @param node the target node
+ */
+async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
+  const dryRun = opts.dryRun !== undefined ? opts.dryRun : false;
+  const insecure = opts.insecure !== undefined ? opts.insecure : false;
+
+  const nodeConfig = await getNodeConfig(node);
+  const systemDiskPath = path.join(__dirname, "talos", "system-disk.yaml");
+  const systemDisk = parse((await readFile(systemDiskPath)).toString());
+
+  const content = [nodeConfig, systemDisk]
+    .map((v) => stringify(v))
+    .join("---\n");
 
   if (dryRun) {
     console.log(content);
@@ -357,7 +377,7 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
   await temporaryDirectory(async (dir: string) => {
     const configPath = path.join(dir, "config.yaml");
     await writeFile(configPath, content);
-    cmd = [
+    const cmd = [
       "talosctl",
       `--nodes=node-${node}.${clusterDns}`,
       "apply-config",
@@ -376,14 +396,9 @@ async function talosApply(node: string, opts: NodeApplyConfigOpts = {}) {
  * @param node the target node
  */
 async function talosBootstrap(node: string) {
-  const configPatchPath = path.join(
-    __dirname,
-    "talos",
-    `node-${node}.${clusterDns}.yaml`
-  );
-  const configPatch = parse((await readFile(configPatchPath)).toString());
+  const patch = await getNodePatch(node);
 
-  const role = configPatch["machine"]["env"]["ROLE"];
+  const role = patch["machine"]["env"]["ROLE"];
   if (role !== "controlplane") {
     throw new Error(`node ${node} does not have 'controlplane' role.`);
   }
@@ -430,11 +445,17 @@ async function talosGenerateTalosconfig() {
   );
 
   const nodes = [];
-  const nodePatchPaths = await glob(`talos/*.${clusterDns}.yaml`);
+  const nodePatchPaths = await glob(`talos/node-*.${clusterDns}.yaml`);
+  const nameRegex = new RegExp(`^.*\\/node-([^.]+)\.${clusterDns}.yaml`);
   for (const nodePatchPath of nodePatchPaths) {
-    const nodePatch = parse((await readFile(nodePatchPath)).toString());
-    const node = nodePatch["machine"]["network"]["hostname"];
-    nodes.push(node);
+    const match = nodePatchPath.match(nameRegex);
+    if (!match) {
+      continue;
+    }
+    const name = match[1];
+    const config = await getNodePatch(name);
+    const hostname = config["machine"]["network"]["hostname"];
+    nodes.push(hostname);
   }
 
   const context = config["contexts"][clusterName];
@@ -470,16 +491,28 @@ async function talosGenerateSecrets() {
   ];
   execSync(join(cmd), { stdio: "inherit" });
 }
+
+interface TalosUpgradeOpts {
+  node?: string;
+}
+
 /**
  * Upgrades the cluster to the version of talos linux defined within the talos config files.
  */
-async function talosUpgrade() {
-  const nodePatchPath = path.join(__dirname, "talos", "node.yaml");
-  const nodePatch = parse((await readFile(nodePatchPath)).toString());
+async function talosUpgrade(opts: TalosUpgradeOpts) {
+  const node = opts.node;
+  let config = await getGlobalPatch();
+  if (node) {
+    config = await getNodePatch(node);
+  }
+  const image = config["machine"]["env"]["IMAGE"];
 
-  const image = nodePatch["machine"]["env"]["IMAGE"];
+  let cmd = ["talosctl"];
+  if (node) {
+    cmd.push(`--nodes=node-${node}.${clusterDns}`);
+  }
+  cmd.push("upgrade", `--image=${image}`);
 
-  const cmd = ["talosctl", "upgrade", `--image=${image}`];
   execSync(join(cmd), { stdio: "inherit" });
 }
 
@@ -489,10 +522,9 @@ async function talosUpgrade() {
  * @param node the target control plane node
  */
 async function talosUpgradeK8s(node: string) {
-  const nodePatchPath = path.join(__dirname, "talos", "node.yaml");
-  const nodePatch = parse((await readFile(nodePatchPath)).toString());
+  const config = await getNodePatch(node);
 
-  const kubernetesVersion = nodePatch["machine"]["env"]["K8S"];
+  const kubernetesVersion = config["machine"]["env"]["K8S"];
 
   const cmd = [
     "talosctl",
@@ -646,6 +678,7 @@ async function generateResources(
     .description(
       "upgrade talos linux to the version defined within the talos config files"
     )
+    .option("--node <node>", "the specific node to upgrade")
     .action(talosUpgrade);
   cmdTalos
     .command("upgrade-k8s")

@@ -26,9 +26,7 @@ const manifests: ManifestsCallback = async (app) => {
     FACTORIO_TOKEN: zod.string(),
   }));
 
-  const chart = new Chart(app, "factorio", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;

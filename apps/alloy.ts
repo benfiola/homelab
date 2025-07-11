@@ -24,9 +24,7 @@ const manifests: ManifestsCallback = async (app) => {
   const { policyTargets: kubeTargets } = await import("./k8s");
   const { policyTargets: lokiTargets } = await import("./loki");
 
-  const chart = new Chart(app, "alloy", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

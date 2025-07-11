@@ -40,7 +40,7 @@ const manifests: ManifestsCallback = async (app) => {
     "../resources/cert-manager/cert-manager.io"
   );
 
-  const chart = new Chart(app, "cert-manager", { namespace });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

@@ -34,9 +34,7 @@ const manifests: ManifestsCallback = async (app) => {
     MINECRAFT_MINIO_SECRET_KEY: zod.string(),
   }));
 
-  const chart = new Chart(app, "minecraft", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;

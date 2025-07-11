@@ -83,7 +83,7 @@ const baseChartValues = {
 };
 
 const bootstrap: BootstrapCallback = async (app) => {
-  const chart = new Chart(app, "cilium", { namespace });
+  const chart = new Chart(app, "chart", { namespace });
 
   new Namespace(chart, "namespace", {
     metadata: {
@@ -110,9 +110,7 @@ const manifests: ManifestsCallback = async (app) => {
     "../resources/cilium/cilium.io"
   );
 
-  const chart = new Chart(app, "cilium", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   new Namespace(chart, "namespace", {
     metadata: {

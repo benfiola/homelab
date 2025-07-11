@@ -28,7 +28,7 @@ const manifests: ManifestsCallback = async (app) => {
     EXTERNAL_DNS_ROUTEROS_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "external-dns", { namespace });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

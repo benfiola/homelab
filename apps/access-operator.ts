@@ -47,9 +47,7 @@ const manifests: ManifestsCallback = async (app) => {
     ACCESS_OPERATOR_ROUTEROS_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "access-operator", {
-    namespace,
-  });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

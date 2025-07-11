@@ -126,7 +126,7 @@ const policyTargets = createTargets((b) => ({
 }));
 
 const bootstrap: BootstrapCallback = async (app) => {
-  const chart = new Chart(app, "argocd", { namespace });
+  const chart = new Chart(app, "chart", { namespace });
 
   new Namespace(chart, "namespace", {
     metadata: { name: chart.namespace },
@@ -147,7 +147,7 @@ const bootstrap: BootstrapCallback = async (app) => {
 const manifests: ManifestsCallback = async (app) => {
   const { policyTargets: kubeTargets } = await import("./k8s");
 
-  const chart = new Chart(app, "argocd", { namespace });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

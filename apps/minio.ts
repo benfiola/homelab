@@ -60,7 +60,7 @@ const manifests: ManifestsCallback = async (app) => {
     MINIO_TENANT_PASSWORD: zod.string(),
   }));
 
-  const chart = new Chart(app, "minio", { namespace });
+  const chart = new Chart(app, "chart", { namespace });
 
   createNetworkPolicy(chart, (b) => {
     const kt = kubeTargets;

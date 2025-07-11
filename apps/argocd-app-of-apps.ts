@@ -66,7 +66,7 @@ const bootstrap: BootstrapCallback = async (app) => {
     ARGOCD_GITHUB_TOKEN: zod.string(),
   }));
 
-  const chart = new Chart(app, "argocd-app-of-apps", { namespace: "argocd" });
+  const chart = new Chart(app, "chart", { namespace: "argocd" });
 
   await createSealedSecret(chart, "sealed-secret-github", {
     metadata: {
@@ -91,7 +91,7 @@ const manifests: ManifestsCallback = async (app) => {
     ARGOCD_GITHUB_TOKEN: zod.string(),
   }));
 
-  const chart = new Chart(app, "argocd-app-of-apps", { namespace: "argocd" });
+  const chart = new Chart(app, "chart", { namespace: "argocd" });
 
   await createSealedSecret(chart, "sealed-secret-github", {
     metadata: {
@@ -115,10 +115,12 @@ const manifests: ManifestsCallback = async (app) => {
     "escape-from-tarkov",
     "external-dns",
     "factorio",
+    "intel-device-plugins",
     "kube-prometheus",
     "loki",
     "minecraft",
     "minio",
+    "node-feature-discovery",
     "piraeus",
     "sealed-secrets",
     "snapshot-controller",
