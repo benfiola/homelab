@@ -111,7 +111,7 @@ const manifests: ManifestsCallback = async (app) => {
     "alloy",
     "argocd",
     "cert-manager",
-    ["cilium", { wave: 0 }],
+    "cilium",
     "escape-from-tarkov",
     "external-dns",
     "factorio",
