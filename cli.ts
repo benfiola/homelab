@@ -344,7 +344,7 @@ async function getNodeConfig(node: string): Promise<any> {
       stdio: ["inherit", "pipe", "inherit"],
     }).toString()
   );
-  return config;
+  return deepmerge(config, patch);
 }
 
 interface NodeApplyConfigOpts {

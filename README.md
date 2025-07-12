@@ -270,6 +270,7 @@ homelab talos apply [node]
 To update the Talos Linux version on all nodes, navigate to Talos' [image factory](https://factory.talos.dev/) to produce a Talos Linux installer image for the desired version _with the following system extensions_:
 
 - drbd
+- i915
 
 Once an image is produced, you should have an image that looks like `factory.talos.dev/installer/[hash]:v[talos-version]`. Update the `.machine.env.IMAGE` field within the `./talos/node.yaml` file with this value.
 
@@ -289,5 +290,5 @@ Then, run the following command to upgrade the nodes:
 > Even though the above command targets a single node - _all_ nodes will be updated.
 
 ```shell
-homelab talos upgrade-k8s
+homelab talos upgrade-k8s [node]
 ```
