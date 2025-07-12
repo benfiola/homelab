@@ -76,6 +76,7 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       nodeSelector: getIntelGpuNodeLabels(),
       sharedDevNum: 10,
+      image: `intel/intel-gpu-plugin:${version}`,
     },
   });
 
