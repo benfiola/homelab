@@ -121,6 +121,7 @@ const manifests: ManifestsCallback = async (app) => {
     "minecraft",
     "minio",
     "node-feature-discovery",
+    "open-webui",
     "piraeus",
     "sealed-secrets",
     "snapshot-controller",
