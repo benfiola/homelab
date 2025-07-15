@@ -7,7 +7,6 @@ import {
   Pod,
   StatefulSet,
 } from "../resources/k8s/k8s";
-import { isDefineDefaultResourcesDisabled } from "./defineDefaultResources";
 import { getPodLabels } from "./getPodLabels";
 import { getPodRequests } from "./getPodRequests";
 
@@ -126,10 +125,6 @@ export class App extends BaseApp {
    * @returns void
    */
   defineDefaultResources(obj: ApiObject) {
-    if (isDefineDefaultResourcesDisabled(obj)) {
-      return;
-    }
-
     const props = (obj as any).props;
 
     // extract pod from object
@@ -183,10 +178,6 @@ export class App extends BaseApp {
    * @returns void
    */
   ensureDefaultPodSecurity(obj: ApiObject) {
-    if (isDefineDefaultResourcesDisabled(obj)) {
-      return;
-    }
-
     const props = (obj as any).props;
 
     // extract pod from object

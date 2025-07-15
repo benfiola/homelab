@@ -11,9 +11,11 @@ import {
   Volume,
 } from "../resources/k8s/k8s";
 import { SealedSecret } from "../resources/sealed-secrets/bitnami.com";
+import { getContainerSecurityContext } from "./getContainerSecurityContext";
 import { getHash } from "./getHash";
 import { getPodLabels } from "./getPodLabels";
 import { getPodRequests } from "./getPodRequests";
+import { getPodSecurityContext } from "./getPodSecurityContext";
 
 /**
  * Type that unwraps potentially undefined values - returning the inner type
@@ -221,10 +223,7 @@ export const convertContainer = (container: Container): ActualContainer => {
     ports,
     readinessProbe: probe,
     resources: convertPodRequests(getPodRequests(container.resources)),
-    securityContext: {
-      allowPrivilegeEscalation: false,
-      capabilities: { drop: ["ALL"] },
-    },
+    securityContext: getContainerSecurityContext(),
     volumeMounts,
   };
 };
@@ -310,14 +309,7 @@ export const createDeployment = (
         spec: {
           initContainers,
           containers,
-          securityContext: {
-            fsGroup: user,
-            fsGroupChangePolicy: "Always",
-            runAsGroup: user,
-            runAsNonRoot: true,
-            runAsUser: user,
-            seccompProfile: { type: "RuntimeDefault" },
-          },
+          securityContext: getPodSecurityContext(user),
           serviceAccountName: opts.serviceAccount,
           volumes,
         },

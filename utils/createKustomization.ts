@@ -5,21 +5,42 @@ import { join } from "path";
 import { exec } from "./exec";
 import { temporaryDirectory } from "./temporaryDirectory";
 
+/**
+ * A path to a kustomization
+ */
 interface KustomizationPathProps {
   path: string;
 }
 
+/**
+ * Typeguard ensuring an object is a KustomizationPathProps object
+ * @param v the object
+ * @returns true if the object is a KustomizationPathProps
+ */
 const isKustomizationPathProps = (v: any): v is KustomizationPathProps => {
   return v["path"] !== undefined;
 };
 
+/**
+ * A dynamic kustomization
+ */
 interface DynamicKustomizationProps {
   resources?: string[];
   namespace?: string;
 }
 
+/**
+ * Represents a type of kustomization props
+ */
 type KustomizationProps = KustomizationPathProps | DynamicKustomizationProps;
 
+/**
+ * Generates a kustomization and imports it into cdk8s
+ * @param construct the construct to attach the resource to
+ * @param id the resource id
+ * @param props the resource properties
+ * @returns the created Include resource
+ */
 export const createKustomization = async (
   construct: Construct,
   id: string,

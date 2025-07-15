@@ -7,6 +7,7 @@ import {
   VolumeMap,
 } from "./createDeployment";
 import { getPodLabels } from "./getPodLabels";
+import { getPodSecurityContext } from "./getPodSecurityContext";
 import { getStorageClassName } from "./getStorageClassName";
 
 type VolumeClaimTemplateMap = { [k: string]: string };
@@ -86,14 +87,7 @@ export const createStatefulSet = (
         spec: {
           initContainers,
           containers,
-          securityContext: {
-            fsGroup: user,
-            fsGroupChangePolicy: "Always",
-            runAsGroup: user,
-            runAsNonRoot: true,
-            runAsUser: user,
-            seccompProfile: { type: "RuntimeDefault" },
-          },
+          securityContext: getPodSecurityContext(user),
           serviceAccountName: opts.serviceAccount,
           volumes,
         },

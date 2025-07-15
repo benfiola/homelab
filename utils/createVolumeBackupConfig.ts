@@ -2,6 +2,7 @@ import { Chart } from "cdk8s";
 import { ReplicationSource } from "../resources/volsync/volsync.backube";
 import { createSealedSecret } from "./createSealedSecret";
 import { getPodLabels } from "./getPodLabels";
+import { getPodSecurityContext } from "./getPodSecurityContext";
 import { getStorageClassName } from "./getStorageClassName";
 import { parseEnv } from "./parseEnv";
 
@@ -47,14 +48,7 @@ export const createVolumeBackupConfig = async (
       restic: {
         copyMethod: "Clone" as any,
         moverPodLabels: getPodLabels("volsync-mover"),
-        moverSecurityContext: {
-          fsGroup: opts.user,
-          fsGroupChangePolicy: "Always",
-          runAsGroup: opts.user,
-          runAsNonRoot: true,
-          runAsUser: opts.user,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        moverSecurityContext: getPodSecurityContext(opts.user),
         pruneIntervalDays: 1,
         repository: secret.name,
         retain: {
