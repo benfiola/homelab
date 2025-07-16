@@ -1,11 +1,6 @@
 import { Chart, Helm } from "cdk8s";
-import { writeFile } from "fs/promises";
 import { Namespace, Service } from "../resources/k8s/k8s";
-import {
-  CliContext,
-  ManifestsCallback,
-  ResourcesCallback,
-} from "../utils/CliContext";
+import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createIngress } from "../utils/createIngress";
 import { createMinioBucket } from "../utils/createMinioBucket";
@@ -18,10 +13,7 @@ import {
 } from "../utils/createNetworkPolicy";
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
-import { exec } from "../utils/exec";
 import { getCertIssuerAnnotations } from "../utils/getCertIssuerAnnotation";
-import { getDnsAnnotation } from "../utils/getDnsLabel";
-import { getHelmTemplateCommand } from "../utils/getHelmTemplateCommand";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodLabels } from "../utils/getPodLabels";
 import { getPodRequests } from "../utils/getPodRequests";
@@ -41,6 +33,9 @@ const appData = {
 const namespace = "open-webui";
 
 const policyTargets = createTargets((b) => ({
+  api: b.pod(namespace, "api", {
+    api: [8080, "tcp"],
+  }),
   pipelines: b.pod(namespace, "open-webui-pipelines", { api: [9099, "tcp"] }),
   postgresPrimary: b.pod(namespace, "open-webui-postgres-primary", {
     tcp: [5432, "tcp"],
@@ -48,12 +43,9 @@ const policyTargets = createTargets((b) => ({
   postgresRead: b.pod(namespace, "open-webui-postgres-read", {
     tcp: [5432, "tcp"],
   }),
+
   redis: b.pod(namespace, "open-webui-redis", { tcp: [6379, "tcp"] }),
   server: b.pod(namespace, "open-webui", { http: [8080, "tcp"] }),
-  tunnel: b.pod(namespace, "tunnel", {
-    tunnel: [8080, "tcp"],
-    api: [80, "tcp"],
-  }),
 }));
 
 const manifests: ManifestsCallback = async (app) => {
@@ -67,21 +59,25 @@ const manifests: ManifestsCallback = async (app) => {
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;
+    const desktop = b.target({
+      dns: "bfiola-desktop.bulia.dev",
+      ports: { openai: [49153, "tcp"] },
+    });
     const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
     const ingress = b.target({
       entity: "ingress",
       ports: { clients: [1, 65535, "tcp"] },
     });
 
-    b.rule(homeNetwork, pt.tunnel, "tunnel");
     b.rule(ingress, pt.server, "http");
-    b.rule(ingress, pt.tunnel, "api");
+    b.rule(ingress, pt.api, "api");
+    b.rule(pt.api, desktop, "openai");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
     b.rule(pt.server, ingress, "clients");
+    b.rule(pt.server, pt.api, "api");
     b.rule(pt.server, pt.pipelines, "api");
     b.rule(pt.server, pt.postgresPrimary, "tcp");
     b.rule(pt.server, pt.redis, "tcp");
-    b.rule(pt.server, pt.tunnel, "api");
   });
 
   new Namespace(chart, "namespace", {
@@ -91,62 +87,44 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  const tunnelSa = createServiceAccount(chart, "tunnel-sa", {
+  const apiSa = createServiceAccount(chart, "api-sa", {
     access: {},
-    name: "tunnel",
+    name: "api",
   });
 
-  const tunnelDeployment = createDeployment(chart, "tunnel-deployment", {
+  const apiDeployment = createDeployment(chart, "api-deployment", {
     containers: [
       {
-        name: "tunnel",
+        name: "proxy",
         image: `jpillora/chisel:${appData.chiselVersion}`,
-        args: ["server", "--reverse", "80"],
+        args: ["server", "--proxy", "http://bfiola-desktop.bulia.dev:49153"],
         ports: {
-          tunnel: [8080, "tcp"],
-          api: [80, "tcp"],
+          api: [8080, "tcp"],
         },
       },
     ],
-    name: "tunnel",
-    serviceAccount: tunnelSa.name,
+    name: "api",
+    serviceAccount: apiSa.name,
   });
 
-  const tunnelService = new Service(chart, "tunnel-service", {
-    metadata: { name: "tunnel" },
+  const apiService = new Service(chart, "api-service", {
+    metadata: { name: "api" },
     spec: {
       ports: [
         {
+          targetPort: { value: 8080 },
           port: 80,
           name: "api",
         },
       ],
-      selector: getPodLabels(tunnelDeployment.name),
+      selector: getPodLabels(apiDeployment.name),
     },
   });
 
-  createIngress(chart, "tunnel-ingress", {
+  createIngress(chart, "api-ingress", {
     name: "api",
     host: "api.ai.bulia.dev",
-    services: { "/": { name: tunnelService.name, port: "api" } },
-  });
-
-  new Service(chart, "tunnel-lb", {
-    metadata: {
-      name: "tunnel-lb",
-      annotations: getDnsAnnotation("tunnel.ai.bulia.dev"),
-    },
-    spec: {
-      type: "LoadBalancer",
-      ports: [
-        {
-          port: 80,
-          targetPort: { value: "tunnel" } as any,
-          name: "tunnel",
-        },
-      ],
-      selector: getPodLabels(tunnelDeployment.name),
-    },
+    services: { "/": { name: apiService.name, port: "api" } },
   });
 
   const postgresSecret = await createSealedSecret(chart, "postgres-secret", {
@@ -232,7 +210,7 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: false,
       },
       // use tunnel api url
-      openaiBaseApiUrls: `http://${tunnelService.name}.${namespace}.svc/v1`,
+      openaiBaseApiUrls: `http://${apiService.name}.${namespace}.svc/v1`,
       persistence: {
         // disable local persistence (use s3)
         enabled: true,
@@ -302,22 +280,6 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   return chart;
-};
-
-const resources: ResourcesCallback = async (manifestFile) => {
-  const manifest = await exec(getHelmTemplateCommand(appData));
-  await writeFile(manifestFile, manifest);
-};
-
-const getCertificate = async () => {
-  console.log(
-    await exec([
-      "kubeseal",
-      "--fetch-cert",
-      "--controller-name=sealed-secrets",
-      "--controller-namespace=sealed-secrets",
-    ])
-  );
 };
 
 export default async function (context: CliContext) {
