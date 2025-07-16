@@ -61,7 +61,7 @@ const manifests: ManifestsCallback = async (app) => {
     const pt = policyTargets;
     const desktop = b.target({
       dns: "bfiola-desktop.bulia.dev",
-      ports: { openai: [49153, "tcp"] },
+      ports: { openai: [49153, "tcp"], wol: [9, "udp"] },
     });
     const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
     const ingress = b.target({
@@ -73,6 +73,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(ingress, pt.api, "api");
     b.rule(pt.api, desktop, "openai");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
+    b.rule(pt.server, desktop, "wol");
     b.rule(pt.server, ingress, "clients");
     b.rule(pt.server, pt.api, "api");
     b.rule(pt.server, pt.pipelines, "api");
