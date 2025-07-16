@@ -177,6 +177,11 @@ const manifests: ManifestsCallback = async (app) => {
           value: "True",
         },
         {
+          // used to wake openai api server on lan
+          name: "OPENAI_API_MAC_ADDRESS",
+          value: "C8:7F:54:6C:10:46",
+        },
+        {
           // no way to instruct helm chart to use existing secret
           name: "DATABASE_URL",
           valueFrom: {
