@@ -172,6 +172,11 @@ const manifests: ManifestsCallback = async (app) => {
           value: "True",
         },
         {
+          // attempts to locally download models if operating in online mode
+          name: "SAFE_MODE",
+          value: "True",
+        },
+        {
           // no way to instruct helm chart to use existing secret
           name: "DATABASE_URL",
           valueFrom: {
