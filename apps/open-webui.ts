@@ -59,11 +59,14 @@ const manifests: ManifestsCallback = async (app) => {
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;
+    const broadcast = b.target({
+      cidr: "255.255.255.255/32",
+      ports: { wol: [9, "udp"] },
+    });
     const desktop = b.target({
       dns: "bfiola-desktop.bulia.dev",
-      ports: { openai: [49153, "tcp"], wol: [9, "udp"] },
+      ports: { openai: [49153, "tcp"] },
     });
-    const homeNetwork = b.target({ cidr: "192.168.0.0/16" });
     const ingress = b.target({
       entity: "ingress",
       ports: { clients: [1, 65535, "tcp"] },
@@ -73,7 +76,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(ingress, pt.api, "api");
     b.rule(pt.api, desktop, "openai");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
-    b.rule(pt.server, desktop, "wol");
+    b.rule(pt.server, broadcast, "wol");
     b.rule(pt.server, ingress, "clients");
     b.rule(pt.server, pt.api, "api");
     b.rule(pt.server, pt.pipelines, "api");
