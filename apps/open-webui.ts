@@ -178,8 +178,13 @@ const manifests: ManifestsCallback = async (app) => {
         },
         {
           // used to wake openai api server on lan
-          name: "OPENAI_API_MAC_ADDRESS",
+          name: "WAKE_ON_LAN_MAC_ADDRESS",
           value: "C8:7F:54:6C:10:46",
+        },
+        {
+          // used to wake openai api server on lan
+          name: "WAKE_ON_LAN_HOSTNAME",
+          value: "bfiola-desktop.bulia.dev",
         },
         {
           // no way to instruct helm chart to use existing secret
