@@ -59,9 +59,9 @@ const manifests: ManifestsCallback = async (app) => {
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;
-    const broadcast = b.target({
-      cidr: "255.255.255.255/32",
-      ports: { wol: [9, "udp"] },
+    const everything = b.target({
+      cidr: "0.0.0.0/0",
+      ports: { all: [1-65535, "any"] },
     });
     const desktop = b.target({
       dns: "bfiola-desktop.bulia.dev",
@@ -75,8 +75,9 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(ingress, pt.server, "http");
     b.rule(ingress, pt.api, "api");
     b.rule(pt.api, desktop, "openai");
+    // NOTE: temporary, for debugging
+    b.rule(pt.api, everything, "all");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
-    b.rule(pt.server, broadcast, "wol");
     b.rule(pt.server, ingress, "clients");
     b.rule(pt.server, pt.api, "api");
     b.rule(pt.server, pt.pipelines, "api");
@@ -105,6 +106,12 @@ const manifests: ManifestsCallback = async (app) => {
         ports: {
           api: [8080, "tcp"],
         },
+      },
+        {
+        name: "testing",
+        image: `ubuntu:latest`,
+        command: ["/bin/bash", "-c"],
+        args: ["while true; do sleep 1; done;"],
       },
     ],
     name: "api",
