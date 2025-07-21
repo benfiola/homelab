@@ -102,34 +102,38 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   const tunnelConfig = new ConfigMap(chart, "tunnel-cm", {
-    metadata: { name: "tunnel"},
+    metadata: { name: "tunnel" },
     data: {
-      "config.json": JSON.stringify({
-        bindPort: 8080
-      }, null, 2)
-    }
-  })
+      "config.json": JSON.stringify(
+        {
+          bindPort: 8080,
+        },
+        null,
+        2
+      ),
+    },
+  });
 
   const tunnelDeployment = createDeployment(chart, "tunnel-deployment", {
     containers: [
       {
         name: "frp",
-        image: `fatedier/frp:${appData.frpVersion}`,
+        image: `fatedier/frp:v${appData.frpVersion}`,
         args: ["--config", "/config/config.json"],
         ports: {
           client: [80, "tcp"],
           server: [8080, "tcp"],
         },
         mounts: {
-          "config": "/config"
-        }
+          config: "/config",
+        },
       },
     ],
     name: "tunnel",
     serviceAccount: tunnelSa.name,
     volumes: {
-      "config": tunnelConfig
-    }
+      config: tunnelConfig,
+    },
   });
 
   const tunnelClientService = new Service(chart, "tunnel-client-service", {
