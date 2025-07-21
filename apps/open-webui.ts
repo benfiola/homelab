@@ -108,7 +108,7 @@ const manifests: ManifestsCallback = async (app) => {
         image: `jpillora/chisel:${appData.chiselVersion}`,
         args: ["server", "--reverse"],
         ports: {
-          tunnel: [80, "tcp"],
+          api: [80, "tcp"],
           chisel: [8080, "tcp"],
         },
       },
@@ -117,24 +117,24 @@ const manifests: ManifestsCallback = async (app) => {
     serviceAccount: tunnelSa.name,
   });
 
-  const tunnelService = new Service(chart, "tunnel-service", {
-    metadata: { name: "tunnel" },
+  const tunnelApiService = new Service(chart, "tunnel-api-service", {
+    metadata: { name: "tunnel-api" },
     spec: {
       ports: [
         {
           targetPort: { value: 80 },
           port: 80,
-          name: "tunnel",
+          name: "api",
         },
       ],
       selector: getPodLabels(tunnelDeployment.name),
     },
   });
 
-  new Service(chart, "chisel-service", {
+  new Service(chart, "tunnel-chisel-service", {
     metadata: {
-      name: "chisel",
-      annotations: getDnsAnnotation("tunnel.ai.bulia.dev"),
+      name: "tunnel-chisel",
+      annotations: getDnsAnnotation("chisel.ai.bulia.dev"),
     },
     spec: {
       ports: [
@@ -161,7 +161,7 @@ const manifests: ManifestsCallback = async (app) => {
         image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
         env: {
           WOLPROXY_ADDRESS: "0.0.0.0:80",
-          WOLPROXY_BACKEND: `${tunnelService.name}.${namespace}.svc.cluster.local:80`,
+          WOLPROXY_BACKEND: `${tunnelApiService.name}.${namespace}.svc:80`,
           WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
           WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
         },
