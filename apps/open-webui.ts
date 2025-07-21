@@ -125,9 +125,20 @@ const manifests: ManifestsCallback = async (app) => {
           port: 80,
           name: "tunnel",
         },
+        {
+          targetPort: {value: 8080},
+          port: 8080,
+          name: "chisel"
+        }
       ],
       selector: getPodLabels(tunnelDeployment.name),
     },
+  });
+
+  createIngress(chart, "tunnel-ingress", {
+    name: "tunnel",
+    host: "tunnel.ai.bulia.dev",
+    services: { "/": { name: tunnelService.name, port: "chisel" } },
   });
 
   const proxySa = createServiceAccount(chart, "proxy-sa", {
