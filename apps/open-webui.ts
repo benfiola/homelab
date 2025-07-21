@@ -14,6 +14,7 @@ import {
 import { createSealedSecret } from "../utils/createSealedSecret";
 import { createServiceAccount } from "../utils/createServiceAccount";
 import { getCertIssuerAnnotations } from "../utils/getCertIssuerAnnotation";
+import { getDnsAnnotation } from "../utils/getDnsLabel";
 import { getIngressClassName } from "../utils/getIngressClassName";
 import { getPodLabels } from "../utils/getPodLabels";
 import { getPodRequests } from "../utils/getPodRequests";
@@ -125,20 +126,27 @@ const manifests: ManifestsCallback = async (app) => {
           port: 80,
           name: "tunnel",
         },
-        {
-          targetPort: {value: 8080},
-          port: 8080,
-          name: "chisel"
-        }
       ],
       selector: getPodLabels(tunnelDeployment.name),
     },
   });
 
-  createIngress(chart, "tunnel-ingress", {
-    name: "tunnel",
-    host: "tunnel.ai.bulia.dev",
-    services: { "/": { name: tunnelService.name, port: "chisel" } },
+  new Service(chart, "chisel-service", {
+    metadata: {
+      name: "chisel",
+      annotations: getDnsAnnotation("tunnel.ai.bulia.dev"),
+    },
+    spec: {
+      ports: [
+        {
+          targetPort: { value: 8080 },
+          port: 80,
+          name: "chisel",
+        },
+      ],
+      selector: getPodLabels(tunnelDeployment.name),
+      type: "LoadBalancer",
+    },
   });
 
   const proxySa = createServiceAccount(chart, "proxy-sa", {
