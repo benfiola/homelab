@@ -104,7 +104,7 @@ const manifests: ManifestsCallback = async (app) => {
   const tunnelDeployment = createDeployment(chart, "tunnel-deployment", {
     containers: [
       {
-        name: "tunnel",
+        name: "chisel",
         image: `jpillora/chisel:${appData.chiselVersion}`,
         args: ["server", "--reverse"],
         ports: {
@@ -134,7 +134,7 @@ const manifests: ManifestsCallback = async (app) => {
   new Service(chart, "tunnel-chisel-service", {
     metadata: {
       name: "tunnel-chisel",
-      annotations: getDnsAnnotation("chisel.ai.bulia.dev"),
+      annotations: getDnsAnnotation("tunnel.ai.bulia.dev"),
     },
     spec: {
       ports: [
