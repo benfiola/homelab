@@ -28,14 +28,12 @@ const appData = {
     version: "6.23.0",
   },
   chiselVersion: "1.10.1",
+  wolProxyVersion: "1.0.0",
 };
 
 const namespace = "open-webui";
 
 const policyTargets = createTargets((b) => ({
-  api: b.pod(namespace, "api", {
-    api: [8080, "tcp"],
-  }),
   pipelines: b.pod(namespace, "open-webui-pipelines", { api: [9099, "tcp"] }),
   postgresPrimary: b.pod(namespace, "open-webui-postgres-primary", {
     tcp: [5432, "tcp"],
@@ -43,9 +41,15 @@ const policyTargets = createTargets((b) => ({
   postgresRead: b.pod(namespace, "open-webui-postgres-read", {
     tcp: [5432, "tcp"],
   }),
-
+  proxy: b.pod(namespace, "proxy", {
+    api: [80, "tcp"],
+  }),
   redis: b.pod(namespace, "open-webui-redis", { tcp: [6379, "tcp"] }),
   server: b.pod(namespace, "open-webui", { http: [8080, "tcp"] }),
+  tunnel: b.pod(namespace, "tunnel", {
+    api: [80, "tcp"],
+    chisel: [8080, "tcp"],
+  }),
 }));
 
 const manifests: ManifestsCallback = async (app) => {
@@ -61,19 +65,24 @@ const manifests: ManifestsCallback = async (app) => {
     const pt = policyTargets;
     const desktop = b.target({
       dns: "bfiola-desktop.bulia.dev",
-      ports: { openai: [49153, "tcp"] },
+      ports: { wol: [9, "udp"] },
+    });
+    const homeNetwork = b.target({
+      cidr: "192.168.0.0/16",
     });
     const ingress = b.target({
       entity: "ingress",
       ports: { clients: [1, 65535, "tcp"] },
     });
 
+    b.rule(homeNetwork, pt.tunnel, "chisel");
     b.rule(ingress, pt.server, "http");
-    b.rule(ingress, pt.api, "api");
-    b.rule(pt.api, desktop, "openai");
+    b.rule(ingress, pt.proxy, "api");
+    b.rule(pt.proxy, desktop, "wol");
+    b.rule(pt.proxy, pt.tunnel, "api");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
     b.rule(pt.server, ingress, "clients");
-    b.rule(pt.server, pt.api, "api");
+    b.rule(pt.server, pt.proxy, "api");
     b.rule(pt.server, pt.pipelines, "api");
     b.rule(pt.server, pt.postgresPrimary, "tcp");
     b.rule(pt.server, pt.redis, "tcp");
@@ -86,44 +95,84 @@ const manifests: ManifestsCallback = async (app) => {
     },
   });
 
-  const apiSa = createServiceAccount(chart, "api-sa", {
+  const tunnelSa = createServiceAccount(chart, "tunnel-sa", {
     access: {},
-    name: "api",
+    name: "tunnel",
   });
 
-  const apiDeployment = createDeployment(chart, "api-deployment", {
+  const tunnelDeployment = createDeployment(chart, "tunnel-deployment", {
     containers: [
       {
-        name: "proxy",
+        name: "tunnel",
         image: `jpillora/chisel:${appData.chiselVersion}`,
-        args: ["server", "--proxy", "http://bfiola-desktop.bulia.dev:49153"],
+        args: ["server", "--reverse"],
         ports: {
-          api: [8080, "tcp"],
+          tunnel: [80, "tcp"],
+          chisel: [8080, "tcp"],
         },
       },
     ],
-    name: "api",
-    serviceAccount: apiSa.name,
+    name: "tunnel",
+    serviceAccount: tunnelSa.name,
   });
 
-  const apiService = new Service(chart, "api-service", {
-    metadata: { name: "api" },
+  const tunnelService = new Service(chart, "tunnel-service", {
+    metadata: { name: "tunnel" },
     spec: {
       ports: [
         {
-          targetPort: { value: 8080 },
+          targetPort: { value: 80 },
           port: 80,
-          name: "api",
+          name: "tunnel",
         },
       ],
-      selector: getPodLabels(apiDeployment.name),
+      selector: getPodLabels(tunnelDeployment.name),
+    },
+  });
+
+  const proxySa = createServiceAccount(chart, "proxy-sa", {
+    access: {},
+    name: "proxy",
+  });
+
+  const proxyDeployment = createDeployment(chart, "proxy-deployment", {
+    containers: [
+      {
+        name: "wol-proxy",
+        image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
+        env: {
+          WOLPROXY_ADDRESS: "0.0.0.0:80",
+          WOLPROXY_BACKEND: `${tunnelService.name}.${namespace}.svc.cluster.local:80`,
+          WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
+          WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
+        },
+        ports: {
+          api: [80, "tcp"],
+        },
+      },
+    ],
+    name: "proxy",
+    serviceAccount: proxySa.name,
+  });
+
+  const proxyService = new Service(chart, "proxy-service", {
+    metadata: { name: "proxy" },
+    spec: {
+      ports: [
+        {
+          targetPort: { value: 80 },
+          port: 80,
+          name: "proxy",
+        },
+      ],
+      selector: getPodLabels(proxyDeployment.name),
     },
   });
 
   createIngress(chart, "api-ingress", {
     name: "api",
     host: "api.ai.bulia.dev",
-    services: { "/": { name: apiService.name, port: "api" } },
+    services: { "/": { name: proxyService.name, port: "proxy" } },
   });
 
   const postgresSecret = await createSealedSecret(chart, "postgres-secret", {
@@ -171,21 +220,6 @@ const manifests: ManifestsCallback = async (app) => {
           value: "True",
         },
         {
-          // attempts to locally download models if operating in online mode
-          name: "SAFE_MODE",
-          value: "True",
-        },
-        {
-          // used to wake openai api server on lan
-          name: "WAKE_ON_LAN_MAC_ADDRESS",
-          value: "C8:7F:54:6C:10:46",
-        },
-        {
-          // used to wake openai api server on lan
-          name: "WAKE_ON_LAN_HOSTNAME",
-          value: "bfiola-desktop.bulia.dev",
-        },
-        {
           // no way to instruct helm chart to use existing secret
           name: "DATABASE_URL",
           valueFrom: {
@@ -224,7 +258,7 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: false,
       },
       // use tunnel api url
-      openaiBaseApiUrls: `http://${apiService.name}.${namespace}.svc/v1`,
+      openaiBaseApiUrls: `http://${proxyService.name}.${namespace}.svc/v1`,
       persistence: {
         // disable local persistence (use s3)
         enabled: true,
