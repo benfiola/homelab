@@ -1,5 +1,5 @@
 import { Chart, Helm } from "cdk8s";
-import { Namespace, Service } from "../resources/k8s/k8s";
+import { ConfigMap, Namespace, Service } from "../resources/k8s/k8s";
 import { CliContext, ManifestsCallback } from "../utils/CliContext";
 import { createDeployment } from "../utils/createDeployment";
 import { createIngress } from "../utils/createIngress";
@@ -28,7 +28,7 @@ const appData = {
     repo: "https://helm.openwebui.com/",
     version: "6.23.0",
   },
-  chiselVersion: "1.10.1",
+  frpVersion: "0.63.0",
   wolProxyVersion: "1.0.0",
 };
 
@@ -48,8 +48,8 @@ const policyTargets = createTargets((b) => ({
   redis: b.pod(namespace, "open-webui-redis", { tcp: [6379, "tcp"] }),
   server: b.pod(namespace, "open-webui", { http: [8080, "tcp"] }),
   tunnel: b.pod(namespace, "tunnel", {
-    api: [80, "tcp"],
-    chisel: [8080, "tcp"],
+    client: [80, "tcp"],
+    server: [8080, "tcp"],
   }),
 }));
 
@@ -76,11 +76,11 @@ const manifests: ManifestsCallback = async (app) => {
       ports: { clients: [1, 65535, "tcp"] },
     });
 
-    b.rule(homeNetwork, pt.tunnel, "chisel");
+    b.rule(homeNetwork, pt.tunnel, "server");
     b.rule(ingress, pt.server, "http");
     b.rule(ingress, pt.proxy, "api");
     b.rule(pt.proxy, desktop, "wol");
-    b.rule(pt.proxy, pt.tunnel, "api");
+    b.rule(pt.proxy, pt.tunnel, "client");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
     b.rule(pt.server, ingress, "clients");
     b.rule(pt.server, pt.proxy, "api");
@@ -101,39 +101,54 @@ const manifests: ManifestsCallback = async (app) => {
     name: "tunnel",
   });
 
+  const tunnelConfig = new ConfigMap(chart, "tunnel-cm", {
+    metadata: { name: "tunnel"},
+    data: {
+      "config.json": JSON.stringify({
+        bindPort: 8080
+      }, null, 2)
+    }
+  })
+
   const tunnelDeployment = createDeployment(chart, "tunnel-deployment", {
     containers: [
       {
-        name: "chisel",
-        image: `jpillora/chisel:${appData.chiselVersion}`,
-        args: ["server", "--reverse"],
+        name: "frp",
+        image: `fatedier/frp:${appData.frpVersion}`,
+        args: ["--config", "/config/config.json"],
         ports: {
-          api: [80, "tcp"],
-          chisel: [8080, "tcp"],
+          client: [80, "tcp"],
+          server: [8080, "tcp"],
         },
+        mounts: {
+          "config": "/config"
+        }
       },
     ],
     name: "tunnel",
     serviceAccount: tunnelSa.name,
+    volumes: {
+      "config": tunnelConfig
+    }
   });
 
-  const tunnelApiService = new Service(chart, "tunnel-api-service", {
-    metadata: { name: "tunnel-api" },
+  const tunnelClientService = new Service(chart, "tunnel-client-service", {
+    metadata: { name: "tunnel-client" },
     spec: {
       ports: [
         {
           targetPort: { value: 80 },
           port: 80,
-          name: "api",
+          name: "client",
         },
       ],
       selector: getPodLabels(tunnelDeployment.name),
     },
   });
 
-  new Service(chart, "tunnel-chisel-service", {
+  new Service(chart, "tunnel-server-service", {
     metadata: {
-      name: "tunnel-chisel",
+      name: "tunnel-server",
       annotations: getDnsAnnotation("tunnel.ai.bulia.dev"),
     },
     spec: {
@@ -141,7 +156,7 @@ const manifests: ManifestsCallback = async (app) => {
         {
           targetPort: { value: 8080 },
           port: 80,
-          name: "chisel",
+          name: "server",
         },
       ],
       selector: getPodLabels(tunnelDeployment.name),
@@ -161,7 +176,7 @@ const manifests: ManifestsCallback = async (app) => {
         image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
         env: {
           WOLPROXY_ADDRESS: "0.0.0.0:80",
-          WOLPROXY_BACKEND: `${tunnelApiService.name}.${namespace}.svc:80`,
+          WOLPROXY_BACKEND: `${tunnelClientService.name}.${namespace}.svc:80`,
           WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
           WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
         },
