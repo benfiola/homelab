@@ -118,7 +118,7 @@ const manifests: ManifestsCallback = async (app) => {
     containers: [
       {
         name: "frp",
-        image: `fatedier/frp:v${appData.frpVersion}`,
+        image: `fatedier/frps:v${appData.frpVersion}`,
         args: ["--config", "/config/config.json"],
         ports: {
           client: [80, "tcp"],
