@@ -64,6 +64,10 @@ const manifests: ManifestsCallback = async (app) => {
 
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;
+    const bing = b.target({
+      dns: "bing.com",
+      ports: { https: [443, "tcp"] },
+    });
     const desktop = b.target({
       dns: "bfiola-desktop.bulia.dev",
       ports: { wol: [9, "udp"] },
@@ -82,6 +86,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.proxy, desktop, "wol");
     b.rule(pt.proxy, pt.tunnel, "client");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
+    b.rule(pt.server, bing, "https");
     b.rule(pt.server, ingress, "clients");
     b.rule(pt.server, pt.proxy, "api");
     b.rule(pt.server, pt.pipelines, "api");
