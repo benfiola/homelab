@@ -65,7 +65,7 @@ const manifests: ManifestsCallback = async (app) => {
   createNetworkPolicy(chart, (b) => {
     const pt = policyTargets;
     const bing = b.target({
-      dns: "bing.com",
+      dns: "www.bing.com",
       ports: { https: [443, "tcp"] },
     });
     const desktop = b.target({
