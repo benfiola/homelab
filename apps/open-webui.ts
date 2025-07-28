@@ -357,7 +357,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
       },
       // ensure workload has reasonable request limits set
-      resources: getPodRequests({ mem: 1000 }),
+      resources: getPodRequests({ mem: 2000 }),
       websocket: {
         // enable websocket/streaming behavior
         enabled: true,
