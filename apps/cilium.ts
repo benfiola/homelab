@@ -58,7 +58,7 @@ const baseChartValues = {
   // use cilium to fully replace kube-proxy
   kubeProxyReplacement: true,
   // give cilium agent appropriate resources
-  resources: getPodRequests({ cpu: 1000, mem: 1500 }),
+  resources: getPodRequests({ cpu: 1000, mem: 2500 }),
   // talos linux setting
   securityContext: {
     capabilities: {
