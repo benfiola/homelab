@@ -86,7 +86,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.proxy, desktop, "wol");
     b.rule(pt.proxy, pt.tunnel, "client");
     b.rule(pt.postgresRead, pt.postgresPrimary, "tcp");
-    b.rule(pt.server, world, "https");
+    // b.rule(pt.server, world, "https");
     b.rule(pt.server, ingress, "clients");
     b.rule(pt.server, pt.proxy, "api");
     b.rule(pt.server, pt.pipelines, "api");
