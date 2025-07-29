@@ -129,7 +129,7 @@ const manifests: ManifestsCallback = async (app) => {
           server: [8080, "tcp"],
           text: [8081, "tcp"],
           img: [8082, "tcp"],
-          imgAlt: [8083, "tcp"],
+          "img-alt": [8083, "tcp"],
         },
         mounts: {
           config: "/config",
@@ -158,9 +158,9 @@ const manifests: ManifestsCallback = async (app) => {
           name: "img",
         },
         {
-          targetPort: { value: "imgAlt" },
+          targetPort: { value: "img-alt" },
           port: 8083,
-          name: "imgAlt",
+          name: "img-alt",
         },
       ],
       selector: getPodLabels(tunnelDeployment.name),
@@ -228,7 +228,7 @@ const manifests: ManifestsCallback = async (app) => {
           WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
         },
         ports: {
-          imgAlt: [8083, "tcp"],
+          "img-alt": [8083, "tcp"],
         },
       },
     ],
@@ -251,9 +251,9 @@ const manifests: ManifestsCallback = async (app) => {
           name: "img",
         },
         {
-          targetPort: { value: "imgAlt" },
+          targetPort: { value: "img-alt" },
           port: 8083,
-          name: "imgAlt",
+          name: "img-alt",
         },
       ],
       selector: getPodLabels(proxyDeployment.name),
@@ -275,7 +275,7 @@ const manifests: ManifestsCallback = async (app) => {
   createIngress(chart, "img-alt-api-ingress", {
     name: "api",
     host: "img-alt.ai.bulia.dev",
-    services: { "/": { name: proxyService.name, port: "imgAlt" } },
+    services: { "/": { name: proxyService.name, port: "img-alt" } },
   });
 
   const postgresSecret = await createSealedSecret(chart, "postgres-secret", {
