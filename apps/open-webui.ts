@@ -193,7 +193,7 @@ const manifests: ManifestsCallback = async (app) => {
   const proxyDeployment = createDeployment(chart, "proxy-deployment", {
     containers: [
       {
-        name: "wol-proxy",
+        name: "wol-proxy-txt",
         image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
         env: {
           WOLPROXY_ADDRESS: "0.0.0.0:8081",
@@ -206,7 +206,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
       },
       {
-        name: "wol-proxy",
+        name: "wol-proxy-img",
         image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
         env: {
           WOLPROXY_ADDRESS: "0.0.0.0:8082",
@@ -219,7 +219,7 @@ const manifests: ManifestsCallback = async (app) => {
         },
       },
       {
-        name: "wol-proxy",
+        name: "wol-proxy-img-alt",
         image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
         env: {
           WOLPROXY_ADDRESS: "0.0.0.0:8083",
