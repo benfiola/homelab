@@ -43,13 +43,13 @@ const policyTargets = createTargets((b) => ({
     tcp: [5432, "tcp"],
   }),
   proxy: b.pod(namespace, "proxy", {
-    api: [8081 - 8083, "tcp"],
+    api: [8081, 8083, "tcp"],
   }),
   redis: b.pod(namespace, "open-webui-redis", { tcp: [6379, "tcp"] }),
   server: b.pod(namespace, "open-webui", { http: [8080, "tcp"] }),
   tunnel: b.pod(namespace, "tunnel", {
     server: [8080, "tcp"],
-    client: [8081 - 8083, "tcp"],
+    client: [8081, 8083, "tcp"],
   }),
 }));
 
