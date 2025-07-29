@@ -43,13 +43,13 @@ const policyTargets = createTargets((b) => ({
     tcp: [5432, "tcp"],
   }),
   proxy: b.pod(namespace, "proxy", {
-    api: [80, "tcp"],
+    api: [8081 - 8083, "tcp"],
   }),
   redis: b.pod(namespace, "open-webui-redis", { tcp: [6379, "tcp"] }),
   server: b.pod(namespace, "open-webui", { http: [8080, "tcp"] }),
   tunnel: b.pod(namespace, "tunnel", {
-    client: [80, "tcp"],
     server: [8080, "tcp"],
+    client: [8081 - 8083, "tcp"],
   }),
 }));
 
@@ -126,8 +126,10 @@ const manifests: ManifestsCallback = async (app) => {
         image: `fatedier/frps:v${appData.frpVersion}`,
         args: ["--config", "/config/config.json"],
         ports: {
-          client: [80, "tcp"],
           server: [8080, "tcp"],
+          text: [8081, "tcp"],
+          img: [8082, "tcp"],
+          imgAlt: [8083, "tcp"],
         },
         mounts: {
           config: "/config",
@@ -146,9 +148,19 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       ports: [
         {
-          targetPort: { value: 80 },
-          port: 80,
-          name: "client",
+          targetPort: { value: "text" },
+          port: 8081,
+          name: "text",
+        },
+        {
+          targetPort: { value: "img" },
+          port: 8082,
+          name: "img",
+        },
+        {
+          targetPort: { value: "imgAlt" },
+          port: 8083,
+          name: "imgAlt",
         },
       ],
       selector: getPodLabels(tunnelDeployment.name),
@@ -184,13 +196,39 @@ const manifests: ManifestsCallback = async (app) => {
         name: "wol-proxy",
         image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
         env: {
-          WOLPROXY_ADDRESS: "0.0.0.0:80",
-          WOLPROXY_BACKEND: `${tunnelClientService.name}.${namespace}.svc:80`,
+          WOLPROXY_ADDRESS: "0.0.0.0:8081",
+          WOLPROXY_BACKEND: `${tunnelClientService.name}.${namespace}.svc:8081`,
           WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
           WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
         },
         ports: {
-          api: [80, "tcp"],
+          text: [8081, "tcp"],
+        },
+      },
+      {
+        name: "wol-proxy",
+        image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
+        env: {
+          WOLPROXY_ADDRESS: "0.0.0.0:8082",
+          WOLPROXY_BACKEND: `${tunnelClientService.name}.${namespace}.svc:8082`,
+          WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
+          WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
+        },
+        ports: {
+          img: [8082, "tcp"],
+        },
+      },
+      {
+        name: "wol-proxy",
+        image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
+        env: {
+          WOLPROXY_ADDRESS: "0.0.0.0:8083",
+          WOLPROXY_BACKEND: `${tunnelClientService.name}.${namespace}.svc:8083`,
+          WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
+          WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
+        },
+        ports: {
+          imgAlt: [8083, "tcp"],
         },
       },
     ],
@@ -203,19 +241,41 @@ const manifests: ManifestsCallback = async (app) => {
     spec: {
       ports: [
         {
-          targetPort: { value: 80 },
-          port: 80,
-          name: "proxy",
+          targetPort: { value: "text" },
+          port: 8081,
+          name: "text",
+        },
+        {
+          targetPort: { value: "img" },
+          port: 8082,
+          name: "img",
+        },
+        {
+          targetPort: { value: "imgAlt" },
+          port: 8083,
+          name: "imgAlt",
         },
       ],
       selector: getPodLabels(proxyDeployment.name),
     },
   });
 
-  createIngress(chart, "api-ingress", {
+  createIngress(chart, "txt-api-ingress", {
     name: "api",
-    host: "api.ai.bulia.dev",
-    services: { "/": { name: proxyService.name, port: "proxy" } },
+    host: "txt.ai.bulia.dev",
+    services: { "/": { name: proxyService.name, port: "text" } },
+  });
+
+  createIngress(chart, "img-api-ingress", {
+    name: "api",
+    host: "img.ai.bulia.dev",
+    services: { "/": { name: proxyService.name, port: "img" } },
+  });
+
+  createIngress(chart, "img-alt-api-ingress", {
+    name: "api",
+    host: "img-alt.ai.bulia.dev",
+    services: { "/": { name: proxyService.name, port: "imgAlt" } },
   });
 
   const postgresSecret = await createSealedSecret(chart, "postgres-secret", {
@@ -301,7 +361,7 @@ const manifests: ManifestsCallback = async (app) => {
         enabled: false,
       },
       // use tunnel api url
-      openaiBaseApiUrls: `http://${proxyService.name}.${namespace}.svc/v1`,
+      openaiBaseApiUrls: `http://${proxyService.name}.${namespace}.svc:8081/v1`,
       persistence: {
         // disable local persistence (use s3)
         enabled: true,
