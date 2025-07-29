@@ -261,19 +261,19 @@ const manifests: ManifestsCallback = async (app) => {
   });
 
   createIngress(chart, "txt-api-ingress", {
-    name: "api",
+    name: "txt-api",
     host: "txt.ai.bulia.dev",
     services: { "/": { name: proxyService.name, port: "text" } },
   });
 
   createIngress(chart, "img-api-ingress", {
-    name: "api",
+    name: "img-api",
     host: "img.ai.bulia.dev",
     services: { "/": { name: proxyService.name, port: "img" } },
   });
 
   createIngress(chart, "img-alt-api-ingress", {
-    name: "api",
+    name: "img-alt-api",
     host: "img-alt.ai.bulia.dev",
     services: { "/": { name: proxyService.name, port: "img-alt" } },
   });
