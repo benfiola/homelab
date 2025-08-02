@@ -209,6 +209,9 @@ const manifests: ManifestsCallback = async (app) => {
           },
           // enables the hubble ui
           enabled: true,
+          frontend: {
+            resources: getPodRequests({ mem: 200 }),
+          },
           ingress: {
             // add cert-issuer annotations
             annotations: getCertIssuerAnnotations(),
