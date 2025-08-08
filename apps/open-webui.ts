@@ -43,13 +43,13 @@ const policyTargets = createTargets((b) => ({
     tcp: [5432, "tcp"],
   }),
   proxy: b.pod(namespace, "proxy", {
-    api: [8081, 8083, "tcp"],
+    api: [8081, 8082, "tcp"],
   }),
   redis: b.pod(namespace, "open-webui-redis", { tcp: [6379, "tcp"] }),
   server: b.pod(namespace, "open-webui", { http: [8080, "tcp"] }),
   tunnel: b.pod(namespace, "tunnel", {
     server: [8080, "tcp"],
-    client: [8081, 8083, "tcp"],
+    client: [8081, 8082, "tcp"],
   }),
 }));
 
@@ -129,7 +129,6 @@ const manifests: ManifestsCallback = async (app) => {
           server: [8080, "tcp"],
           text: [8081, "tcp"],
           img: [8082, "tcp"],
-          "img-alt": [8083, "tcp"],
         },
         mounts: {
           config: "/config",
@@ -156,11 +155,6 @@ const manifests: ManifestsCallback = async (app) => {
           targetPort: { value: "img" },
           port: 8082,
           name: "img",
-        },
-        {
-          targetPort: { value: "img-alt" },
-          port: 8083,
-          name: "img-alt",
         },
       ],
       selector: getPodLabels(tunnelDeployment.name),
@@ -217,20 +211,7 @@ const manifests: ManifestsCallback = async (app) => {
         ports: {
           img: [8082, "tcp"],
         },
-      },
-      {
-        name: "wol-proxy-img-alt",
-        image: `benfiola/homelab-wol-proxy:${appData.wolProxyVersion}`,
-        env: {
-          WOLPROXY_ADDRESS: "0.0.0.0:8083",
-          WOLPROXY_BACKEND: `${tunnelClientService.name}.${namespace}.svc:8083`,
-          WOLPROXY_WOL_HOSTNAME: "bfiola-desktop.bulia.dev",
-          WOLPROXY_WOL_MAC_ADDRESS: "C8:7F:54:6C:10:46",
-        },
-        ports: {
-          "img-alt": [8083, "tcp"],
-        },
-      },
+      }
     ],
     name: "proxy",
     serviceAccount: proxySa.name,
@@ -249,12 +230,7 @@ const manifests: ManifestsCallback = async (app) => {
           targetPort: { value: "img" },
           port: 8082,
           name: "img",
-        },
-        {
-          targetPort: { value: "img-alt" },
-          port: 8083,
-          name: "img-alt",
-        },
+        }
       ],
       selector: getPodLabels(proxyDeployment.name),
     },
@@ -270,12 +246,6 @@ const manifests: ManifestsCallback = async (app) => {
     name: "img-api",
     host: "img.ai.bulia.dev",
     services: { "/": { name: proxyService.name, port: "img" } },
-  });
-
-  createIngress(chart, "img-alt-api-ingress", {
-    name: "img-alt-api",
-    host: "img-alt.ai.bulia.dev",
-    services: { "/": { name: proxyService.name, port: "img-alt" } },
   });
 
   const postgresSecret = await createSealedSecret(chart, "postgres-secret", {
