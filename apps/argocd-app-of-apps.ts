@@ -108,6 +108,7 @@ const manifests: ManifestsCallback = async (app) => {
 
   const apps: (string | [string, CreateAppOpts])[] = [
     "access-operator",
+    "ai-api-proxy",
     "alloy",
     "argocd",
     "cert-manager",
