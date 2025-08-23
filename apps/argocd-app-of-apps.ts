@@ -119,7 +119,6 @@ const manifests: ManifestsCallback = async (app) => {
     "loki",
     "minecraft",
     "minio",
-    "open-webui",
     "piraeus",
     "sealed-secrets",
     "snapshot-controller",
