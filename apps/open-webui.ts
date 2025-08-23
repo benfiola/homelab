@@ -70,7 +70,7 @@ const manifests: ManifestsCallback = async (app) => {
     });
     const desktop = b.target({
       dns: "bfiola-desktop.bulia.dev",
-      ports: { wol: [9, "udp"] },
+      ports: { wol: [9, "udp"], tools: [8081, 8083, "tcp"] },
     });
     const homeNetwork = b.target({
       cidr: "192.168.0.0/16",
@@ -92,6 +92,7 @@ const manifests: ManifestsCallback = async (app) => {
     b.rule(pt.server, pt.pipelines, "api");
     b.rule(pt.server, pt.postgresPrimary, "tcp");
     b.rule(pt.server, pt.redis, "tcp");
+    b.rule(pt.server, desktop, "tools")
   });
 
   new Namespace(chart, "namespace", {
