@@ -5,5 +5,3 @@ machine:
     disk: /dev/nvme0n1
   network:
     hostname: node-d.cluster.bulia.dev
-  nodeLabels:
-    "intel.feature.node.kubernetes.io/gpu": "true"

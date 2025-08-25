@@ -1,7 +1,7 @@
 machine:
   env:
-    # talos 1.10.4 with drbd, i915
-    IMAGE: factory.talos.dev/metal-installer/322dbdfae3877a291f8977311656b2267aacfe7c15a483f56904d65050814a0c:v1.10.4
+    # talos 1.10.4 with drbd
+    IMAGE: factory.talos.dev/metal-installer/e048aaf4461ff9f9576c9a42f760f2fef566559bd4933f322853ac291e46f238:v1.10.4
     K8S: 1.33.2
   features:
     hostDNS:
