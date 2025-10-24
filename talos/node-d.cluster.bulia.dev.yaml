@@ -1,5 +1,6 @@
 machine:
   env:
+    HWTYPE: baremetal
     ROLE: worker
   install:
     disk: /dev/nvme0n1

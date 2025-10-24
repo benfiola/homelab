@@ -309,7 +309,7 @@ async function getNodePatch(node: string): Promise<any> {
 }
 
 /**
- * Obtains node machine configuration - talosctl generated configuration with global ande node patches overlaid.
+ * Obtains node machine configuration - talosctl generated configuration with global and node patches overlaid.
  * This is the complete machine configuration applied onto a node.
  *
  * @param node the node name
@@ -499,20 +499,21 @@ interface TalosUpgradeOpts {
 /**
  * Upgrades the cluster to the version of talos linux defined within the talos config files.
  */
-async function talosUpgrade(opts: TalosUpgradeOpts) {
-  const node = opts.node;
-  let config = await getGlobalPatch();
-  if (node) {
-    config = await getNodePatch(node);
+async function talosUpgrade(node: string, opts: TalosUpgradeOpts) {
+  let config = await getNodePatch(node);
+  const hwType = config["machine"]["env"]["HWTYPE"];
+  const key = `IMAGE_${hwType}`.toUpperCase();
+  const image = config["machine"]["env"][key];
+  if (!image) {
+    throw new Error(`image not found for hw type '${hwType}' (key: ${key})`);
   }
-  const image = config["machine"]["env"]["IMAGE"];
 
-  let cmd = ["talosctl"];
-  if (node) {
-    cmd.push(`--nodes=node-${node}.${clusterDns}`);
-  }
-  cmd.push("upgrade", `--image=${image}`);
-
+  let cmd = [
+    "talosctl",
+    `--nodes=node-${node}.${clusterDns}`,
+    "upgrade",
+    `--image=${image}`,
+  ];
   execSync(join(cmd), { stdio: "inherit" });
 }
 
@@ -667,7 +668,7 @@ async function generateResources(
   cmdTalos
     .command("generate-kubeconfig")
     .description("obtain kubeconfig from talos cluster")
-    .argument("node")
+    .argument("node", "a control plane node")
     .action(talosGenerateKubeconfig);
   cmdTalos
     .command("generate-talosconfig")
@@ -678,7 +679,7 @@ async function generateResources(
     .description(
       "upgrade talos linux to the version defined within the talos config files"
     )
-    .option("--node <node>", "the specific node to upgrade")
+    .argument("node", "the specific node to upgrade")
     .action(talosUpgrade);
   cmdTalos
     .command("upgrade-k8s")

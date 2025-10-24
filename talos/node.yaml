@@ -1,7 +1,8 @@
 machine:
   env:
-    # talos 1.10.4 with drbd
-    IMAGE: factory.talos.dev/metal-installer/e048aaf4461ff9f9576c9a42f760f2fef566559bd4933f322853ac291e46f238:v1.10.4
+    # talos 1.11.3 with drbd
+    IAMGE_RPI: factory.talos.dev/metal-installer/cb923a5c4db88e5d008f7c9551da8172f835dcedd18f06d397e86dbaa1a39513:v1.11.3
+    IMAGE_BAREMETAL: factory.talos.dev/metal-installer/e048aaf4461ff9f9576c9a42f760f2fef566559bd4933f322853ac291e46f238:v1.11.3
     K8S: 1.33.2
   features:
     hostDNS:

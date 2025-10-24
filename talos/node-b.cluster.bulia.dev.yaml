@@ -1,6 +1,7 @@
 machine:
   env:
-    ROLE: controlplane
+    HWTYPE: rpi
+    ROLE: worker
   install:
     disk: /dev/sda
   network:

@@ -1,5 +1,6 @@
 machine:
   env:
+    HWTYPE: rpi
     ROLE: controlplane
   install:
     disk: /dev/sda
