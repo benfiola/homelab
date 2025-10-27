@@ -1,8 +1,0 @@
-machine:
-  env:
-    HWTYPE: rpi
-    ROLE: worker
-  install:
-    disk: /dev/sda
-  network:
-    hostname: node-b.cluster.bulia.dev

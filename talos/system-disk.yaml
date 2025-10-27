@@ -1,9 +1,0 @@
-apiVersion: v1alpha1
-kind: VolumeConfig
-name: EPHEMERAL
-provisioning:
-  diskSelector:
-    match: system_disk
-  minSize: 2GiB
-  maxSize: 200GiB
-  grow: true

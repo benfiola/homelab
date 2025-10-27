@@ -1,8 +1,0 @@
-machine:
-  env:
-    HWTYPE: rpi
-    ROLE: controlplane
-  install:
-    disk: /dev/sda
-  network:
-    hostname: node-a.cluster.bulia.dev
