@@ -1,25 +1,27 @@
 {
-  "private": true,
-  "dependencies": {
-    "@types/node": "^18",
-    "cdk8s": "^2.68.69",
-    "cdk8s-cli": "^2.198.119",
-    "commander": "^12.0.0",
-    "constructs": "^10.3.0",
-    "dotenv": "^16.4.5",
-    "glob": "^10.4.1",
-    "js-yaml": "^4.1.0",
-    "shlex": "^2.1.2",
-    "tempy": "^3.1.0",
-    "tsx": "^4.7.2",
-    "typescript": "^5.4.4",
-    "zod": "^3.23.8"
-  },
+  "name": "homelab",
+  "version": "0.0.1",
+  "main": "./src/cli.ts",
   "bin": {
-    "homelab": "./cli.ts"
+    "homelab": "./src/cli.ts"
   },
-  "packageManager": "yarn@4.5.1",
-  "devDependencies": {
-    "@types/js-yaml": "^4"
+  "dependencies": {
+    "@types/lodash": "^4.17.21",
+    "@types/node": "^24.9.1",
+    "cdk8s": "^2.70.23",
+    "commander": "^14.0.2",
+    "deepmerge": "^4.3.1",
+    "lodash": "^4.17.21",
+    "pino": "^10.1.0",
+    "pino-abstract-transport": "^3.0.0",
+    "portfinder": "^1.0.38",
+    "shlex": "^3.0.0",
+    "sonic-boom": "^4.2.0",
+    "tempy": "^3.1.0",
+    "tree-kill": "^1.2.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.12"
   }
 }

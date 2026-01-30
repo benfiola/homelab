@@ -1,67 +1,89 @@
 name: publish
+
 on:
   push:
     branches:
       - main
 
 jobs:
-  publish:
+  publish-manifests:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{github.workflow}}
+      group: "${{github.workflow}}-publish-manifests"
     permissions:
-      id-token: write
       contents: write
+      id-token: write
     environment:
       name: publish
     steps:
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20.18.0"
       - name: checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+      - name: configure git environment
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.21.0"
+      - name: install project
+        run: |
+          sudo BIN=/usr/local/bin make install-tools
+          make install-project
       - name: checkout manifests
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
           ref: main
           repository: benfiola/homelab-manifests
-          path: manifests
+          path: homelab-manifests
           token: ${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}
-      - name: install helm
-        run: |
-          curl -o /tmp/archive.tar.gz -fsSL https://get.helm.sh/helm-v3.14.3-linux-amd64.tar.gz
-          tar xvzf /tmp/archive.tar.gz -C /usr/local/bin --strip-components 1
-          rm -rf /tmp/archive.tar.gz
-      - name: install kubeseal
-        run: |
-          curl -o /tmp/archive.tar.gz -fsSL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.2/kubeseal-0.26.2-linux-amd64.tar.gz
-          tar xvzf /tmp/archive.tar.gz -C /usr/local/bin
-          rm -rf /tmp/archive.tar.gz
-      - name: install yarn
-        run: |
-          npm install -g yarn
-      - name: install project dependencies
-        run: |
-          yarn install
-          echo "$(pwd)/node_modules/.bin" >> "${GITHUB_PATH}"
       - name: generate manifests
         run: |
-          rm -rf manifests/*
-          echo '${{secrets.ENV_FILE}}' > .env
-          echo "${{secrets.SEALED_SECRETS_CERT}}" > "${SEALED_SECRETS_CERT_PATH}"
-          homelab manifests all generate
-        env:
-          SEALED_SECRETS_CERT_PATH: /tmp/sealed-secrets.crt
+          rm -rf homelab-manifests/apps
+          mkdir -p homelab-manifests/apps
+          homelab generate-manifests --output homelab-manifests/apps
       - name: commit manifests
         run: |
-          cd manifests
-          git config --global user.name 'Ben Fiola'
-          git config --global user.email 'benfiola@users.noreply.github.com'
+          cd homelab-manifests
           git remote set-url origin https://x-access-token:${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}@github.com/benfiola/homelab-manifests.git
           git add -A
           git commit --allow-empty -m "${{github.event.head_commit.message}}"
           git push origin
+
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.21.0"
+      - name: build docs
+        run: |
+          DIST=dist make build-docs
+      - name: upload docs
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publish-docs:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    concurrency:
+      group: "${{github.workflow}}-publish-docs"
+    permissions:
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: deploy docs
+        id: deployment
+        uses: actions/deploy-pages@v4

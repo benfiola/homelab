@@ -1,0 +1,3 @@
+hardware: rpi4
+hostname: node-a.cluster.bulia.dev
+role: controlplane

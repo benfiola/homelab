@@ -1,151 +1,127 @@
-ASSETS ?= $(shell pwd)/.dev
+CDK8S_VERSION ?= 2.203.1
+CILIUM_VERSION ?= 1.18.5
+CILIUMCLI_VERSION ?= 0.18.9
+FLUX_VERSION ?= 2.7.3
+HELM_VERSION ?= 4.0.0
+K9S_VERSION ?= 0.50.16
+KUBECTL_VERSION ?= 1.34.2
+TALOSCTL_VERSION ?= 1.11.5
+TSX_VERSION ?= 4.20.6
+VAULT_VERSION ?= 1.21.1
 
-ARGOCD_VERSION ?= 2.12.4
-CILIUM_VERSION ?= 0.16.9
-CLOUDFLARED_VERSION ?= 2024.3.0
-HELM_VERSION ?= 3.14.3
-K9S_VERSION ?= 0.32.6
-KUBERNETES_VERSION ?= 1.30.5
-KUBESEAL_VERSION ?= 0.26.2
-MC_VERSION ?= RELEASE.2024-04-18T16-45-29Z
-TALOS_VERSION ?= 1.8.2
-VELERO_VERSION ?= 1.14.0
+ARCH ?= $(shell uname -m)
+BIN ?= ./.bin
+DIST ?= ./.dist
 
-ARCH = $(shell arch)
-ifeq ($(ARCH),aarch64)
-	ARCH = arm64
-else ifeq ($(ARCH),x86_64)
-	ARCH = amd64
+arch := $(ARCH)
+ifeq ($(arch),aarch64)
+    arch := arm64
+else ifeq ($(arch),x86_64)
+    arch := amd64
 endif
 
-ARGOCD = $(ASSETS)/argocd
-ARGOCD_URL = https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-$(ARCH)
-CILIUM = $(ASSETS)/cilium
-CILIUM_URL = https://github.com/cilium/cilium-cli/releases/download/v$(CILIUM_VERSION)/cilium-linux-$(ARCH).tar.gz
-CLOUDFLARED = $(ASSETS)/CLOUDFLARED
-CLOUDFLARED_URL = https://github.com/cloudflare/cloudflared/releases/download/$(CLOUDFLARED_VERSION)/cloudflared-linux-$(ARCH)
-HELM = $(ASSETS)/helm
-HELM_URL = https://get.helm.sh/helm-v$(HELM_VERSION)-linux-$(ARCH).tar.gz
-K9S = $(ASSETS)/k9s
-K9S_URL = https://github.com/derailed/k9s/releases/download/v$(K9S_VERSION)/k9s_Linux_$(ARCH).tar.gz
-KUBECTL = $(ASSETS)/kubectl
-KUBECTL_URL = https://dl.k8s.io/release/v$(KUBERNETES_VERSION)/bin/linux/$(ARCH)/kubectl
-KUBESEAL = $(ASSETS)/kubeseal
-KUBESEAL_URL = https://github.com/bitnami-labs/sealed-secrets/releases/download/v$(KUBESEAL_VERSION)/kubeseal-$(KUBESEAL_VERSION)-linux-$(ARCH).tar.gz
-MC = $(ASSETS)/mc
-MC_URL = https://dl.min.io/client/mc/release/linux-$(ARCH)/archive/mc.$(MC_VERSION)
-TALOSCTL = $(ASSETS)/talosctl
-TALOSCTL_URL = https://github.com/siderolabs/talos/releases/download/v$(TALOS_VERSION)/talosctl-linux-$(ARCH)
-VELERO = $(ASSETS)/velero
-VELERO_URL = https://github.com/vmware-tanzu/velero/releases/download/v$(VELERO_VERSION)/velero-v$(VELERO_VERSION)-linux-$(ARCH).tar.gz
+bin := $(abspath $(BIN))
+dist := $(abspath $(DIST))
+project := $(abspath $(dir $(MAKEFILE_LIST)))
 
-.PHONY: clean
-clean:
-	# delete assets folder
-	rm -rf $(ASSETS)
+include Makefile.include.mk
 
-$(ASSETS):
-	mkdir -p $(ASSETS)
+.PHONY: default
+default: list-targets
+
+list-targets:
+	@echo "available targets:"
+	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null \
+		| awk -v RS= -F: '/(^|\n)# Files(\n|$$$$)/,/(^|\n)# Finished Make data base/ {if ($$$$1 !~ "^[#.]") {print $$$$1}}' \
+		| sort \
+		| grep -E -v -e '^[^[:alnum:]]' -e '^$$@$$$$' \
+		| sed 's/^/\t/'
+
+.PHONY: build-docs
+build-docs: install-docs
+	# build docs
+	cd docs && npm run build -- --out-dir=$(dist)
+
+.PHONY: dev-docs
+dev-docs: install-docs
+	# run docs dev server
+	cd docs && npm run start
+
+.PHONY: install-docs
+install-docs:
+	# install doc dependencies
+	cd docs && npm install
+
+.PHONY: install-project
+install-project:
+	# install homelab project (and dependencies)
+	npm install
+	# link homelab project to global installation
+	npm link
 
 .PHONY: install-tools
-install-tools: $(ARGOCD) $(CILIUM) $(CLOUDFLARED) $(HELM) $(K9S) $(KUBECTL) $(KUBESEAL) $(MC) $(TALOSCTL) $(VELERO)
+install-tools:
 
-$(ARGOCD): | $(ASSETS)
-	# install argocd
-	# download
-	curl -fsSL -o $(ARGOCD) $(ARGOCD_URL)
-	# make executable
-	chmod +x $(ARGOCD)
+$(eval $(call tool-from-apt,bsdtar,libarchive-tools))
+$(eval $(call tool-from-apt,curl,curl))
+$(eval $(call tool-from-apt,git,git))
+$(eval $(call tool-from-npm,cdk8s,cdk8s-cli))
+$(eval $(call tool-from-npm,tsx,tsx))
 
-$(CILIUM): | $(ASSETS)
-	# install cilium
-	# create temp folder
-	rm -rf $(ASSETS)/tmp && mkdir -p $(ASSETS)/tmp
-	# download
-	curl -fsSL -o $(ASSETS)/tmp/file.tar.gz $(CILIUM_URL)
-	# extract
-	tar xvzf $(ASSETS)/tmp/file.tar.gz -C $(ASSETS)/tmp
-	# copy
-	cp $(ASSETS)/tmp/cilium $(CILIUM)
-	# remove temp folder
-	rm -rf $(ASSETS)/tmp
+ciliumcli_arch := $(arch)
+ciliumcli_url := https://github.com/cilium/cilium-cli/releases/download/v$(CILIUMCLI_VERSION)/cilium-linux-$(ciliumcli_arch).tar.gz
+$(eval $(call tool-from-tar-gz,cilium,$(ciliumcli_url),0))
 
-$(CLOUDFLARED): | $(ASSETS)
-	# install cloudflared
-	# download
-	curl -fsSL -o $(CLOUDFLARED) $(CLOUDFLARED_URL)
-	# make executable
-	chmod +x $(CLOUDFLARED)
+flux_arch := $(arch)
+flux_url := https://github.com/fluxcd/flux2/releases/download/v$(FLUX_VERSION)/flux_$(FLUX_VERSION)_linux_$(flux_arch).tar.gz
+$(eval $(call tool-from-tar-gz,flux,$(flux_url), 0))
 
-$(HELM): | $(ASSETS)
-	# install helm
-	# create temp folder
-	mkdir -p $(ASSETS)/tmp
-	# download
-	curl -fsSL -o $(ASSETS)/tmp/file.tar.gz $(HELM_URL)
-	# extract
-	tar xvzf $(ASSETS)/tmp/file.tar.gz -C $(ASSETS)/tmp --strip-components=1
-	# copy
-	cp $(ASSETS)/tmp/helm $(HELM)
-	# remove temp folder
-	rm -rf $(ASSETS)/tmp
+gcloud_arch := $(arch)
+ifeq ($(gcloud_arch),arm64)
+	gcloud_arch := arm
+else ifeq ($(gcloud_arch),amd64)
+	gcloud_arch := x86_64
+endif
+gcloud_url := https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-$(gcloud_arch).tar.gz
+install-tools: install-tools__gcloud
+.PHONY: install-tools__gcloud
+install-tools__gcloud: $(bin)/gcloud
+$(bin)/gcloud: $(bin)/bsdtar $(bin)/curl | $(bin)
+	# clean temp paths
+	rm -rf $(bin)/.gcloud $(bin)/.archive.tar.gz && mkdir -p $(bin)/.gcloud
+	# download gcloud archive
+	curl -o $(bin)/.archive.tar.gz -fsSL $(gcloud_url)
+	# extract gcloud
+	bsdtar xvzf $(bin)/.archive.tar.gz -C $(bin)/.gcloud
+	# symlink gcloud
+	ln -sf $(bin)/.gcloud/google-cloud-sdk/bin/gcloud $(bin)/gcloud
+	# clean temp paths
+	rm -rf $(bin)/.archive.tar.gz
 
-$(K9S): | $(ASSETS)
-	# install k9s
-	# create temp folder
-	mkdir -p $(ASSETS)/tmp
-	# download
-	curl -fsSL -o $(ASSETS)/tmp/file.tar.gz $(K9S_URL)
-	# extract
-	tar xvzf $(ASSETS)/tmp/file.tar.gz -C $(ASSETS)/tmp
-	# copy
-	cp $(ASSETS)/tmp/k9s $(K9S)
-	# remove temp folder
-	rm -rf $(ASSETS)/tmp
+helm_arch := $(arch)
+helm_url := https://get.helm.sh/helm-v$(HELM_VERSION)-linux-$(helm_arch).tar.gz
+$(eval $(call tool-from-tar-gz,helm,$(helm_url), 1))
 
-$(KUBECTL): | $(ASSETS)
-	# install kubectl
-	# download
-	curl -fsSL -o $(KUBECTL) $(KUBECTL_URL)
-	# make executable
-	chmod +x $(KUBECTL)
+hubble_arch := $(arch)
+hubble_url := https://github.com/cilium/hubble/releases/download/v$(CILIUM_VERSION)/hubble-linux-$(hubble_arch).tar.gz
+$(eval $(call tool-from-tar-gz,hubble,$(hubble_url),0))
 
-$(KUBESEAL): | $(ASSETS)
-	# install kubeseal
-	# create temp folder
-	mkdir -p $(ASSETS)/tmp
-	# download
-	curl -fsSL -o $(ASSETS)/tmp/file.tar.gz $(KUBESEAL_URL)
-	# extract
-	tar xvzf $(ASSETS)/tmp/file.tar.gz -C $(ASSETS)/tmp
-	# copy
-	cp $(ASSETS)/tmp/kubeseal $(KUBESEAL)
-	# remove temp folder
-	rm -rf $(ASSETS)/tmp
+k9s_arch := $(arch)
+k9s_url := https://github.com/derailed/k9s/releases/download/v$(K9S_VERSION)/k9s_Linux_$(k9s_arch).tar.gz
+$(eval $(call tool-from-tar-gz,k9s,$(k9s_url), 0))
 
-$(MC): | $(ASSETS)
-	# install mc
-	# download
-	curl -fsSL -o $(MC) $(MC_URL)
-	# make executable
-	chmod +x $(MC)
+kubectl_arch := $(arch)
+kubectl_url := https://dl.k8s.io/release/v$(KUBECTL_VERSION)/bin/linux/$(kubectl_arch)/kubectl
+$(eval $(call tool-from-url,kubectl,$(kubectl_url)))
 
-$(TALOSCTL): | $(ASSETS)
-	# install talosctl
-	# download
-	curl -fsSL -o $(TALOSCTL) $(TALOSCTL_URL)
-	# make executable
-	chmod +x $(TALOSCTL)
+talosctl_arch := $(arch)
+talosctl_url := https://github.com/siderolabs/talos/releases/download/v$(TALOSCTL_VERSION)/talosctl-linux-$(talosctl_arch)
+$(eval $(call tool-from-url,talosctl,$(talosctl_url)))
 
-$(VELERO): | $(ASSETS)
-	# install velero
-	# create temp folder
-	mkdir -p $(ASSETS)/tmp
-	# download
-	curl -fsSL -o $(ASSETS)/tmp/file.tar.gz $(VELERO_URL)
-	# extract
-	tar xvzf $(ASSETS)/tmp/file.tar.gz -C $(ASSETS)/tmp --strip-components=1
-	# copy
-	cp $(ASSETS)/tmp/velero $(VELERO)
-	# remove temp folder
-	rm -rf $(ASSETS)/tmp
+vault_arch := $(arch)
+vault_url := https://releases.hashicorp.com/vault/$(VAULT_VERSION)/vault_$(VAULT_VERSION)_linux_$(vault_arch).zip
+$(eval $(call tool-from-zip,vault,$(vault_url),0))
+
+$(bin):
+	# create bin folder
+	mkdir -p $(bin)

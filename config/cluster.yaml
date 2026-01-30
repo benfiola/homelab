@@ -1,0 +1,86 @@
+endpoint: cluster.bulia.dev
+hardware:
+  tc:
+    disks:
+      SYSTEM:
+        device: /dev/nvme0n1
+      EPHEMERAL:
+        device: /dev/nvme0n1
+        size: 200GiB
+      linstor:
+        device: /dev/nvme0n1
+        size: 1600GiB
+    # with drbd extension
+    imageConfig:
+      filename: metal-amd64.iso
+      schematic:
+        customization:
+          systemExtensions:
+            officialExtensions:
+              - siderolabs/drbd
+    image: factory.talos.dev/metal-installer/e048aaf4461ff9f9576c9a42f760f2fef566559bd4933f322853ac291e46f238:v1.11.3
+  rpi4:
+    disks:
+      SYSTEM:
+        device: /dev/mmcblk0
+      EPHEMERAL:
+        device: /dev/sda
+        size: 200GiB
+      linstor:
+        device: /dev/sda
+        size: 700GiB
+    imageConfig:
+      filename: metal-arm64.raw.xz
+      schematic:
+        customization:
+          systemExtensions:
+            officialExtensions:
+              - siderolabs/drbd
+        overlay:
+          image: siderolabs/sbc-raspberrypi
+          name: rpi_generic
+          options:
+            configTxt: |
+              gpu_mem=32
+              hdmi_force_hotplug:0=1
+              hdmi_force_hotplug:1=1
+              kernel=u-boot.bin
+              arm_64bit=1
+              arm_boost=1
+              enable_uart=1
+              dtoverlay=disable-bt
+              dtoverlay=disable-wifi
+    image: factory.talos.dev/metal-installer/cc039b3437c81179de3cf77be1094d619b88a7044144b2d7153ed14104900272:v1.11.3
+kubernetes: 1.34.2
+name: homelab
+
+baseTalosConfig:
+  cluster:
+    network:
+      cni:
+        name: none
+    proxy:
+      disabled: true
+  machine:
+    features:
+      hostDNS:
+        forwardKubeDNSToHost: false
+    kernel:
+      modules:
+        # configure drbd kernel modules (piraeus)
+        - name: dm_mod
+        - name: dm_thin_pool
+        - name: drbd
+          parameters:
+            - usermode_helper=disabled
+        - name: drbd_transport_tcp
+    kubelet:
+      extraMounts:
+        # configure r/w mounts (piraeus)
+        - destination: /var/local
+          source: /var/local
+          type: bind
+          options:
+            - rbind
+            - rshared
+            - rw

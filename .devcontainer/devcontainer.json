@@ -2,6 +2,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "continue.continue",
         "esbenp.prettier-vscode",
         "rohit-gohri.format-code-action",
         "yoavbls.pretty-ts-errors"
@@ -10,31 +11,28 @@
         "[yaml]": {
           "editor.autoIndent": "none"
         },
+        "continue.enableConsole": true,
+        "continue.telemetryEnabled": false,
         "editor.codeActionsOnSave": [
           "source.organizeImports",
           "source.formatDocument"
         ],
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "typescript.tsdk": "/workspaces/homelab/node_modules/typescript/lib"
+        "remote.extensionKind": {
+          "continue.continue": ["workspace"]
+        },
+        "typescript.tsdk": "./node_modules/typescript/lib"
       }
     }
   },
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20.12.1"
-    },
-    "ghcr.io/devcontainers-contrib/features/apt-packages": {
-      "packages": ["curl", "git", "vim"]
+      "version": "22.21.0"
     }
   },
   "image": "ubuntu:latest",
   "postCreateCommand": ".devcontainer/post-create.sh",
-  "remoteEnv": {
-    "MC_DISABLE_PAGER": "1",
-    "MC_INSECURE": "1",
-    "KUBECONFIG": "/workspaces/homelab/.dev/kube-config.yaml",
-    "PATH": "/workspaces/homelab/.dev:/workspaces/homelab/node_modules/.bin:${containerEnv:PATH}",
-    "TALOSCONFIG": "/workspaces/homelab/talos/config"
-  }
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.continue,target=/root/.continue,type=bind,consistency=cached"
+  ]
 }

@@ -1,0 +1,3 @@
+hardware: tc
+hostname: node-e.cluster.bulia.dev
+role: worker
