@@ -10,7 +10,7 @@
     "@types/node": "^24.9.1",
     "cdk8s": "^2.70.23",
     "commander": "^14.0.2",
-    "deepmerge": "^4.3.1",
+    "deepmerge-ts": "^7.1.5",
     "lodash": "^4.17.21",
     "pino": "^10.1.0",
     "pino-abstract-transport": "^3.0.0",

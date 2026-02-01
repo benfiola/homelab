@@ -56,6 +56,14 @@ name: homelab
 
 baseTalosConfig:
   cluster:
+    apiServer:
+      admissionControl:
+        - name: PodSecurity
+          configuration:
+            defaults:
+              audit: restricted
+              enforce: restricted
+              warn: restricted
     network:
       cni:
         name: none

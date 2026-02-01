@@ -1,4 +1,4 @@
-import deepmerge from "deepmerge";
+import { deepmergeCustom } from "deepmerge-ts";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import { parse } from "yaml";
@@ -154,6 +154,47 @@ export const createSchematic = async (schematic: ImageSchematic) => {
   return id;
 };
 
+const mergeArraysUsingName = (values: any, utils: any, meta: any) => {
+  const result = [...values[0]];
+
+  let destMap: Record<string, any> = {};
+  values[1].forEach((item: any) => (destMap[item.name] = item));
+
+  result.forEach((source: any, index: number) => {
+    const dest = destMap[source.name];
+    delete destMap[source.name];
+    if (!dest) {
+      return;
+    }
+    result[index] = utils.deepmerge(source, dest);
+  });
+
+  result.push(...Object.values(destMap));
+
+  return result;
+};
+
+const machineConfigMerge = deepmergeCustom<unknown>({
+  metaDataUpdater: (previousMeta: any, metaMeta: any) => {
+    const keyPath = [
+      previousMeta?.keyPath ?? "",
+      metaMeta.key ? String(metaMeta.key) : "",
+    ]
+      .filter((k) => k !== "")
+      .join(".");
+    return {
+      ...metaMeta,
+      keyPath,
+    };
+  },
+  mergeArrays: (values, utils, meta: any) => {
+    if (meta?.keyPath === "cluster.apiServer.admissionControl") {
+      return mergeArraysUsingName(values, utils, meta);
+    }
+    return utils.defaultMergeFunctions.mergeArrays(values);
+  },
+});
+
 export const getSystemConfig = async (
   cluster: ClusterConfig,
   node: NodeConfig,
@@ -187,24 +228,9 @@ export const getSystemConfig = async (
     },
   };
 
-  const createCustomMerge = (parent?: string) => {
-    return (key: string) => {
-      
-    }
-  }
-
-  const customMerge = (key: string) => {
-    if (key === "cluster.apiServer.admissionControl") {
-
-    }
-    
-  }
-
   let machineConfig = base;
   for (const patch of [clusterPatch, nodePatch]) {
-    machineConfig = deepmerge(machineConfig, patch, {
-      customMerge,
-    });
+    machineConfig = machineConfigMerge(machineConfig, patch);
   }
 
   const volumeConfigs: Record<any, any>[] = [];
