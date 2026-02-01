@@ -29,7 +29,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const vaultAuth = new VaultAuth(chart, chart.node.id, "vault");
+  const vaultAuth = new VaultAuth(
+    chart,
+    chart.node.id,
+    "vault-secrets-operator",
+  );
 
   const vaultSecret = new VaultStaticSecret(
     chart,

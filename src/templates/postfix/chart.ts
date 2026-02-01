@@ -17,7 +17,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  const vaultAuth = new VaultAuth(chart, chart.node.id, "vault");
+  const vaultAuth = new VaultAuth(
+    chart,
+    chart.node.id,
+    "vault-secrets-operator",
+  );
 
   const vaultSecret = new VaultDynamicSecret(
     chart,
