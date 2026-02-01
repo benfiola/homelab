@@ -4,6 +4,8 @@ import {
 } from "../../../assets/minio-operator/minio.min.io";
 import {
   Chart,
+  getField,
+  getSecurityContext,
   HttpRoute,
   Namespace,
   VaultAuth,
@@ -34,20 +36,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
+  const securityContext = getSecurityContext();
+
   new Tenant(chart, `${id}-tenant`, {
     metadata: {
       name: "minio",
     },
     spec: {
       configuration: {
-        name: vaultSecret.secret.name,
+        name: getField(vaultSecret.secret, "spec.destination.name"),
       },
       pools: [
         {
+          containerSecurityContext: securityContext.container,
           name: "pool",
           labels: {
             "app.kubernetes.io/name": id,
           },
+          securityContext: securityContext.pod,
           servers: 3,
           volumeClaimTemplate: {
             spec: {

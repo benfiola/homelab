@@ -1,15 +1,12 @@
 import {
-  ConfigMap,
-  Deployment,
-  IntOrString,
-  Service,
-} from "../../../assets/kubernetes/k8s";
-import {
   Chart,
+  findApiObject,
   getField,
+  getSecurityContext,
+  Helm,
   Namespace,
   VaultAuth,
-  VaultStaticSecret,
+  VaultDynamicSecret,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -22,105 +19,55 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultAuth = new VaultAuth(chart, "vault");
 
-  const vaultSecret = new VaultStaticSecret(
+  const vaultSecret = new VaultDynamicSecret(
     chart,
     vaultAuth,
     "vault",
     construct.node.id,
+    {
+      RELAYHOST_PASSWORD: `{{ get (get .Secrets "data") "mailgun-smtp-password" }}`,
+    },
   );
 
-  const configMap = new ConfigMap(chart, `${id}-config-map`, {
-    metadata: {
-      name: "config",
-    },
-    data: {
-      "mailgun-smtp-username": "noreply@cluster.bulia.dev",
-    },
+  const securityContext = getSecurityContext({
+    caps: ["NET_BIND_SERVICE", "SYS_CHROOT", "SETGID", "SETUID"],
+    uid: 0,
+    gid: 0,
   });
 
-  const deployment = new Deployment(chart, `${id}-deployment`, {
-    metadata: {
-      name: "postfix",
-    },
-    spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": "postfix",
-        },
-      },
-      template: {
-        metadata: {
-          labels: {
-            "app.kubernetes.io/name": "postfix",
-          },
-        },
-        spec: {
-          containers: [
-            {
-              name: "postfix",
-              image: `docker.io/boky/postfix:4.4.0`,
-              env: [
-                {
-                  name: "ALLOW_EMPTY_SENDER_DOMAINS",
-                  value: "true",
-                },
-                {
-                  name: "RELAYHOST",
-                  value: "[smtp.mailgun.org]:587",
-                },
-                {
-                  name: "RELAYHOST_USERNAME",
-                  valueFrom: {
-                    configMapKeyRef: {
-                      name: configMap.name,
-                      key: "mailgun-smtp-username",
-                    },
-                  },
-                },
-                {
-                  name: "RELAYHOST_PASSWORD",
-                  valueFrom: {
-                    secretKeyRef: {
-                      name: getField(
-                        vaultSecret.secret,
-                        "spec.destination.name",
-                      ),
-                      key: "mailgun-smtp-password",
-                    },
-                  },
-                },
-              ],
-              ports: [
-                {
-                  containerPort: 587,
-                },
-              ],
-            },
-          ],
-        },
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    config: {
+      general: {
+        ALLOW_EMPTY_SENDER_DOMAINS: "true",
+        RELAYHOST: "[smtp.mailgun.org]:587",
+        RELAYHOST_USERNAME: "noreply@cluster.bulia.dev",
       },
     },
-  });
-
-  new Service(chart, `${id}-service`, {
-    metadata: {
-      name: "postfix",
+    existingSecret: getField(vaultSecret.secret, "spec.destination.name"),
+    container: {
+      postfix: {
+        securityContext: securityContext.container,
+      },
     },
-    spec: {
-      selector: {
+    persistence: {
+      enabled: false,
+    },
+    pod: {
+      annotations: {
         "app.kubernetes.io/name": "postfix",
       },
-      ports: [
-        {
-          port: 587,
-          targetPort: IntOrString.fromNumber(587),
-          protocol: "TCP",
-        },
-      ],
+      securityContext: securityContext.pod,
     },
   });
 
-  new VerticalPodAutoscaler(chart, deployment);
+  new VerticalPodAutoscaler(
+    chart,
+    findApiObject(chart, {
+      apiVersion: "apps/v1",
+      kind: "StatefulSet",
+      name: "postfix-mail",
+    }),
+  );
 
   return chart;
 };

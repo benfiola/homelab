@@ -446,15 +446,19 @@ export class HttpRoute extends BaseHttpRoute {
 interface GetSecurityContextOpts {
   gid?: number;
   uid?: number;
+  caps?: string[];
 }
 
 export const getSecurityContext = (opts: GetSecurityContextOpts = {}) => {
   const gid = opts.gid ?? defaultGid;
   const uid = opts.uid ?? defaultUid;
+  const caps = opts.caps ?? [];
+
+  const runAsNonRoot = uid !== 0;
 
   const pod = {
     fsGroup: gid,
-    runAsNonRoot: true,
+    runAsNonRoot,
     runAsUser: uid,
     runAsGroup: gid,
     seccompProfile: {
@@ -466,8 +470,9 @@ export const getSecurityContext = (opts: GetSecurityContextOpts = {}) => {
     allowPrivilegeEscalation: false,
     capabilities: {
       drop: ["ALL"] as string[],
+      add: caps,
     },
-    runAsNonRoot: true,
+    runAsNonRoot,
   } as const;
 
   return { pod, container };
