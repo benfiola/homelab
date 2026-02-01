@@ -154,19 +154,23 @@ export const createSchematic = async (schematic: ImageSchematic) => {
   return id;
 };
 
-const mergeArraysUsingName = (values: any, utils: any, meta: any) => {
+const mergeArraysUsingField = (
+  values: any,
+  field: string,
+  mergeFn: (a: any, b: any) => any,
+) => {
   const result = [...values[0]];
 
   let destMap: Record<string, any> = {};
-  values[1].forEach((item: any) => (destMap[item.name] = item));
+  values[1].forEach((item: any) => (destMap[field] = item));
 
   result.forEach((source: any, index: number) => {
-    const dest = destMap[source.name];
-    delete destMap[source.name];
+    const dest = destMap[field];
+    delete destMap[field];
     if (!dest) {
       return;
     }
-    result[index] = utils.deepmerge(source, dest);
+    result[index] = mergeFn(source, dest);
   });
 
   result.push(...Object.values(destMap));
@@ -189,7 +193,7 @@ const machineConfigMerge = deepmergeCustom<unknown>({
   },
   mergeArrays: (values, utils, meta: any) => {
     if (meta?.keyPath === "cluster.apiServer.admissionControl") {
-      return mergeArraysUsingName(values, utils, meta);
+      return mergeArraysUsingField(values, "name", utils.deepmerge);
     }
     return utils.defaultMergeFunctions.mergeArrays(values);
   },
