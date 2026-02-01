@@ -1,5 +1,11 @@
 import { ConfigMap, StatefulSet } from "../../../assets/kubernetes/k8s";
-import { Chart, Namespace, VolsyncAuth, VolsyncBackup } from "../../cdk8s";
+import {
+  Chart,
+  getSecurityContext,
+  Namespace,
+  VolsyncAuth,
+  VolsyncBackup,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { textblock } from "../../strings";
 
@@ -23,6 +29,8 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
     },
   });
 
+  const securityContext = getSecurityContext();
+
   new StatefulSet(chart, `${id}-stateful-set`, {
     metadata: {
       name: "testing",
@@ -45,6 +53,7 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
               name: "testing",
               image: "alpine:latest",
               args: ["sh", "-e", "/scripts/run.sh"],
+              securityContext: securityContext.container,
               volumeMounts: [
                 {
                   name: "data",
@@ -57,6 +66,7 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
               ],
             },
           ],
+          securityContext: securityContext.pod,
           volumes: [
             {
               name: "data",
@@ -99,7 +109,9 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
   });
 
   const volsyncAuth = new VolsyncAuth(chart);
-  new VolsyncBackup(chart, volsyncAuth, "data-testing-0");
+  new VolsyncBackup(chart, volsyncAuth, "data-testing-0", {
+    securityContext: securityContext.pod,
+  });
 
   return chart;
 };

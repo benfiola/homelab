@@ -28,6 +28,9 @@ import { ReplicationSource } from "../assets/volsync/volsync.backube";
 import { kustomize } from "./kubernetes";
 import { getTempy } from "./tempy";
 
+const defaultGid = 65534;
+const defaultUid = 65534;
+
 export interface KustomizationOpts {
   url?: string;
   dynamic?: Record<string, any>;
@@ -440,13 +443,47 @@ export class HttpRoute extends BaseHttpRoute {
   }
 }
 
+interface GetSecurityContextOpts {
+  gid?: number;
+  uid?: number;
+}
+
+export const getSecurityContext = (opts: GetSecurityContextOpts = {}) => {
+  const gid = opts.gid ?? defaultGid;
+  const uid = opts.uid ?? defaultUid;
+
+  const pod = {
+    fsGroup: gid,
+    runAsNonRoot: true,
+    runAsUser: uid,
+    runAsGroup: gid,
+    seccompProfile: {
+      type: "RuntimeDefault",
+    },
+  } as const;
+
+  const container = {
+    allowPrivilegeEscalation: false,
+    capabilities: {
+      drop: ["ALL"] as string[],
+    },
+    runAsNonRoot: true,
+  } as const;
+
+  return { pod, container };
+};
+
+type PodSecurityContext = ReturnType<typeof getSecurityContext>["pod"];
+
 export class VolsyncAuth extends VaultAuth {
   constructor(construct: Construct) {
     super(construct, "volsync-mover");
   }
 }
 
-interface VolsyncBackupOpts {}
+interface VolsyncBackupOpts {
+  securityContext?: PodSecurityContext;
+}
 
 export class VolsyncBackup extends Construct {
   readonly auth: VolsyncAuth;
@@ -489,6 +526,7 @@ export class VolsyncBackup extends Construct {
             moverPodLabels: {
               "app.kubernetes.io/name": "volsync-mover",
             },
+            moverSecurityContext: opts.securityContext,
             pruneIntervalDays: 1,
             repository: getField(
               this.vaultSecret.secret,
