@@ -3,6 +3,7 @@ import { join } from "path";
 import {
   Chart,
   findApiObject,
+  getSecurityContext,
   Helm,
   HttpRoute,
   Namespace,
@@ -16,6 +17,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = chart.node.id;
 
   new Namespace(chart);
+
+  const securityContext = getSecurityContext();
 
   const configPath = join(__dirname, "config.hcl");
   const config = await readFile(configPath);
@@ -49,9 +52,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           ],
           image: homelabHelper.image,
           name: "vault-unseal",
-          securityContext: {
-            allowPrivilegeEscalation: false,
-          },
+          securityContext: securityContext.container,
           volumeMounts: [
             {
               name: "data",
@@ -68,6 +69,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           config: config,
         },
         replicas: 3,
+      },
+      statefulSet: {
+        securityContext: {
+          container: securityContext.container,
+          pod: securityContext.pod,
+        },
       },
       updateStrategyType: "RollingUpdate",
     },
