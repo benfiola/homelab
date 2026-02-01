@@ -22,7 +22,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     chart,
     vaultAuth,
     "vault",
-    construct.node.id,
+    chart.node.id,
   );
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {

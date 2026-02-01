@@ -22,7 +22,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     chart,
     vaultAuth,
     "vault",
-    construct.node.id,
+    chart.node.id,
   );
 
   const interval = 300;
