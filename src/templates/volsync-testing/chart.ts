@@ -6,7 +6,7 @@ import { textblock } from "../../strings";
 export const chart: TemplateChartFn = async (construct, id: string) => {
   const chart = new Chart(construct, id);
 
-  new Namespace(chart, { privileged: true });
+  new Namespace(chart);
 
   const scripts = new ConfigMap(chart, `${id}-config-map`, {
     metadata: {
