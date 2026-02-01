@@ -2,6 +2,7 @@ import { Certificate } from "../../../assets/cert-manager/cert-manager.io";
 import {
   Chart,
   getField,
+  getSecurityContext,
   Helm,
   Namespace,
   VerticalPodAutoscaler,
@@ -27,8 +28,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         // NOTE: this name matches volume/volumeMount values in the helm chart's values.yaml
         secretName: "vpa-tls-certs",
       },
-    }
+    },
   );
+
+  const securityContext = getSecurityContext();
 
   const helmObj = new Helm(
     chart,
@@ -46,10 +49,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           existingSecret: getField(certificate, "spec.secretName"),
         },
       },
+      containerSecurityContext: securityContext.container,
+      podSecurityContext: securityContext.pod,
       updater: {
         extraArgs: ["--min-replicas=1"],
       },
-    }
+    },
   );
   await patchCorrectAdmissionControllerClusterRole(helmObj);
 
@@ -60,7 +65,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Deployment",
       name: "vertical-pod-autoscaler-admission-controller",
     },
-    { advisory: true }
+    { advisory: true },
   );
 
   new VerticalPodAutoscaler(
@@ -70,7 +75,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Deployment",
       name: "vertical-pod-autoscaler-recommender",
     },
-    { advisory: true }
+    { advisory: true },
   );
 
   new VerticalPodAutoscaler(
@@ -80,7 +85,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Deployment",
       name: "vertical-pod-autoscaler-updater",
     },
-    { advisory: true }
+    { advisory: true },
   );
 
   return chart;
@@ -90,7 +95,7 @@ const patchCorrectAdmissionControllerClusterRole = async (obj: Helm) => {
   const id = obj.releaseName;
 
   const admissionRole = obj.node.findChild(
-    `${id}-admission-controller-clusterrole`
+    `${id}-admission-controller-clusterrole`,
   );
 
   let props: Record<string, any> = (admissionRole as any).props;
@@ -114,6 +119,6 @@ const patchCorrectAdmissionControllerClusterRole = async (obj: Helm) => {
       apiGroups: ["admissionregistration.k8s.io"],
       resources: ["mutatingwebhookconfigurations"],
       verbs: ["create", "delete", "get", "list", "update", "watch"],
-    }
+    },
   );
 };
