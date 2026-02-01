@@ -46,7 +46,7 @@ interface TalosctlGenConfigOpts {
 const _talosctlGenConfig = async (
   clusterName: string,
   clusterEndpoint: string,
-  opts: TalosctlGenConfigOpts
+  opts: TalosctlGenConfigOpts,
 ) => {
   let cmd = ["talosctl", "gen", "config", clusterName, clusterEndpoint];
   if (opts.additionalSans) {
@@ -95,7 +95,7 @@ const _talosctlGenConfig = async (
 export const getClientConfig = async (
   cluster: ClusterConfig,
   nodes: NodeConfig[],
-  secretsPath: string
+  secretsPath: string,
 ) => {
   const data = await _talosctlGenConfig(
     cluster.name,
@@ -104,7 +104,7 @@ export const getClientConfig = async (
       output: "-",
       outputTypes: ["talosconfig"],
       withSecrets: secretsPath,
-    }
+    },
   );
 
   const context = data.contexts[cluster.name];
@@ -121,7 +121,7 @@ interface ApplySystemConfigOpts {
 export const applySystemConfig = async (
   node: NodeConfig,
   configs: Record<any, any>[],
-  opts: ApplySystemConfigOpts = {}
+  opts: ApplySystemConfigOpts = {},
 ) => {
   const tempy = await getTempy();
   await tempy.temporaryDirectoryTask(async (dir: string) => {
@@ -157,7 +157,7 @@ export const createSchematic = async (schematic: ImageSchematic) => {
 export const getSystemConfig = async (
   cluster: ClusterConfig,
   node: NodeConfig,
-  secretsPath: string
+  secretsPath: string,
 ) => {
   const hardware = cluster.hardware[node.hardware];
 
@@ -176,7 +176,7 @@ export const getSystemConfig = async (
       withExamples: false,
       withKubespan: false,
       withSecrets: secretsPath,
-    }
+    },
   );
   const clusterPatch = cluster.baseTalosConfig;
   const nodePatch = {
@@ -187,9 +187,24 @@ export const getSystemConfig = async (
     },
   };
 
+  const createCustomMerge = (parent?: string) => {
+    return (key: string) => {
+      
+    }
+  }
+
+  const customMerge = (key: string) => {
+    if (key === "cluster.apiServer.admissionControl") {
+
+    }
+    
+  }
+
   let machineConfig = base;
   for (const patch of [clusterPatch, nodePatch]) {
-    machineConfig = deepmerge(machineConfig, patch);
+    machineConfig = deepmerge(machineConfig, patch, {
+      customMerge,
+    });
   }
 
   const volumeConfigs: Record<any, any>[] = [];
@@ -272,7 +287,7 @@ const processTalosctlNodeArgs = async (nodes: NodeConfig[], args: string[]) => {
 const processTalosctlUpgradeImageArg = async (
   cluster: ClusterConfig,
   nodes: NodeConfig[],
-  args: string[]
+  args: string[],
 ) => {
   if (!args.includes("upgrade")) {
     return args;
@@ -320,7 +335,7 @@ const processTalosctlUpgradeImageArg = async (
 
 const processTalosctlUpgradeK8sToArg = async (
   cluster: ClusterConfig,
-  args: string[]
+  args: string[],
 ) => {
   if (!args.includes("upgrade-k8s")) {
     return args;
@@ -338,7 +353,7 @@ const processTalosctlUpgradeK8sToArg = async (
 export const talosctl = async (
   cluster: ClusterConfig,
   nodes: NodeConfig[],
-  args: string[]
+  args: string[],
 ) => {
   args = await processTalosctlNodeArgs(nodes, args);
   args = await processTalosctlUpgradeImageArg(cluster, nodes, args);

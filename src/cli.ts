@@ -306,7 +306,7 @@ const main = async () => {
     .description("applies talos machine/volume configurations to all nodes")
     .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
     .option("--dry-run", "prints the system config", false)
-    .option("--nodes", "specific to apply configuration to")
+    .option("--nodes [nodes...]", "specific to apply configuration to")
     .option("--insecure", "apply config using talos maintenance service", false)
     .action(applySystemConfig);
 
