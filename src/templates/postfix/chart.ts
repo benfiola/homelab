@@ -34,7 +34,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   const securityContext = getSecurityContext({
-    caps: ["NET_BIND_SERVICE", "SYS_CHROOT", "SETGID", "SETUID"],
+    caps: [
+      "DAC_OVERRIDE",
+      "NET_BIND_SERVICE",
+      "SYS_CHROOT",
+      "SETGID",
+      "SETUID",
+    ],
     uid: 0,
     gid: 0,
   });
