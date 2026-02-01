@@ -22,6 +22,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       podSecurityContext: securityContext.pod,
       securityContext: securityContext.container,
     },
+    hooks: {
+      upgradeCRDs: {
+        enabled: false,
+      },
+    },
   });
 
   new VaultConnection(chart, `${id}-vault-connection`, {
