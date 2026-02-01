@@ -273,7 +273,6 @@ export class VaultAuth extends Construct {
       },
       spec: {
         kubernetes: {
-          role: name,
           serviceAccount: this.serviceAccount.name,
         },
         method: VaultAuthMethod.KUBERNETES,
