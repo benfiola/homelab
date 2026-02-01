@@ -2,6 +2,7 @@ import { VaultConnection } from "../../../assets/vault-secrets-operator/secrets.
 import {
   Chart,
   findApiObject,
+  getSecurityContext,
   Helm,
   Namespace,
   VerticalPodAutoscaler,
@@ -14,7 +15,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
+  const securityContext = getSecurityContext();
+
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    controller: {
+      podSecurityContext: securityContext.pod,
+      securityContext: securityContext.container,
+    },
+  });
 
   new VaultConnection(chart, `${id}-vault-connection`, {
     metadata: {
