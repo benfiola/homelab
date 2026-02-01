@@ -26,7 +26,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     chart,
     vaultAuth,
     "configuration",
-    construct.node.id,
+    chart.node.id,
     {
       "config.env": textblock`
         {{- $secrets := get .Secrets "data" -}}

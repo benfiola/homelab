@@ -23,7 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     chart,
     vaultAuth,
     "vault",
-    construct.node.id,
+    chart.node.id,
     {
       RELAYHOST_PASSWORD: `{{ get (get .Secrets "data") "mailgun-smtp-password" }}`,
     },
