@@ -253,8 +253,8 @@ export class VaultAuth extends Construct {
   readonly serviceAccount: ServiceAccount;
   readonly auth: BaseVaultAuth;
 
-  constructor(construct: Construct, name: string) {
-    const id = `${construct.node.id}-vault-auth-${name}`;
+  constructor(construct: Construct, role: string, serviceAccount: string) {
+    const id = `${construct.node.id}-vault-auth-${serviceAccount}`;
     super(construct, id);
 
     this.serviceAccount = new ServiceAccount(
@@ -262,17 +262,18 @@ export class VaultAuth extends Construct {
       `${id}-service-account`,
       {
         metadata: {
-          name,
+          name: serviceAccount,
         },
       },
     );
 
     this.auth = new BaseVaultAuth(construct, `${id}-vault-auth`, {
       metadata: {
-        name,
+        name: role,
       },
       spec: {
         kubernetes: {
+          role,
           serviceAccount: this.serviceAccount.name,
         },
         method: VaultAuthMethod.KUBERNETES,
@@ -481,7 +482,7 @@ type PodSecurityContext = ReturnType<typeof getSecurityContext>["pod"];
 
 export class VolsyncAuth extends VaultAuth {
   constructor(construct: Construct) {
-    super(construct, "volsync-mover");
+    super(construct, "volsync-mover", "volsync-mover");
   }
 }
 

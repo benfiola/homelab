@@ -16,7 +16,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const vaultAuth = new VaultAuth(chart, "vault");
+  const vaultAuth = new VaultAuth(chart, chart.node.id, "vault");
 
   const secret = new VaultStaticSecret(
     chart,
