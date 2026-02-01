@@ -417,7 +417,7 @@ type PodSecurityContext = ReturnType<typeof getSecurityContext>["pod"];
 
 export class VolsyncAuth extends VaultAuth {
   constructor(construct: Construct) {
-    super(construct, "volsync-mover", "volsync-mover");
+    super(construct, "volsync-mover", "volsync-mover-vault-secrets-operator");
   }
 }
 
