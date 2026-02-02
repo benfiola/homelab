@@ -40,7 +40,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  const securityContext = getSecurityContext();
+  const securityContext = getSecurityContext({ uid: 1000 });
 
   new Tenant(chart, `${id}-tenant`, {
     metadata: {
