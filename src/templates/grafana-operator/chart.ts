@@ -1,6 +1,7 @@
 import {
   Chart,
   findApiObject,
+  getSecurityContext,
   Helm,
   Namespace,
   VerticalPodAutoscaler,
@@ -13,7 +14,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
+  const securityContext = getSecurityContext();
+
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    podSecurityContext: securityContext.pod,
+    securityContext: securityContext.container,
+  });
 
   new VerticalPodAutoscaler(
     chart,
@@ -21,7 +27,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       apiVersion: "apps/v1",
       kind: "Deployment",
       name: "grafana-operator",
-    })
+    }),
   );
 
   return chart;
