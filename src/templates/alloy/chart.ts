@@ -1,6 +1,7 @@
 import {
   Chart,
   findApiObject,
+  getSecurityContext,
   Helm,
   Namespace,
   VerticalPodAutoscaler,
@@ -13,6 +14,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = chart.node.id;
 
   new Namespace(chart);
+
+  const securityContext = getSecurityContext();
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     alloy: {
@@ -61,9 +64,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           `,
       },
       enableReporting: false,
+      securityContext: securityContext.container,
+    },
+    configReloader: {
+      securityContext: securityContext.container,
     },
     crds: {
       enable: false,
+    },
+    global: {
+      podSecurityContext: securityContext.pod,
     },
   });
 
@@ -73,7 +83,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       apiVersion: "apps/v1",
       kind: "DaemonSet",
       name: "alloy",
-    })
+    }),
   );
 
   return chart;

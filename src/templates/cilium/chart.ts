@@ -13,6 +13,7 @@ import {
   Chart,
   findApiObject,
   getField,
+  getSecurityContext,
   Helm,
   HttpRoute,
   Namespace,
@@ -29,6 +30,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   new Namespace(chart, { privileged: true });
+
+  const securityContext = getSecurityContext();
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     bgpControlPlane: {
@@ -63,9 +66,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       relay: {
         enabled: true,
+        podSecurityContext: securityContext.pod,
+        securityContext: securityContext.container,
       },
       ui: {
         enabled: true,
+        podSecurityContext: securityContext.pod,
+        securityContext: securityContext.container,
       },
     },
     ipam: {
@@ -84,6 +91,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "io\\.cilium\\.k8s\\.policy\\.cluster node-role\\.kubernetes\\.io/control-plane kubernetes\\.io/hostname",
     nodeSelectorLabels: true,
     operator: {
+      podSecurityContext: securityContext.pod,
+      securityContext: securityContext.container,
       skipCRDCreation: true,
     },
     policyAuditMode: false,
