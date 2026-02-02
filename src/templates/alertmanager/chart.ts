@@ -8,7 +8,12 @@ import {
   AlertmanagerConfigSpecInhibitRulesSourceMatchMatchType as SourceMatchType,
   AlertmanagerConfigSpecInhibitRulesTargetMatchMatchType as TargetMatchType,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
-import { Chart, HttpRoute, VerticalPodAutoscaler } from "../../cdk8s";
+import {
+  Chart,
+  getSecurityContext,
+  HttpRoute,
+  VerticalPodAutoscaler,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -133,6 +138,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
+  const securityContext = getSecurityContext();
+
   const externalUrl = new URL("https://alertmanager.bulia.dev");
   const alertmanager = new Alertmanager(chart, `${id}-alertmanager`, {
     metadata: { name: "alertmanager" },
@@ -146,6 +153,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       externalUrl: externalUrl.toString(),
       // replicas must be set for autoscaling
       replicas: 1,
+      securityContext: securityContext.pod,
       storage: {
         volumeClaimTemplate: {
           spec: {
@@ -166,7 +174,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Service",
       name: "alertmanager-operated",
     },
-    9093
+    9093,
   );
 
   new VerticalPodAutoscaler(chart, alertmanager);
