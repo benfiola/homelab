@@ -8,6 +8,7 @@ import {
   Chart,
   findApiObject,
   getField,
+  getSecurityContext,
   Helm,
   Namespace,
   VaultAuth,
@@ -140,6 +141,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const persistence = {
     storageClass: "standard",
   };
+  const securityContext = getSecurityContext();
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     backend: {
@@ -149,6 +151,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       replicas: 1,
     },
     deploymentMode: "SimpleScalable",
+    gateway: {
+      containerSecurityContext: securityContext.container,
+      podSecurityContext: securityContext.pod,
+    },
     loki: {
       analytics: {
         reporting_enabled: false,
@@ -161,6 +167,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         delete_request_store: "s3",
         retention_enabled: true,
       },
+      containerSecurityContext: securityContext.container,
       ingester: {
         chunk_encoding: "snappy",
       },
@@ -172,6 +179,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       pattern_ingester: {
         enabled: true,
       },
+      podSecurityContext: securityContext.pod,
       querier: {
         max_concurrent: 1,
       },
@@ -207,6 +215,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
     lokiCanary: {
       enabled: false,
+    },
+    memcached: {
+      containerSecurityContext: securityContext.container,
+      podSecurityContext: securityContext.pod,
     },
     minio: {
       enabled: false,
