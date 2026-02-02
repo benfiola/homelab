@@ -26,7 +26,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const vaultSecret = new VaultDynamicSecret(
     chart,
     vaultAuth,
-    "vault",
+    "configuration",
     chart.node.id,
     {
       RELAYHOST_PASSWORD: `{{ get (get .Secrets "data") "mailgun-smtp-password" }}`,
