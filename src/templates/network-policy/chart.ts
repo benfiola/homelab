@@ -141,7 +141,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // dynamic-dns
   policy("dynamic-dns-to-cloudflare--egress")
     .targets(pod("dynamic-dns", "dynamic-dns"))
-    .allowEgressTo(dns("cloudflare.com", "api.cloudflare.com"), tcp(443));
+    .allowEgressTo(dns("api.cloudflare.com"), tcp(443));
+
+  policy("dynamic-dns-to-ipify--egress")
+    .targets(pod("dynamic-dns", "dynamic-dns"))
+    .allowEgressTo(dns("api.ipify.org"), tcp(443));
 
   // envoy-gateway
   policy("envoy-gateway-certgen-to-control-plane").allowBetween(
