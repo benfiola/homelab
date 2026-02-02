@@ -150,10 +150,20 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
         name: config.name,
       },
+      containers: [
+        { name: "alertmanager", securityContext: securityContext.container },
+        { name: "config-reloader", securityContext: securityContext.container },
+      ],
       externalUrl: externalUrl.toString(),
       // replicas must be set for autoscaling
       replicas: 1,
       securityContext: securityContext.pod,
+      initContainers: [
+        {
+          name: "init-config-reloader",
+          securityContext: securityContext.container,
+        },
+      ],
       storage: {
         volumeClaimTemplate: {
           spec: {
