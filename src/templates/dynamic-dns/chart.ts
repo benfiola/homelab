@@ -2,6 +2,7 @@ import { ConfigMap, Deployment } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   getField,
+  getSecurityContext,
   Namespace,
   VaultAuth,
   VaultStaticSecret,
@@ -44,6 +45,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
+  const securityContext = getSecurityContext();
+
   const deployment = new Deployment(chart, `${id}-deployment`, {
     metadata: {
       name: "dynamic-dns",
@@ -70,6 +73,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 "/config-map/ddclient.conf",
                 "/config/ddclient.conf",
               ],
+              securityContext: securityContext.container,
               volumeMounts: [
                 {
                   name: "config",
@@ -97,6 +101,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                   },
                 },
               ],
+              securityContext: securityContext.container,
               volumeMounts: [
                 {
                   name: "config",
@@ -105,6 +110,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               ],
             },
           ],
+          securityContext: securityContext.pod,
           volumes: [
             { name: "config", emptyDir: {} },
             { name: "config-map", configMap: { name: configMap.name } },
