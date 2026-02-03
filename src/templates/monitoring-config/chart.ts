@@ -1,3 +1,4 @@
+import path from "path";
 import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.integreatly.org";
 import {
   ServiceMonitorSpecEndpointsRelabelingsAction as Action,
@@ -8,7 +9,18 @@ import {
   ServiceMonitor,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
 import { Chart, Namespace } from "../../cdk8s";
-import { TemplateChartFn } from "../../context";
+import { TemplateChartContext, TemplateChartFn } from "../../context";
+import * as jsonnet from "../../jsonnet";
+
+const getMonitoringConfig = async (context: TemplateChartContext) => {
+  const libs = [context.getAsset("jsonnet")];
+  const contentStr = await jsonnet.evaluate({
+    jsonnetFile: path.join(__dirname, "main.jsonnet"),
+    libs,
+  });
+  const content = JSON.parse(contentStr);
+  return content;
+};
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, context.name);
@@ -16,9 +28,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  await createDatasources(chart);
-  await createServiceMonitors(chart);
-  await createPrometheusRules(chart);
+  await getMonitoringConfig(context);
 
   return chart;
 };

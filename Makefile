@@ -3,6 +3,7 @@ CILIUM_VERSION ?= 1.18.5
 CILIUMCLI_VERSION ?= 0.18.9
 FLUX_VERSION ?= 2.7.3
 HELM_VERSION ?= 4.0.0
+JB_VERSION ?= 0.6.0
 K9S_VERSION ?= 0.50.16
 KUBECTL_VERSION ?= 1.34.2
 TALOSCTL_VERSION ?= 1.11.5
@@ -65,6 +66,7 @@ install-tools:
 $(eval $(call tool-from-apt,bsdtar,libarchive-tools))
 $(eval $(call tool-from-apt,curl,curl))
 $(eval $(call tool-from-apt,git,git))
+$(eval $(call tool-from-apt,jsonnet,jsonnet))
 $(eval $(call tool-from-npm,cdk8s,cdk8s-cli))
 $(eval $(call tool-from-npm,tsx,tsx))
 
@@ -105,6 +107,10 @@ $(eval $(call tool-from-tar-gz,helm,$(helm_url), 1))
 hubble_arch := $(arch)
 hubble_url := https://github.com/cilium/hubble/releases/download/v$(CILIUM_VERSION)/hubble-linux-$(hubble_arch).tar.gz
 $(eval $(call tool-from-tar-gz,hubble,$(hubble_url),0))
+
+jb_arch := $(arch)
+jb_url := https://github.com/jsonnet-bundler/jsonnet-bundler/releases/download/v$(JB_VERSION)/jb-linux-$(jb_arch)
+$(eval $(call tool-from-url,jb,$(jb_url)))
 
 k9s_arch := $(arch)
 k9s_url := https://github.com/derailed/k9s/releases/download/v$(K9S_VERSION)/k9s_Linux_$(k9s_arch).tar.gz
