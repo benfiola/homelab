@@ -694,7 +694,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("prometheus-to-host").allowBetween(
     pod("prometheus", "prometheus"),
     host(),
-    tcp(9100),
+    tcp(9100, 10250),
   );
 
   policy("prometheus-to-kube-state-metrics").allowBetween(
