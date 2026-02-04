@@ -3,7 +3,6 @@ import path from "path";
 import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.integreatly.org";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
-  ServiceMonitorSpecEndpointsRelabelingsAction as Action,
   ServiceMonitorSpecEndpoints as Endpoint,
   PrometheusRule,
   ServiceMonitorSpecEndpointsScheme as Scheme,
@@ -101,13 +100,6 @@ const createServiceMonitors = async (chart: Chart) => {
     bearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
     interval: "30s",
     port: "https-metrics",
-    relabelings: [
-      {
-        sourceLabels: ["__meta_kubernetes_endpoint_node_name"],
-        action: Action.REPLACE,
-        targetLabel: "node",
-      },
-    ],
     scheme: Scheme.HTTPS,
     tlsConfig: {
       insecureSkipVerify: true,
