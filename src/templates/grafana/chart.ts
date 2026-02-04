@@ -1,6 +1,11 @@
 import { URL } from "url";
 import { Grafana } from "../../../assets/grafana-operator/grafana.integreatly.org";
 import {
+  ClusterRole,
+  ClusterRoleBinding,
+  ConfigMap,
+} from "../../../assets/kubernetes/k8s";
+import {
   Chart,
   getField,
   HttpRoute,
@@ -9,6 +14,7 @@ import {
   VaultStaticSecret,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, context.name);
@@ -27,6 +33,76 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     vaultAuth,
     "secrets",
     chart.node.id,
+  );
+
+  const clusterRole = new ClusterRole(
+    chart,
+    `${id}-cluster-role-dashboard-sidecar`,
+    {
+      metadata: {
+        name: `${id}-dashboard-sidecar`,
+      },
+      rules: [
+        {
+          apiGroups: [""],
+          resources: ["configmaps"],
+          verbs: ["get", "list", "watch"],
+        },
+      ],
+    },
+  );
+
+  new ClusterRoleBinding(
+    chart,
+    `${id}-cluster-role-binding-dashboard-sidecar`,
+    {
+      metadata: {
+        name: `${id}-dashboard-sidecar`,
+      },
+      roleRef: {
+        apiGroup: clusterRole.apiGroup,
+        kind: clusterRole.kind,
+        name: clusterRole.name,
+      },
+      subjects: [
+        {
+          kind: "ServiceAccount",
+          name: "grafana-sa",
+          namespace: chart.namespace,
+        },
+      ],
+    },
+  );
+
+  const provisioningConfig = new ConfigMap(
+    chart,
+    `${id}-config-map-provisioning`,
+    {
+      metadata: {
+        name: "provisioning",
+      },
+      data: {
+        "provisioning.yaml": stringify({
+          apiVersion: 1,
+          providers: [
+            {
+              name: "configmap-dashboard-provider",
+              orgId: 1,
+              folder: "",
+              folderUid: "",
+              type: "file",
+              disableDeletion: false,
+              updateIntervalSeconds: 10,
+              allowUiUpdates: false,
+              options: {
+                path: "/var/lib/grafana/dashboards",
+                foldersFromFilesStructure: true,
+              },
+            },
+          ],
+        }),
+      },
+    },
   );
 
   const externalUrl = new URL("https://grafana.bulia.dev");
@@ -77,6 +153,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                       },
                     },
                   ],
+                  volumeMounts: [
+                    {
+                      name: "dashboards",
+                      mountPath: "/var/lib/grafana/dashboards",
+                    },
+                    {
+                      name: "provisioning",
+                      mountPath: "/etc/grafana/provisioning/dashboards",
+                    },
+                  ],
                 },
                 {
                   image: "ghcr.io/kiwigrid/k8s-sidecar:1.24.5",
@@ -109,6 +195,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                       mountPath: "/var/lib/grafana/dashboards",
                     },
                   ],
+                },
+              ],
+              volumes: [
+                {
+                  name: "dashboards",
+                  emptyDir: {},
+                },
+                {
+                  name: "provisioning",
+                  configMap: {
+                    name: provisioningConfig.name,
+                  },
                 },
               ],
             },
