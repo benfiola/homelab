@@ -78,6 +78,38 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                     },
                   ],
                 },
+                {
+                  image: "ghcr.io/kiwigrid/k8s-sidecar:1.24.5",
+                  name: "dashboard-sidecar",
+                  env: [
+                    {
+                      name: "LABEL",
+                      value: "grafana_dashboard",
+                    },
+                    {
+                      name: "LABEL_VALUE",
+                      value: "1",
+                    },
+                    {
+                      name: "FOLDER",
+                      value: "/var/lib/grafana/dashboards",
+                    },
+                    {
+                      name: "NAMESPACE",
+                      value: "ALL",
+                    },
+                    {
+                      name: "RESOURCE",
+                      value: "configmap",
+                    },
+                  ],
+                  volumeMounts: [
+                    {
+                      name: "dashboards",
+                      mountPath: "/var/lib/grafana/dashboards",
+                    },
+                  ],
+                },
               ],
             },
           },
