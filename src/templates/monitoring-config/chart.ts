@@ -4,10 +4,12 @@ import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.inte
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   ServiceMonitorSpecEndpoints as Endpoint,
+  PodMonitor,
+  PodMonitorSpecPodMetricsEndpointsScheme as PodMonitorScheme,
   PrometheusRule,
-  ServiceMonitorSpecEndpointsScheme as Scheme,
   ServiceMonitorSpecServiceDiscoveryRole as ServiceDiscoveryRole,
   ServiceMonitor,
+  ServiceMonitorSpecEndpointsScheme as ServiceMonitorScheme,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
 import { Chart, Namespace } from "../../cdk8s";
 import { TemplateChartContext, TemplateChartFn } from "../../context";
@@ -37,7 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   await createDatasources(chart);
 
-  await createServiceMonitors(chart);
+  await createMonitors(chart);
 
   await createPrometheusRules(chart, monitoringConfig);
 
@@ -93,20 +95,20 @@ const createDatasources = async (chart: Chart) => {
   });
 };
 
-const createServiceMonitors = async (chart: Chart) => {
+const createMonitors = async (chart: Chart) => {
   const id = `${chart.node.id}-service-monitor`;
 
   let kubeletEndpoint: Endpoint = {
     bearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
     interval: "30s",
     port: "https-metrics",
-    scheme: Scheme.HTTPS,
+    scheme: ServiceMonitorScheme.HTTPS,
     tlsConfig: {
       insecureSkipVerify: true,
     },
   };
 
-  new ServiceMonitor(chart, `${id}-kubelet`, {
+  new ServiceMonitor(chart, `${id}-service-monitor-kubelet`, {
     metadata: {
       name: "kubelet",
     },
@@ -132,7 +134,7 @@ const createServiceMonitors = async (chart: Chart) => {
     },
   });
 
-  new ServiceMonitor(chart, `${id}-kube-state-metrics`, {
+  new ServiceMonitor(chart, `${id}-service-monitor-kube-state-metrics`, {
     metadata: {
       name: "kube-state-metrics",
     },
@@ -154,7 +156,7 @@ const createServiceMonitors = async (chart: Chart) => {
     },
   });
 
-  new ServiceMonitor(chart, `${id}-prometheus-node-exporter`, {
+  new ServiceMonitor(chart, `${id}-service-monitor-prometheus-node-exporter`, {
     metadata: {
       name: "prometheus-node-exporter",
     },
@@ -173,6 +175,84 @@ const createServiceMonitors = async (chart: Chart) => {
           "app.kubernetes.io/name": "prometheus-node-exporter",
         },
       },
+    },
+  });
+
+  new PodMonitor(chart, `${id}-pod-monitor-kube-apiserver`, {
+    metadata: {
+      name: "kube-apiserver",
+    },
+    spec: {
+      selector: {
+        matchLabels: {
+          "app.kubernetes.io/name": "kube-apiserver",
+        },
+      },
+      namespaceSelector: {
+        matchNames: ["kube-system"],
+      },
+      podMetricsEndpoints: [
+        {
+          port: "https",
+          scheme: PodMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
+          interval: "30s",
+        },
+      ],
+    },
+  });
+
+  new PodMonitor(chart, `${id}-pod-monitor-kube-scheduler`, {
+    metadata: {
+      name: "kube-scheduler",
+    },
+    spec: {
+      selector: {
+        matchLabels: {
+          "app.kubernetes.io/name": "kube-scheduler",
+        },
+      },
+      namespaceSelector: {
+        matchNames: ["kube-system"],
+      },
+      podMetricsEndpoints: [
+        {
+          port: "https",
+          scheme: PodMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
+          interval: "30s",
+        },
+      ],
+    },
+  });
+
+  new PodMonitor(chart, `${id}-pod-monitor-kube-controller-manager`, {
+    metadata: {
+      name: "kube-controller-manager",
+    },
+    spec: {
+      selector: {
+        matchLabels: {
+          "app.kubernetes.io/name": "kube-controller-manager",
+        },
+      },
+      namespaceSelector: {
+        matchNames: ["kube-system"],
+      },
+      podMetricsEndpoints: [
+        {
+          port: "https",
+          scheme: PodMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
+          interval: "30s",
+        },
+      ],
     },
   });
 };
