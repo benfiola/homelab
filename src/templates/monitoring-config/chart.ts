@@ -1,10 +1,11 @@
+import { ApiObject } from "cdk8s";
 import path from "path";
 import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.integreatly.org";
+import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   ServiceMonitorSpecEndpointsRelabelingsAction as Action,
   ServiceMonitorSpecEndpoints as Endpoint,
   PrometheusRule,
-  PrometheusRuleSpecGroupsRules as Rule,
   ServiceMonitorSpecEndpointsScheme as Scheme,
   ServiceMonitor,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
@@ -22,13 +23,25 @@ const getMonitoringConfig = async (context: TemplateChartContext) => {
   return content;
 };
 
+const getK8sName = (name: string) => {
+  return name.replace(".", "-");
+};
+
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, context.name);
   const id = chart.node.id;
 
   new Namespace(chart);
 
-  await getMonitoringConfig(context);
+  const monitoringConfig = await getMonitoringConfig(context);
+
+  await createDatasources(chart);
+
+  await createServiceMonitors(chart);
+
+  await createPrometheusRules(chart, monitoringConfig);
+
+  await createGrafanaDashboards(chart, monitoringConfig);
 
   return chart;
 };
@@ -170,285 +183,83 @@ const createServiceMonitors = async (chart: Chart) => {
   });
 };
 
-const createPrometheusRules = async (chart: Chart) => {
-  const id = `${chart.node.id}-prometheus-rule`;
+const createPrometheusRules = async (chart: Chart, monitoringConfig: any) => {
+  const id = chart.node.id;
 
-  let rules: Rule[] = [
-    {
-      alert: "ContainerHighCpuUsage",
-      expr: {
-        value:
-          '(sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (namespace, pod, container) / sum(container_spec_cpu_quota{container!=""}/(container_spec_cpu_period{container!=""} > 0)) by (namespace, pod, container)) > 0.9',
+  for (const rule of monitoringConfig.rules) {
+    new ApiObject(chart, `${id}-prometheus-rule-rule-${rule.name}`, {
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "PrometheusRule",
+      metadata: {
+        name: `rule--${getK8sName(rule.name)}`,
       },
-      for: "5m",
-      labels: {
-        severity: "warning",
+      spec: {
+        groups: [rule],
       },
-      annotations: {
-        summary:
-          "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} is using high CPU",
-        description:
-          "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} is using {{ $value | humanizePercentage }} of CPU limit.",
+    });
+  }
+
+  for (const alert of monitoringConfig.alerts) {
+    new ApiObject(chart, `${id}-prometheus-rule-alert-${alert.name}`, {
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "PrometheusRule",
+      metadata: {
+        name: `alert--${getK8sName(alert.name)}`,
       },
-    },
-    {
-      alert: "ContainerHighMemoryUsage",
-      expr: {
-        value:
-          '(sum(container_memory_working_set_bytes{container!=""}) by (namespace, pod, container) / sum(container_spec_memory_limit_bytes{container!=""} > 0) by (namespace, pod, container)) > 0.9',
+      spec: {
+        groups: [alert],
       },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary:
-          "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} is using high memory",
-        description:
-          "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} is using {{ $value | humanizePercentage }} of memory limit.",
-      },
-    },
-    {
-      alert: "NodeCPUPressure",
-      expr: {
-        value:
-          'kube_node_status_condition{condition="CPUPressure",status="true"} == 1',
-      },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary: "Node {{ $labels.node }} has CPU pressure",
-        description: "Node {{ $labels.node }} has CPU pressure condition.",
-      },
-    },
-    {
-      alert: "NodeDiskPressure",
-      expr: {
-        value:
-          'kube_node_status_condition{condition="DiskPressure",status="true"} == 1',
-      },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary: "Node {{ $labels.node }} has disk pressure",
-        description: "Node {{ $labels.node }} has disk pressure condition.",
-      },
-    },
-    {
-      alert: "NodeFilesystemUsageCritical",
-      expr: {
-        value:
-          '(1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|squashfs"})) > 0.95',
-      },
-      for: "1m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary:
-          "Filesystem on {{ $labels.instance }} at {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full",
-        description:
-          "Filesystem on {{ $labels.instance }} at {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full and may run out of space.",
-      },
-    },
-    {
-      alert: "NodeFilesystemUsageHigh",
-      expr: {
-        value:
-          '(1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|squashfs"})) > 0.85',
-      },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary:
-          "Filesystem on {{ $labels.instance }} at {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full",
-        description:
-          "Filesystem on {{ $labels.instance }} at {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full.",
-      },
-    },
-    {
-      alert: "NodeMemoryPressure",
-      expr: {
-        value:
-          'kube_node_status_condition{condition="MemoryPressure",status="true"} == 1',
-      },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary: "Node {{ $labels.node }} has memory pressure",
-        description: "Node {{ $labels.node }} has memory pressure condition.",
-      },
-    },
-    {
-      alert: "NodeNotReady",
-      expr: {
-        value:
-          'kube_node_status_condition{condition="Ready",status!="true"} == 1',
-      },
-      for: "5m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary: "Node {{ $labels.node }} is not ready",
-        description:
-          "Node {{ $labels.node }} has been in non-Ready state for more than 5 minutes.",
-      },
-    },
-    {
-      alert: "NodePIDPressure",
-      expr: {
-        value:
-          'kube_node_status_condition{condition="PIDPressure",status="true"} == 1',
-      },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary: "Node {{ $labels.node }} has PID pressure",
-        description: "Node {{ $labels.node }} has PID pressure condition.",
-      },
-    },
-    {
-      alert: "PersistentVolumeClaimNotHealthy",
-      expr: {
-        value:
-          'kube_persistentvolumeclaim_status_phase{phase=~"Failed|Pending"} == 1',
-      },
-      for: "15m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary:
-          "PVC {{ $labels.exported_namespace }}/{{ $labels.persistentvolumeclaim }} not healthy",
-        description:
-          "PVC {{ $labels.exported_namespace }}/{{ $labels.persistentvolumeclaim }} is in {{ $labels.phase }} state for more than 15m.",
-      },
-    },
-    {
-      alert: "PersistentVolumeClaimUsageCritical",
-      expr: {
-        value:
-          "(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.95",
-      },
-      for: "1m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary:
-          "PVC {{ $labels.exported_namespace }}/{{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full",
-        description:
-          "PVC {{ $labels.exported_namespace }}/{{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full and may run out of space soon.",
-      },
-    },
-    {
-      alert: "PersistentVolumeClaimUsageHigh",
-      expr: {
-        value:
-          "(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.85",
-      },
-      for: "5m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary:
-          "PVC {{ $labels.exported_namespace }}/{{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full",
-        description:
-          "PVC {{ $labels.exported_namespace }}/{{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full.",
-      },
-    },
-    {
-      alert: "PersistentVolumeNotHealthy",
-      expr: {
-        value: 'kube_persistentvolume_status_phase{phase="Failed"} == 1',
-      },
-      for: "15m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary:
-          "PersistentVolume {{ $labels.persistentvolume }} is not healthy",
-        description:
-          "PersistentVolume {{ $labels.persistentvolume }} is in {{ $labels.phase }} state for more than 15m.",
-      },
-    },
-    {
-      alert: "PodCrashLooping",
-      expr: {
-        value:
-          'kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1',
-      },
-      for: "5m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary:
-          "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} is crash looping",
-        description:
-          "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} in container {{ $labels.exported_container }} is crash looping.",
-      },
-    },
-    {
-      alert: "PodNotHealthy",
-      expr: {
-        value: 'kube_pod_status_phase{phase!~"Running|Succeeded"} == 1',
-      },
-      for: "15m",
-      labels: {
-        severity: "warning",
-      },
-      annotations: {
-        summary:
-          "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} is not healthy",
-        description:
-          "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} is in {{ $labels.phase }} state for more than 15m.",
-      },
-    },
-    {
-      alert: "PodOOMKilled",
-      expr: {
-        value:
-          'kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1',
-      },
-      for: "1m",
-      labels: {
-        severity: "critical",
-      },
-      annotations: {
-        summary:
-          "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} was OOMKilled",
-        description:
-          "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} in container {{ $labels.exported_container }} was OOMKilled in the last 1 minute.",
-      },
-    },
-  ];
+    });
+  }
 
   new PrometheusRule(chart, `${id}-kubernetes`, {
     metadata: {
-      name: "kubernetes",
+      name: "rule--pod-oom-killed",
     },
     spec: {
       groups: [
         {
           name: "kubernetes.rules",
           interval: "30s",
-          rules,
+          rules: [
+            {
+              alert: "PodOOMKilled",
+              expr: {
+                value:
+                  'kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1',
+              },
+              for: "1m",
+              labels: {
+                severity: "critical",
+              },
+              annotations: {
+                summary:
+                  "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} was OOMKilled",
+                description:
+                  "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} in container {{ $labels.exported_container }} was OOMKilled in the last 1 minute.",
+              },
+            },
+          ],
         },
       ],
     },
   });
+};
+
+const createGrafanaDashboards = async (chart: Chart, monitoringConfig: any) => {
+  const id = chart.node.id;
+
+  for (const [name, dashboard] of Object.entries(monitoringConfig.dashboards)) {
+    new ConfigMap(chart, `${id}-dashboard-${name}`, {
+      metadata: {
+        name: `dashboard--${getK8sName(name)}`,
+        labels: {
+          grafana_dashboard: "1",
+        },
+      },
+      data: {
+        name: JSON.stringify(dashboard),
+      },
+    });
+  }
 };
