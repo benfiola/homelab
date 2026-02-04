@@ -289,16 +289,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // grafana
-  policy("grafana-to-grafana-operator").allowBetween(
-    component("operator", "grafana-operator"),
+  policy("grafana-to-control-plane").allowBetween(
     pod("grafana", "grafana"),
-    tcp(3000),
-  );
-
-  policy("host-to-grafana").allowBetween(
-    host(),
-    pod("grafana", "grafana"),
-    tcp(3000),
+    controlPlane(),
+    tcp(6443),
   );
 
   policy("grafana-to-loki-gateway").allowBetween(
@@ -313,11 +307,23 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(9090),
   );
 
+  policy("host-to-grafana").allowBetween(
+    host(),
+    pod("grafana", "grafana"),
+    tcp(3000),
+  );
+
   // grafana-operator
   policy("grafana-operator-to-control-plane").allowBetween(
     component("operator", "grafana-operator"),
     controlPlane(),
     tcp(6443),
+  );
+
+  policy("grafana-operator-to-grafana").allowBetween(
+    component("operator", "grafana-operator"),
+    pod("grafana", "grafana"),
+    tcp(3000),
   );
 
   policy("host-to-grafana-operator").allowBetween(
