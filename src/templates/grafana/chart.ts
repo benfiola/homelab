@@ -8,6 +8,7 @@ import {
 import {
   Chart,
   getField,
+  getSecurityContext,
   HttpRoute,
   Namespace,
   VaultAuth,
@@ -105,6 +106,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
+  const securityContext = getSecurityContext();
+
   const externalUrl = new URL("https://grafana.bulia.dev");
   new Grafana(chart, `${id}-grafana`, {
     metadata: { name: "grafana", labels: { instance: id } },
@@ -189,6 +192,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                       value: "configmap",
                     },
                   ],
+                  securityContext: securityContext.container,
                   volumeMounts: [
                     {
                       name: "dashboards",
