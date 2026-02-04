@@ -7,6 +7,7 @@ import {
   ServiceMonitorSpecEndpoints as Endpoint,
   PrometheusRule,
   ServiceMonitorSpecEndpointsScheme as Scheme,
+  ServiceMonitorSpecServiceDiscoveryRole as ServiceDiscoveryRole,
   ServiceMonitor,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
 import { Chart, Namespace } from "../../cdk8s";
@@ -135,6 +136,7 @@ const createServiceMonitors = async (chart: Chart) => {
           "app.kubernetes.io/name": "kubelet",
         },
       },
+      serviceDiscoveryRole: ServiceDiscoveryRole.ENDPOINT_SLICE,
     },
   });
 
