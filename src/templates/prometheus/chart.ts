@@ -97,6 +97,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       externalUrl: externalUrl.toString(),
       evaluationInterval: "30s",
+      podMonitorNamespaceSelector: {},
+      podMonitorSelector: {},
       retention: "30d",
       ruleNamespaceSelector: {},
       ruleSelector: {},
@@ -134,7 +136,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "prometheus-operated",
       kind: "Service",
     },
-    9090
+    9090,
   );
 
   new VerticalPodAutoscaler(chart, prometheus);
