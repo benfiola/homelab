@@ -252,7 +252,7 @@ const createGrafanaDashboards = async (chart: Chart, monitoringConfig: any) => {
         },
       },
       data: {
-        name: JSON.stringify(dashboard),
+        [name]: JSON.stringify(dashboard),
       },
     });
   }
