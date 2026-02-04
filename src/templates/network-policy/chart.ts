@@ -706,7 +706,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("prometheus-to-nodes").allowBetween(
     pod("prometheus", "prometheus"),
     allNodes(),
-    tcp(9100),
+    tcp(9100, 10250),
   );
 
   // prometheus-node-exporter
