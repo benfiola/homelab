@@ -1,5 +1,3 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
 import {
   Chart,
   findApiObject,
@@ -21,8 +19,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const securityContext = getSecurityContext();
 
-  const configPath = join(__dirname, "config.hcl");
-  const config = await readFile(configPath);
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     injector: {
       enabled: false,
