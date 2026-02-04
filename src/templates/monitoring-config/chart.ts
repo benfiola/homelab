@@ -24,7 +24,7 @@ const getMonitoringConfig = async (context: TemplateChartContext) => {
 };
 
 const getK8sName = (name: string) => {
-  return name.replace(".", "-");
+  return name.replace(/[._]/g, "-");
 };
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
