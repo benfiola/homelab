@@ -102,7 +102,7 @@ const createServiceMonitors = async (chart: Chart) => {
     port: "https-metrics",
     relabelings: [
       {
-        sourceLabels: ["__meta_kubernetes_node_name"],
+        sourceLabels: ["__meta_kubernetes_endpoint_node_name"],
         action: Action.REPLACE,
         targetLabel: "node",
       },
