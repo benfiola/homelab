@@ -128,6 +128,9 @@ const createMonitors = async (chart: Chart) => {
   });
 
   new ClusterRoleBinding(chart, `${id}-cluster-role-binding`, {
+    metadata: {
+      name: chart.node.id,
+    },
     roleRef: {
       apiGroup: clusterRole.apiGroup,
       kind: clusterRole.kind,
