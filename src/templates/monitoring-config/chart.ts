@@ -44,9 +44,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "add-common-labels",
     },
     spec: {
-      metricRelabelings: [
+      relabelings: [
         {
-          regex: ".*",
           targetLabel: "cluster",
           replacement: "cluster.bulia.dev",
         },
