@@ -103,13 +103,13 @@ const createMonitors = async (chart: Chart) => {
 
   const serviceAccount = new ServiceAccount(chart, `${id}-service-account`, {
     metadata: {
-      name: id,
+      name: chart.node.id,
     },
   });
 
   const secret = new Secret(chart, `${id}-service-account-token`, {
     metadata: {
-      name: id,
+      name: chart.node.id,
       annotations: {
         "kubernetes.io/service-account.name": serviceAccount.name,
       },
