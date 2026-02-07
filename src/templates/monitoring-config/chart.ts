@@ -1,7 +1,11 @@
 import { ApiObject } from "cdk8s";
 import path from "path";
 import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.integreatly.org";
-import { ConfigMap } from "../../../assets/kubernetes/k8s";
+import {
+  ConfigMap,
+  Secret,
+  ServiceAccount,
+} from "../../../assets/kubernetes/k8s";
 import {
   PodMonitor,
   PodMonitorSpecPodMetricsEndpointsScheme as PodMonitorScheme,
@@ -96,6 +100,21 @@ const createDatasources = async (chart: Chart) => {
 
 const createMonitors = async (chart: Chart) => {
   const id = `${chart.node.id}-service-monitor`;
+
+  const serviceAccount = new ServiceAccount(chart, `${id}-service-account`, {
+    metadata: {
+      name: id,
+    },
+  });
+
+  const secret = new Secret(chart, `${id}-service-account-token`, {
+    metadata: {
+      name: id,
+      annotations: {
+        "kubernetes.io/service-account.name": serviceAccount.name,
+      },
+    },
+  });
 
   new ServiceMonitor(chart, `${id}-service-monitor-kubelet`, {
     metadata: {
@@ -209,6 +228,10 @@ const createMonitors = async (chart: Chart) => {
       },
       podMetricsEndpoints: [
         {
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           port: "https",
           scheme: PodMonitorScheme.HTTPS,
           tlsConfig: {
@@ -235,6 +258,10 @@ const createMonitors = async (chart: Chart) => {
       },
       podMetricsEndpoints: [
         {
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           port: "https",
           scheme: PodMonitorScheme.HTTPS,
           tlsConfig: {
@@ -256,6 +283,10 @@ const createMonitors = async (chart: Chart) => {
       },
       podMetricsEndpoints: [
         {
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           port: "https",
           scheme: PodMonitorScheme.HTTPS,
           tlsConfig: {
