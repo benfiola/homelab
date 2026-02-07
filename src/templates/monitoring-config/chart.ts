@@ -138,7 +138,6 @@ const createMonitors = async (chart: Chart) => {
     },
     subjects: [
       {
-        apiGroup: serviceAccount.apiGroup,
         kind: serviceAccount.kind,
         name: serviceAccount.name,
         namespace: serviceAccount.metadata.namespace,
