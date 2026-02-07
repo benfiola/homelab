@@ -6,11 +6,10 @@ import {
   ClusterRoleBinding,
   ConfigMap,
   Secret,
+  Service,
   ServiceAccount,
 } from "../../../assets/kubernetes/k8s";
 import {
-  PodMonitor,
-  PodMonitorSpecPodMetricsEndpointsScheme as PodMonitorScheme,
   PrometheusRule,
   ServiceMonitorSpecServiceDiscoveryRole as ServiceDiscoveryRole,
   ServiceMonitor,
@@ -276,91 +275,121 @@ const createMonitors = async (chart: Chart) => {
     },
   });
 
-  new PodMonitor(chart, `${id}-pod-monitor-kube-apiserver`, {
+  new ServiceMonitor(chart, `${id}-service-monitor-kube-apiserver`, {
     metadata: {
       name: "kube-apiserver",
     },
     spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": "kube-apiserver",
-        },
-      },
-      namespaceSelector: {
-        matchNames: ["kube-system"],
-      },
-      podMetricsEndpoints: [
+      endpoints: [
         {
           bearerTokenSecret: {
             key: "token",
             name: secret.name,
           },
           port: "https",
-          scheme: PodMonitorScheme.HTTPS,
+          interval: "30s",
           tlsConfig: {
             insecureSkipVerify: true,
           },
-          interval: "30s",
         },
       ],
+      namespaceSelector: {
+        matchNames: ["default"],
+      },
+      selector: {
+        matchLabels: {
+          component: "apiserver",
+          provider: "kubernetes",
+        },
+      },
     },
   });
 
-  new PodMonitor(chart, `${id}-pod-monitor-kube-scheduler`, {
+  new Service(chart, `${id}-service-kube-controller-manager`, {
     metadata: {
-      name: "kube-scheduler",
+      name: "kube-controller-manager",
+      namespace: "kube-system",
+      labels: {
+        "app.kubernetes.io/name": "kube-controller-manager",
+      },
     },
     spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": "kube-scheduler",
-        },
-      },
-      namespaceSelector: {
-        matchNames: ["kube-system"],
-      },
-      podMetricsEndpoints: [
+      clusterIp: "None",
+      ports: [
         {
-          bearerTokenSecret: {
-            key: "token",
-            name: secret.name,
-          },
-          port: "https",
-          scheme: PodMonitorScheme.HTTPS,
-          tlsConfig: {
-            insecureSkipVerify: true,
-          },
-          interval: "30s",
+          name: "http-metrics",
+          port: 10257,
         },
       ],
     },
   });
 
-  new PodMonitor(chart, `${id}-pod-monitor-kube-controller-manager`, {
+  new ServiceMonitor(chart, `${id}-service-monitor-kube-controller-manager`, {
     metadata: {
       name: "kube-controller-manager",
     },
     spec: {
-      namespaceSelector: {
-        matchNames: ["kube-system"],
-      },
-      podMetricsEndpoints: [
+      endpoints: [
         {
           bearerTokenSecret: {
             key: "token",
             name: secret.name,
           },
-          port: "https",
-          scheme: PodMonitorScheme.HTTPS,
-          tlsConfig: {
-            insecureSkipVerify: true,
-          },
+          port: "http-metrics",
           interval: "30s",
         },
       ],
+      namespaceSelector: {
+        matchNames: ["kube-system"],
+      },
       selector: {
         matchLabels: {
           "app.kubernetes.io/name": "kube-controller-manager",
+        },
+      },
+    },
+  });
+
+  new Service(chart, `${id}-service-kube-scheduler`, {
+    metadata: {
+      name: "kube-scheduler",
+      namespace: "kube-system",
+      labels: {
+        "app.kubernetes.io/name": "kube-scheduler",
+      },
+    },
+    spec: {
+      clusterIp: "None",
+      ports: [
+        {
+          name: "http-metrics",
+          port: 10259,
+        },
+      ],
+    },
+  });
+
+  new ServiceMonitor(chart, `${id}-service-monitor-kube-scheduler`, {
+    metadata: {
+      name: "kube-scheduler",
+    },
+    spec: {
+      endpoints: [
+        {
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
+          port: "http-metrics",
+          interval: "30s",
+        },
+      ],
+      namespaceSelector: {
+        matchNames: ["kube-system"],
+      },
+      selector: {
+        matchLabels: {
+          "app.kubernetes.io/name": "kube-scheduler",
         },
       },
     },
