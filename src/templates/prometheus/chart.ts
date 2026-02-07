@@ -99,6 +99,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       retention: "30d",
       ruleNamespaceSelector: {},
       ruleSelector: {},
+      scrapeClasses: [
+        {
+          default: true,
+          name: "cluster-relabeling",
+          relabelings: [
+            {
+              targetLabel: "cluster",
+              replacement: "cluster.bulia.dev",
+            },
+          ],
+        },
+      ],
       scrapeConfigNamespaceSelector: {},
       scrapeConfigSelector: {},
       scrapeInterval: "30s",

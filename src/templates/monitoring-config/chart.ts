@@ -6,7 +6,6 @@ import {
   PodMonitor,
   PodMonitorSpecPodMetricsEndpointsScheme as PodMonitorScheme,
   PrometheusRule,
-  ScrapeConfig,
   ServiceMonitorSpecServiceDiscoveryRole as ServiceDiscoveryRole,
   ServiceMonitor,
   ServiceMonitorSpecEndpointsScheme as ServiceMonitorScheme,
@@ -38,20 +37,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const monitoringConfig = await getMonitoringConfig(context);
 
   await createDatasources(chart);
-
-  new ScrapeConfig(chart, `${id}-scrape-config-add-common-labels`, {
-    metadata: {
-      name: "add-common-labels",
-    },
-    spec: {
-      relabelings: [
-        {
-          targetLabel: "cluster",
-          replacement: "cluster.bulia.dev",
-        },
-      ],
-    },
-  });
 
   await createMonitors(chart);
 
