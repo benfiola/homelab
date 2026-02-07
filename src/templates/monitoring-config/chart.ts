@@ -180,7 +180,7 @@ const createMonitors = async (chart: Chart) => {
           },
           interval: "30s",
           port: "https-metrics",
-          relabelings: [
+          metricRelabelings: [
             {
               sourceLabels: ["namespace"],
               targetLabel: "job_namespace",
@@ -191,6 +191,8 @@ const createMonitors = async (chart: Chart) => {
               targetLabel: "namespace",
               replacement: "$1",
             },
+          ],
+          relabelings: [
             {
               targetLabel: "job",
               replacement: "cadvisor",
