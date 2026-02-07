@@ -123,6 +123,10 @@ const createMonitors = async (chart: Chart) => {
         resources: ["endpoints", "pods", "services"],
         verbs: ["get", "list", "watch"],
       },
+      {
+        nonResourceUrLs: ["/metrics"],
+        verbs: ["get"],
+      },
     ],
   });
 
