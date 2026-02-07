@@ -292,6 +292,12 @@ const createMonitors = async (chart: Chart) => {
           },
           port: "https",
           interval: "30s",
+          relabelings: [
+            {
+              targetLabel: "job",
+              replacement: "kube-apiserver",
+            },
+          ],
           scheme: ServiceMonitorScheme.HTTPS,
           tlsConfig: {
             insecureSkipVerify: true,
