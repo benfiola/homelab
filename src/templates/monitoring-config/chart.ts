@@ -123,8 +123,10 @@ const createMonitors = async (chart: Chart) => {
     spec: {
       endpoints: [
         {
-          bearerTokenFile:
-            "/var/run/secrets/kubernetes.io/serviceaccount/token",
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           interval: "30s",
           port: "https-metrics",
           scheme: ServiceMonitorScheme.HTTPS,
@@ -133,8 +135,10 @@ const createMonitors = async (chart: Chart) => {
           },
         },
         {
-          bearerTokenFile:
-            "/var/run/secrets/kubernetes.io/serviceaccount/token",
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           interval: "30s",
           port: "https-metrics",
           relabelings: [
@@ -169,6 +173,10 @@ const createMonitors = async (chart: Chart) => {
     spec: {
       endpoints: [
         {
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           port: "http",
           interval: "30s",
           honorLabels: true,
@@ -192,6 +200,10 @@ const createMonitors = async (chart: Chart) => {
     spec: {
       endpoints: [
         {
+          bearerTokenSecret: {
+            key: "token",
+            name: secret.name,
+          },
           port: "metrics",
           interval: "30s",
           relabelings: [
