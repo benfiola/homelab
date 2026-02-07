@@ -118,6 +118,12 @@ const createMonitors = async (chart: Chart) => {
             "/var/run/secrets/kubernetes.io/serviceaccount/token",
           interval: "30s",
           port: "https-metrics",
+          relabelings: [
+            {
+              targetLabel: "job",
+              replacement: "cadvisor",
+            },
+          ],
           scheme: ServiceMonitorScheme.HTTPS,
           tlsConfig: {
             insecureSkipVerify: true,
