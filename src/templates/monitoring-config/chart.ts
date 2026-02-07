@@ -2,6 +2,8 @@ import { ApiObject } from "cdk8s";
 import path from "path";
 import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.integreatly.org";
 import {
+  ClusterRole,
+  ClusterRoleBinding,
   ConfigMap,
   Secret,
   ServiceAccount,
@@ -105,6 +107,40 @@ const createMonitors = async (chart: Chart) => {
     metadata: {
       name: chart.node.id,
     },
+  });
+
+  const clusterRole = new ClusterRole(chart, `${id}-cluster-role`, {
+    metadata: {
+      name: chart.node.id,
+    },
+    rules: [
+      {
+        apiGroups: [""],
+        resources: ["nodes/metrics"],
+        verbs: ["get"],
+      },
+      {
+        apiGroups: [""],
+        resources: ["endpoints", "pods", "services"],
+        verbs: ["get", "list", "watch"],
+      },
+    ],
+  });
+
+  new ClusterRoleBinding(chart, `${id}-cluster-role-binding`, {
+    roleRef: {
+      apiGroup: clusterRole.apiGroup,
+      kind: clusterRole.kind,
+      name: clusterRole.name,
+    },
+    subjects: [
+      {
+        apiGroup: serviceAccount.apiGroup,
+        kind: serviceAccount.kind,
+        name: serviceAccount.name,
+        namespace: serviceAccount.metadata.namespace,
+      },
+    ],
   });
 
   const secret = new Secret(chart, `${id}-service-account-token`, {
