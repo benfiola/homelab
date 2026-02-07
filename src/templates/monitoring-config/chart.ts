@@ -182,6 +182,16 @@ const createMonitors = async (chart: Chart) => {
           port: "https-metrics",
           relabelings: [
             {
+              sourceLabels: ["namespace"],
+              targetLabel: "job_namespace",
+              replacement: "$1",
+            },
+            {
+              sourceLabels: ["exported_namespace"],
+              targetLabel: "namespace",
+              replacement: "$1",
+            },
+            {
               targetLabel: "job",
               replacement: "cadvisor",
             },
