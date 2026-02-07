@@ -288,6 +288,7 @@ const createMonitors = async (chart: Chart) => {
           },
           port: "https",
           interval: "30s",
+          scheme: ServiceMonitorScheme.HTTPS,
           tlsConfig: {
             insecureSkipVerify: true,
           },
