@@ -99,6 +99,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       retention: "30d",
       ruleNamespaceSelector: {},
       ruleSelector: {},
+      scrapeConfigNamespaceSelector: {},
+      scrapeConfigSelector: {},
       scrapeInterval: "30s",
       securityContext: {
         fsGroup: 65534,
