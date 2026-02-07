@@ -114,6 +114,7 @@ const createMonitors = async (chart: Chart) => {
         "kubernetes.io/service-account.name": serviceAccount.name,
       },
     },
+    type: "kubernetes.io/service-account-token",
   });
 
   new ServiceMonitor(chart, `${id}-service-monitor-kubelet`, {
