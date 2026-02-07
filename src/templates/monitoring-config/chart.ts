@@ -345,6 +345,10 @@ const createMonitors = async (chart: Chart) => {
           },
           port: "http-metrics",
           interval: "30s",
+          scheme: ServiceMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
         },
       ],
       namespaceSelector: {
@@ -393,6 +397,10 @@ const createMonitors = async (chart: Chart) => {
           },
           port: "http-metrics",
           interval: "30s",
+          scheme: ServiceMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
         },
       ],
       namespaceSelector: {
