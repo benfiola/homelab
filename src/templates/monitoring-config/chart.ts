@@ -3,7 +3,6 @@ import path from "path";
 import { GrafanaDatasource } from "../../../assets/grafana-operator/grafana.integreatly.org";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
-  ServiceMonitorSpecEndpoints as Endpoint,
   PodMonitor,
   PodMonitorSpecPodMetricsEndpointsScheme as PodMonitorScheme,
   PrometheusRule,
@@ -98,15 +97,13 @@ const createDatasources = async (chart: Chart) => {
 const createMonitors = async (chart: Chart) => {
   const id = `${chart.node.id}-service-monitor`;
 
-  let kubeletEndpoint: Endpoint = {
-    bearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
-    interval: "30s",
-    port: "https-metrics",
-    scheme: ServiceMonitorScheme.HTTPS,
-    tlsConfig: {
-      insecureSkipVerify: true,
+  // Common relabeling to add cluster label to all metrics
+  const relabelings = [
+    {
+      targetLabel: "cluster",
+      replacement: "cluster.bulia.dev",
     },
-  };
+  ];
 
   new ServiceMonitor(chart, `${id}-service-monitor-kubelet`, {
     metadata: {
@@ -115,10 +112,26 @@ const createMonitors = async (chart: Chart) => {
     spec: {
       endpoints: [
         {
-          ...kubeletEndpoint,
+          bearerTokenFile:
+            "/var/run/secrets/kubernetes.io/serviceaccount/token",
+          interval: "30s",
+          port: "https-metrics",
+          scheme: ServiceMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
+          metricRelabelings: relabelings,
         },
         {
-          ...kubeletEndpoint,
+          bearerTokenFile:
+            "/var/run/secrets/kubernetes.io/serviceaccount/token",
+          interval: "30s",
+          port: "https-metrics",
+          scheme: ServiceMonitorScheme.HTTPS,
+          tlsConfig: {
+            insecureSkipVerify: true,
+          },
+          metricRelabelings: relabelings,
           path: "/metrics/cadvisor",
         },
       ],
@@ -143,6 +156,7 @@ const createMonitors = async (chart: Chart) => {
         {
           port: "http",
           interval: "30s",
+          metricRelabelings: relabelings,
         },
       ],
       namespaceSelector: {
@@ -165,6 +179,7 @@ const createMonitors = async (chart: Chart) => {
         {
           port: "metrics",
           interval: "30s",
+          metricRelabelings: relabelings,
         },
       ],
       namespaceSelector: {
@@ -199,6 +214,7 @@ const createMonitors = async (chart: Chart) => {
             insecureSkipVerify: true,
           },
           interval: "30s",
+          metricRelabelings: relabelings,
         },
       ],
     },
@@ -225,6 +241,7 @@ const createMonitors = async (chart: Chart) => {
             insecureSkipVerify: true,
           },
           interval: "30s",
+          metricRelabelings: relabelings,
         },
       ],
     },
@@ -235,11 +252,6 @@ const createMonitors = async (chart: Chart) => {
       name: "kube-controller-manager",
     },
     spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": "kube-controller-manager",
-        },
-      },
       namespaceSelector: {
         matchNames: ["kube-system"],
       },
@@ -251,8 +263,14 @@ const createMonitors = async (chart: Chart) => {
             insecureSkipVerify: true,
           },
           interval: "30s",
+          metricRelabelings: relabelings,
         },
       ],
+      selector: {
+        matchLabels: {
+          "app.kubernetes.io/name": "kube-controller-manager",
+        },
+      },
     },
   });
 };
