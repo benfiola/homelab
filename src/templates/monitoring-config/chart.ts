@@ -314,6 +314,9 @@ const createMonitors = async (chart: Chart) => {
       },
     },
     spec: {
+      selector: {
+        "app.kubernetes.io/name": "kube-controller-manager",
+      },
       clusterIp: "None",
       ports: [
         {
@@ -360,6 +363,9 @@ const createMonitors = async (chart: Chart) => {
     },
     spec: {
       clusterIp: "None",
+      selector: {
+        "app.kubernetes.io/name": "kube-scheduler",
+      },
       ports: [
         {
           name: "http-metrics",
