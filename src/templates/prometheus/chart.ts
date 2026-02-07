@@ -92,9 +92,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           },
         ],
       },
-      externalLabels: {
-        cluster: "cluster.bulia.dev",
-      },
       externalUrl: externalUrl.toString(),
       evaluationInterval: "30s",
       podMonitorNamespaceSelector: {},

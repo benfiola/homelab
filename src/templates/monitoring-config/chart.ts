@@ -6,6 +6,7 @@ import {
   PodMonitor,
   PodMonitorSpecPodMetricsEndpointsScheme as PodMonitorScheme,
   PrometheusRule,
+  ScrapeConfig,
   ServiceMonitorSpecServiceDiscoveryRole as ServiceDiscoveryRole,
   ServiceMonitor,
   ServiceMonitorSpecEndpointsScheme as ServiceMonitorScheme,
@@ -37,6 +38,21 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const monitoringConfig = await getMonitoringConfig(context);
 
   await createDatasources(chart);
+
+  new ScrapeConfig(chart, `${id}-scrape-config-add-common-labels`, {
+    metadata: {
+      name: "add-common-labels",
+    },
+    spec: {
+      metricRelabelings: [
+        {
+          regex: ".*",
+          targetLabel: "cluster",
+          replacement: "cluster.bulia.dev",
+        },
+      ],
+    },
+  });
 
   await createMonitors(chart);
 
@@ -97,14 +113,6 @@ const createDatasources = async (chart: Chart) => {
 const createMonitors = async (chart: Chart) => {
   const id = `${chart.node.id}-service-monitor`;
 
-  // Common relabeling to add cluster label to all metrics
-  const relabelings = [
-    {
-      targetLabel: "cluster",
-      replacement: "cluster.bulia.dev",
-    },
-  ];
-
   new ServiceMonitor(chart, `${id}-service-monitor-kubelet`, {
     metadata: {
       name: "kubelet",
@@ -120,7 +128,6 @@ const createMonitors = async (chart: Chart) => {
           tlsConfig: {
             insecureSkipVerify: true,
           },
-          metricRelabelings: relabelings,
         },
         {
           bearerTokenFile:
@@ -131,7 +138,6 @@ const createMonitors = async (chart: Chart) => {
           tlsConfig: {
             insecureSkipVerify: true,
           },
-          metricRelabelings: relabelings,
           path: "/metrics/cadvisor",
         },
       ],
@@ -156,7 +162,6 @@ const createMonitors = async (chart: Chart) => {
         {
           port: "http",
           interval: "30s",
-          metricRelabelings: relabelings,
         },
       ],
       namespaceSelector: {
@@ -179,7 +184,6 @@ const createMonitors = async (chart: Chart) => {
         {
           port: "metrics",
           interval: "30s",
-          metricRelabelings: relabelings,
         },
       ],
       namespaceSelector: {
@@ -214,7 +218,6 @@ const createMonitors = async (chart: Chart) => {
             insecureSkipVerify: true,
           },
           interval: "30s",
-          metricRelabelings: relabelings,
         },
       ],
     },
@@ -241,7 +244,6 @@ const createMonitors = async (chart: Chart) => {
             insecureSkipVerify: true,
           },
           interval: "30s",
-          metricRelabelings: relabelings,
         },
       ],
     },
@@ -263,7 +265,6 @@ const createMonitors = async (chart: Chart) => {
             insecureSkipVerify: true,
           },
           interval: "30s",
-          metricRelabelings: relabelings,
         },
       ],
       selector: {
