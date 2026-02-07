@@ -174,6 +174,12 @@ const createMonitors = async (chart: Chart) => {
         {
           port: "metrics",
           interval: "30s",
+          relabelings: [
+            {
+              targetLabel: "job",
+              replacement: "node-exporter",
+            },
+          ],
         },
       ],
       namespaceSelector: {
