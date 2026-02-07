@@ -152,6 +152,7 @@ const createMonitors = async (chart: Chart) => {
         {
           port: "http",
           interval: "30s",
+          honorLabels: true,
         },
       ],
       namespaceSelector: {
