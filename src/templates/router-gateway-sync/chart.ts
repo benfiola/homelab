@@ -39,6 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "spec.destination.name",
       ),
       mikrotikPasswordKey: "routeros-password",
+      reservedCIDRs: ["192.168.0.0/16"],
     },
   });
 
