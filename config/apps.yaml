@@ -28,6 +28,7 @@
 - template: prometheus-node-exporter
 - template: prometheus-operator
 - template: pvc-restore
+- template: router-gateway-sync
 - template: storage-class
 - template: vault
 - template: vault-push-secrets

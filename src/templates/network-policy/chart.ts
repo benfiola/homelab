@@ -715,8 +715,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(9100, 10250),
   );
 
-  // prometheus-node-exporter
-
   // prometheus-operator
   policy("prometheus-operator-to-control-plane").allowBetween(
     component("controller", "prometheus-operator"),
@@ -736,6 +734,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     controlPlane(),
     tcp(6443),
   );
+
+  // router-gateway-sync
+  policy("router-gateway-sync-to-router--egress")
+    .targets(pod("router-gateway-sync", "router-gateway-sync"))
+    .allowEgressTo(dns("router.bulia"), tcp(80));
 
   // vault
   policy("vault-to-control-plane").allowBetween(
