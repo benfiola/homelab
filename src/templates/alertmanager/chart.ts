@@ -107,7 +107,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 },
               ],
               from: "noreply@cluster.bulia.dev",
-              smarthost: "postfix.postfix.svc:587",
+              smarthost: "postfix-mail-headless.postfix.svc:587",
               tlsConfig: {
                 insecureSkipVerify: true,
               },
