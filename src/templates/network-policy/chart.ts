@@ -736,6 +736,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // router-gateway-sync
+  policy("host-to-router-gateway-sync").allowBetween(
+    host(),
+    pod("router-gateway-sync", "router-gateway-sync"),
+    tcp(8081),
+  );
+
+  policy("router-gateway-sync-to-control-plane").allowBetween(
+    pod("router-gateway-sync", "router-gateway-sync"),
+    controlPlane(),
+    tcp(6443),
+  );
+
   policy("router-gateway-sync-to-router--egress")
     .targets(pod("router-gateway-sync", "router-gateway-sync"))
     .allowEgressTo(dns("router.bulia"), tcp(80));
