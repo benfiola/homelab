@@ -366,7 +366,7 @@ export class HttpRoute extends BaseHttpRoute {
     });
   }
 
-  match(to: HttpRouteTarget, port: string | number, path: string = "/") {
+  match(to: HttpRouteTarget, port: number, path: string = "/") {
     const props = (this as any).props;
     const spec = (props.spec = props.spec ?? {});
     const rules = (spec.rules = spec.rules ?? []);
