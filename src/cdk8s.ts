@@ -7,7 +7,10 @@ import {
 import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import { get } from "lodash";
-import { HttpRoute as BaseHttpRoute } from "../assets/gateway-api/gateway.networking.k8s.io";
+import {
+  HttpRoute as BaseHttpRoute,
+  UdpRoute as BaseUdpRoute,
+} from "../assets/gateway-api/gateway.networking.k8s.io";
 import {
   Namespace as BaseNamespace,
   ServiceAccount,
@@ -345,12 +348,11 @@ interface HttpRouteTarget {
 
 export class HttpRoute extends BaseHttpRoute {
   constructor(construct: Construct, gateway: Gateway, hostname: string) {
-    const name = hostname.replace(".", "-");
-    const id = `${construct}-http-route--${name}`;
+    const id = `${construct}-http-route-${gateway}-${hostname}`;
 
     super(construct, id, {
       metadata: {
-        name,
+        hostname,
       },
       spec: {
         hostnames: [hostname],
@@ -373,6 +375,45 @@ export class HttpRoute extends BaseHttpRoute {
         },
       ],
       matches: [{ path: { type: "PathPrefix", value: path } }],
+    });
+    return this;
+  }
+}
+
+interface UdpRouteTarget {
+  apiVersion?: string;
+  kind: string;
+  name: string;
+}
+
+export class UdpRoute extends BaseUdpRoute {
+  constructor(construct: Construct, gateway: Gateway, name: string) {
+    const id = `${construct}-udp-route-${gateway}-${name}`;
+
+    super(construct, id, {
+      metadata: {
+        name,
+      },
+      spec: {
+        parentRefs: [{ name: gateway, namespace: "gateway" }],
+        rules: [],
+      },
+    });
+  }
+
+  match(to: UdpRouteTarget, port: string | number) {
+    const props = (this as any).props;
+    const spec = (props.spec = props.spec ?? {});
+    const rules = (spec.rules = spec.rules ?? []);
+    rules.push({
+      backendRefs: [
+        {
+          apiVersion: to.apiVersion,
+          kind: to.kind,
+          name: to.name,
+          port,
+        },
+      ],
     });
     return this;
   }

@@ -964,6 +964,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .allowEgressTo(cidrs("162.159.200.1/32", "162.159.200.123/32"), udp(123));
 
   // gateways
+  policy("gateway-public-to-envoy-gateway-controller").allowBetween(
+    gateway("public"),
+    component("controller", "envoy-gateway"),
+    tcp(18000),
+  );
+
+  policy("gateway-public-to-minecraft").allowBetween(
+    gateway("public"),
+    pod("minecraft", "minecraft"),
+    udp(25565),
+  );
+
   policy("gateway-trusted-to-envoy-gateway-controller").allowBetween(
     gateway("trusted"),
     component("controller", "envoy-gateway"),
@@ -986,6 +998,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     gateway("trusted"),
     pod("grafana", "grafana"),
     tcp(3000),
+  );
+
+  policy("gateway-trusted-to-minecraft").allowBetween(
+    gateway("trusted"),
+    pod("minecraft", "minecraft"),
+    udp(25565),
   );
 
   policy("gateway-trusted-to-minio").allowBetween(
