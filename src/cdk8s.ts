@@ -352,7 +352,7 @@ export class HttpRoute extends BaseHttpRoute {
 
     super(construct, id, {
       metadata: {
-        hostname,
+        name: hostname,
       },
       spec: {
         hostnames: [hostname],
