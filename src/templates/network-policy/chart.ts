@@ -735,21 +735,21 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
-  // router-gateway-sync
-  policy("host-to-router-gateway-sync").allowBetween(
+  // router-policy-sync
+  policy("host-to-router-policy-sync").allowBetween(
     host(),
-    pod("router-gateway-sync", "router-gateway-sync"),
+    pod("router-policy-sync", "router-policy-sync"),
     tcp(8081),
   );
 
-  policy("router-gateway-sync-to-control-plane").allowBetween(
-    pod("router-gateway-sync", "router-gateway-sync"),
+  policy("router-policy-sync-to-control-plane").allowBetween(
+    pod("router-policy-sync", "router-policy-sync"),
     controlPlane(),
     tcp(6443),
   );
 
-  policy("router-gateway-sync-to-router--egress")
-    .targets(pod("router-gateway-sync", "router-gateway-sync"))
+  policy("router-policy-sync-to-router--egress")
+    .targets(pod("router-policy-sync", "router-policy-sync"))
     .allowEgressTo(dns("router.bulia"), tcp(80));
 
   // vault
