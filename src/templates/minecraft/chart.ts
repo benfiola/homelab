@@ -7,7 +7,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
 
   new Namespace(chart);
 
-  const securityContext = getSecurityContext();
+  const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
 
   new StatefulSet(chart, `${id}-stateful-set`, {
     metadata: {
@@ -31,8 +31,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
               name: "minecraft",
               image: "itzg/minecraft-server:java25-jdk",
               env: [
-                { name: "UID", value: `${securityContext.pod.runAsUser}` },
-                { name: "GID", value: `${securityContext.pod.runAsGroup}` },
                 { name: "EULA", value: "true" },
                 { name: "VERSION", value: "1.21.11" },
               ],
