@@ -29,7 +29,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
           containers: [
             {
               name: "minecraft",
-              image: "itzg/minecraft-server:latest",
+              image: "itzg/minecraft-server:java25-jdk",
+              env: [
+                { name: "UID", value: `${securityContext.pod.runAsUser}` },
+                { name: "GID", value: `${securityContext.pod.runAsGroup}` },
+                { name: "EULA", value: "true" },
+                { name: "VERSION", value: "1.21.11" },
+              ],
               ports: [
                 {
                   name: "game",
@@ -58,6 +64,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         {
           port: 25565,
           name: "game",
+          protocol: "UDP",
         },
       ],
     },
