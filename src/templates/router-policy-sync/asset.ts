@@ -6,7 +6,7 @@ import { homelabHelper } from "../../homelab-helper.ts";
 
 export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
-    homelabHelper.chart("router-gateway-sync"),
+    homelabHelper.chart("router-policy-sync"),
     dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");

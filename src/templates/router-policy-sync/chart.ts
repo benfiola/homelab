@@ -31,9 +31,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: {
-      envoyGatewayNamespace: "envoy-gateway",
       mikrotikBaseUrl: "http://router.bulia",
-      mikrotikUsername: "router-gateway-sync",
+      mikrotikUsername: "router-policy-sync",
       mikrotikPasswordSecret: getField(
         vaultSecret.secret,
         "spec.destination.name",
@@ -48,7 +47,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     findApiObject(chart, {
       apiVersion: "apps/v1",
       kind: "Deployment",
-      name: "router-gateway-sync",
+      name: "router-policy-sync",
     }),
   );
 
