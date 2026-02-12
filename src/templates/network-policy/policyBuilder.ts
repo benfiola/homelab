@@ -163,6 +163,7 @@ type RuleSelector =
 type ProtocolSelector = PortSelector | ICMPSelector;
 
 class CiliumPolicy {
+  private metadata: Record<string, any>;
   private spec: Record<string, any>;
   private policy: ApiObject;
 
@@ -191,6 +192,7 @@ class CiliumPolicy {
       kind: "CiliumClusterwideNetworkPolicy",
       metadata: {
         name,
+        annotations: {},
       },
       spec: {
         endpointSelector,
@@ -198,6 +200,7 @@ class CiliumPolicy {
       },
     });
 
+    this.metadata = this.policy.metadata as any;
     this.spec = (this.policy as any).props.spec;
   }
 
@@ -514,6 +517,13 @@ class CiliumPolicy {
     ...protocolSelectors: ProtocolSelector[]
   ) {
     this.buildRules(target, protocolSelectors, "ingress");
+    return this;
+  }
+
+  syncWithRouter() {
+    this.metadata.annotations[
+      "router-policy-sync.homelab-helper.benfiola.com/sync-with-router"
+    ] = "";
     return this;
   }
 }

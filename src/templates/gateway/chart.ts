@@ -1,8 +1,5 @@
 import { GatewayClass } from "../../../assets/gateway-api/gateway.networking.k8s.io";
-import {
-  WrappedGatewaySpecListenerTemplateTlsMode as TlsMode,
-  WrappedGateway,
-} from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-helper.benfiola.com";
+import { WrappedGateway } from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-helper.benfiola.com";
 import { Chart, gateways, Namespace } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
@@ -31,14 +28,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       spec: {
         gatewayClassName: gatewayClass.name,
-        listenerTemplate: {
-          protocol: "HTTPS",
-          port: 443,
-          tls: {
-            mode: TlsMode.TERMINATE,
-            certificateRefs: [{ name: `${name}-\${index}-tls` }],
-          },
-        },
       },
     });
   }
