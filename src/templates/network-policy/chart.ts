@@ -32,7 +32,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("alertmanager-to-postfix").allowBetween(
     pod("alertmanager", "alertmanager"),
-    pod("postfix", "mail"),
+    pod("mail", "postfix"),
     tcp(587),
   );
 
@@ -603,6 +603,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("linstor-csi-controller-to-linstor-controller").allowBetween(
     component("linstor-csi-controller", "piraeus-operator"),
+    component("linstor-controller", "piraeus-operator"),
+    tcp(3370),
+  );
+
+  policy("linstor-csi-nfs-server-to-linstor-controller").allowBetween(
+    component("linstor-csi-nfs-server", "piraeus-operator"),
     component("linstor-controller", "piraeus-operator"),
     tcp(3370),
   );
