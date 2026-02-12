@@ -142,7 +142,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  new HttpRoute(chart, "trusted", "prometheus.bulia.dev").match(
+  new HttpRoute(chart, ["trusted"], "prometheus.bulia.dev").match(
     {
       name: "prometheus-operated",
       kind: "Service",

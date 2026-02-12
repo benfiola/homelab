@@ -206,7 +206,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  new HttpRoute(chart, "trusted", "cilium.bulia.dev").match(
+  new HttpRoute(chart, ["trusted"], "cilium.bulia.dev").match(
     findApiObject(chart, {
       apiVersion: "v1",
       kind: "Service",

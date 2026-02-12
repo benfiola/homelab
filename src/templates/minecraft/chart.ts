@@ -70,9 +70,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  new UdpRoute(chart, "trusted", "minecraft").match(service, "game");
-
-  new UdpRoute(chart, "public", "minecraft").match(service, "game");
+  new UdpRoute(chart, ["trusted", "public"], "minecraft").match(
+    service,
+    "game",
+  );
 
   return chart;
 };

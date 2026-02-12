@@ -347,8 +347,13 @@ interface HttpRouteTarget {
 }
 
 export class HttpRoute extends BaseHttpRoute {
-  constructor(construct: Construct, gateway: Gateway, hostname: string) {
-    const id = `${construct}-http-route-${gateway}-${hostname}`;
+  constructor(construct: Construct, gateways: Gateway[], hostname: string) {
+    const id = `${construct}-http-route-${hostname}`;
+
+    const parentRefs = gateways.map((gateway) => ({
+      name: gateway,
+      namespace: "gateway",
+    }));
 
     super(construct, id, {
       metadata: {
@@ -356,7 +361,7 @@ export class HttpRoute extends BaseHttpRoute {
       },
       spec: {
         hostnames: [hostname],
-        parentRefs: [{ name: gateway, namespace: "gateway" }],
+        parentRefs,
       },
     });
   }
@@ -387,15 +392,20 @@ interface UdpRouteTarget {
 }
 
 export class UdpRoute extends BaseUdpRoute {
-  constructor(construct: Construct, gateway: Gateway, name: string) {
-    const id = `${construct}-udp-route-${gateway}-${name}`;
+  constructor(construct: Construct, gateways: Gateway[], name: string) {
+    const id = `${construct}-udp-route-${name}`;
+
+    const parentRefs = gateways.map((gateway) => ({
+      name: gateway,
+      namespace: "gateway",
+    }));
 
     super(construct, id, {
       metadata: {
         name,
       },
       spec: {
-        parentRefs: [{ name: gateway, namespace: "gateway" }],
+        parentRefs,
         rules: [],
       },
     });
