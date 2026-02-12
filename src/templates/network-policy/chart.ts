@@ -32,7 +32,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("alertmanager-to-postfix").allowBetween(
     pod("alertmanager", "alertmanager"),
-    pod("postfix", "postfix"),
+    pod("postfix", "mail"),
     tcp(587),
   );
 
