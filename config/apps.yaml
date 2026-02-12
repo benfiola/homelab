@@ -17,7 +17,6 @@
 - template: linstor
 - template: loki
 - template: metrics-server
-- template: minecraft
 - template: minio
 - template: minio-operator
 - template: minio-operator-ext
