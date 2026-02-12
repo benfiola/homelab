@@ -392,7 +392,12 @@ interface UdpRouteTarget {
 }
 
 export class UdpRoute extends BaseUdpRoute {
-  constructor(construct: Construct, gateways: Gateway[], name: string) {
+  constructor(
+    construct: Construct,
+    gateways: Gateway[],
+    name: string,
+    port: number,
+  ) {
     const id = `${construct}-udp-route-${name}`;
 
     const parentRefs = gateways.map((gateway) => ({
@@ -403,6 +408,9 @@ export class UdpRoute extends BaseUdpRoute {
     super(construct, id, {
       metadata: {
         name,
+        annotations: {
+          "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
+        },
       },
       spec: {
         parentRefs,
