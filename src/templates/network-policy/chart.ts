@@ -346,7 +346,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // kube-system
-  policy("host-to-kube-dns").allowBetween(host(), kubeDns(), tcp(8080, 8181));
+  policy("host-to-kube-dns").allowBetween(
+    host(),
+    kubeDns(),
+    tcp(8080, 8181),
+    udp(53),
+  );
 
   policy("kube-dns-to-host").allowBetween(kubeDns(), host(), tcp(6443));
 
