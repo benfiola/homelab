@@ -58,9 +58,10 @@ const selectors = {
     categories: ["icmp"] as const,
     icmpTypes,
   }),
-  kubeDns: () => ({
+  kubeDns: (addDnsRule: boolean = false) => ({
     type: "kube-dns" as const,
     categories: ["endpoint"] as const,
+    addDnsRule,
   }),
   pod: (name: string, namespace: string) => ({
     type: "pod" as const,
@@ -361,7 +362,7 @@ class CiliumPolicy {
         }
       }
     });
-    const addDnsRule = target.type === "kube-dns" && hasDnsPort;
+    const addDnsRule = target.type === "kube-dns" && target.addDnsRule;
     rule["toPorts"] = this.buildPortSelectors(portSelectors, addDnsRule);
     rules.push(rule);
 

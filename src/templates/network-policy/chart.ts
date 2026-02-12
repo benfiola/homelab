@@ -346,10 +346,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // kube-system
+  policy("all-nodes-to-kube-dns").allowBetween(
+    allNodes(),
+    kubeDns(),
+    tcp(53),
+    udp(53),
+  );
+
   policy("host-to-kube-dns").allowBetween(
     host(),
     kubeDns(),
-    tcp(8080, 8181),
+    tcp(53, 8080, 8181),
     udp(53),
   );
 
@@ -367,7 +374,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("pods-to-kube-dns").allowBetween(
     allPods(),
-    kubeDns(),
+    kubeDns(true),
     tcp(53),
     udp(53),
   );
@@ -568,6 +575,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     component("linstor-affinity-controller", "piraeus-operator"),
     controlPlane(),
     tcp(6443),
+  );
+
+  policy("all-nodes-to-linstor-controller").allowBetween(
+    allNodes(),
+    component("linstor-controller", "piraeus-operator"),
+    tcp(3370),
   );
 
   policy("linstor-affinity-controller-to-linstor-controller").allowBetween(
