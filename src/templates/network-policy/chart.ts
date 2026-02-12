@@ -686,7 +686,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // postfix
   policy("postfix-to-mailgun--egress")
-    .targets(pod("postfix", "postfix"))
+    .targets(pod("main", "postfix"))
     .allowEgressTo(dns("smtp.mailgun.org"), tcp(587));
 
   // prometheus
