@@ -51,6 +51,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       containerSecurityContext: securityContext.container,
       podSecurityContext: securityContext.pod,
+      recommender: {
+        extraArgs: [
+          "--round-cpu-millicores=25",
+          "--round-memory-bytes=16777216",
+        ],
+      },
       updater: {
         extraArgs: ["--min-replicas=1"],
       },
