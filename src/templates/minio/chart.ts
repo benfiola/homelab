@@ -77,7 +77,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  new HttpRoute(chart, ["trusted"], "minio.bulia.dev").match(
+  new HttpRoute(chart, "trusted", "minio.bulia.dev").match(
     {
       name: "minio",
       kind: "Service",
@@ -85,7 +85,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     80,
   );
 
-  new HttpRoute(chart, ["trusted"], "console.minio.bulia.dev").match(
+  new HttpRoute(chart, "trusted", "console.minio.bulia.dev").match(
     {
       name: "minio-console",
       kind: "Service",

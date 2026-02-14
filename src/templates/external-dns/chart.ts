@@ -39,7 +39,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const helm = new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    annotationFilter: "homelab.benfiola.com/use-external-dns",
     policy: "sync",
     provider: {
       name: "webhook",
@@ -84,7 +85,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
     },
-    sources: ["gateway-httproute"],
+    sources: [
+      "gateway-grpcroute",
+      "gateway-httproute",
+      "gateway-tcproute",
+      "gateway-tlsroute",
+      "gateway-udproute",
+    ],
   });
 
   new VerticalPodAutoscaler(

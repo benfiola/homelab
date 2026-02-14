@@ -68,7 +68,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  new UdpRoute(chart, ["trusted", "public"], "minecraft", 25565).match(
+  new UdpRoute(chart, "trusted", "minecraft.bulia.dev", 25565).match(
+    service,
+    25565,
+  );
+
+  new UdpRoute(chart, "public", "minecraft.bfiola.dev", 25565).match(
     service,
     25565,
   );

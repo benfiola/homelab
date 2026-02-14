@@ -347,21 +347,26 @@ interface HttpRouteTarget {
 }
 
 export class HttpRoute extends BaseHttpRoute {
-  constructor(construct: Construct, gateways: Gateway[], hostname: string) {
+  constructor(construct: Construct, gateway: Gateway, hostname: string) {
     const id = `${construct}-http-route-${hostname}`;
 
-    const parentRefs = gateways.map((gateway) => ({
-      name: gateway,
-      namespace: "gateway",
-    }));
-
+    const annotations: Record<string, string> = {};
+    if (gateway === "trusted") {
+      annotations["homelab.benfiola.com/use-external-dns"] = "";
+    }
     super(construct, id, {
       metadata: {
         name: hostname,
+        annotations,
       },
       spec: {
         hostnames: [hostname],
-        parentRefs,
+        parentRefs: [
+          {
+            name: gateway,
+            namespace: "gateway",
+          },
+        ],
       },
     });
   }
@@ -394,26 +399,33 @@ interface UdpRouteTarget {
 export class UdpRoute extends BaseUdpRoute {
   constructor(
     construct: Construct,
-    gateways: Gateway[],
-    name: string,
+    gateway: Gateway,
+    hostname: string,
     port: number,
   ) {
-    const id = `${construct}-udp-route-${name}`;
+    const id = `${construct}-udp-route-${hostname}`;
 
-    const parentRefs = gateways.map((gateway) => ({
-      name: gateway,
-      namespace: "gateway",
-    }));
+    const annotations: Record<string, string> = {
+      "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
+      "gateway-route-sync.homelab-helper.benfiola.com/hostname": hostname,
+    };
+    if (gateway === "trusted") {
+      annotations["homelab.benfiola.com/use-external-dns"] = "";
+      annotations["external-dns.alpha.kubernetes.io/hostname"] = hostname;
+    }
 
     super(construct, id, {
       metadata: {
-        name,
-        annotations: {
-          "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
-        },
+        name: hostname,
+        annotations,
       },
       spec: {
-        parentRefs,
+        parentRefs: [
+          {
+            name: gateway,
+            namespace: "gateway",
+          },
+        ],
         rules: [],
       },
     });
