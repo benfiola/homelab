@@ -19,6 +19,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   for (const name of gateways) {
+    const annotations: Record<string, string> = {};
+    if (name === "public") {
+      annotations["external-dns.alpha.kubernetes.io/target"] =
+        "current.bfiola.dev";
+    }
     new WrappedGateway(chart, `${id}-wrapped-gateway-${name}`, {
       metadata: {
         annotations: {

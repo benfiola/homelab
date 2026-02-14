@@ -39,8 +39,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
-    annotationFilter: "homelab.benfiola.com/use-external-dns",
+  new Helm(chart, `${id}-helm-mikrotik`, context.getAsset("chart.tar.gz"), {
+    annotationFilter: "homelab.benfiola.com/use-external-dns-mikrotik",
     policy: "sync",
     provider: {
       name: "webhook",
@@ -85,6 +85,34 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
     },
+    releaseName: "mikrotik",
+    sources: [
+      "gateway-grpcroute",
+      "gateway-httproute",
+      "gateway-tcproute",
+      "gateway-tlsroute",
+      "gateway-udproute",
+    ],
+  });
+
+  new Helm(chart, `${id}-helm-cloudflare`, context.getAsset("chart.tar.gz"), {
+    annotationFilter: "homelab.benfiola.com/use-external-dns-cloudflare",
+    policy: "sync",
+    provider: {
+      name: "cloudflare",
+    },
+    env: [
+      {
+        name: "CF_API_TOKEN",
+        valueFrom: {
+          secretKeyRef: {
+            name: getField(vaultSecret.secret, "spec.destination.name"),
+            key: "cloudflare-api-token",
+          },
+        },
+      },
+    ],
+    releaseName: "cloudflare",
     sources: [
       "gateway-grpcroute",
       "gateway-httproute",
@@ -99,8 +127,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     findApiObject(chart, {
       apiVersion: "apps/v1",
       kind: "Deployment",
-      name: "external-dns",
+      name: "external-dns-mikrotik",
     }),
   );
+
+  new VerticalPodAutoscaler(
+    chart,
+    findApiObject(chart, {
+      apiVersion: "apps/v1",
+      kind: "Deployment",
+      name: "external-dns-cloudflare",
+    }),
+  );
+
   return chart;
 };

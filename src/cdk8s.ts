@@ -310,6 +310,7 @@ export class VaultDynamicSecret extends Construct {
 }
 
 interface HelmOpts {
+  releaseName?: string;
   skipCRDs?: boolean;
 }
 
@@ -320,18 +321,22 @@ export class Helm extends BaseHelm {
     chart: string,
     valuesAndOpts: HelmOpts | Record<string, any> = {},
   ) {
-    const { skipCRDs, ...values } = valuesAndOpts;
+    const { releaseName: optsReleaseName, skipCRDs, ...values } = valuesAndOpts;
 
     const helmFlags = ["--kube-version=1.34.0", "--skip-tests"];
     if (!skipCRDs) {
       helmFlags.push("--include-crds");
     }
 
+    const releaseName = optsReleaseName
+      ? `${construct.node.id}-${optsReleaseName}`
+      : construct.node.id;
+
     super(construct, id, {
       chart,
       helmFlags,
       namespace: construct.namespace,
-      releaseName: construct.node.id,
+      releaseName,
       values,
     });
   }
@@ -352,8 +357,11 @@ export class HttpRoute extends BaseHttpRoute {
 
     const annotations: Record<string, string> = {};
     if (gateway === "trusted") {
-      annotations["homelab.benfiola.com/use-external-dns"] = "";
+      annotations["homelab.benfiola.com/use-external-dns-mikrotik"] = "";
+    } else if (gateway === "public") {
+      annotations["homelab.benfiola.com/use-external-dns-cloudflare"] = "";
     }
+
     super(construct, id, {
       metadata: {
         name: hostname,
@@ -408,10 +416,12 @@ export class UdpRoute extends BaseUdpRoute {
     const annotations: Record<string, string> = {
       "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
       "gateway-route-sync.homelab-helper.benfiola.com/hostname": hostname,
+      "external-dns.alpha.kubernetes.io/hostname": hostname,
     };
     if (gateway === "trusted") {
-      annotations["homelab.benfiola.com/use-external-dns"] = "";
-      annotations["external-dns.alpha.kubernetes.io/hostname"] = hostname;
+      annotations["homelab.benfiola.com/use-external-dns-mikrotik"] = "";
+    } else if (gateway === "public") {
+      annotations["homelab.benfiola.com/use-external-dns-cloudflare"] = "";
     }
 
     super(construct, id, {
