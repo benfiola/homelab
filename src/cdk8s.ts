@@ -415,7 +415,6 @@ export class UdpRoute extends BaseUdpRoute {
 
     const annotations: Record<string, string> = {
       "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
-      "gateway-route-sync.homelab-helper.benfiola.com/hostname": hostname,
       "external-dns.alpha.kubernetes.io/hostname": hostname,
     };
     if (gateway === "trusted") {
