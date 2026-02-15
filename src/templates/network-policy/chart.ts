@@ -1000,6 +1000,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("world-to-gateway-public--ingress")
     .targets(gateway("public"))
+    .allowIngressFrom(cidrs("198.51.100.1"), tcp(10443, 25565))
     .syncWithRouter();
 
   policy("gateway-trusted-to-envoy-gateway-controller").allowBetween(

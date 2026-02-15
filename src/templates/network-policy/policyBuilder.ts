@@ -198,8 +198,6 @@ class CiliumPolicy {
       spec: {
         endpointSelector,
         nodeSelector,
-        ingress: [],
-        egress: [],
       },
     });
 
@@ -308,7 +306,10 @@ class CiliumPolicy {
     protocolSelectors: ProtocolSelector[],
     ruleType: "ingress" | "egress",
   ) {
-    const rules = ruleType === "ingress" ? this.spec.ingress : this.spec.egress;
+    const rules =
+      ruleType === "ingress"
+        ? (this.spec.ingress = this.spec.ingress ?? [])
+        : (this.spec.egress = this.spec.egress ?? []);
 
     const { portSelectors, icmpSelectors } =
       this.separateProtocolSelectors(protocolSelectors);
