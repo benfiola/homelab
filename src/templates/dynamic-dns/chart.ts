@@ -39,7 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       cloudflareZones: [
         {
           name: "bfiola.dev",
-          domains: ["minecraft.bfiola.dev", "wireguard.bfiola.dev"],
+          domains: ["current.bfiola.dev", "wireguard.bfiola.dev"],
         },
       ],
     },

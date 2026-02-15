@@ -179,19 +179,35 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // external-dns
-  policy("external-dns-to-control-plane").allowBetween(
-    pod("external-dns", "external-dns"),
+  policy("external-dns-cloudflare-to-control-plane").allowBetween(
+    pod("external-dns-cloudflare", "external-dns"),
     controlPlane(),
     tcp(6443),
   );
 
-  policy("external-dns-to-router--egress")
-    .targets(pod("external-dns", "external-dns"))
+  policy("external-dns-cloudflare-to-cloudflare--egress")
+    .targets(pod("external-dns-cloudflare", "external-dns"))
+    .allowEgressTo(dns("api.cloudflare.com"), tcp(443));
+
+  policy("host-to-external-dns-cloudflare").allowBetween(
+    host(),
+    pod("external-dns-cloudflare", "external-dns"),
+    tcp(7979, 8080),
+  );
+
+  policy("external-dns-mikrotik-to-control-plane").allowBetween(
+    pod("external-dns-mikrotik", "external-dns"),
+    controlPlane(),
+    tcp(6443),
+  );
+
+  policy("external-dns-mikrotik-to-router--egress")
+    .targets(pod("external-dns-mikrotik", "external-dns"))
     .allowEgressTo(dns("router.bulia"), tcp(80));
 
-  policy("host-to-external-dns").allowBetween(
+  policy("host-to-external-dns-mikrotik").allowBetween(
     host(),
-    pod("external-dns", "external-dns"),
+    pod("external-dns-mikrotik", "external-dns"),
     tcp(7979, 8080),
   );
 

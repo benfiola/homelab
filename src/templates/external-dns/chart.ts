@@ -41,6 +41,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm-mikrotik`, context.getAsset("chart.tar.gz"), {
     annotationFilter: "homelab.benfiola.com/use-external-dns-mikrotik",
+    nameOverride: `${id}-mikrotik`,
     policy: "sync",
     provider: {
       name: "webhook",
@@ -97,10 +98,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm-cloudflare`, context.getAsset("chart.tar.gz"), {
     annotationFilter: "homelab.benfiola.com/use-external-dns-cloudflare",
-    policy: "sync",
-    provider: {
-      name: "cloudflare",
-    },
     env: [
       {
         name: "CF_API_TOKEN",
@@ -112,6 +109,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
     ],
+    nameOverride: `${id}-cloudflare`,
+    policy: "sync",
+    provider: {
+      name: "cloudflare",
+    },
     releaseName: "cloudflare",
     sources: [
       "gateway-grpcroute",
