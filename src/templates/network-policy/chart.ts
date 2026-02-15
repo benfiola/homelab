@@ -996,12 +996,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("gateway-public-to-minecraft").allowBetween(
     gateway("public"),
     pod("minecraft", "minecraft"),
-    udp(25565),
+    tcp(25565),
   );
 
   policy("world-to-gateway-public--ingress")
     .targets(gateway("public"))
-    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443), udp(25565))
+    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443, 25565))
     .syncWithRouter();
 
   policy("gateway-trusted-to-envoy-gateway-controller").allowBetween(
@@ -1031,7 +1031,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("gateway-trusted-to-minecraft").allowBetween(
     gateway("trusted"),
     pod("minecraft", "minecraft"),
-    udp(25565),
+    tcp(25565),
   );
 
   policy("gateway-trusted-to-minio").allowBetween(
@@ -1056,8 +1056,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .targets(gateway("trusted"))
     .allowIngressFrom(
       cidrs("192.168.16.0/24", "192.168.17.0/24"),
-      tcp(10443),
-      udp(25565),
+      tcp(10443, 25565),
     );
 
   return chart;

@@ -1,5 +1,5 @@
 import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
-import { Chart, getSecurityContext, Namespace, UdpRoute } from "../../cdk8s";
+import { Chart, getSecurityContext, Namespace, TcpRoute } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, id) => {
@@ -37,7 +37,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
               ports: [
                 {
                   name: "game",
-                  protocol: "UDP",
                   containerPort: 25565,
                 },
               ],
@@ -62,18 +61,17 @@ export const chart: TemplateChartFn = async (construct, id) => {
         {
           port: 25565,
           name: "game",
-          protocol: "UDP",
         },
       ],
     },
   });
 
-  new UdpRoute(chart, "trusted", "minecraft.bulia.dev", 25565).match(
+  new TcpRoute(chart, "trusted", "minecraft.bulia.dev", 25565).match(
     service,
     25565,
   );
 
-  new UdpRoute(chart, "public", "minecraft.bfiola.dev", 25565).match(
+  new TcpRoute(chart, "public", "minecraft.bfiola.dev", 25565).match(
     service,
     25565,
   );

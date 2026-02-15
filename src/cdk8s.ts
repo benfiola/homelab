@@ -9,6 +9,7 @@ import { writeFile } from "fs/promises";
 import { get } from "lodash";
 import {
   HttpRoute as BaseHttpRoute,
+  TcpRoute as BaseTcpRoute,
   UdpRoute as BaseUdpRoute,
 } from "../assets/gateway-api/gateway.networking.k8s.io";
 import {
@@ -345,7 +346,7 @@ export class Helm extends BaseHelm {
 export const gateways = ["public", "trusted"] as const;
 export type Gateway = (typeof gateways)[number];
 
-interface HttpRouteTarget {
+interface RouteTarget {
   apiVersion?: string;
   kind: string;
   name: string;
@@ -379,7 +380,7 @@ export class HttpRoute extends BaseHttpRoute {
     });
   }
 
-  match(to: HttpRouteTarget, port: number, path: string = "/") {
+  match(to: RouteTarget, port: number, path: string = "/") {
     const props = (this as any).props;
     const spec = (props.spec = props.spec ?? {});
     const rules = (spec.rules = spec.rules ?? []);
@@ -398,10 +399,58 @@ export class HttpRoute extends BaseHttpRoute {
   }
 }
 
-interface UdpRouteTarget {
-  apiVersion?: string;
-  kind: string;
-  name: string;
+export class TcpRoute extends BaseTcpRoute {
+  constructor(
+    construct: Construct,
+    gateway: Gateway,
+    hostname: string,
+    port: number,
+  ) {
+    const id = `${construct}-tcp-route-${hostname}`;
+
+    const annotations: Record<string, string> = {
+      "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
+      "external-dns.alpha.kubernetes.io/hostname": hostname,
+    };
+    if (gateway === "trusted") {
+      annotations["homelab.benfiola.com/use-external-dns-mikrotik"] = "";
+    } else if (gateway === "public") {
+      annotations["homelab.benfiola.com/use-external-dns-cloudflare"] = "";
+    }
+
+    super(construct, id, {
+      metadata: {
+        name: hostname,
+        annotations,
+      },
+      spec: {
+        parentRefs: [
+          {
+            name: gateway,
+            namespace: "gateway",
+          },
+        ],
+        rules: [],
+      },
+    });
+  }
+
+  match(to: RouteTarget, port: string | number) {
+    const props = (this as any).props;
+    const spec = (props.spec = props.spec ?? {});
+    const rules = (spec.rules = spec.rules ?? []);
+    rules.push({
+      backendRefs: [
+        {
+          apiVersion: to.apiVersion,
+          kind: to.kind,
+          name: to.name,
+          port,
+        },
+      ],
+    });
+    return this;
+  }
 }
 
 export class UdpRoute extends BaseUdpRoute {
@@ -440,7 +489,7 @@ export class UdpRoute extends BaseUdpRoute {
     });
   }
 
-  match(to: UdpRouteTarget, port: string | number) {
+  match(to: RouteTarget, port: string | number) {
     const props = (this as any).props;
     const spec = (props.spec = props.spec ?? {});
     const rules = (spec.rules = spec.rules ?? []);
