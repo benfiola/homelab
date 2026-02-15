@@ -198,6 +198,8 @@ class CiliumPolicy {
       spec: {
         endpointSelector,
         nodeSelector,
+        ingress: [],
+        egress: [],
       },
     });
 
@@ -306,10 +308,7 @@ class CiliumPolicy {
     protocolSelectors: ProtocolSelector[],
     ruleType: "ingress" | "egress",
   ) {
-    const rules =
-      ruleType === "ingress"
-        ? (this.spec.ingress = this.spec.ingress ?? [])
-        : (this.spec.egress = this.spec.egress ?? []);
+    const rules = ruleType === "ingress" ? this.spec.ingress : this.spec.egress;
 
     const { portSelectors, icmpSelectors } =
       this.separateProtocolSelectors(protocolSelectors);
@@ -348,20 +347,6 @@ class CiliumPolicy {
       rule["icmps"] = icmps;
     }
 
-    let hasDnsPort = false;
-    portSelectors.forEach((s) => {
-      for (const p of s.ports) {
-        if (Array.isArray(p)) {
-          if (p[0] <= 53 && 53 <= p[1]) {
-            hasDnsPort = true;
-          }
-        } else {
-          if (p === 53) {
-            hasDnsPort = true;
-          }
-        }
-      }
-    });
     const addDnsRule = target.type === "kube-dns" && target.addDnsRule;
     rule["toPorts"] = this.buildPortSelectors(portSelectors, addDnsRule);
     rules.push(rule);

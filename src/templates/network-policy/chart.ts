@@ -998,6 +998,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     udp(25565),
   );
 
+  policy("world-to-gateway-public--ingress")
+    .targets(gateway("public"))
+    .syncWithRouter();
+
   policy("gateway-trusted-to-envoy-gateway-controller").allowBetween(
     gateway("trusted"),
     component("controller", "envoy-gateway"),
