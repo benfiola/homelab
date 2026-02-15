@@ -533,7 +533,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("minecraft-to-mojang")
     .targets(pod("minecraft", "minecraft"))
     .allowEgressTo(dns("launchermeta.mojang.com"), tcp(443))
-    .allowEgressTo(dns("api.minecraftservices.com"), tcp(443));
+    .allowEgressTo(dns("api.minecraftservices.com"), tcp(443))
+    .allowEgressTo(dns("sessionserver.minecraftservices.com"), tcp(443));
 
   // minio
   policy("host-to-minio").allowBetween(
