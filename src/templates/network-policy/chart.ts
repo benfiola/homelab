@@ -298,7 +298,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(8081),
   );
 
-  policy("gateway-route-syncto-control-plane").allowBetween(
+  policy("gateway-route-sync-to-control-plane").allowBetween(
     pod("gateway-route-sync", "gateway-route-sync"),
     controlPlane(),
     tcp(6443),
