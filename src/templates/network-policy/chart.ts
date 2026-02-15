@@ -1000,7 +1000,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("world-to-gateway-public--ingress")
     .targets(gateway("public"))
-    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443, 25565))
+    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443), udp(25565))
     .syncWithRouter();
 
   policy("gateway-trusted-to-envoy-gateway-controller").allowBetween(
@@ -1053,7 +1053,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("world-to-gateway-trusted--ingress")
     .targets(gateway("trusted"))
-    .allowIngressFrom(cidrs("192.168.16.0/24", "192.168.17.0/24"), tcp(10443));
+    .allowIngressFrom(
+      cidrs("192.168.16.0/24", "192.168.17.0/24"),
+      tcp(10443),
+      udp(25565),
+    );
 
   return chart;
 };
