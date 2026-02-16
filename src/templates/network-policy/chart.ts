@@ -1046,6 +1046,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(9090),
   );
 
+  policy("gateway-trusted-to-tunnel").allowBetween(
+    gateway("trusted"),
+    pod("tunnel", "tunnel"),
+    tcp(8080, 8081),
+  );
+
   policy("gateway-trusted-to-vault").allowBetween(
     gateway("trusted"),
     pod("vault", "vault"),
@@ -1057,7 +1063,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .allowIngressFrom(
       cidrs("192.168.16.0/24", "192.168.17.0/24"),
       tcp(10443, 25565),
-    );
+    )
+    .allowIngressFrom(cidrs("192.168.16.13/32"), tcp(8080));
 
   return chart;
 };
