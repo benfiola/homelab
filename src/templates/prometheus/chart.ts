@@ -132,7 +132,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           spec: {
             resources: {
               requests: {
-                storage: Storage.fromString("10Gi"),
+                storage: Storage.fromString("40Gi"),
               },
             },
             storageClassName: "standard",
