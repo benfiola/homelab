@@ -18,9 +18,6 @@
 - template: loki
 - template: metrics-server
 - template: minecraft
-- template: minio
-- template: minio-operator
-- template: minio-operator-ext
 - template: monitoring-config
 - template: network-policy
 - template: piraeus-operator

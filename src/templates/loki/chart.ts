@@ -1,10 +1,4 @@
 import {
-  MinioBucket,
-  MinioPolicy,
-  MinioPolicyBinding,
-  MinioUser,
-} from "../../../assets/minio-operator-ext/bfiola.dev";
-import {
   Chart,
   findApiObject,
   getField,
@@ -36,96 +30,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     chart.node.id,
   );
 
-  const tenantRef = {
-    name: "minio",
-    namespace: "minio",
-  };
-
-  const minioUser = new MinioUser(chart, `${id}-minio-user`, {
-    metadata: {
-      name: "user",
-    },
-    spec: {
-      accessKey: id,
-      tenantRef,
-      secretKeyRef: {
-        key: "minio-secret-key",
-        name: getField(vaultSecret.secret, "spec.destination.name"),
-      },
-    },
-  });
-
-  const createMinioBucket = (name: string) => {
-    return new MinioBucket(chart, `${id}-minio-bucket-${name}`, {
-      metadata: {
-        name,
-      },
-      spec: {
-        deletionPolicy: "Always",
-        name: `${id}-${name}`,
-        tenantRef,
-      },
-    });
-  };
-
-  const minioBucketAdmin = createMinioBucket("admin");
-  const minioBucketChunks = createMinioBucket("chunks");
-  const minioBucketRuler = createMinioBucket("ruler");
-
-  const minioPolicy = new MinioPolicy(chart, `${id}-minio-policy`, {
-    metadata: {
-      name: "policy",
-    },
-    spec: {
-      name: id,
-      statement: [
-        {
-          effect: "Allow",
-          action: [
-            "s3:AbortMultipartUpload",
-            "s3:DeleteObject",
-            "s3:ListMultipartUploadParts",
-            "s3:PutObject",
-            "s3:GetObject",
-          ],
-          resource: [
-            `arn:aws:s3:::${getField(minioBucketAdmin, "spec.name")}/*`,
-            `arn:aws:s3:::${getField(minioBucketChunks, "spec.name")}/*`,
-            `arn:aws:s3:::${getField(minioBucketRuler, "spec.name")}/*`,
-          ],
-        },
-        {
-          effect: "Allow",
-          action: [
-            "s3:GetBucketLocation",
-            "s3:ListBucket",
-            "s3:ListBucketMultipartUploads",
-          ],
-          resource: [
-            `arn:aws:s3:::${getField(minioBucketAdmin, "spec.name")}/*`,
-            `arn:aws:s3:::${getField(minioBucketChunks, "spec.name")}/*`,
-            `arn:aws:s3:::${getField(minioBucketRuler, "spec.name")}/*`,
-          ],
-        },
-      ],
-      tenantRef,
-      version: "2012-10-17",
-    },
-  });
-
-  new MinioPolicyBinding(chart, `${id}-minio-policy-binding`, {
-    metadata: {
-      name: "policy-binding",
-    },
-    spec: {
-      policy: getField(minioPolicy, "spec.name"),
-      tenantRef,
-      user: {
-        builtin: getField(minioUser, "spec.accessKey"),
-      },
-    },
-  });
-
+  // create admin/chunks/ruler buckets
   const extraArgs = ["--config.expand-env=true"];
   const extraEnv = [
     {
@@ -199,13 +104,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       storage: {
         bucketNames: {
-          admin: getField(minioBucketAdmin, "spec.name"),
-          chunks: getField(minioBucketChunks, "spec.name"),
-          ruler: getField(minioBucketRuler, "spec.name"),
+          admin: "invalid_value",
+          chunks: "invalid_value",
+          ruler: "invalid_value",
         },
         type: "s3",
         s3: {
-          accessKeyId: getField(minioUser, "spec.accessKey"),
+          accessKeyId: "invalid_value",
           endpoint: "minio.minio.svc",
           insecure: true,
           s3ForcePathStyle: true,

@@ -414,12 +414,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(7946),
   );
 
-  policy("loki-backend-to-minio").allowBetween(
-    component("backend", "loki"),
-    pod("minio", "minio"),
-    tcp(9000),
-  );
-
   policy("host-to-loki-backend").allowBetween(
     host(),
     component("backend", "loki"),
@@ -492,12 +486,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(7946),
   );
 
-  policy("loki-write-to-minio").allowBetween(
-    component("write", "loki"),
-    pod("minio", "minio"),
-    tcp(9000),
-  );
-
   // metrics-server
   policy("control-plane-to-metrics-server").allowBetween(
     controlPlane(),
@@ -535,57 +523,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .allowEgressTo(dns("launchermeta.mojang.com"), tcp(443))
     .allowEgressTo(dns("api.minecraftservices.com"), tcp(443))
     .allowEgressTo(dns("sessionserver.mojang.com"), tcp(443));
-
-  // minio
-  policy("host-to-minio").allowBetween(
-    host(),
-    pod("minio", "minio"),
-    tcp(4444),
-  );
-
-  policy("minio-to-control-plane").allowBetween(
-    pod("minio", "minio"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("minio-to-minio").allowBetween(
-    pod("minio", "minio"),
-    pod("minio", "minio"),
-    tcp(9000),
-  );
-
-  // minio-operator
-  policy("minio-operator-to-control-plane").allowBetween(
-    pod("operator", "minio-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("minio-operator-to-minio").allowBetween(
-    pod("operator", "minio-operator"),
-    pod("minio", "minio"),
-    tcp(9000),
-  );
-
-  // minio-operator-ext
-  policy("host-to-minio-operator-ext").allowBetween(
-    host(),
-    pod("operator", "minio-operator-ext"),
-    tcp(8888),
-  );
-
-  policy("minio-operator-ext-to-minio").allowBetween(
-    pod("operator", "minio-operator-ext"),
-    pod("minio", "minio"),
-    tcp(9000),
-  );
-
-  policy("minio-operator-ext-to-control-plane").allowBetween(
-    pod("operator", "minio-operator-ext"),
-    controlPlane(),
-    tcp(6443),
-  );
 
   // piraeus-operator
   policy("host-to-linstor-affinity-controller").allowBetween(
@@ -1032,12 +969,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     gateway("trusted"),
     pod("minecraft", "minecraft"),
     tcp(25565),
-  );
-
-  policy("gateway-trusted-to-minio").allowBetween(
-    gateway("trusted"),
-    pod("minio", "minio"),
-    tcp(80, 9090),
   );
 
   policy("gateway-trusted-to-prometheus").allowBetween(
