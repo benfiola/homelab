@@ -2,7 +2,14 @@ import {
   GarageCluster,
   GarageClusterSpecStorageDataSize as StorageSize,
 } from "../../../assets/garage-operator/garage.rajsingh.info";
-import { Chart, getSecurityContext, Namespace } from "../../cdk8s";
+import {
+  Chart,
+  getField,
+  getSecurityContext,
+  Namespace,
+  VaultAuth,
+  VaultStaticSecret,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -11,14 +18,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
+  const vaultAuth = new VaultAuth(
+    chart,
+    chart.node.id,
+    "vault-secrets-operator",
+  );
+
+  const vaultSecret = new VaultStaticSecret(
+    chart,
+    vaultAuth,
+    "secrets",
+    chart.node.id,
+  );
+
   const securityContext = getSecurityContext();
 
-  new GarageCluster(chart, `${id}-garage-cluster`, {
+  const cluster = new GarageCluster(chart, `${id}-garage-cluster`, {
     metadata: {
       name: "garage",
     },
     spec: {
       admin: {
+        adminTokenSecretRef: {
+          name: getField(vaultSecret.secret, "spec.destination.name"),
+          key: "admin-token",
+        },
         enabled: true,
       },
       containerSecurityContext: securityContext.container,
