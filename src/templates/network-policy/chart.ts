@@ -428,6 +428,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("loki-backend-to-garage").allowBetween(
+    component("backend", "loki"),
+    pod("garage", "garage"),
+    tcp(3900),
+  );
+
   policy("loki-backend-to-loki-read").allowBetween(
     component("backend", "loki"),
     component("read", "loki"),
