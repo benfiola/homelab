@@ -33,7 +33,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const securityContext = getSecurityContext();
 
-  const cluster = new GarageCluster(chart, `${id}-garage-cluster`, {
+  new GarageCluster(chart, `${id}-garage-cluster`, {
     metadata: {
       name: "garage",
     },
