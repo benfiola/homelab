@@ -500,6 +500,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(3100),
   );
 
+  policy("loki-write-to-garage").allowBetween(
+    component("write", "loki"),
+    pod("garage", "garage"),
+    tcp(3900),
+  );
+
   policy("loki-write-to-loki-backend").allowBetween(
     component("write", "loki"),
     component("backend", "loki"),
