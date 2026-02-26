@@ -8,6 +8,7 @@
 - template: external-snapshotter
 - template: flux-bootstrap
   flux: false
+- template: garage-operator
 - template: gateway
 - template: gateway-api
 - template: gateway-route-sync
