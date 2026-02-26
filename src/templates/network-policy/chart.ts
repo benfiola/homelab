@@ -291,6 +291,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(9090, 9440),
   );
 
+  // garage
+  policy("garage-to-garage").allowBetween(
+    pod("garage", "garage"),
+    pod("garage", "garage"),
+    tcp(3901),
+  );
+
   // garage-operator
   policy("host-to-garage-operator").allowBetween(
     host(),
