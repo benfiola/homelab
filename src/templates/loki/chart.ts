@@ -162,6 +162,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           accessKeyId: "${S3_ACCESS_KEY}",
           endpoint: "garage.garage.svc:3900",
           insecure: true,
+          region: "garage",
           s3ForcePathStyle: true,
           secretAccessKey: "${S3_SECRET_KEY}",
         },
