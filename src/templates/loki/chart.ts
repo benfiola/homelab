@@ -1,12 +1,14 @@
 import {
+  GarageBucket,
+  GarageKey,
+} from "../../../assets/garage-operator/garage.rajsingh.info";
+import {
   Chart,
   findApiObject,
   getField,
   getSecurityContext,
   Helm,
   Namespace,
-  VaultAuth,
-  VaultStaticSecret,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -17,28 +19,75 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const vaultAuth = new VaultAuth(
-    chart,
-    chart.node.id,
-    "vault-secrets-operator",
-  );
+  const key = new GarageKey(chart, `${id}-garage-key`, {
+    metadata: {
+      name: id,
+    },
+    spec: {
+      clusterRef: {
+        name: "garage",
+        namespace: "garage",
+      },
+      secretTemplate: {
+        accessKeyIdKey: "s3-access-key",
+        secretAccessKeyKey: "s3-secret-key",
+        name: `garage-${id}`,
+      },
+    },
+  });
 
-  const vaultSecret = new VaultStaticSecret(
-    chart,
-    vaultAuth,
-    "secrets",
-    chart.node.id,
-  );
+  const bucketSpec = {
+    clusterRef: {
+      name: "garage",
+      namespace: "garage",
+    },
+    keyPermissions: [
+      {
+        keyRef: key.name,
+        read: true,
+        write: true,
+      },
+    ],
+  };
 
-  // create admin/chunks/ruler buckets
+  const adminBucket = new GarageBucket(chart, `${id}-garage-bucket-admin`, {
+    metadata: {
+      name: `${id}-admin`,
+    },
+    spec: bucketSpec,
+  });
+
+  const chunksBucket = new GarageBucket(chart, `${id}-garage-bucket-chunks`, {
+    metadata: {
+      name: `${id}-chunks`,
+    },
+    spec: bucketSpec,
+  });
+
+  const rulerBucket = new GarageBucket(chart, `${id}-garage-bucket-ruler`, {
+    metadata: {
+      name: `${id}-ruler`,
+    },
+    spec: bucketSpec,
+  });
+
   const extraArgs = ["--config.expand-env=true"];
   const extraEnv = [
+    {
+      name: "S3_ACCESS_KEY",
+      valueFrom: {
+        secretKeyRef: {
+          name: getField(key, "spec.secretTemplate.name"),
+          key: getField(key, "spec.secretTemplate.accessKeyIdKey"),
+        },
+      },
+    },
     {
       name: "S3_SECRET_KEY",
       valueFrom: {
         secretKeyRef: {
-          name: getField(vaultSecret.secret, "spec.destination.name"),
-          key: "minio-secret-key",
+          name: getField(key, "spec.secretTemplate.name"),
+          key: getField(key, "spec.secretTemplate.secretAccessKeyKey"),
         },
       },
     },
@@ -104,14 +153,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       storage: {
         bucketNames: {
-          admin: "invalid_value",
-          chunks: "invalid_value",
-          ruler: "invalid_value",
+          admin: adminBucket.name,
+          chunks: chunksBucket.name,
+          ruler: rulerBucket.name,
         },
         type: "s3",
         s3: {
-          accessKeyId: "invalid_value",
-          endpoint: "minio.minio.svc",
+          accessKeyId: "${S3_ACCESS_KEY}",
+          endpoint: "garage.garage.svc:3900",
           insecure: true,
           s3ForcePathStyle: true,
           secretAccessKey: "${S3_SECRET_KEY}",
