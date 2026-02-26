@@ -18,6 +18,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "garage",
     },
     spec: {
+      admin: {
+        enabled: true,
+      },
       containerSecurityContext: securityContext.container,
       podLabels: {
         "app.kubernetes.io/name": "garage",
@@ -25,6 +28,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       replicas: 3,
       replication: {
         factor: 2,
+      },
+      security: {
+        allowWorldReadableSecrets: true,
       },
       securityContext: securityContext.pod,
       storage: {
@@ -35,6 +41,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         metadata: {
           storageClassName: "standard",
         },
+      },
+      webApi: {
+        enabled: true,
       },
     },
   });
