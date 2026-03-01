@@ -1,5 +1,6 @@
 - template: alertmanager
 - template: alloy
+- template: bucket-sync
 - template: cert-manager
 - template: cilium
 - template: envoy-gateway

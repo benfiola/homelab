@@ -9,7 +9,7 @@ export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
     {
       chart: "oci://ghcr.io/rajsinghtech/charts/garage-operator",
-      version: "0.0.39",
+      version: "0.0.40",
     },
     dir,
   );
