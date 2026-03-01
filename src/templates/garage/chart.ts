@@ -9,6 +9,7 @@ import {
   Namespace,
   VaultAuth,
   VaultStaticSecret,
+  VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
@@ -33,7 +34,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const securityContext = getSecurityContext();
 
-  new GarageCluster(chart, `${id}-garage-cluster`, {
+  const cluster = new GarageCluster(chart, `${id}-garage-cluster`, {
     metadata: {
       name: "garage",
     },
@@ -71,6 +72,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   });
+
+  new VerticalPodAutoscaler(chart, cluster);
 
   return chart;
 };
