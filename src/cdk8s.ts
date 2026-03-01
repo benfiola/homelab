@@ -7,6 +7,7 @@ import {
 import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import { get } from "lodash";
+import { BucketSyncPolicy as BaseBucketSyncPolicy } from "../assets/bucket-sync/bucket-sync.homelab-helper.benfiola.com";
 import {
   GarageBucket as BaseGarageBucket,
   GarageKey as BaseGarageKey,
@@ -709,6 +710,50 @@ export class GarageBucket extends BaseGarageBucket {
           namespace: "garage",
         },
         keyPermissions,
+      },
+    });
+  }
+}
+
+interface BucketSyncPolicyOpts {
+  path?: string;
+}
+
+export class BucketSyncPolicy extends Construct {
+  constructor(
+    construct: Construct,
+    source: string,
+    destination: GarageBucket,
+    auth: VaultAuth,
+    opts: BucketSyncPolicyOpts,
+  ) {
+    const id = `${construct.node.id}-bucket-sync-policy`;
+    super(construct, id);
+
+    const path = opts.path ?? construct.node.id;
+
+    const secret = new VaultDynamicSecret(
+      construct,
+      auth,
+      (secretRef) => ({}),
+      {
+        name: `bucket-sync-policy-${source}-${destination.name}`,
+        path: path,
+      },
+    );
+
+    new BaseBucketSyncPolicy(construct, `${id}-bucket-sync-policy`, {
+      metadata: {
+        name: "test",
+      },
+      spec: {
+        source: "test",
+        destination: "test",
+        secret: secret.name,
+        schedule: "@hourly",
+        jobLabels: {
+          "app.kubernetes.io/name": "bucket-sync-job",
+        },
       },
     });
   }
