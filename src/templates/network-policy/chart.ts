@@ -74,9 +74,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(3900),
   );
 
-  // policy("bucket-sync-job-to-google--egress")
-  //   .targets(pod("bucket-sync-job", "*"))
-  //   .allowEgressTo(dns("*.googleapis.com"), tcp(443));
+  policy("bucket-sync-job-to-google--egress")
+    .targets(pod("bucket-sync-job", "*"))
+    .allowEgressTo(dns("*.googleapis.com"), tcp(443));
 
   // cert-manager
   policy("cert-manager-cainjector-to-control-plane").allowBetween(
