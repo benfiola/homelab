@@ -688,7 +688,7 @@ export class GarageKey extends Construct {
 }
 
 interface GarageBucketOpts {
-  website?: boolean;
+  anonymous?: boolean;
 }
 
 export class GarageBucket extends BaseGarageBucket {
@@ -702,13 +702,20 @@ export class GarageBucket extends BaseGarageBucket {
     opts: GarageBucketOpts = {},
   ) {
     const id = `${construct.node.id}-garage-bucket-${clusterName}-${name}`;
-    const website = opts.website ? { enabled: true } : undefined;
 
     const keyPermissions = keys.map((k) => ({
       keyRef: k.name,
       read: true,
       write: true,
     }));
+
+    if (opts.anonymous) {
+      keyPermissions.push({
+        keyRef: "anonymous",
+        read: true,
+        write: false,
+      });
+    }
 
     super(construct, id, {
       metadata: {
@@ -719,7 +726,6 @@ export class GarageBucket extends BaseGarageBucket {
           name: clusterName,
           namespace: "garage",
         },
-        website,
         keyPermissions,
       },
     });

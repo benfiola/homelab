@@ -24,7 +24,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const bucket = new GarageBucket(chart, "garage", id, [key], {
-    website: true,
+    anonymous: true,
   });
 
   new BucketSyncPolicy(chart, "minecraft-oigim8", bucket, auth, {
