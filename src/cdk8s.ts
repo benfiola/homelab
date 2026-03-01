@@ -7,6 +7,7 @@ import {
 import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import { get } from "lodash";
+import { GarageKey as BaseGarageKey } from "../assets/garage-operator/garage.rajsingh.info";
 import {
   HttpRoute as BaseHttpRoute,
   TcpRoute as BaseTcpRoute,
@@ -188,11 +189,19 @@ export class Namespace extends BaseNamespace {
   }
 }
 
+interface VaultAuthOpts {
+  role?: string;
+  serviceAccount?: string;
+}
+
 export class VaultAuth extends Construct {
   readonly serviceAccount: ServiceAccount;
   readonly auth: BaseVaultAuth;
 
-  constructor(construct: Construct, role: string, serviceAccount: string) {
+  constructor(construct: Construct, opts: VaultAuthOpts = {}) {
+    const role = opts.role ?? construct.node.id;
+    const serviceAccount = opts.serviceAccount ?? "vault-secrets-operator";
+
     const id = `${construct.node.id}-vault-auth-${serviceAccount}`;
     super(construct, id);
 
@@ -222,6 +231,11 @@ export class VaultAuth extends Construct {
   }
 }
 
+interface VaultStaticSecretOpts {
+  name?: string;
+  path?: string;
+}
+
 export class VaultStaticSecret extends Construct {
   readonly serviceAccount: ServiceAccount;
   readonly auth: BaseVaultAuth;
@@ -230,9 +244,11 @@ export class VaultStaticSecret extends Construct {
   constructor(
     construct: Construct,
     auth: VaultAuth,
-    name: string,
-    path: string,
+    opts: VaultStaticSecretOpts = {},
   ) {
+    const name = opts.name ?? "secrets";
+    const path = opts.path ?? construct.node.id;
+
     const id = `${construct.node.id}-vault-static-secret-${name}`;
     super(construct, id);
 
@@ -261,6 +277,11 @@ export class VaultStaticSecret extends Construct {
   }
 }
 
+interface VaultDynamicSecretOpts {
+  name?: string;
+  path?: string;
+}
+
 export class VaultDynamicSecret extends Construct {
   readonly serviceAccount: ServiceAccount;
   readonly auth: BaseVaultAuth;
@@ -269,12 +290,14 @@ export class VaultDynamicSecret extends Construct {
   constructor(
     construct: Construct,
     auth: VaultAuth,
-    name: string,
-    path: string,
     templatesFn: (
       secretRefFn: (secret: string) => string,
     ) => Record<string, string>,
+    opts: VaultDynamicSecretOpts = {},
   ) {
+    const name = opts.name ?? "secrets";
+    const path = opts.name ?? construct.node.id;
+
     const id = `${construct.node.id}-vault-dynamic-secret-${name}`;
     super(construct, id);
 
@@ -552,7 +575,10 @@ type PodSecurityContext = ReturnType<typeof getSecurityContext>["pod"];
 
 export class VolsyncAuth extends VaultAuth {
   constructor(construct: Construct) {
-    super(construct, "volsync-mover", "volsync-mover-vault-secrets-operator");
+    super(construct, {
+      role: "volsync-mover",
+      serviceAccount: "volsync-mover-vault-secrets-operator",
+    });
   }
 }
 
@@ -580,8 +606,6 @@ export class VolsyncBackup extends Construct {
     this.vaultSecret = new VaultDynamicSecret(
       chart,
       this.auth,
-      `volsync-mover-${pvc}`,
-      "volsync",
       (secretRef) => ({
         GOOGLE_PROJECT_ID: "592515172912",
         GOOGLE_APPLICATION_CREDENTIALS: secretRef(
@@ -590,6 +614,10 @@ export class VolsyncBackup extends Construct {
         RESTIC_REPOSITORY: `gs:volsync-wf98ys:/${namespace}/${pvc}`,
         RESTIC_PASSWORD: secretRef("restic-password"),
       }),
+      {
+        name: `volsync-mover-${pvc}`,
+        path: "volsync",
+      },
     );
 
     this.replicationSource = new ReplicationSource(
@@ -622,5 +650,27 @@ export class VolsyncBackup extends Construct {
         },
       },
     );
+  }
+}
+
+const garageClusterNames = ["garage"] as const;
+
+export type GarageClusterName = (typeof garageClusterNames)[number];
+
+export class GarageKey extends BaseGarageKey {
+  constructor(chart: Chart, clusterName: GarageClusterName, name: string) {
+    const id = `${chart.node.id}-garage-key-${name}`;
+
+    super(chart, id, {
+      metadata: {
+        name,
+      },
+      spec: {
+        clusterRef: {
+          name: clusterName,
+          namespace: "garage",
+        },
+      },
+    });
   }
 }

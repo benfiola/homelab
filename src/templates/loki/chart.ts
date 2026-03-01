@@ -18,7 +18,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = chart.node.id;
 
   new Namespace(chart);
-
+  
   const key = new GarageKey(chart, `${id}-garage-key`, {
     metadata: {
       name: id,

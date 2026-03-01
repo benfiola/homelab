@@ -17,21 +17,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  const vaultAuth = new VaultAuth(
-    chart,
-    chart.node.id,
-    "vault-secrets-operator",
-  );
+  const vaultAuth = new VaultAuth(chart);
 
-  const vaultSecret = new VaultDynamicSecret(
-    chart,
-    vaultAuth,
-    "configuration",
-    chart.node.id,
-    (secretRef) => ({
-      RELAYHOST_PASSWORD: secretRef("mailgun-smtp-password"),
-    }),
-  );
+  const vaultSecret = new VaultDynamicSecret(chart, vaultAuth, (secretRef) => ({
+    RELAYHOST_PASSWORD: secretRef("mailgun-smtp-password"),
+  }));
 
   const securityContext = getSecurityContext({
     caps: [
