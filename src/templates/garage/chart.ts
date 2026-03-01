@@ -57,9 +57,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           storageClassName: "standard",
         },
       },
-      webApi: {
-        enabled: true,
-      },
     },
   });
 
