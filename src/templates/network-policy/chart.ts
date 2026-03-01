@@ -55,6 +55,19 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(12345),
   );
 
+  // bucket-sync
+  policy("host-to-bucket-sync").allowBetween(
+    host(),
+    pod("bucket-sync", "bucket-sync"),
+    tcp(8081),
+  );
+
+  policy("bucket-sync-to-control-plane").allowBetween(
+    pod("bucket-sync", "bucket-sync"),
+    controlPlane(),
+    tcp(6443),
+  );
+
   // cert-manager
   policy("cert-manager-cainjector-to-control-plane").allowBetween(
     component("cainjector", "cert-manager"),
