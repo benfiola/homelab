@@ -1,7 +1,6 @@
 import {
   Chart,
   findApiObject,
-  getField,
   Helm,
   Namespace,
   VaultAuth,
@@ -24,10 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     config: {
       mikrotikBaseUrl: "http://router.bulia",
       mikrotikUsername: "router-policy-sync",
-      mikrotikPasswordSecret: getField(
-        vaultSecret.secret,
-        "spec.destination.name",
-      ),
+      mikrotikPasswordSecret: vaultSecret.name,
       mikrotikPasswordKey: "routeros-password",
       reservedCIDRs: ["192.168.0.0/16"],
     },

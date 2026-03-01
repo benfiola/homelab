@@ -1,7 +1,6 @@
 import {
   Chart,
   findApiObject,
-  getField,
   Helm,
   Namespace,
   VaultAuth,
@@ -22,10 +21,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: {
-      gcsCredentialsSecret: getField(
-        vaultSecret.secret,
-        "spec.destination.name",
-      ),
+      gcsCredentialsSecret: vaultSecret.name,
       gcsCredentialsKey: "google-cloud-credentials-file",
       gcsDestination: "gs://homelab-8hxm62/secrets-apps.yaml",
       vaultAddr: "http://vault-active.vault.svc:8200",

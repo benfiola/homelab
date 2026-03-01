@@ -2,7 +2,6 @@ import { ClusterIssuer } from "../../../assets/cert-manager/cert-manager.io";
 import {
   Chart,
   findApiObject,
-  getField,
   Helm,
   Namespace,
   VaultAuth,
@@ -49,7 +48,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             dns01: {
               cloudflare: {
                 apiTokenSecretRef: {
-                  name: getField(vaultSecret.secret, "spec.destination.name"),
+                  name: vaultSecret.name,
                   key: "cloudflare-api-token",
                 },
               },

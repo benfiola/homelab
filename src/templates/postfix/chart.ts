@@ -1,7 +1,6 @@
 import {
   Chart,
   findApiObject,
-  getField,
   getSecurityContext,
   Helm,
   Namespace,
@@ -44,7 +43,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         RELAYHOST_USERNAME: "noreply@cluster.bulia.dev",
       },
     },
-    existingSecret: getField(vaultSecret.secret, "spec.destination.name"),
+    existingSecret: vaultSecret.name,
     container: {
       postfix: {
         securityContext: securityContext.container,

@@ -1,7 +1,6 @@
 import {
   Chart,
   findApiObject,
-  getField,
   Helm,
   Namespace,
   VaultAuth,
@@ -22,10 +21,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: {
-      cloudflareApiTokenSecret: getField(
-        vaultSecret.secret,
-        "spec.destination.name",
-      ),
+      cloudflareApiTokenSecret: vaultSecret.name,
       cloudflareApiTokenKey: "cloudflare-api-token",
       cloudflareZones: [
         {

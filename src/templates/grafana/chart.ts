@@ -7,7 +7,6 @@ import {
 } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
-  getField,
   getSecurityContext,
   HttpRoute,
   Namespace,
@@ -139,10 +138,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                       valueFrom: {
                         secretKeyRef: {
                           key: "admin-password",
-                          name: getField(
-                            vaultSecret.secret,
-                            "spec.destination.name",
-                          ),
+                          name: vaultSecret.name,
                         },
                       },
                     },

@@ -195,39 +195,36 @@ interface VaultAuthOpts {
 }
 
 export class VaultAuth extends Construct {
-  readonly serviceAccount: ServiceAccount;
-  readonly auth: BaseVaultAuth;
+  readonly name: string;
 
   constructor(construct: Construct, opts: VaultAuthOpts = {}) {
     const role = opts.role ?? construct.node.id;
-    const serviceAccount = opts.serviceAccount ?? "vault-secrets-operator";
+    const serviceAccountName = opts.serviceAccount ?? "vault-secrets-operator";
 
-    const id = `${construct.node.id}-vault-auth-${serviceAccount}`;
+    const id = `${construct.node.id}-vault-auth-${serviceAccountName}`;
     super(construct, id);
 
-    this.serviceAccount = new ServiceAccount(
-      construct,
-      `${id}-service-account`,
-      {
-        metadata: {
-          name: serviceAccount,
-        },
+    const serviceAccount = new ServiceAccount(this, `${id}-service-account`, {
+      metadata: {
+        name: serviceAccountName,
       },
-    );
+    });
 
-    this.auth = new BaseVaultAuth(construct, `${id}-vault-auth`, {
+    const auth = new BaseVaultAuth(this, `${id}-vault-auth`, {
       metadata: {
         name: role,
       },
       spec: {
         kubernetes: {
           role,
-          serviceAccount: this.serviceAccount.name,
+          serviceAccount: serviceAccount.name,
         },
         method: VaultAuthMethod.KUBERNETES,
         mount: "kubernetes",
       },
     });
+
+    this.name = auth.name;
   }
 }
 
@@ -237,9 +234,7 @@ interface VaultStaticSecretOpts {
 }
 
 export class VaultStaticSecret extends Construct {
-  readonly serviceAccount: ServiceAccount;
-  readonly auth: BaseVaultAuth;
-  readonly secret: BaseVaultStaticSecret;
+  readonly name: string;
 
   constructor(
     construct: Construct,
@@ -252,11 +247,8 @@ export class VaultStaticSecret extends Construct {
     const id = `${construct.node.id}-vault-static-secret-${name}`;
     super(construct, id);
 
-    this.serviceAccount = auth.serviceAccount;
-    this.auth = auth.auth;
-
-    this.secret = new BaseVaultStaticSecret(
-      construct,
+    const secret = new BaseVaultStaticSecret(
+      this,
       `${id}-vault-static-secret-${name}`,
       {
         metadata: {
@@ -270,10 +262,12 @@ export class VaultStaticSecret extends Construct {
           path,
           mount: "secrets",
           type: VaultSecretType.KV_HYPHEN_V2,
-          vaultAuthRef: this.auth.name,
+          vaultAuthRef: auth.name,
         },
       },
     );
+
+    this.name = getField(secret, "spec.destination.name");
   }
 }
 
@@ -283,9 +277,7 @@ interface VaultDynamicSecretOpts {
 }
 
 export class VaultDynamicSecret extends Construct {
-  readonly serviceAccount: ServiceAccount;
-  readonly auth: BaseVaultAuth;
-  readonly secret: BaseVaultDynamicSecret;
+  readonly name: string;
 
   constructor(
     construct: Construct,
@@ -301,9 +293,6 @@ export class VaultDynamicSecret extends Construct {
     const id = `${construct.node.id}-vault-dynamic-secret-${name}`;
     super(construct, id);
 
-    this.serviceAccount = auth.serviceAccount;
-    this.auth = auth.auth;
-
     const secretRefFn = (secret: string) =>
       `{{ get (get .Secrets "data") "${secret}" }}`;
     const templates = templatesFn(secretRefFn);
@@ -315,7 +304,7 @@ export class VaultDynamicSecret extends Construct {
       };
     }
 
-    this.secret = new BaseVaultDynamicSecret(
+    const secret = new BaseVaultDynamicSecret(
       construct,
       `${id}-vault-static-secret`,
       {
@@ -332,10 +321,12 @@ export class VaultDynamicSecret extends Construct {
           },
           path: `data/${path}`,
           mount: "secrets",
-          vaultAuthRef: this.auth.name,
+          vaultAuthRef: auth.name,
         },
       },
     );
+
+    this.name = getField(secret, "spec.destination.name");
   }
 }
 
@@ -587,10 +578,6 @@ interface VolsyncBackupOpts {
 }
 
 export class VolsyncBackup extends Construct {
-  readonly auth: VolsyncAuth;
-  readonly vaultSecret: VaultDynamicSecret;
-  readonly replicationSource: ReplicationSource;
-
   constructor(
     chart: Chart,
     auth: VolsyncAuth,
@@ -600,12 +587,10 @@ export class VolsyncBackup extends Construct {
     const id = `${chart.node.id}-volsync-backup-${pvc}`;
     super(chart, id);
 
-    this.auth = auth;
-
     const namespace = chart.namespace;
-    this.vaultSecret = new VaultDynamicSecret(
+    const vaultSecret = new VaultDynamicSecret(
       chart,
-      this.auth,
+      auth,
       (secretRef) => ({
         GOOGLE_PROJECT_ID: "592515172912",
         GOOGLE_APPLICATION_CREDENTIALS: secretRef(
@@ -620,36 +605,29 @@ export class VolsyncBackup extends Construct {
       },
     );
 
-    this.replicationSource = new ReplicationSource(
-      chart,
-      `replications-source-${pvc}`,
-      {
-        metadata: { name: pvc },
-        spec: {
-          restic: {
-            copyMethod: "Clone" as any,
-            moverPodLabels: {
-              "app.kubernetes.io/name": "volsync-mover",
-            },
-            moverSecurityContext: opts.securityContext,
-            pruneIntervalDays: 1,
-            repository: getField(
-              this.vaultSecret.secret,
-              "spec.destination.name",
-            ),
-            retain: {
-              daily: 7,
-              within: "1d",
-            },
-            storageClassName: "standard",
+    new ReplicationSource(chart, `replications-source-${pvc}`, {
+      metadata: { name: pvc },
+      spec: {
+        restic: {
+          copyMethod: "Clone" as any,
+          moverPodLabels: {
+            "app.kubernetes.io/name": "volsync-mover",
           },
-          sourcePvc: pvc,
-          trigger: {
-            schedule: "0 12 * * *",
+          moverSecurityContext: opts.securityContext,
+          pruneIntervalDays: 1,
+          repository: vaultSecret.name,
+          retain: {
+            daily: 7,
+            within: "1d",
           },
+          storageClassName: "standard",
+        },
+        sourcePvc: pvc,
+        trigger: {
+          schedule: "0 12 * * *",
         },
       },
-    );
+    });
   }
 }
 
@@ -657,20 +635,40 @@ const garageClusterNames = ["garage"] as const;
 
 export type GarageClusterName = (typeof garageClusterNames)[number];
 
-export class GarageKey extends BaseGarageKey {
-  constructor(chart: Chart, clusterName: GarageClusterName, name: string) {
-    const id = `${chart.node.id}-garage-key-${name}`;
+interface GarageKeyOpts {
+  accessKeyId: string;
+  secretAccessKey: string;
+  path?: string;
+  role?: string;
+}
+export class GarageKey extends Construct {
+  readonly name: string;
 
-    super(chart, id, {
+  constructor(
+    construct: Construct,
+    clusterName: GarageClusterName,
+    name: string,
+    auth: VaultAuth,
+    opts: GarageKeyOpts,
+  ) {
+    const id = `${construct.node.id}-garage-key-${name}`;
+    super(construct, id);
+
+    const secret = new VaultDynamicSecret(this, auth, (secretRef) => ({
+      "access-key-id": secretRef(opts.accessKeyId),
+      "secret-key-id": secretRef(opts.secretAccessKey),
+    }));
+
+    const key = new BaseGarageKey(this, `${id}-garage-key`, {
       metadata: {
         name,
       },
       spec: {
-        clusterRef: {
-          name: clusterName,
-          namespace: "garage",
-        },
+        clusterRef: { name: clusterName, namespace: "garage" },
+        importKey: { secretRef: { name: secret.name } },
       },
     });
+
+    this.name = key.name;
   }
 }

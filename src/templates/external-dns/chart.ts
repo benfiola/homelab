@@ -2,7 +2,6 @@ import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   findApiObject,
-  getField,
   Helm,
   Namespace,
   VaultAuth,
@@ -46,7 +45,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             name: "MIKROTIK_PASSWORD",
             valueFrom: {
               secretKeyRef: {
-                name: getField(vaultSecret.secret, "spec.destination.name"),
+                name: vaultSecret.name,
                 key: "routeros-password",
               },
             },
@@ -94,7 +93,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         name: "CF_API_TOKEN",
         valueFrom: {
           secretKeyRef: {
-            name: getField(vaultSecret.secret, "spec.destination.name"),
+            name: vaultSecret.name,
             key: "cloudflare-api-token",
           },
         },

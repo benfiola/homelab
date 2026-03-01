@@ -1,14 +1,13 @@
-import {
-  GarageBucket,
-  GarageKey,
-} from "../../../assets/garage-operator/garage.rajsingh.info";
+import { GarageBucket } from "../../../assets/garage-operator/garage.rajsingh.info";
 import {
   Chart,
   findApiObject,
-  getField,
+  GarageKey,
   getSecurityContext,
   Helm,
   Namespace,
+  VaultAuth,
+  VaultStaticSecret,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -18,22 +17,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = chart.node.id;
 
   new Namespace(chart);
-  
-  const key = new GarageKey(chart, `${id}-garage-key`, {
-    metadata: {
-      name: id,
-    },
-    spec: {
-      clusterRef: {
-        name: "garage",
-        namespace: "garage",
-      },
-      secretTemplate: {
-        accessKeyIdKey: "s3-access-key",
-        secretAccessKeyKey: "s3-secret-key",
-        name: `garage-${id}`,
-      },
-    },
+
+  const auth = new VaultAuth(chart);
+
+  const secret = new VaultStaticSecret(chart, auth);
+
+  const key = new GarageKey(chart, "garage", id, auth, {
+    accessKeyId: "s3-access-key-id",
+    secretAccessKey: "s3-secret-access-key",
   });
 
   const bucketSpec = {
@@ -74,20 +65,20 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const extraArgs = ["--config.expand-env=true"];
   const extraEnv = [
     {
-      name: "S3_ACCESS_KEY",
+      name: "S3_ACCESS_KEY_ID",
       valueFrom: {
         secretKeyRef: {
-          name: getField(key, "spec.secretTemplate.name"),
-          key: getField(key, "spec.secretTemplate.accessKeyIdKey"),
+          name: secret.name,
+          key: "s3-access-key-id",
         },
       },
     },
     {
-      name: "S3_SECRET_KEY",
+      name: "S3_SECRET_ACCESS_KEY",
       valueFrom: {
         secretKeyRef: {
-          name: getField(key, "spec.secretTemplate.name"),
-          key: getField(key, "spec.secretTemplate.secretAccessKeyKey"),
+          name: secret.name,
+          key: "s3-secret-access-key",
         },
       },
     },
@@ -159,12 +150,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
         type: "s3",
         s3: {
-          accessKeyId: "${S3_ACCESS_KEY}",
+          accessKeyId: "${S3_ACCESS_KEY_ID}",
           endpoint: "garage.garage.svc:3900",
           insecure: true,
           region: "garage",
           s3ForcePathStyle: true,
-          secretAccessKey: "${S3_SECRET_KEY}",
+          secretAccessKey: "${S3_SECRET_ACCESS_KEY}",
         },
       },
     },
