@@ -7,7 +7,10 @@ import {
 import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import { get } from "lodash";
-import { GarageKey as BaseGarageKey } from "../assets/garage-operator/garage.rajsingh.info";
+import {
+  GarageBucket as BaseGarageBucket,
+  GarageKey as BaseGarageKey,
+} from "../assets/garage-operator/garage.rajsingh.info";
 import {
   HttpRoute as BaseHttpRoute,
   TcpRoute as BaseTcpRoute,
@@ -641,6 +644,7 @@ interface GarageKeyOpts {
   path?: string;
   role?: string;
 }
+
 export class GarageKey extends Construct {
   readonly name: string;
 
@@ -651,7 +655,7 @@ export class GarageKey extends Construct {
     auth: VaultAuth,
     opts: GarageKeyOpts,
   ) {
-    const id = `${construct.node.id}-garage-key-${name}`;
+    const id = `${construct.node.id}-garage-key-${clusterName}-${name}`;
     super(construct, id);
 
     const secret = new VaultDynamicSecret(this, auth, (secretRef) => ({
@@ -670,5 +674,35 @@ export class GarageKey extends Construct {
     });
 
     this.name = key.name;
+  }
+}
+
+export class GarageBucket extends BaseGarageBucket {
+  constructor(
+    construct: Construct,
+    clusterName: GarageClusterName,
+    name: string,
+    keys: GarageKey[],
+  ) {
+    const id = `${construct.node.id}-garage-bucket-${clusterName}-${name}`;
+
+    const keyPermissions = keys.map((k) => ({
+      keyRef: k.name,
+      read: true,
+      write: true,
+    }));
+
+    super(construct, id, {
+      metadata: {
+        name,
+      },
+      spec: {
+        clusterRef: {
+          name: clusterName,
+          namespace: "garage",
+        },
+        keyPermissions,
+      },
+    });
   }
 }

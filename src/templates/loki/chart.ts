@@ -1,7 +1,7 @@
-import { GarageBucket } from "../../../assets/garage-operator/garage.rajsingh.info";
 import {
   Chart,
   findApiObject,
+  GarageBucket,
   GarageKey,
   getSecurityContext,
   Helm,
@@ -27,40 +27,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     secretAccessKey: "s3-secret-access-key",
   });
 
-  const bucketSpec = {
-    clusterRef: {
-      name: "garage",
-      namespace: "garage",
-    },
-    keyPermissions: [
-      {
-        keyRef: key.name,
-        read: true,
-        write: true,
-      },
-    ],
-  };
+  const adminBucket = new GarageBucket(chart, "garage", `${id}-admin`, [key]);
 
-  const adminBucket = new GarageBucket(chart, `${id}-garage-bucket-admin`, {
-    metadata: {
-      name: `${id}-admin`,
-    },
-    spec: bucketSpec,
-  });
+  const chunksBucket = new GarageBucket(chart, "garage", `${id}-chunks`, [key]);
 
-  const chunksBucket = new GarageBucket(chart, `${id}-garage-bucket-chunks`, {
-    metadata: {
-      name: `${id}-chunks`,
-    },
-    spec: bucketSpec,
-  });
-
-  const rulerBucket = new GarageBucket(chart, `${id}-garage-bucket-ruler`, {
-    metadata: {
-      name: `${id}-ruler`,
-    },
-    spec: bucketSpec,
-  });
+  const rulerBucket = new GarageBucket(chart, "garage", `${id}-ruler`, [key]);
 
   const extraArgs = ["--config.expand-env=true"];
   const extraEnv = [
