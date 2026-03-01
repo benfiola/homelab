@@ -291,7 +291,7 @@ export class VaultDynamicSecret extends Construct {
     opts: VaultDynamicSecretOpts = {},
   ) {
     const name = opts.name ?? "secrets";
-    const path = opts.name ?? construct.node.id;
+    const path = opts.path ?? construct.node.id;
 
     const id = `${construct.node.id}-vault-dynamic-secret-${name}`;
     super(construct, id);
@@ -658,10 +658,17 @@ export class GarageKey extends Construct {
     const id = `${construct.node.id}-garage-key-${clusterName}-${name}`;
     super(construct, id);
 
-    const secret = new VaultDynamicSecret(this, auth, (secretRef) => ({
-      "access-key-id": secretRef(opts.accessKeyId),
-      "secret-key-id": secretRef(opts.secretAccessKey),
-    }));
+    const path = opts.path ?? construct.node.id;
+
+    const secret = new VaultDynamicSecret(
+      this,
+      auth,
+      (secretRef) => ({
+        "access-key-id": secretRef(opts.accessKeyId),
+        "secret-key-id": secretRef(opts.secretAccessKey),
+      }),
+      { name: `garage-key-${clusterName}-${name}`, path: path },
+    );
 
     const key = new BaseGarageKey(this, `${id}-garage-key`, {
       metadata: {
