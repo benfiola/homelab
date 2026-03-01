@@ -650,16 +650,16 @@ export class GarageKey extends Construct {
   readonly name: string;
 
   constructor(
-    construct: Construct,
+    chart: Chart,
     clusterName: GarageClusterName,
     name: string,
     auth: VaultAuth,
     opts: GarageKeyOpts,
   ) {
-    const id = `${construct.node.id}-garage-key-${clusterName}-${name}`;
-    super(construct, id);
+    const id = `${chart.node.id}-garage-key-${clusterName}-${name}`;
+    super(chart, id);
 
-    const path = opts.path ?? construct.node.id;
+    const path = opts.path ?? chart.node.id;
 
     const secret = new VaultDynamicSecret(
       this,
@@ -677,7 +677,9 @@ export class GarageKey extends Construct {
       },
       spec: {
         clusterRef: { name: clusterName, namespace: "garage" },
-        importKey: { secretRef: { name: secret.name } },
+        importKey: {
+          secretRef: { name: secret.name, namespace: chart.namespace },
+        },
       },
     });
 
