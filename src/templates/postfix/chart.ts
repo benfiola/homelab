@@ -28,9 +28,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     vaultAuth,
     "configuration",
     chart.node.id,
-    {
-      RELAYHOST_PASSWORD: `{{ get (get .Secrets "data") "mailgun-smtp-password" }}`,
-    },
+    (secretRef) => ({
+      RELAYHOST_PASSWORD: secretRef("mailgun-smtp-password"),
+    }),
   );
 
   const securityContext = getSecurityContext({

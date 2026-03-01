@@ -271,13 +271,19 @@ export class VaultDynamicSecret extends Construct {
     auth: VaultAuth,
     name: string,
     path: string,
-    templates: Record<string, string>,
+    templatesFn: (
+      secretRefFn: (secret: string) => string,
+    ) => Record<string, string>,
   ) {
     const id = `${construct.node.id}-vault-dynamic-secret-${name}`;
     super(construct, id);
 
     this.serviceAccount = auth.serviceAccount;
     this.auth = auth.auth;
+
+    const secretRefFn = (secret: string) =>
+      `{{ get (get .Secrets "data") "${secret}" }}`;
+    const templates = templatesFn(secretRefFn);
 
     const specTemplates: Record<string, VaultSecretTemplate> = {};
     for (const key of Object.keys(templates)) {
@@ -576,12 +582,14 @@ export class VolsyncBackup extends Construct {
       this.auth,
       `volsync-mover-${pvc}`,
       "volsync",
-      {
+      (secretRef) => ({
         GOOGLE_PROJECT_ID: "592515172912",
-        GOOGLE_APPLICATION_CREDENTIALS: `{{ get (get .Secrets "data") "google-cloud-credentials-file" }}`,
+        GOOGLE_APPLICATION_CREDENTIALS: secretRef(
+          "google-cloud-credentials-file",
+        ),
         RESTIC_REPOSITORY: `gs:volsync-wf98ys:/${namespace}/${pvc}`,
-        RESTIC_PASSWORD: `{{ get (get .Secrets "data") "restic-password" }}`,
-      },
+        RESTIC_PASSWORD: secretRef("restic-password"),
+      }),
     );
 
     this.replicationSource = new ReplicationSource(
