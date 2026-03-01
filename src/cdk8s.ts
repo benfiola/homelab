@@ -756,6 +756,7 @@ export class BucketSyncPolicy extends Construct {
           opts.secretAccessKey,
         ),
         RCLONE_CONFIG_DESTINATION_ENDPOINT: destination.clusterEndpoint,
+        RCLONE_CONFIG_DESTINATION_REGION: "garage",
       }),
       {
         name: `bucket-sync-policy-${destination.name}`,
