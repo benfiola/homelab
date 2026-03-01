@@ -736,7 +736,7 @@ export class BucketSyncPolicy extends Construct {
     auth: VaultAuth,
     opts: BucketSyncPolicyOpts,
   ) {
-    const id = `${construct.node.id}-bucket-sync-policy`;
+    const id = `${construct.node.id}-bucket-sync-policy-${destination.name}`;
     super(construct, id);
 
     const path = opts.path ?? construct.node.id;
@@ -758,18 +758,18 @@ export class BucketSyncPolicy extends Construct {
         RCLONE_CONFIG_DESTINATION_ENDPOINT: destination.clusterEndpoint,
       }),
       {
-        name: `bucket-sync-policy-${source}-to-${destination.name}`,
+        name: `bucket-sync-policy-${destination.name}`,
         path: path,
       },
     );
 
     new BaseBucketSyncPolicy(construct, `${id}-bucket-sync-policy`, {
       metadata: {
-        name: "test",
+        name: destination.name,
       },
       spec: {
-        source: "test",
-        destination: "test",
+        source: source,
+        destination: destination.name,
         secret: secret.name,
         schedule: "0 * * * *",
         jobLabels: {
