@@ -687,9 +687,7 @@ export class GarageKey extends Construct {
   }
 }
 
-interface GarageBucketOpts {
-  anonymous?: boolean;
-}
+interface GarageBucketOpts {}
 
 export class GarageBucket extends BaseGarageBucket {
   readonly clusterName: string;
@@ -708,14 +706,6 @@ export class GarageBucket extends BaseGarageBucket {
       read: true,
       write: true,
     }));
-
-    if (opts.anonymous) {
-      keyPermissions.push({
-        keyRef: "anonymous",
-        read: true,
-        write: false,
-      });
-    }
 
     super(construct, id, {
       metadata: {

@@ -4,7 +4,6 @@ import {
 } from "../../../assets/garage-operator/garage.rajsingh.info";
 import {
   Chart,
-  GarageKey,
   getSecurityContext,
   Namespace,
   VaultAuth,
@@ -59,11 +58,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
     },
-  });
-
-  new GarageKey(chart, "garage", "anonymous", vaultAuth, {
-    accessKeyId: "anonymous-s3-access-key-id",
-    secretAccessKey: "anonymous-s3-secret-access-key",
   });
 
   new VerticalPodAutoscaler(chart, cluster);
