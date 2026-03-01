@@ -69,7 +69,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   policy("bucket-sync-job-to-garage").allowBetween(
-    pod("bucket-sync-job", "bucket-sync"),
+    pod("bucket-sync-job", "*"),
     pod("garage", "garage"),
     tcp(3900),
   );
