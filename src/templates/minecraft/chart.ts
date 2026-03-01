@@ -23,7 +23,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
     secretAccessKey: "s3-secret-access-key",
   });
 
-  const bucket = new GarageBucket(chart, "garage", id, [key]);
+  const bucket = new GarageBucket(chart, "garage", id, [key], {
+    website: true,
+  });
 
   new BucketSyncPolicy(chart, "minecraft-oigim8", bucket, auth, {
     accessKeyId: "s3-access-key-id",

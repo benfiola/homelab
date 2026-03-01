@@ -687,16 +687,22 @@ export class GarageKey extends Construct {
   }
 }
 
+interface GarageBucketOpts {
+  website?: boolean;
+}
+
 export class GarageBucket extends BaseGarageBucket {
-  readonly clusterEndpoint: string;
+  readonly clusterName: string;
 
   constructor(
     construct: Construct,
     clusterName: GarageClusterName,
     name: string,
     keys: GarageKey[],
+    opts: GarageBucketOpts = {},
   ) {
     const id = `${construct.node.id}-garage-bucket-${clusterName}-${name}`;
+    const website = opts.website ? { enabled: true } : undefined;
 
     const keyPermissions = keys.map((k) => ({
       keyRef: k.name,
@@ -713,11 +719,12 @@ export class GarageBucket extends BaseGarageBucket {
           name: clusterName,
           namespace: "garage",
         },
+        website,
         keyPermissions,
       },
     });
 
-    this.clusterEndpoint = `http://${clusterName}.garage.svc:3900`;
+    this.clusterName = clusterName;
   }
 }
 
@@ -755,7 +762,7 @@ export class BucketSyncPolicy extends Construct {
         RCLONE_CONFIG_DESTINATION_SECRET_ACCESS_KEY: secretRef(
           opts.secretAccessKey,
         ),
-        RCLONE_CONFIG_DESTINATION_ENDPOINT: destination.clusterEndpoint,
+        RCLONE_CONFIG_DESTINATION_ENDPOINT: `http://${destination.clusterName}.garage.svc:3900`,
         RCLONE_CONFIG_DESTINATION_REGION: "garage",
       }),
       {
