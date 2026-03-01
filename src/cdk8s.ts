@@ -666,7 +666,7 @@ export class GarageKey extends Construct {
       auth,
       (secretRef) => ({
         "access-key-id": secretRef(opts.accessKeyId),
-        "secret-key-id": secretRef(opts.secretAccessKey),
+        "secret-access-key": secretRef(opts.secretAccessKey),
       }),
       { name: `garage-key-${clusterName}-${name}`, path: path },
     );
