@@ -688,6 +688,8 @@ export class GarageKey extends Construct {
 }
 
 export class GarageBucket extends BaseGarageBucket {
+  readonly clusterEndpoint: string;
+
   constructor(
     construct: Construct,
     clusterName: GarageClusterName,
@@ -714,10 +716,15 @@ export class GarageBucket extends BaseGarageBucket {
         keyPermissions,
       },
     });
+
+    this.clusterEndpoint = `http://${clusterName}.garage.svc:3900`;
   }
 }
 
 interface BucketSyncPolicyOpts {
+  gcsCredentials: string;
+  accessKeyId: string;
+  secretAccessKey: string;
   path?: string;
 }
 
@@ -737,7 +744,19 @@ export class BucketSyncPolicy extends Construct {
     const secret = new VaultDynamicSecret(
       construct,
       auth,
-      (secretRef) => ({}),
+      (secretRef) => ({
+        RCLONE_CONFIG_SOURCE_TYPE: "googlecloudstorage",
+        RCLONE_CONFIG_SOURCE_SERVICE_ACCOUNT_CREDENTIALS: secretRef(
+          opts.gcsCredentials,
+        ),
+        RCLONE_CONFIG_DESTINATION_TYPE: "s3",
+        RCLONE_CONFIG_DESTINATION_PROVIDER: "Other",
+        RCLONE_CONFIG_DESTINATION_ACCESS_KEY_ID: secretRef(opts.accessKeyId),
+        RCLONE_CONFIG_DESTINATION_SECRET_ACCESS_KEY: secretRef(
+          opts.secretAccessKey,
+        ),
+        RCLONE_CONFIG_DESTINATION_ENDPOINT: destination.clusterEndpoint,
+      }),
       {
         name: `bucket-sync-policy-${source}-${destination.name}`,
         path: path,
