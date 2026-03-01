@@ -771,7 +771,7 @@ export class BucketSyncPolicy extends Construct {
         source: "test",
         destination: "test",
         secret: secret.name,
-        schedule: "@hourly",
+        schedule: "0 * * * *",
         jobLabels: {
           "app.kubernetes.io/name": "bucket-sync-job",
         },
