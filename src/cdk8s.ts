@@ -758,7 +758,7 @@ export class BucketSyncPolicy extends Construct {
         RCLONE_CONFIG_DESTINATION_ENDPOINT: destination.clusterEndpoint,
       }),
       {
-        name: `bucket-sync-policy-${source}-${destination.name}`,
+        name: `bucket-sync-policy-${source}-to-${destination.name}`,
         path: path,
       },
     );

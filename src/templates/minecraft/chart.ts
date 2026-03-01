@@ -1,5 +1,6 @@
 import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
 import {
+  BucketSyncPolicy,
   Chart,
   GarageBucket,
   GarageKey,
@@ -23,6 +24,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const bucket = new GarageBucket(chart, "garage", id, [key]);
+
+  new BucketSyncPolicy(chart, "minecraft-oigim8", bucket, auth, {
+    accessKeyId: "s3-access-key-id",
+    secretAccessKey: "s3-secret-access-key",
+    gcsCredentials: "google-cloud-credentials-file",
+  });
 
   const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
 
