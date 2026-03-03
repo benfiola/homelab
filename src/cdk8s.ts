@@ -674,6 +674,7 @@ export class GarageKey extends Construct {
     const key = new BaseGarageKey(this, `${id}-garage-key`, {
       metadata: {
         name,
+        namespace: "garage",
       },
       spec: {
         clusterRef: { name: clusterName, namespace: "garage" },
@@ -710,6 +711,7 @@ export class GarageBucket extends BaseGarageBucket {
     super(construct, id, {
       metadata: {
         name,
+        namespace: "garage",
       },
       spec: {
         clusterRef: {
@@ -770,6 +772,7 @@ export class BucketSyncPolicy extends Construct {
     new BaseBucketSyncPolicy(construct, `${id}-bucket-sync-policy`, {
       metadata: {
         name: destination.name,
+        namespace: "garage",
       },
       spec: {
         source: source,
