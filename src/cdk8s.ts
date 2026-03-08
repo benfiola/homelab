@@ -903,11 +903,11 @@ export class BucketFrontend extends Deployment {
                     },
                   },
                   {
-                    name: "ENDPOINT",
+                    name: "RCLONE_CONFIG_SOURCE_ENDPOINT",
                     value: `http://${bucket.clusterName}.garage.svc:3900`,
                   },
                   {
-                    name: "REGION",
+                    name: "RCLONE_CONFIG_SOURCE_REGION",
                     value: "garage",
                   },
                 ],
