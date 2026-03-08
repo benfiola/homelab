@@ -30,7 +30,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     {
       name: "minecraft-oigim8",
       secret: secret.name,
-      credentialsKey: " google-cloud-credentials-file",
+      credentialsKey: "google-cloud-credentials-file",
     },
     {
       key,
