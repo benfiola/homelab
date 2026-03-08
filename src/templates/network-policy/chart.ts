@@ -1044,6 +1044,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(25565),
   );
 
+  policy("gateway-trusted-to-bucket-server-minecraft").allowBetween(
+    gateway("trusted"),
+    pod("bucket-server-minecraft", "minecraft"),
+    tcp(8080),
+  );
+
+  policy("gateway-trusted-to-minecraft").allowBetween(
+    gateway("trusted"),
+    pod("minecraft", "minecraft"),
+    tcp(25565),
+  );
+
   policy("gateway-trusted-to-prometheus").allowBetween(
     gateway("trusted"),
     pod("prometheus", "prometheus"),

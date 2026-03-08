@@ -6,10 +6,12 @@ import {
   GarageBucket,
   GarageKey,
   getSecurityContext,
+  HttpRoute,
   Namespace,
   TcpRoute,
   VaultAuth,
   VaultStaticSecret,
+  VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
@@ -42,7 +44,16 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   );
 
-  new BucketServer(chart, bucket, readKey);
+  const bucketServer = new BucketServer(chart, bucket, readKey);
+
+  new VerticalPodAutoscaler(chart, bucketServer);
+
+  const bucketServerService = bucketServer.createService();
+
+  new HttpRoute(chart, "trusted", "assets.minecraft.bulia.dev").match(
+    bucketServerService,
+    80,
+  );
 
   const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
 

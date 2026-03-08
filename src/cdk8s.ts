@@ -22,6 +22,8 @@ import {
 import {
   Namespace as BaseNamespace,
   Deployment,
+  IntOrString,
+  Service,
   ServiceAccount,
 } from "../assets/kubernetes/k8s";
 import {
@@ -917,6 +919,28 @@ export class BucketServer extends Deployment {
             securityContext: securityContext.pod,
           },
         },
+      },
+    });
+  }
+
+  createService() {
+    const construct = this.node.scope;
+    if (!construct) {
+      throw new Error(`construct not found`);
+    }
+    const selector = (this as any).props.spec.template.metadata.labels;
+    return new Service(construct, `${this.node.id}-service`, {
+      metadata: {
+        name: this.name,
+      },
+      spec: {
+        selector,
+        ports: [
+          {
+            port: 80,
+            targetPort: IntOrString.fromString("http"),
+          },
+        ],
       },
     });
   }
