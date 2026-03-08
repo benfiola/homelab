@@ -764,73 +764,72 @@ export class GarageBucket extends BaseGarageBucket {
   }
 }
 
-interface BucketSyncPolicyOpts {
-  gcsCredentials: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  path?: string;
+interface BucketSyncPolicyOpts {}
+
+interface GcsSource {
+  name: string;
+  secret: string;
+  credentialsKey: string;
+}
+
+interface GarageDestination {
+  bucket: GarageBucket;
+  key: GarageKey;
 }
 
 export class BucketSyncPolicy extends Construct {
   constructor(
     construct: Construct,
-    source: string,
-    destination: GarageBucket,
-    auth: VaultAuth,
-    opts: BucketSyncPolicyOpts,
+    source: GcsSource,
+    destination: GarageDestination,
+    opts: BucketSyncPolicyOpts = {},
   ) {
-    const id = `${construct.node.id}-bucket-sync-policy-${destination.name}`;
+    const id = `${construct.node.id}-bucket-sync-policy-${destination.bucket.name}`;
     super(construct, id);
 
-    const path = opts.path ?? construct.node.id;
+    const fromLiteral = (variable: string, value: string) => ({
+      name: variable,
+      value: value,
+    });
 
-    const secret = new VaultDynamicSecret(
-      construct,
-      auth,
-      (secretRef) => ({
-        SOURCE_TYPE: "googlecloudstorage",
-        SOURCE_SERVICE_ACCOUNT_CREDENTIALS: secretRef(opts.gcsCredentials),
-        DESTINATION_TYPE: "s3",
-        DESTINATION_PROVIDER: "Other",
-        DESTINATION_ACCESS_KEY_ID: secretRef(opts.accessKeyId),
-        DESTINATION_SECRET_ACCESS_KEY: secretRef(opts.secretAccessKey),
-        DESTINATION_ENDPOINT: `http://${destination.clusterName}.garage.svc:3900`,
-        DESTINATION_REGION: "garage",
-      }),
-      {
-        name: `bucket-sync-policy-${destination.name}`,
-        path: path,
-      },
-    );
-
-    const fromSecret = (field: string) => ({
-      name: field.replace("DESTINATION_", "").replace("SOURCE_", ""),
-      valueFrom: {
-        secretKeyRef: {
-          key: field,
-          name: secret.name,
-        },
-      },
+    const fromSecret = (variable: string, secret: string, field: string) => ({
+      name: variable,
+      valueFrom: { secretKeyRef: { name: secret, key: field } },
     });
 
     new BaseBucketSyncPolicy(construct, `${id}-bucket-sync-policy`, {
       metadata: {
-        name: destination.name,
+        name: destination.bucket.name,
       },
       spec: {
-        source: source,
+        source: source.name,
         sourceEnv: [
-          fromSecret("SOURCE_TYPE"),
-          fromSecret("SOURCE_SERVICE_ACCOUNT_CREDENTIALS"),
+          fromLiteral("TYPE", "googlecloudstorage"),
+          fromSecret(
+            "SERVICE_ACCOUNT_CREDENTIALS",
+            source.secret,
+            source.credentialsKey,
+          ),
         ],
-        destination: destination.name,
+        destination: destination.bucket.name,
         destinationEnv: [
-          fromSecret("DESTINATION_TYPE"),
-          fromSecret("DESTINATION_PROVIDER"),
-          fromSecret("DESTINATION_ACCESS_KEY_ID"),
-          fromSecret("DESTINATION_SECRET_ACCESS_KEY"),
-          fromSecret("DESTINATION_ENDPOINT"),
-          fromSecret("DESTINATION_REGION"),
+          fromLiteral("TYPE", "s3"),
+          fromLiteral("PROVIDER", "other"),
+          fromSecret(
+            "ACCESS_KEY_ID",
+            destination.key.secret,
+            destination.key.accessKeyIdKey,
+          ),
+          fromSecret(
+            "SECRET_ACCESS_KEY",
+            destination.key.secret,
+            destination.key.secretAccessKeyKey,
+          ),
+          fromLiteral(
+            "ENDPOINT",
+            `http://${destination.bucket.clusterName}.garage.svc:3900`,
+          ),
+          fromLiteral("REGION", "garage"),
         ],
         schedule: "0 * * * *",
         syncHistoryLimit: 5,
