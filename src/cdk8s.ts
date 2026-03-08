@@ -840,6 +840,7 @@ export class BucketSyncPolicy extends Construct {
           fromSecret("DESTINATION_REGION"),
         ],
         schedule: "0 * * * *",
+        syncHistoryLimit: 5,
         jobLabels: {
           "app.kubernetes.io/name": "bucket-sync-job",
         },
