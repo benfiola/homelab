@@ -748,18 +748,14 @@ export class BucketSyncPolicy extends Construct {
       construct,
       auth,
       (secretRef) => ({
-        RCLONE_CONFIG_SOURCE_TYPE: "googlecloudstorage",
-        RCLONE_CONFIG_SOURCE_SERVICE_ACCOUNT_CREDENTIALS: secretRef(
-          opts.gcsCredentials,
-        ),
-        RCLONE_CONFIG_DESTINATION_TYPE: "s3",
-        RCLONE_CONFIG_DESTINATION_PROVIDER: "Other",
-        RCLONE_CONFIG_DESTINATION_ACCESS_KEY_ID: secretRef(opts.accessKeyId),
-        RCLONE_CONFIG_DESTINATION_SECRET_ACCESS_KEY: secretRef(
-          opts.secretAccessKey,
-        ),
-        RCLONE_CONFIG_DESTINATION_ENDPOINT: `http://${destination.clusterName}.garage.svc:3900`,
-        RCLONE_CONFIG_DESTINATION_REGION: "garage",
+        SOURCE_TYPE: "googlecloudstorage",
+        SOURCE_SERVICE_ACCOUNT_CREDENTIALS: secretRef(opts.gcsCredentials),
+        DESTINATION_TYPE: "s3",
+        DESTINATION_PROVIDER: "Other",
+        DESTINATION_ACCESS_KEY_ID: secretRef(opts.accessKeyId),
+        DESTINATION_SECRET_ACCESS_KEY: secretRef(opts.secretAccessKey),
+        DESTINATION_ENDPOINT: `http://${destination.clusterName}.garage.svc:3900`,
+        DESTINATION_REGION: "garage",
       }),
       {
         name: `bucket-sync-policy-${destination.name}`,
@@ -767,14 +763,35 @@ export class BucketSyncPolicy extends Construct {
       },
     );
 
+    const fromSecret = (field: string) => ({
+      name: field.replace("DESTINATION_", "").replace("SOURCE_", ""),
+      valueFrom: {
+        secretKeyRef: {
+          key: field,
+          name: secret.name,
+        },
+      },
+    });
+
     new BaseBucketSyncPolicy(construct, `${id}-bucket-sync-policy`, {
       metadata: {
         name: destination.name,
       },
       spec: {
         source: source,
+        sourceEnv: [
+          fromSecret("SOURCE_TYPE"),
+          fromSecret("SOURCE_SERVICE_ACCOUNT_CREDENTIALS"),
+        ],
         destination: destination.name,
-        secret: secret.name,
+        destinationEnv: [
+          fromSecret("DESTINATION_TYPE"),
+          fromSecret("DESTINATION_PROVIDER"),
+          fromSecret("DESTINATION_ACCESS_KEY_ID"),
+          fromSecret("DESTINATION_SECRET_ACCESS_KEY"),
+          fromSecret("DESTINATION_ENDPOINT"),
+          fromSecret("DESTINATION_REGION"),
+        ],
         schedule: "0 * * * *",
         jobLabels: {
           "app.kubernetes.io/name": "bucket-sync-job",

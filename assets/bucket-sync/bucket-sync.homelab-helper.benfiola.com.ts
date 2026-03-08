@@ -97,19 +97,29 @@ export interface BucketSyncSpec {
   readonly destination: string;
 
   /**
+   * @schema BucketSyncSpec#destinationEnv
+   */
+  readonly destinationEnv?: BucketSyncSpecDestinationEnv[];
+
+  /**
    * @schema BucketSyncSpec#jobLabels
    */
   readonly jobLabels?: { [key: string]: string };
 
   /**
-   * @schema BucketSyncSpec#secret
+   * @schema BucketSyncSpec#policy
    */
-  readonly secret: string;
+  readonly policy?: string;
 
   /**
    * @schema BucketSyncSpec#source
    */
   readonly source: string;
+
+  /**
+   * @schema BucketSyncSpec#sourceEnv
+   */
+  readonly sourceEnv?: BucketSyncSpecSourceEnv[];
 }
 
 /**
@@ -120,14 +130,762 @@ export function toJson_BucketSyncSpec(obj: BucketSyncSpec | undefined): Record<s
   if (obj === undefined) { return undefined; }
   const result = {
     'destination': obj.destination,
+    'destinationEnv': obj.destinationEnv?.map(y => toJson_BucketSyncSpecDestinationEnv(y)),
     'jobLabels': ((obj.jobLabels) === undefined) ? undefined : (Object.entries(obj.jobLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-    'secret': obj.secret,
+    'policy': obj.policy,
     'source': obj.source,
+    'sourceEnv': obj.sourceEnv?.map(y => toJson_BucketSyncSpecSourceEnv(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * EnvVar represents an environment variable present in a Container.
+ *
+ * @schema BucketSyncSpecDestinationEnv
+ */
+export interface BucketSyncSpecDestinationEnv {
+  /**
+   * Name of the environment variable.
+   * May consist of any printable ASCII characters except '='.
+   *
+   * @schema BucketSyncSpecDestinationEnv#name
+   */
+  readonly name: string;
+
+  /**
+   * Variable references $(VAR_NAME) are expanded
+   * using the previously defined environment variables in the container and
+   * any service environment variables. If a variable cannot be resolved,
+   * the reference in the input string will be unchanged. Double $$ are reduced
+   * to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+   * "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+   * Escaped references will never be expanded, regardless of whether the variable
+   * exists or not.
+   * Defaults to "".
+   *
+   * @default .
+   * @schema BucketSyncSpecDestinationEnv#value
+   */
+  readonly value?: string;
+
+  /**
+   * Source for the environment variable's value. Cannot be used if value is not empty.
+   *
+   * @schema BucketSyncSpecDestinationEnv#valueFrom
+   */
+  readonly valueFrom?: BucketSyncSpecDestinationEnvValueFrom;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnv' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnv(obj: BucketSyncSpecDestinationEnv | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+    'valueFrom': toJson_BucketSyncSpecDestinationEnvValueFrom(obj.valueFrom),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * EnvVar represents an environment variable present in a Container.
+ *
+ * @schema BucketSyncSpecSourceEnv
+ */
+export interface BucketSyncSpecSourceEnv {
+  /**
+   * Name of the environment variable.
+   * May consist of any printable ASCII characters except '='.
+   *
+   * @schema BucketSyncSpecSourceEnv#name
+   */
+  readonly name: string;
+
+  /**
+   * Variable references $(VAR_NAME) are expanded
+   * using the previously defined environment variables in the container and
+   * any service environment variables. If a variable cannot be resolved,
+   * the reference in the input string will be unchanged. Double $$ are reduced
+   * to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+   * "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+   * Escaped references will never be expanded, regardless of whether the variable
+   * exists or not.
+   * Defaults to "".
+   *
+   * @default .
+   * @schema BucketSyncSpecSourceEnv#value
+   */
+  readonly value?: string;
+
+  /**
+   * Source for the environment variable's value. Cannot be used if value is not empty.
+   *
+   * @schema BucketSyncSpecSourceEnv#valueFrom
+   */
+  readonly valueFrom?: BucketSyncSpecSourceEnvValueFrom;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnv' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnv(obj: BucketSyncSpecSourceEnv | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+    'valueFrom': toJson_BucketSyncSpecSourceEnvValueFrom(obj.valueFrom),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Source for the environment variable's value. Cannot be used if value is not empty.
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFrom
+ */
+export interface BucketSyncSpecDestinationEnvValueFrom {
+  /**
+   * Selects a key of a ConfigMap.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFrom#configMapKeyRef
+   */
+  readonly configMapKeyRef?: BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef;
+
+  /**
+   * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+   * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFrom#fieldRef
+   */
+  readonly fieldRef?: BucketSyncSpecDestinationEnvValueFromFieldRef;
+
+  /**
+   * FileKeyRef selects a key of the env file.
+   * Requires the EnvFiles feature gate to be enabled.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFrom#fileKeyRef
+   */
+  readonly fileKeyRef?: BucketSyncSpecDestinationEnvValueFromFileKeyRef;
+
+  /**
+   * Selects a resource of the container: only resources limits and requests
+   * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFrom#resourceFieldRef
+   */
+  readonly resourceFieldRef?: BucketSyncSpecDestinationEnvValueFromResourceFieldRef;
+
+  /**
+   * Selects a key of a secret in the pod's namespace
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFrom#secretKeyRef
+   */
+  readonly secretKeyRef?: BucketSyncSpecDestinationEnvValueFromSecretKeyRef;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnvValueFrom' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnvValueFrom(obj: BucketSyncSpecDestinationEnvValueFrom | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'configMapKeyRef': toJson_BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef(obj.configMapKeyRef),
+    'fieldRef': toJson_BucketSyncSpecDestinationEnvValueFromFieldRef(obj.fieldRef),
+    'fileKeyRef': toJson_BucketSyncSpecDestinationEnvValueFromFileKeyRef(obj.fileKeyRef),
+    'resourceFieldRef': toJson_BucketSyncSpecDestinationEnvValueFromResourceFieldRef(obj.resourceFieldRef),
+    'secretKeyRef': toJson_BucketSyncSpecDestinationEnvValueFromSecretKeyRef(obj.secretKeyRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Source for the environment variable's value. Cannot be used if value is not empty.
+ *
+ * @schema BucketSyncSpecSourceEnvValueFrom
+ */
+export interface BucketSyncSpecSourceEnvValueFrom {
+  /**
+   * Selects a key of a ConfigMap.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFrom#configMapKeyRef
+   */
+  readonly configMapKeyRef?: BucketSyncSpecSourceEnvValueFromConfigMapKeyRef;
+
+  /**
+   * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+   * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFrom#fieldRef
+   */
+  readonly fieldRef?: BucketSyncSpecSourceEnvValueFromFieldRef;
+
+  /**
+   * FileKeyRef selects a key of the env file.
+   * Requires the EnvFiles feature gate to be enabled.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFrom#fileKeyRef
+   */
+  readonly fileKeyRef?: BucketSyncSpecSourceEnvValueFromFileKeyRef;
+
+  /**
+   * Selects a resource of the container: only resources limits and requests
+   * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFrom#resourceFieldRef
+   */
+  readonly resourceFieldRef?: BucketSyncSpecSourceEnvValueFromResourceFieldRef;
+
+  /**
+   * Selects a key of a secret in the pod's namespace
+   *
+   * @schema BucketSyncSpecSourceEnvValueFrom#secretKeyRef
+   */
+  readonly secretKeyRef?: BucketSyncSpecSourceEnvValueFromSecretKeyRef;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnvValueFrom' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnvValueFrom(obj: BucketSyncSpecSourceEnvValueFrom | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'configMapKeyRef': toJson_BucketSyncSpecSourceEnvValueFromConfigMapKeyRef(obj.configMapKeyRef),
+    'fieldRef': toJson_BucketSyncSpecSourceEnvValueFromFieldRef(obj.fieldRef),
+    'fileKeyRef': toJson_BucketSyncSpecSourceEnvValueFromFileKeyRef(obj.fileKeyRef),
+    'resourceFieldRef': toJson_BucketSyncSpecSourceEnvValueFromResourceFieldRef(obj.resourceFieldRef),
+    'secretKeyRef': toJson_BucketSyncSpecSourceEnvValueFromSecretKeyRef(obj.secretKeyRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a ConfigMap.
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef
+ */
+export interface BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef {
+  /**
+   * The key to select.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the ConfigMap or its key must be defined
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef(obj: BucketSyncSpecDestinationEnvValueFromConfigMapKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+ * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFromFieldRef
+ */
+export interface BucketSyncSpecDestinationEnvValueFromFieldRef {
+  /**
+   * Version of the schema the FieldPath is written in terms of, defaults to "v1".
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromFieldRef#apiVersion
+   */
+  readonly apiVersion?: string;
+
+  /**
+   * Path of the field to select in the specified API version.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromFieldRef#fieldPath
+   */
+  readonly fieldPath: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnvValueFromFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnvValueFromFieldRef(obj: BucketSyncSpecDestinationEnvValueFromFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'apiVersion': obj.apiVersion,
+    'fieldPath': obj.fieldPath,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FileKeyRef selects a key of the env file.
+ * Requires the EnvFiles feature gate to be enabled.
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFromFileKeyRef
+ */
+export interface BucketSyncSpecDestinationEnvValueFromFileKeyRef {
+  /**
+   * The key within the env file. An invalid key will prevent the pod from starting.
+   * The keys defined within a source may consist of any printable ASCII characters except '='.
+   * During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromFileKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Specify whether the file or its key must be defined. If the file or key
+   * does not exist, then the env var is not published.
+   * If optional is set to true and the specified key does not exist,
+   * the environment variable will not be set in the Pod's containers.
+   *
+   * If optional is set to false and the specified key does not exist,
+   * an error will be returned during Pod creation.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromFileKeyRef#optional
+   */
+  readonly optional?: boolean;
+
+  /**
+   * The path within the volume from which to select the file.
+   * Must be relative and may not contain the '..' path or start with '..'.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromFileKeyRef#path
+   */
+  readonly path: string;
+
+  /**
+   * The name of the volume mount containing the env file.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromFileKeyRef#volumeName
+   */
+  readonly volumeName: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnvValueFromFileKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnvValueFromFileKeyRef(obj: BucketSyncSpecDestinationEnvValueFromFileKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'optional': obj.optional,
+    'path': obj.path,
+    'volumeName': obj.volumeName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a resource of the container: only resources limits and requests
+ * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFromResourceFieldRef
+ */
+export interface BucketSyncSpecDestinationEnvValueFromResourceFieldRef {
+  /**
+   * Container name: required for volumes, optional for env vars
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromResourceFieldRef#containerName
+   */
+  readonly containerName?: string;
+
+  /**
+   * Specifies the output format of the exposed resources, defaults to "1"
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromResourceFieldRef#divisor
+   */
+  readonly divisor?: BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor;
+
+  /**
+   * Required: resource to select
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromResourceFieldRef#resource
+   */
+  readonly resource: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnvValueFromResourceFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnvValueFromResourceFieldRef(obj: BucketSyncSpecDestinationEnvValueFromResourceFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'containerName': obj.containerName,
+    'divisor': obj.divisor?.value,
+    'resource': obj.resource,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a secret in the pod's namespace
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFromSecretKeyRef
+ */
+export interface BucketSyncSpecDestinationEnvValueFromSecretKeyRef {
+  /**
+   * The key of the secret to select from.  Must be a valid secret key.
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromSecretKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromSecretKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the Secret or its key must be defined
+   *
+   * @schema BucketSyncSpecDestinationEnvValueFromSecretKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecDestinationEnvValueFromSecretKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecDestinationEnvValueFromSecretKeyRef(obj: BucketSyncSpecDestinationEnvValueFromSecretKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a ConfigMap.
+ *
+ * @schema BucketSyncSpecSourceEnvValueFromConfigMapKeyRef
+ */
+export interface BucketSyncSpecSourceEnvValueFromConfigMapKeyRef {
+  /**
+   * The key to select.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromConfigMapKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromConfigMapKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the ConfigMap or its key must be defined
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromConfigMapKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnvValueFromConfigMapKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnvValueFromConfigMapKeyRef(obj: BucketSyncSpecSourceEnvValueFromConfigMapKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+ * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+ *
+ * @schema BucketSyncSpecSourceEnvValueFromFieldRef
+ */
+export interface BucketSyncSpecSourceEnvValueFromFieldRef {
+  /**
+   * Version of the schema the FieldPath is written in terms of, defaults to "v1".
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromFieldRef#apiVersion
+   */
+  readonly apiVersion?: string;
+
+  /**
+   * Path of the field to select in the specified API version.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromFieldRef#fieldPath
+   */
+  readonly fieldPath: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnvValueFromFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnvValueFromFieldRef(obj: BucketSyncSpecSourceEnvValueFromFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'apiVersion': obj.apiVersion,
+    'fieldPath': obj.fieldPath,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FileKeyRef selects a key of the env file.
+ * Requires the EnvFiles feature gate to be enabled.
+ *
+ * @schema BucketSyncSpecSourceEnvValueFromFileKeyRef
+ */
+export interface BucketSyncSpecSourceEnvValueFromFileKeyRef {
+  /**
+   * The key within the env file. An invalid key will prevent the pod from starting.
+   * The keys defined within a source may consist of any printable ASCII characters except '='.
+   * During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromFileKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Specify whether the file or its key must be defined. If the file or key
+   * does not exist, then the env var is not published.
+   * If optional is set to true and the specified key does not exist,
+   * the environment variable will not be set in the Pod's containers.
+   *
+   * If optional is set to false and the specified key does not exist,
+   * an error will be returned during Pod creation.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromFileKeyRef#optional
+   */
+  readonly optional?: boolean;
+
+  /**
+   * The path within the volume from which to select the file.
+   * Must be relative and may not contain the '..' path or start with '..'.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromFileKeyRef#path
+   */
+  readonly path: string;
+
+  /**
+   * The name of the volume mount containing the env file.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromFileKeyRef#volumeName
+   */
+  readonly volumeName: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnvValueFromFileKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnvValueFromFileKeyRef(obj: BucketSyncSpecSourceEnvValueFromFileKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'optional': obj.optional,
+    'path': obj.path,
+    'volumeName': obj.volumeName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a resource of the container: only resources limits and requests
+ * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+ *
+ * @schema BucketSyncSpecSourceEnvValueFromResourceFieldRef
+ */
+export interface BucketSyncSpecSourceEnvValueFromResourceFieldRef {
+  /**
+   * Container name: required for volumes, optional for env vars
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromResourceFieldRef#containerName
+   */
+  readonly containerName?: string;
+
+  /**
+   * Specifies the output format of the exposed resources, defaults to "1"
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromResourceFieldRef#divisor
+   */
+  readonly divisor?: BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor;
+
+  /**
+   * Required: resource to select
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromResourceFieldRef#resource
+   */
+  readonly resource: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnvValueFromResourceFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnvValueFromResourceFieldRef(obj: BucketSyncSpecSourceEnvValueFromResourceFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'containerName': obj.containerName,
+    'divisor': obj.divisor?.value,
+    'resource': obj.resource,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a secret in the pod's namespace
+ *
+ * @schema BucketSyncSpecSourceEnvValueFromSecretKeyRef
+ */
+export interface BucketSyncSpecSourceEnvValueFromSecretKeyRef {
+  /**
+   * The key of the secret to select from.  Must be a valid secret key.
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromSecretKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromSecretKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the Secret or its key must be defined
+   *
+   * @schema BucketSyncSpecSourceEnvValueFromSecretKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncSpecSourceEnvValueFromSecretKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncSpecSourceEnvValueFromSecretKeyRef(obj: BucketSyncSpecSourceEnvValueFromSecretKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Specifies the output format of the exposed resources, defaults to "1"
+ *
+ * @schema BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor
+ */
+export class BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor {
+  public static fromNumber(value: number): BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor(value);
+  }
+  public static fromString(value: string): BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncSpecDestinationEnvValueFromResourceFieldRefDivisor(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
+
+/**
+ * Specifies the output format of the exposed resources, defaults to "1"
+ *
+ * @schema BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor
+ */
+export class BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor {
+  public static fromNumber(value: number): BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor(value);
+  }
+  public static fromString(value: string): BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncSpecSourceEnvValueFromResourceFieldRefDivisor(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
 
 
 /**
@@ -224,6 +982,11 @@ export interface BucketSyncPolicySpec {
   readonly destination: string;
 
   /**
+   * @schema BucketSyncPolicySpec#destinationEnv
+   */
+  readonly destinationEnv?: BucketSyncPolicySpecDestinationEnv[];
+
+  /**
    * @schema BucketSyncPolicySpec#jobLabels
    */
   readonly jobLabels?: { [key: string]: string };
@@ -234,14 +997,19 @@ export interface BucketSyncPolicySpec {
   readonly schedule: string;
 
   /**
-   * @schema BucketSyncPolicySpec#secret
-   */
-  readonly secret: string;
-
-  /**
    * @schema BucketSyncPolicySpec#source
    */
   readonly source: string;
+
+  /**
+   * @schema BucketSyncPolicySpec#sourceEnv
+   */
+  readonly sourceEnv?: BucketSyncPolicySpecSourceEnv[];
+
+  /**
+   * @schema BucketSyncPolicySpec#syncHistoryLimit
+   */
+  readonly syncHistoryLimit?: number;
 }
 
 /**
@@ -252,13 +1020,761 @@ export function toJson_BucketSyncPolicySpec(obj: BucketSyncPolicySpec | undefine
   if (obj === undefined) { return undefined; }
   const result = {
     'destination': obj.destination,
+    'destinationEnv': obj.destinationEnv?.map(y => toJson_BucketSyncPolicySpecDestinationEnv(y)),
     'jobLabels': ((obj.jobLabels) === undefined) ? undefined : (Object.entries(obj.jobLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'schedule': obj.schedule,
-    'secret': obj.secret,
     'source': obj.source,
+    'sourceEnv': obj.sourceEnv?.map(y => toJson_BucketSyncPolicySpecSourceEnv(y)),
+    'syncHistoryLimit': obj.syncHistoryLimit,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * EnvVar represents an environment variable present in a Container.
+ *
+ * @schema BucketSyncPolicySpecDestinationEnv
+ */
+export interface BucketSyncPolicySpecDestinationEnv {
+  /**
+   * Name of the environment variable.
+   * May consist of any printable ASCII characters except '='.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnv#name
+   */
+  readonly name: string;
+
+  /**
+   * Variable references $(VAR_NAME) are expanded
+   * using the previously defined environment variables in the container and
+   * any service environment variables. If a variable cannot be resolved,
+   * the reference in the input string will be unchanged. Double $$ are reduced
+   * to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+   * "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+   * Escaped references will never be expanded, regardless of whether the variable
+   * exists or not.
+   * Defaults to "".
+   *
+   * @default .
+   * @schema BucketSyncPolicySpecDestinationEnv#value
+   */
+  readonly value?: string;
+
+  /**
+   * Source for the environment variable's value. Cannot be used if value is not empty.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnv#valueFrom
+   */
+  readonly valueFrom?: BucketSyncPolicySpecDestinationEnvValueFrom;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnv' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnv(obj: BucketSyncPolicySpecDestinationEnv | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+    'valueFrom': toJson_BucketSyncPolicySpecDestinationEnvValueFrom(obj.valueFrom),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * EnvVar represents an environment variable present in a Container.
+ *
+ * @schema BucketSyncPolicySpecSourceEnv
+ */
+export interface BucketSyncPolicySpecSourceEnv {
+  /**
+   * Name of the environment variable.
+   * May consist of any printable ASCII characters except '='.
+   *
+   * @schema BucketSyncPolicySpecSourceEnv#name
+   */
+  readonly name: string;
+
+  /**
+   * Variable references $(VAR_NAME) are expanded
+   * using the previously defined environment variables in the container and
+   * any service environment variables. If a variable cannot be resolved,
+   * the reference in the input string will be unchanged. Double $$ are reduced
+   * to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+   * "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+   * Escaped references will never be expanded, regardless of whether the variable
+   * exists or not.
+   * Defaults to "".
+   *
+   * @default .
+   * @schema BucketSyncPolicySpecSourceEnv#value
+   */
+  readonly value?: string;
+
+  /**
+   * Source for the environment variable's value. Cannot be used if value is not empty.
+   *
+   * @schema BucketSyncPolicySpecSourceEnv#valueFrom
+   */
+  readonly valueFrom?: BucketSyncPolicySpecSourceEnvValueFrom;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnv' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnv(obj: BucketSyncPolicySpecSourceEnv | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+    'valueFrom': toJson_BucketSyncPolicySpecSourceEnvValueFrom(obj.valueFrom),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Source for the environment variable's value. Cannot be used if value is not empty.
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFrom
+ */
+export interface BucketSyncPolicySpecDestinationEnvValueFrom {
+  /**
+   * Selects a key of a ConfigMap.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFrom#configMapKeyRef
+   */
+  readonly configMapKeyRef?: BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef;
+
+  /**
+   * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+   * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFrom#fieldRef
+   */
+  readonly fieldRef?: BucketSyncPolicySpecDestinationEnvValueFromFieldRef;
+
+  /**
+   * FileKeyRef selects a key of the env file.
+   * Requires the EnvFiles feature gate to be enabled.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFrom#fileKeyRef
+   */
+  readonly fileKeyRef?: BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef;
+
+  /**
+   * Selects a resource of the container: only resources limits and requests
+   * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFrom#resourceFieldRef
+   */
+  readonly resourceFieldRef?: BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef;
+
+  /**
+   * Selects a key of a secret in the pod's namespace
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFrom#secretKeyRef
+   */
+  readonly secretKeyRef?: BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnvValueFrom' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnvValueFrom(obj: BucketSyncPolicySpecDestinationEnvValueFrom | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'configMapKeyRef': toJson_BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef(obj.configMapKeyRef),
+    'fieldRef': toJson_BucketSyncPolicySpecDestinationEnvValueFromFieldRef(obj.fieldRef),
+    'fileKeyRef': toJson_BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef(obj.fileKeyRef),
+    'resourceFieldRef': toJson_BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef(obj.resourceFieldRef),
+    'secretKeyRef': toJson_BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef(obj.secretKeyRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Source for the environment variable's value. Cannot be used if value is not empty.
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFrom
+ */
+export interface BucketSyncPolicySpecSourceEnvValueFrom {
+  /**
+   * Selects a key of a ConfigMap.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFrom#configMapKeyRef
+   */
+  readonly configMapKeyRef?: BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef;
+
+  /**
+   * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+   * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFrom#fieldRef
+   */
+  readonly fieldRef?: BucketSyncPolicySpecSourceEnvValueFromFieldRef;
+
+  /**
+   * FileKeyRef selects a key of the env file.
+   * Requires the EnvFiles feature gate to be enabled.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFrom#fileKeyRef
+   */
+  readonly fileKeyRef?: BucketSyncPolicySpecSourceEnvValueFromFileKeyRef;
+
+  /**
+   * Selects a resource of the container: only resources limits and requests
+   * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFrom#resourceFieldRef
+   */
+  readonly resourceFieldRef?: BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef;
+
+  /**
+   * Selects a key of a secret in the pod's namespace
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFrom#secretKeyRef
+   */
+  readonly secretKeyRef?: BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnvValueFrom' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnvValueFrom(obj: BucketSyncPolicySpecSourceEnvValueFrom | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'configMapKeyRef': toJson_BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef(obj.configMapKeyRef),
+    'fieldRef': toJson_BucketSyncPolicySpecSourceEnvValueFromFieldRef(obj.fieldRef),
+    'fileKeyRef': toJson_BucketSyncPolicySpecSourceEnvValueFromFileKeyRef(obj.fileKeyRef),
+    'resourceFieldRef': toJson_BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef(obj.resourceFieldRef),
+    'secretKeyRef': toJson_BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef(obj.secretKeyRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a ConfigMap.
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef
+ */
+export interface BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef {
+  /**
+   * The key to select.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the ConfigMap or its key must be defined
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef(obj: BucketSyncPolicySpecDestinationEnvValueFromConfigMapKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+ * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFromFieldRef
+ */
+export interface BucketSyncPolicySpecDestinationEnvValueFromFieldRef {
+  /**
+   * Version of the schema the FieldPath is written in terms of, defaults to "v1".
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromFieldRef#apiVersion
+   */
+  readonly apiVersion?: string;
+
+  /**
+   * Path of the field to select in the specified API version.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromFieldRef#fieldPath
+   */
+  readonly fieldPath: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnvValueFromFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnvValueFromFieldRef(obj: BucketSyncPolicySpecDestinationEnvValueFromFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'apiVersion': obj.apiVersion,
+    'fieldPath': obj.fieldPath,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FileKeyRef selects a key of the env file.
+ * Requires the EnvFiles feature gate to be enabled.
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef
+ */
+export interface BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef {
+  /**
+   * The key within the env file. An invalid key will prevent the pod from starting.
+   * The keys defined within a source may consist of any printable ASCII characters except '='.
+   * During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Specify whether the file or its key must be defined. If the file or key
+   * does not exist, then the env var is not published.
+   * If optional is set to true and the specified key does not exist,
+   * the environment variable will not be set in the Pod's containers.
+   *
+   * If optional is set to false and the specified key does not exist,
+   * an error will be returned during Pod creation.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef#optional
+   */
+  readonly optional?: boolean;
+
+  /**
+   * The path within the volume from which to select the file.
+   * Must be relative and may not contain the '..' path or start with '..'.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef#path
+   */
+  readonly path: string;
+
+  /**
+   * The name of the volume mount containing the env file.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef#volumeName
+   */
+  readonly volumeName: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef(obj: BucketSyncPolicySpecDestinationEnvValueFromFileKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'optional': obj.optional,
+    'path': obj.path,
+    'volumeName': obj.volumeName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a resource of the container: only resources limits and requests
+ * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef
+ */
+export interface BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef {
+  /**
+   * Container name: required for volumes, optional for env vars
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef#containerName
+   */
+  readonly containerName?: string;
+
+  /**
+   * Specifies the output format of the exposed resources, defaults to "1"
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef#divisor
+   */
+  readonly divisor?: BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor;
+
+  /**
+   * Required: resource to select
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef#resource
+   */
+  readonly resource: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef(obj: BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'containerName': obj.containerName,
+    'divisor': obj.divisor?.value,
+    'resource': obj.resource,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a secret in the pod's namespace
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef
+ */
+export interface BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef {
+  /**
+   * The key of the secret to select from.  Must be a valid secret key.
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the Secret or its key must be defined
+   *
+   * @schema BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef(obj: BucketSyncPolicySpecDestinationEnvValueFromSecretKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a ConfigMap.
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef
+ */
+export interface BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef {
+  /**
+   * The key to select.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the ConfigMap or its key must be defined
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef(obj: BucketSyncPolicySpecSourceEnvValueFromConfigMapKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+ * spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFromFieldRef
+ */
+export interface BucketSyncPolicySpecSourceEnvValueFromFieldRef {
+  /**
+   * Version of the schema the FieldPath is written in terms of, defaults to "v1".
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromFieldRef#apiVersion
+   */
+  readonly apiVersion?: string;
+
+  /**
+   * Path of the field to select in the specified API version.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromFieldRef#fieldPath
+   */
+  readonly fieldPath: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnvValueFromFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnvValueFromFieldRef(obj: BucketSyncPolicySpecSourceEnvValueFromFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'apiVersion': obj.apiVersion,
+    'fieldPath': obj.fieldPath,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FileKeyRef selects a key of the env file.
+ * Requires the EnvFiles feature gate to be enabled.
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFromFileKeyRef
+ */
+export interface BucketSyncPolicySpecSourceEnvValueFromFileKeyRef {
+  /**
+   * The key within the env file. An invalid key will prevent the pod from starting.
+   * The keys defined within a source may consist of any printable ASCII characters except '='.
+   * During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromFileKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Specify whether the file or its key must be defined. If the file or key
+   * does not exist, then the env var is not published.
+   * If optional is set to true and the specified key does not exist,
+   * the environment variable will not be set in the Pod's containers.
+   *
+   * If optional is set to false and the specified key does not exist,
+   * an error will be returned during Pod creation.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromFileKeyRef#optional
+   */
+  readonly optional?: boolean;
+
+  /**
+   * The path within the volume from which to select the file.
+   * Must be relative and may not contain the '..' path or start with '..'.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromFileKeyRef#path
+   */
+  readonly path: string;
+
+  /**
+   * The name of the volume mount containing the env file.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromFileKeyRef#volumeName
+   */
+  readonly volumeName: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnvValueFromFileKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnvValueFromFileKeyRef(obj: BucketSyncPolicySpecSourceEnvValueFromFileKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'optional': obj.optional,
+    'path': obj.path,
+    'volumeName': obj.volumeName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a resource of the container: only resources limits and requests
+ * (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef
+ */
+export interface BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef {
+  /**
+   * Container name: required for volumes, optional for env vars
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef#containerName
+   */
+  readonly containerName?: string;
+
+  /**
+   * Specifies the output format of the exposed resources, defaults to "1"
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef#divisor
+   */
+  readonly divisor?: BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor;
+
+  /**
+   * Required: resource to select
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef#resource
+   */
+  readonly resource: string;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef(obj: BucketSyncPolicySpecSourceEnvValueFromResourceFieldRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'containerName': obj.containerName,
+    'divisor': obj.divisor?.value,
+    'resource': obj.resource,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Selects a key of a secret in the pod's namespace
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef
+ */
+export interface BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef {
+  /**
+   * The key of the secret to select from.  Must be a valid secret key.
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Name of the referent.
+   * This field is effectively required, but due to backwards compatibility is
+   * allowed to be empty. Instances of this type with an empty value here are
+   * almost certainly wrong.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef#name
+   */
+  readonly name?: string;
+
+  /**
+   * Specify whether the Secret or its key must be defined
+   *
+   * @schema BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef#optional
+   */
+  readonly optional?: boolean;
+}
+
+/**
+ * Converts an object of type 'BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef(obj: BucketSyncPolicySpecSourceEnvValueFromSecretKeyRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'name': obj.name,
+    'optional': obj.optional,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Specifies the output format of the exposed resources, defaults to "1"
+ *
+ * @schema BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor
+ */
+export class BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor {
+  public static fromNumber(value: number): BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor(value);
+  }
+  public static fromString(value: string): BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncPolicySpecDestinationEnvValueFromResourceFieldRefDivisor(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
+
+/**
+ * Specifies the output format of the exposed resources, defaults to "1"
+ *
+ * @schema BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor
+ */
+export class BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor {
+  public static fromNumber(value: number): BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor(value);
+  }
+  public static fromString(value: string): BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor {
+    return new BucketSyncPolicySpecSourceEnvValueFromResourceFieldRefDivisor(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
 
