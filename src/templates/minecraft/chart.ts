@@ -1,6 +1,6 @@
 import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
 import {
-  BucketFrontend,
+  BucketServer,
   BucketSyncPolicy,
   Chart,
   GarageBucket,
@@ -42,7 +42,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   );
 
-  new BucketFrontend(chart, bucket, readKey);
+  new BucketServer(chart, bucket, readKey);
 
   const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
 

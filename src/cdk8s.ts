@@ -842,10 +842,10 @@ export class BucketSyncPolicy extends Construct {
   }
 }
 
-export class BucketFrontend extends Deployment {
+export class BucketServer extends Deployment {
   constructor(construct: Chart, bucket: GarageBucket, key: GarageKey) {
-    const id = `${construct.node.id}-bucket-frontend-${bucket.name}`;
-    const name = `bucket-frontend-${bucket.name}`;
+    const id = `${construct.node.id}-bucket-server-${bucket.name}`;
+    const name = `bucket-server-${bucket.name}`;
     const securityContext = getSecurityContext();
     super(construct, id, {
       metadata: {
