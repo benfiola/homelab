@@ -11,6 +11,8 @@ import { BucketSyncPolicy as BaseBucketSyncPolicy } from "../assets/bucket-sync/
 import {
   GarageBucket as BaseGarageBucket,
   GarageKey as BaseGarageKey,
+  GarageKeySpecImportKey as GarageImportKey,
+  GarageKeySpecSecretTemplate as GarageSecretTemplate,
 } from "../assets/garage-operator/garage.rajsingh.info";
 import {
   HttpRoute as BaseHttpRoute,
@@ -648,6 +650,9 @@ interface GarageKeyOpts {
 
 export class GarageKey extends Construct {
   readonly name: string;
+  readonly secret: string;
+  readonly accessKeyIdKey: string;
+  readonly secretAccessKeyIdkey: string;
 
   constructor(
     chart: Chart,
@@ -661,15 +666,36 @@ export class GarageKey extends Construct {
 
     const path = opts.path ?? chart.node.id;
 
-    const secret = new VaultDynamicSecret(
-      this,
-      auth,
-      (secretRef) => ({
-        "access-key-id": secretRef(opts.accessKeyId),
-        "secret-access-key": secretRef(opts.secretAccessKey),
-      }),
-      { name: `garage-key-${clusterName}-${name}`, path: path },
-    );
+    this.secret = `garage-key-${clusterName}-${name}`;
+    this.accessKeyIdKey = "access-key-id";
+    this.secretAccessKeyIdkey = "secret-access-key";
+
+    let importKey: GarageImportKey | undefined = undefined;
+    let secretTemplate: GarageSecretTemplate | undefined = undefined;
+    if (opts.accessKeyId && opts.secretAccessKey) {
+      const secret = new VaultDynamicSecret(
+        this,
+        auth,
+        (secretRef) => ({
+          [this.accessKeyIdKey]: secretRef(opts.accessKeyId),
+          [this.secretAccessKeyIdkey]: secretRef(opts.secretAccessKey),
+        }),
+        { name: this.secret, path: path },
+      );
+      importKey = {
+        secretRef: { name: secret.name, namespace: chart.namespace },
+      };
+    } else if (!opts.accessKeyId && !opts.secretAccessKey) {
+      secretTemplate = {
+        accessKeyIdKey: this.accessKeyIdKey,
+        secretAccessKeyKey: this.secretAccessKeyIdkey,
+        name: this.secret,
+      };
+    } else {
+      throw new Error(
+        "only one of access key id and secret access key defined",
+      );
+    }
 
     const key = new BaseGarageKey(this, `${id}-garage-key`, {
       metadata: {
@@ -677,9 +703,8 @@ export class GarageKey extends Construct {
       },
       spec: {
         clusterRef: { name: clusterName, namespace: "garage" },
-        importKey: {
-          secretRef: { name: secret.name, namespace: chart.namespace },
-        },
+        importKey,
+        secretTemplate,
       },
     });
 
