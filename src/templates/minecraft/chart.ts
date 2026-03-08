@@ -18,10 +18,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
 
   const auth = new VaultAuth(chart);
 
-  const key = new GarageKey(chart, "garage", id, auth, {
-    accessKeyId: "s3-access-key-id",
-    secretAccessKey: "s3-secret-access-key",
-  });
+  const key = new GarageKey(chart, "garage", id);
 
   const bucket = new GarageBucket(chart, "garage", id, [key]);
 

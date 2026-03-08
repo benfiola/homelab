@@ -6,8 +6,6 @@ import {
   getSecurityContext,
   Helm,
   Namespace,
-  VaultAuth,
-  VaultStaticSecret,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -18,14 +16,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const auth = new VaultAuth(chart);
-
-  const secret = new VaultStaticSecret(chart, auth);
-
-  const key = new GarageKey(chart, "garage", id, auth, {
-    accessKeyId: "s3-access-key-id",
-    secretAccessKey: "s3-secret-access-key",
-  });
+  const key = new GarageKey(chart, "garage", id);
 
   const adminBucket = new GarageBucket(chart, "garage", `${id}-admin`, [key]);
 
@@ -39,8 +30,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "S3_ACCESS_KEY_ID",
       valueFrom: {
         secretKeyRef: {
-          name: secret.name,
-          key: "s3-access-key-id",
+          name: key.secret,
+          key: key.accessKeyIdKey,
         },
       },
     },
@@ -48,8 +39,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "S3_SECRET_ACCESS_KEY",
       valueFrom: {
         secretKeyRef: {
-          name: secret.name,
-          key: "s3-secret-access-key",
+          name: key.secret,
+          key: key.secretAccessKeyKey,
         },
       },
     },

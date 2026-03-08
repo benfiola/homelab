@@ -642,59 +642,52 @@ const garageClusterNames = ["garage"] as const;
 export type GarageClusterName = (typeof garageClusterNames)[number];
 
 interface GarageKeyOpts {
-  accessKeyId: string;
-  secretAccessKey: string;
-  path?: string;
-  role?: string;
+  existingSecret?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    name: string;
+  };
 }
 
 export class GarageKey extends Construct {
   readonly name: string;
   readonly secret: string;
   readonly accessKeyIdKey: string;
-  readonly secretAccessKeyIdkey: string;
+  readonly secretAccessKeyKey: string;
 
   constructor(
     chart: Chart,
     clusterName: GarageClusterName,
     name: string,
-    auth: VaultAuth,
-    opts: GarageKeyOpts,
+    opts: GarageKeyOpts = {},
   ) {
     const id = `${chart.node.id}-garage-key-${clusterName}-${name}`;
     super(chart, id);
 
-    const path = opts.path ?? chart.node.id;
-
-    this.secret = `garage-key-${clusterName}-${name}`;
-    this.accessKeyIdKey = "access-key-id";
-    this.secretAccessKeyIdkey = "secret-access-key";
-
     let importKey: GarageImportKey | undefined = undefined;
     let secretTemplate: GarageSecretTemplate | undefined = undefined;
-    if (opts.accessKeyId && opts.secretAccessKey) {
-      const secret = new VaultDynamicSecret(
-        this,
-        auth,
-        (secretRef) => ({
-          [this.accessKeyIdKey]: secretRef(opts.accessKeyId),
-          [this.secretAccessKeyIdkey]: secretRef(opts.secretAccessKey),
-        }),
-        { name: this.secret, path: path },
-      );
+    if (opts.existingSecret) {
+      this.secret = opts.existingSecret.name;
+      this.accessKeyIdKey = opts.existingSecret.accessKeyId;
+      this.secretAccessKeyKey = opts.existingSecret.secretAccessKey;
       importKey = {
-        secretRef: { name: secret.name, namespace: chart.namespace },
-      };
-    } else if (!opts.accessKeyId && !opts.secretAccessKey) {
-      secretTemplate = {
-        accessKeyIdKey: this.accessKeyIdKey,
-        secretAccessKeyKey: this.secretAccessKeyIdkey,
-        name: this.secret,
+        secretRef: {
+          name: this.secret,
+          namespace: chart.namespace,
+        },
+        accessKeyId: this.accessKeyIdKey,
+        secretAccessKey: this.secretAccessKeyKey,
       };
     } else {
-      throw new Error(
-        "only one of access key id and secret access key defined",
-      );
+      this.secret = `garage-key-${clusterName}-${name}`;
+      this.accessKeyIdKey = "access-key-id";
+      this.secretAccessKeyKey = "secret-access-key";
+
+      secretTemplate = {
+        accessKeyIdKey: this.accessKeyIdKey,
+        secretAccessKeyKey: this.secretAccessKeyKey,
+        name: this.secret,
+      };
     }
 
     const key = new BaseGarageKey(this, `${id}-garage-key`, {
