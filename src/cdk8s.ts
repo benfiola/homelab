@@ -870,7 +870,12 @@ export class BucketServer extends Deployment {
               {
                 name: "rclone",
                 image: "rclone/rclone:1.73.1",
-                args: ["serve", "http", `source:${bucket.name}`],
+                args: [
+                  "serve",
+                  "http",
+                  `source:${bucket.name}`,
+                  "--addr=:8080",
+                ],
                 ports: [
                   {
                     name: "http",
