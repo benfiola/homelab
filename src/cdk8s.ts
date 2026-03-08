@@ -687,7 +687,10 @@ export class GarageKey extends Construct {
   }
 }
 
-interface GarageBucketOpts {}
+interface GarageBucketOpts {
+  rwKeys?: GarageKey[];
+  roKeys?: GarageKey[];
+}
 
 export class GarageBucket extends BaseGarageBucket {
   readonly clusterName: string;
@@ -696,16 +699,35 @@ export class GarageBucket extends BaseGarageBucket {
     construct: Construct,
     clusterName: GarageClusterName,
     name: string,
-    keys: GarageKey[],
+    owners: GarageKey[],
     opts: GarageBucketOpts = {},
   ) {
     const id = `${construct.node.id}-garage-bucket-${clusterName}-${name}`;
 
-    const keyPermissions = keys.map((k) => ({
+    const keyPermissions = owners.map((k) => ({
       keyRef: k.name,
+      owner: true,
       read: true,
       write: true,
     }));
+    if (opts.rwKeys) {
+      const rwKeys = opts.rwKeys.map((k) => ({
+        keyRef: k.name,
+        owner: false,
+        read: true,
+        write: true,
+      }));
+      keyPermissions.push(...rwKeys);
+    }
+    if (opts.roKeys) {
+      const roKeys = opts.roKeys.map((k) => ({
+        keyRef: k.name,
+        owner: false,
+        read: true,
+        write: false,
+      }));
+      keyPermissions.push(...roKeys);
+    }
 
     super(construct, id, {
       metadata: {
