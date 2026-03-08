@@ -586,8 +586,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   policy("minecraft-to-bucket-server-minecraft").allowBetween(
-    pod("bucket-server-minecraft", "minecraft"),
     pod("minecraft", "minecraft"),
+    pod("bucket-server-minecraft", "minecraft"),
     tcp(8080),
   );
 
