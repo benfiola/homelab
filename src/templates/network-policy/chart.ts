@@ -579,6 +579,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // minecraft
+  policy("bucket-frontend-minecraft-to-garage").allowBetween(
+    pod("bucket-frontend-minecraft", "minecraft"),
+    pod("garage", "garage"),
+    tcp(3900),
+  );
+
   policy("minecraft-to-mojang")
     .targets(pod("minecraft", "minecraft"))
     .allowEgressTo(dns("launchermeta.mojang.com"), tcp(443))

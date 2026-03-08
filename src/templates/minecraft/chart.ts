@@ -1,5 +1,6 @@
 import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
 import {
+  BucketFrontend,
   BucketSyncPolicy,
   Chart,
   GarageBucket,
@@ -22,8 +23,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const secret = new VaultStaticSecret(chart, auth);
 
   const key = new GarageKey(chart, "garage", id);
+  const readKey = new GarageKey(chart, "garage", `${id}-read`);
 
-  const bucket = new GarageBucket(chart, "garage", id, [key]);
+  const bucket = new GarageBucket(chart, "garage", id, [key], {
+    roKeys: [readKey],
+  });
 
   new BucketSyncPolicy(
     chart,
@@ -37,6 +41,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
       bucket,
     },
   );
+
+  new BucketFrontend(chart, bucket, readKey);
 
   const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
 

@@ -21,6 +21,7 @@ import {
 } from "../assets/gateway-api/gateway.networking.k8s.io";
 import {
   Namespace as BaseNamespace,
+  Deployment,
   ServiceAccount,
 } from "../assets/kubernetes/k8s";
 import {
@@ -835,6 +836,86 @@ export class BucketSyncPolicy extends Construct {
         syncHistoryLimit: 5,
         jobLabels: {
           "app.kubernetes.io/name": "bucket-sync-job",
+        },
+      },
+    });
+  }
+}
+
+export class BucketFrontend extends Deployment {
+  constructor(construct: Chart, bucket: GarageBucket, key: GarageKey) {
+    const id = `${construct.node.id}-bucket-frontend-${bucket.name}`;
+    const name = `bucket-frontend-${bucket.name}`;
+    const securityContext = getSecurityContext();
+    super(construct, id, {
+      metadata: {
+        name,
+      },
+      spec: {
+        selector: {
+          matchLabels: {
+            "app.kubernetes.io/name": name,
+          },
+        },
+        template: {
+          metadata: {
+            labels: {
+              "app.kubernetes.io/name": name,
+            },
+          },
+          spec: {
+            containers: [
+              {
+                name: "rclone",
+                image: "rclone/rclone:1.73.1",
+                args: ["serve", "http", `source:${bucket.name}`],
+                ports: [
+                  {
+                    name: "http",
+                    containerPort: 8080,
+                  },
+                ],
+                env: [
+                  {
+                    name: "RCLONE_CONFIG_SOURCE_TYPE",
+                    value: "s3",
+                  },
+                  {
+                    name: "RCLONE_CONFIG_SOURCE_PROVIDER",
+                    value: "Other",
+                  },
+                  {
+                    name: "RCLONE_CONFIG_SOURCE_ACCESS_KEY_ID",
+                    valueFrom: {
+                      secretKeyRef: {
+                        name: key.secret,
+                        key: key.accessKeyIdKey,
+                      },
+                    },
+                  },
+                  {
+                    name: "RCLONE_CONFIG_SOURCE_SECRET_ACCESS_KEY",
+                    valueFrom: {
+                      secretKeyRef: {
+                        name: key.secret,
+                        key: key.secretAccessKeyKey,
+                      },
+                    },
+                  },
+                  {
+                    name: "ENDPOINT",
+                    value: `http://${bucket.clusterName}.garage.svc:3900`,
+                  },
+                  {
+                    name: "REGION",
+                    value: "garage",
+                  },
+                ],
+                securityContext: securityContext.container,
+              },
+            ],
+            securityContext: securityContext.pod,
+          },
         },
       },
     });
