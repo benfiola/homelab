@@ -81,6 +81,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
               env: [
                 { name: "EULA", value: "true" },
                 { name: "VERSION", value: "1.21.11" },
+                {
+                  name: "MODPACK",
+                  value: `http://${bucketServerService.name}.${chart.namespace}.svc/mods.zip`,
+                },
+                { name: "TYPE", value: "FABRIC" },
               ],
               ports: [
                 {
