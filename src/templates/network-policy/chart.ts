@@ -599,7 +599,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("minecraft-to-fabricmc--egress")
     .targets(pod("minecraft", "minecraft"))
-    .allowEgressTo(dns("meta.fabricmc.net"), tcp(443));
+    .allowEgressTo(dns("meta.fabricmc.net"), tcp(443))
+    .allowEgressTo(dns("maven.fabricmc.net"), tcp(443));
 
   // piraeus-operator
   policy("host-to-linstor-affinity-controller").allowBetween(
