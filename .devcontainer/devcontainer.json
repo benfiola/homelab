@@ -2,7 +2,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "continue.continue",
+        "anthropic.claude-code",
         "esbenp.prettier-vscode",
         "rohit-gohri.format-code-action",
         "yoavbls.pretty-ts-errors"
@@ -11,17 +11,12 @@
         "[yaml]": {
           "editor.autoIndent": "none"
         },
-        "continue.enableConsole": true,
-        "continue.telemetryEnabled": false,
         "editor.codeActionsOnSave": [
           "source.organizeImports",
           "source.formatDocument"
         ],
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "remote.extensionKind": {
-          "continue.continue": ["workspace"]
-        },
-        "typescript.tsdk": "./node_modules/typescript/lib"
+        "js/ts.tsdk.path": "./node_modules/typescript/lib"
       }
     }
   },
@@ -33,6 +28,6 @@
   "image": "ubuntu:latest",
   "postCreateCommand": ".devcontainer/post-create.sh",
   "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.continue,target=/root/.continue,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached"
   ]
 }

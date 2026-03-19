@@ -64,13 +64,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
     spec: {
       selector: {
         matchLabels: {
-          "app.kubernetes.io/name": "minecraft",
+          "app.kubernetes.io/name": id,
         },
       },
       template: {
         metadata: {
           labels: {
-            "app.kubernetes.io/name": "minecraft",
+            "app.kubernetes.io/name": id,
           },
         },
         spec: {
@@ -108,7 +108,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
     spec: {
       selector: {
-        "app.kubernetes.io/name": "minecraft",
+        "app.kubernetes.io/name": id,
       },
       ports: [
         {

@@ -30,6 +30,7 @@
 - template: prometheus-operator
 - template: pvc-restore
 - template: router-policy-sync
+- template: seven-days-to-die
 - template: storage-class
 - template: tunnel
 - template: vault

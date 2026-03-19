@@ -14,6 +14,7 @@ import {
   icmpv4,
   kubeDns,
   pod,
+  steamUdpCidrs,
   tcp,
   udp,
 } from "./policyBuilder";
@@ -814,6 +815,25 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .targets(pod("router-policy-sync", "router-policy-sync"))
     .allowEgressTo(dns("router.bulia"), tcp(80));
 
+  // seven-days-to-die
+  policy("seven-days-to-die-to-epic--egress")
+    .targets(pod("seven-days-to-die", "seven-days-to-die"))
+    .allowEgressTo(dns("api.epicgames.dev"), tcp(443));
+
+  policy("seven-days-to-die-to-steam--egress")
+    .targets(pod("seven-days-to-die", "seven-days-to-die"))
+    .allowEgressTo(dns("api.steampowered.com"), tcp(443))
+    .allowEgressTo(dns("test.steampowered.com"), tcp(80))
+    .allowEgressTo(dns("*.steamserver.net"), tcp(80, 443), udp([27015, 27060]))
+    .allowEgressTo(
+      dns(
+        "steam-software-cc.dlt.qwilted-cds.cqloud.com",
+        "*.http.global.dns.qwilted-cds.cqloud.com",
+      ),
+      tcp(443),
+    )
+    .allowEgressTo(cidrs(...steamUdpCidrs), udp([27015, 27060]));
+
   // vault
   policy("vault-to-control-plane").allowBetween(
     pod("vault", "vault"),
@@ -1059,6 +1079,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     gateway("trusted"),
     pod("prometheus", "prometheus"),
     tcp(9090),
+  );
+
+  policy("gateway-trusted-to-seven-days-to-die").allowBetween(
+    gateway("trusted"),
+    pod("seven-days-to-die", "seven-days-to-die"),
+    tcp(26900),
+    udp([26900, 26903]),
   );
 
   policy("gateway-trusted-to-tunnel").allowBetween(
