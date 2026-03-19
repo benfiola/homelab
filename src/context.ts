@@ -11,7 +11,7 @@ export interface TemplateChartContext {
 export type TemplateChartFn = (
   construct: Construct,
   id: string,
-  context: TemplateChartContext
+  context: TemplateChartContext,
 ) => Promise<Chart>;
 
 export type TemplateAssetFn = (dir: string) => Promise<void>;

@@ -31,6 +31,18 @@
 - template: pvc-restore
 - template: router-policy-sync
 - template: seven-days-to-die
+- id: single-player-tarkov-3
+  template: single-player-tarkov
+  options:
+    subdomain: spt-3
+    port: 6969
+    version: 3.11.4
+- id: single-player-tarkov-4
+  template: single-player-tarkov
+  options:
+    subdomain: spt-4
+    port: 6970
+    version: 4.0.13
 - template: storage-class
 - template: tunnel
 - template: vault
