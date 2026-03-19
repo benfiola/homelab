@@ -824,7 +824,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .targets(pod("seven-days-to-die", "seven-days-to-die"))
     .allowEgressTo(dns("api.steampowered.com"), tcp(443))
     .allowEgressTo(dns("test.steampowered.com"), tcp(80))
-    .allowEgressTo(dns("*.steamserver.net"), tcp(80, 443), udp([27015, 27060]))
+    .allowEgressTo(
+      dns("*.steamserver.net"),
+      tcp(80, 443),
+      udp([27015, 27060]),
+      tcp([27015, 27060]),
+    )
     .allowEgressTo(
       dns(
         "steam-software-cc.dlt.qwilted-cds.cqloud.com",
