@@ -44,7 +44,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
                 {
                   name: "tcp",
                   containerPort: 26900,
-                  protocol: "TCP",
                 },
                 {
                   name: "udp1",
@@ -109,18 +108,22 @@ export const chart: TemplateChartFn = async (construct, id) => {
         {
           port: 26900,
           name: "udp1",
+          protocol: "UDP",
         },
         {
           port: 26901,
           name: "udp2",
+          protocol: "UDP",
         },
         {
           port: 26902,
           name: "udp3",
+          protocol: "UDP",
         },
         {
           port: 26903,
           name: "udp4",
+          protocol: "UDP",
         },
       ],
     },
