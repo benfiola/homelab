@@ -844,12 +844,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // single-player-tarkov-3
   policy("single-player-tarkov-3-to-github--egress")
     .targets(pod("single-player-tarkov-3", "single-player-tarkov-3"))
-    .allowEgressTo(dns("github.com"), tcp(443));
+    .allowEgressTo(dns("github.com"), tcp(443))
+    .allowEgressTo(dns("release-assets.githubusercontent.com"), tcp(443));
 
   // single-player-tarkov-4
   policy("single-player-tarkov-4-to-github--egress")
     .targets(pod("single-player-tarkov-4", "single-player-tarkov-4"))
-    .allowEgressTo(dns("github.com"), tcp(443));
+    .allowEgressTo(dns("github.com"), tcp(443))
+    .allowEgressTo(dns("release-assets.githubusercontent.com"), tcp(443));
 
   // vault
   policy("vault-to-control-plane").allowBetween(
