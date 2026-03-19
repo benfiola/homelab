@@ -841,6 +841,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     )
     .allowEgressTo(cidrs(...steamUdpCidrs), udp([27015, 27060]));
 
+  // single-player-tarkov-3
+  policy("single-player-tarkov-3-to-github--egress")
+    .targets(pod("single-player-tarkov-3", "single-player-tarkov-3"))
+    .allowEgressTo(dns("github.com"), tcp(443));
+
+  // single-player-tarkov-4
+  policy("single-player-tarkov-4-to-github--egress")
+    .targets(pod("single-player-tarkov-4", "single-player-tarkov-4"))
+    .allowEgressTo(dns("github.com"), tcp(443));
+
   // vault
   policy("vault-to-control-plane").allowBetween(
     pod("vault", "vault"),
@@ -1093,6 +1103,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     pod("seven-days-to-die", "seven-days-to-die"),
     tcp(26900),
     udp([26900, 26903]),
+  );
+
+  policy("gateway-trusted-to-single-player-tarkov-3").allowBetween(
+    gateway("trusted"),
+    pod("single-player-tarkov-3", "single-player-tarkov-3"),
+    tcp(6969),
+  );
+
+  policy("gateway-trusted-to-single-player-tarkov-4").allowBetween(
+    gateway("trusted"),
+    pod("single-player-tarkov-4", "single-player-tarkov-4"),
+    tcp(6969),
   );
 
   policy("gateway-trusted-to-tunnel").allowBetween(
