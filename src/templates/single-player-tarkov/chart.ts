@@ -44,7 +44,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
             {
               name: "single-player-tarkov",
               image:
-                "ghcr.io/benfiola/game-server-images/single-player-tarkov:0.1.0-alpha-feat-initial.30",
+                "ghcr.io/benfiola/game-server-images/single-player-tarkov:0.1.0-alpha-feat-initial.33",
 
               ports: [
                 {
