@@ -375,6 +375,20 @@ export class Helm extends BaseHelm {
 export const gateways = ["public", "trusted"] as const;
 export type Gateway = (typeof gateways)[number];
 
+const knownAnnotations = {
+  useMikrotik: "homelab.benfiola.com/use-external-dns-mikrotik",
+  useCloudflare: "homelab.benfiola.com/use-external-dns-cloudflare",
+  hostname: "external-dns.alpha.kubernetes.io/hostname",
+  ports: "gateway-route-sync.homelab-helper.benfiola.com/ports",
+} as const;
+type Annotations = typeof knownAnnotations;
+type Annotation = Annotations[keyof Annotations];
+
+const gatewayAnnotations: Record<Gateway, Annotation> = {
+  trusted: knownAnnotations.useMikrotik,
+  public: knownAnnotations.useCloudflare,
+};
+
 interface RouteTarget {
   apiVersion?: string;
   kind: string;
@@ -385,12 +399,9 @@ export class HttpRoute extends BaseHttpRoute {
   constructor(construct: Construct, gateway: Gateway, hostname: string) {
     const id = `${construct}-http-route-${hostname}`;
 
-    const annotations: Record<string, string> = {};
-    if (gateway === "trusted") {
-      annotations["homelab.benfiola.com/use-external-dns-mikrotik"] = "";
-    } else if (gateway === "public") {
-      annotations["homelab.benfiola.com/use-external-dns-cloudflare"] = "";
-    }
+    const annotations: Record<string, string> = {
+      [`${gatewayAnnotations[gateway]}`]: "",
+    };
 
     super(construct, id, {
       metadata: {
@@ -433,19 +444,15 @@ export class TcpRoute extends BaseTcpRoute {
     construct: Construct,
     gateway: Gateway,
     hostname: string,
-    port: number,
+    ports: number[],
   ) {
     const id = `${construct}-tcp-route-${hostname}`;
 
     const annotations: Record<string, string> = {
-      "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
-      "external-dns.alpha.kubernetes.io/hostname": hostname,
+      [`${knownAnnotations.ports}`]: `${ports.join(",")}`,
+      [`${knownAnnotations.hostname}`]: hostname,
+      [`${gatewayAnnotations[gateway]}`]: "",
     };
-    if (gateway === "trusted") {
-      annotations["homelab.benfiola.com/use-external-dns-mikrotik"] = "";
-    } else if (gateway === "public") {
-      annotations["homelab.benfiola.com/use-external-dns-cloudflare"] = "";
-    }
 
     super(construct, id, {
       metadata: {
@@ -487,19 +494,15 @@ export class UdpRoute extends BaseUdpRoute {
     construct: Construct,
     gateway: Gateway,
     hostname: string,
-    port: number,
+    ports: number[],
   ) {
     const id = `${construct}-udp-route-${hostname}`;
 
     const annotations: Record<string, string> = {
-      "gateway-route-sync.homelab-helper.benfiola.com/port": `${port}`,
-      "external-dns.alpha.kubernetes.io/hostname": hostname,
+      [`${knownAnnotations.ports}`]: `${ports.join(",")}`,
+      [`${knownAnnotations.hostname}`]: hostname,
+      [`${gatewayAnnotations[gateway]}`]: "",
     };
-    if (gateway === "trusted") {
-      annotations["homelab.benfiola.com/use-external-dns-mikrotik"] = "";
-    } else if (gateway === "public") {
-      annotations["homelab.benfiola.com/use-external-dns-cloudflare"] = "";
-    }
 
     super(construct, id, {
       metadata: {

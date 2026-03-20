@@ -2,6 +2,7 @@ import * as zod from "zod";
 import { EnvVar, Service, StatefulSet } from "../../../assets/kubernetes/k8s";
 import { Chart, getSecurityContext, Namespace, TcpRoute } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { gameServerImage } from "../../game-server-images";
 
 const optsSchema = zod.object({
   subdomain: zod.string().default("spt"),
@@ -43,9 +44,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
           containers: [
             {
               name: "single-player-tarkov",
-              image:
-                "ghcr.io/benfiola/game-server-images/single-player-tarkov:0.1.0-alpha-feat-initial.35",
-
+              image: gameServerImage("single-player-tarkov"),
               ports: [
                 {
                   name: "tcp",
@@ -97,7 +96,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
   });
 
   const url = `${opts.subdomain}.bulia.dev`;
-  new TcpRoute(chart, "trusted", url, opts.port).match(service, 6969);
+  new TcpRoute(chart, "trusted", url, [opts.port]).match(service, 6969);
 
   return chart;
 };

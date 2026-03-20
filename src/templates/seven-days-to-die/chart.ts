@@ -7,6 +7,7 @@ import {
   UdpRoute,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { gameServerImage } from "../../game-server-images";
 
 export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
@@ -38,8 +39,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
           containers: [
             {
               name: "seven-days-to-die",
-              image:
-                "ghcr.io/benfiola/game-server-images/seven-days-to-die:0.1.0-alpha-feat-initial.35",
+              image: gameServerImage("seven-days-to-die"),
               env: [{ name: "LOG_LEVEL", value: "debug" }],
               ports: [
                 {
@@ -130,8 +130,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  new TcpRoute(chart, "trusted", "sdtd.bulia.dev", 26900).match(service, 26900);
-  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26900)
+  new TcpRoute(chart, "trusted", "sdtd.bulia.dev", [26900]).match(
+    service,
+    26900,
+  );
+  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", [26900, 26901, 26902, 26903])
     .match(service, 26900)
     .match(service, 26901)
     .match(service, 26902)
