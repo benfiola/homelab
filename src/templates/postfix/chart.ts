@@ -58,7 +58,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       securityContext: securityContext.pod,
     },
-    resources: undefined,
+    resources: null,
   });
 
   new VerticalPodAutoscaler(
