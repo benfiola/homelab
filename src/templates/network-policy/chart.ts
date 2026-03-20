@@ -1135,7 +1135,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .targets(gateway("trusted"))
     .allowIngressFrom(
       cidrs("192.168.16.0/24", "192.168.17.0/24"),
-      tcp(10443, 25565),
+      tcp(6969, 6970, 10443, 25565, 26900),
+      udp([26900, 26903]),
     )
     .allowIngressFrom(cidrs("192.168.16.13/32"), tcp(8080));
 
