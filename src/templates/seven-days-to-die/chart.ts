@@ -40,6 +40,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
               name: "seven-days-to-die",
               image:
                 "ghcr.io/benfiola/game-server-images/seven-days-to-die:0.1.0-alpha-feat-initial.30",
+              env: [{ name: "LOG_LEVEL", value: "debug" }],
               ports: [
                 {
                   name: "tcp",

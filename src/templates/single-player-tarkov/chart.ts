@@ -45,6 +45,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
               name: "single-player-tarkov",
               image:
                 "ghcr.io/benfiola/game-server-images/single-player-tarkov:0.1.0-alpha-feat-initial.30",
+
               ports: [
                 {
                   name: "tcp",
@@ -53,7 +54,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
               ],
               securityContext: securityContext.container,
               volumeMounts: [{ name: "cache", mountPath: "/cache" }],
-              env: env,
+              env: [...env, { name: "LOG_LEVEL", value: "debug" }],
             },
           ],
           securityContext: securityContext.pod,
