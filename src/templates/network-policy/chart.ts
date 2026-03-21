@@ -832,13 +832,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       udp([27015, 27060]),
       tcp([27015, 27060]),
     )
-    .allowEgressTo(
-      dns(
-        "steam-software-cc.dlt.qwilted-cds.cqloud.com",
-        "*.http.global.dns.qwilted-cds.cqloud.com",
-      ),
-      tcp(443),
-    )
     .allowEgressTo(cidrs(...steamUdpCidrs), udp([27015, 27060]));
 
   // single-player-tarkov-3

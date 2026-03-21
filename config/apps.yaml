@@ -37,6 +37,8 @@
     subdomain: spt-3
     port: 6969
     version: 3.11.4
+    mods:
+      - https://github.com/njzydark/SPT-Backend-URL-Rewriter-Mod/releases/download/v1.0.0/SPT.Backend.URL.Rewriter.Release.1.0.0.zip
 - id: single-player-tarkov-4
   template: single-player-tarkov
   options:
