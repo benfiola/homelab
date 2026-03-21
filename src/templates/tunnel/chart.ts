@@ -103,10 +103,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  new TcpRoute(chart, "trusted", "tunnel.bulia.dev", [8080]).match(
-    service,
-    8080,
-  );
+  new TcpRoute(chart, "trusted", "tunnel.bulia.dev", 8080, service, 8080);
 
   new HttpRoute(chart, "trusted", "desktop.bulia.dev").match(service, 8081);
 

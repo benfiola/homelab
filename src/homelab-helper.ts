@@ -1,4 +1,4 @@
-const version = "10.0.7";
+const version = "10.0.10";
 
 export const homelabHelper = {
   image: `ghcr.io/benfiola/homelab-helper:${version}`,

@@ -96,7 +96,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
   });
 
   const url = `${opts.subdomain}.bulia.dev`;
-  new TcpRoute(chart, "trusted", url, [opts.port]).match(service, 6969);
+  new TcpRoute(chart, "trusted", url, opts.port, service, 6969);
 
   return chart;
 };

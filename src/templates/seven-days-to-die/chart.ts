@@ -61,11 +61,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
                   containerPort: 26902,
                   protocol: "UDP",
                 },
-                {
-                  name: "udp4",
-                  containerPort: 26903,
-                  protocol: "UDP",
-                },
               ],
               securityContext: securityContext.container,
               volumeMounts: [{ name: "cache", mountPath: "/cache" }],
@@ -121,24 +116,14 @@ export const chart: TemplateChartFn = async (construct, id) => {
           name: "udp3",
           protocol: "UDP",
         },
-        {
-          port: 26903,
-          name: "udp4",
-          protocol: "UDP",
-        },
       ],
     },
   });
 
-  new TcpRoute(chart, "trusted", "sdtd.bulia.dev", [26900]).match(
-    service,
-    26900,
-  );
-  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", [26900, 26901, 26902, 26903])
-    .match(service, 26900)
-    .match(service, 26901)
-    .match(service, 26902)
-    .match(service, 26903);
+  new TcpRoute(chart, "trusted", "sdtd.bulia.dev", 26900, service, 26900);
+  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26900, service, 26900);
+  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26901, service, 26901);
+  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26902, service, 26902);
 
   return chart;
 };

@@ -1104,7 +1104,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     gateway("trusted"),
     pod("seven-days-to-die", "seven-days-to-die"),
     tcp(26900),
-    udp([26900, 26903]),
+    udp([26900, 26902]),
   );
 
   policy("gateway-trusted-to-single-player-tarkov-3").allowBetween(
@@ -1136,7 +1136,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .allowIngressFrom(
       cidrs("192.168.16.0/24", "192.168.17.0/24"),
       tcp(6969, 6970, 10443, 25565, 26900),
-      udp([26900, 26903]),
+      udp([26900, 26902]),
     )
     .allowIngressFrom(cidrs("192.168.16.13/32"), tcp(8080));
 

@@ -119,15 +119,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  new TcpRoute(chart, "trusted", "minecraft.bulia.dev", [25565]).match(
-    service,
-    25565,
-  );
+  new TcpRoute(chart, "trusted", "minecraft.bulia.dev", 25565, service, 25565);
 
-  new TcpRoute(chart, "public", "minecraft.bfiola.dev", [25565]).match(
-    service,
-    25565,
-  );
+  new TcpRoute(chart, "public", "minecraft.bfiola.dev", 25565, service, 25565);
 
   return chart;
 };

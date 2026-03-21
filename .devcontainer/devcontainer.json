@@ -29,5 +29,10 @@
   "postCreateCommand": ".devcontainer/post-create.sh",
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached"
-  ]
+  ],
+  "portsAttributes": {
+    "26900": {
+      "label": "26900/udp"
+    }
+  }
 }

@@ -379,7 +379,6 @@ const knownAnnotations = {
   useMikrotik: "homelab.benfiola.com/use-external-dns-mikrotik",
   useCloudflare: "homelab.benfiola.com/use-external-dns-cloudflare",
   hostname: "external-dns.alpha.kubernetes.io/hostname",
-  ports: "gateway-route-sync.homelab-helper.benfiola.com/ports",
 } as const;
 type Annotations = typeof knownAnnotations;
 type Annotation = Annotations[keyof Annotations];
@@ -414,6 +413,7 @@ export class HttpRoute extends BaseHttpRoute {
           {
             name: gateway,
             namespace: "gateway",
+            sectionName: hostname,
           },
         ],
       },
@@ -444,19 +444,21 @@ export class TcpRoute extends BaseTcpRoute {
     construct: Construct,
     gateway: Gateway,
     hostname: string,
-    ports: number[],
+    fromPort: number,
+    to: RouteTarget,
+    toPort: number,
   ) {
-    const id = `${construct}-tcp-route-${hostname}`;
+    const name = `${hostname}-${fromPort}`;
+    const id = `${construct}-tcp-route-${name}`;
 
     const annotations: Record<string, string> = {
-      [`${knownAnnotations.ports}`]: `${ports.join(",")}`,
       [`${knownAnnotations.hostname}`]: hostname,
       [`${gatewayAnnotations[gateway]}`]: "",
     };
 
     super(construct, id, {
       metadata: {
-        name: hostname,
+        name,
         annotations,
       },
       spec: {
@@ -464,28 +466,23 @@ export class TcpRoute extends BaseTcpRoute {
           {
             name: gateway,
             namespace: "gateway",
+            sectionName: `${hostname}-tcp-${fromPort}`,
+            port: fromPort,
           },
         ],
-        rules: [],
+        rules: [
+          {
+            backendRefs: [
+              {
+                kind: to.kind,
+                name: to.name,
+                port: toPort,
+              },
+            ],
+          },
+        ],
       },
     });
-  }
-
-  match(to: RouteTarget, port: string | number) {
-    const props = (this as any).props;
-    const spec = (props.spec = props.spec ?? {});
-    const rules = (spec.rules = spec.rules ?? []);
-    rules.push({
-      backendRefs: [
-        {
-          apiVersion: to.apiVersion,
-          kind: to.kind,
-          name: to.name,
-          port,
-        },
-      ],
-    });
-    return this;
   }
 }
 
@@ -494,19 +491,21 @@ export class UdpRoute extends BaseUdpRoute {
     construct: Construct,
     gateway: Gateway,
     hostname: string,
-    ports: number[],
+    fromPort: number,
+    to: RouteTarget,
+    toPort: number,
   ) {
-    const id = `${construct}-udp-route-${hostname}`;
+    const name = `${hostname}-${fromPort}`;
+    const id = `${construct}-udp-route-${name}`;
 
     const annotations: Record<string, string> = {
-      [`${knownAnnotations.ports}`]: `${ports.join(",")}`,
       [`${knownAnnotations.hostname}`]: hostname,
       [`${gatewayAnnotations[gateway]}`]: "",
     };
 
     super(construct, id, {
       metadata: {
-        name: hostname,
+        name,
         annotations,
       },
       spec: {
@@ -514,28 +513,23 @@ export class UdpRoute extends BaseUdpRoute {
           {
             name: gateway,
             namespace: "gateway",
+            sectionName: `${hostname}-udp-${fromPort}`,
+            port: fromPort,
           },
         ],
-        rules: [],
+        rules: [
+          {
+            backendRefs: [
+              {
+                kind: to.kind,
+                name: to.name,
+                port: toPort,
+              },
+            ],
+          },
+        ],
       },
     });
-  }
-
-  match(to: RouteTarget, port: string | number) {
-    const props = (this as any).props;
-    const spec = (props.spec = props.spec ?? {});
-    const rules = (spec.rules = spec.rules ?? []);
-    rules.push({
-      backendRefs: [
-        {
-          apiVersion: to.apiVersion,
-          kind: to.kind,
-          name: to.name,
-          port,
-        },
-      ],
-    });
-    return this;
   }
 }
 
