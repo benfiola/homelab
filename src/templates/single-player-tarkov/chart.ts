@@ -21,6 +21,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "LootingBots-1.6.3.zip",
     "RaidReview-1.0.2.3.zip",
     "SAIN-4.4.0.zip",
+    "ShowMeTheMoney-2.7.0.7z",
     "StatTrack-2.0.0.7z",
     "UIFixes-5.3.7.zip",
   ].map((m) => getAssetsServerUrl(`single-player-tarkov/${m}`));
