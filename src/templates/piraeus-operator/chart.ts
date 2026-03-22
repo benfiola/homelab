@@ -7,8 +7,8 @@ import {
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
-  const chart = new Chart(construct, context.name);
-  const id = chart.node.id;
+  const id = context.name;
+  const chart = new Chart(construct, id);
 
   await Kustomization.init(chart, `${id}-kustomization`, {
     dynamic: {
@@ -31,7 +31,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       apiVersion: "apps/v1",
       kind: "Deployment",
       name: "piraeus-operator-controller-manager",
-    })
+    }),
   );
 
   new VerticalPodAutoscaler(
@@ -40,7 +40,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       apiVersion: "apps/v1",
       kind: "Deployment",
       name: "piraeus-operator-gencert",
-    })
+    }),
   );
 
   return chart;

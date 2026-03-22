@@ -31,10 +31,10 @@ const getNodes = async (context: TemplateChartContext) => {
 };
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
-  const chart = new Chart(construct, context.name, {
+  const id = context.name;
+  const chart = new Chart(construct, id, {
     namespace: "piraeus-operator",
   });
-  const id = chart.node.id;
 
   // these are cluster scoped resources that will be deployed wherever `piraeus-operator` is deployed.
   new LinstorCluster(chart, `${id}-cluster`, {

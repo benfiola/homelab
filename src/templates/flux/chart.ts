@@ -13,10 +13,10 @@ const optsSchema = zod.object({
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const opts = await optsSchema.parseAsync(context.opts);
 
-  const chart = new Chart(construct, context.name, {
+  const id = context.name;
+  const chart = new Chart(construct, id, {
     namespace: "flux-system",
   });
-  const id = chart.node.id;
 
   const charts = opts.charts.sort((a, b) => a.node.id.localeCompare(b.node.id));
 

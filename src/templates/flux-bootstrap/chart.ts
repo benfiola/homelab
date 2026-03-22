@@ -6,10 +6,10 @@ import { Chart } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
-  const chart = new Chart(construct, context.name, {
+  const id = context.name;
+  const chart = new Chart(construct, id, {
     namespace: "flux-system",
   });
-  const id = chart.node.id;
 
   new Kustomization(chart, `${id}-kustomization`, {
     metadata: {

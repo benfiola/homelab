@@ -8,8 +8,8 @@ import {
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
-  const chart = new Chart(construct, context.name);
-  const id = chart.node.id;
+  const id = context.name;
+  const chart = new Chart(construct, id);
 
   new Namespace(chart);
 
@@ -26,7 +26,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       apiVersion: "apps/v1",
       kind: "Deployment",
       name: "metrics-server",
-    })
+    }),
   );
 
   return chart;
