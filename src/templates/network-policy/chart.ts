@@ -1064,6 +1064,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(9093),
   );
 
+  policy("gateway-trusted-to-assets-server").allowBetween(
+    gateway("trusted"),
+    pod("bucket-server-assets-server", "assets-server"),
+    tcp(8080),
+  );
+
   policy("gateway-trusted-to-cilium-hubble-ui").allowBetween(
     gateway("trusted"),
     pod("hubble-ui", "cilium"),
