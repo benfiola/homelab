@@ -6,12 +6,13 @@ HELM_VERSION ?= 4.0.0
 JB_VERSION ?= 0.6.0
 K9S_VERSION ?= 0.50.16
 KUBECTL_VERSION ?= 1.34.2
+RCLONE_VERSION ?= 1.73.2
 TALOSCTL_VERSION ?= 1.11.5
 TSX_VERSION ?= 4.20.6
 VAULT_VERSION ?= 1.21.1
 
 ARCH ?= $(shell uname -m)
-BIN ?= ./.bin
+BIN ?= /usr/local/bin
 DIST ?= ./.dist
 
 arch := $(ARCH)
@@ -119,6 +120,10 @@ $(eval $(call tool-from-tar-gz,k9s,$(k9s_url), 0))
 kubectl_arch := $(arch)
 kubectl_url := https://dl.k8s.io/release/v$(KUBECTL_VERSION)/bin/linux/$(kubectl_arch)/kubectl
 $(eval $(call tool-from-url,kubectl,$(kubectl_url)))
+
+rclone_arch := $(arch)
+rclone_url := https://downloads.rclone.org/v$(RCLONE_VERSION)/rclone-v$(RCLONE_VERSION)-linux-$(rclone_arch).zip
+$(eval $(call tool-from-zip,rclone,$(rclone_url),1))
 
 talosctl_arch := $(arch)
 talosctl_url := https://github.com/siderolabs/talos/releases/download/v$(TALOSCTL_VERSION)/talosctl-linux-$(talosctl_arch)

@@ -30,7 +30,7 @@ jobs:
           node-version: "22.21.0"
       - name: install project
         run: |
-          sudo BIN=/usr/local/bin make install-tools
+          sudo make install-tools
           make install-project
       - name: checkout manifests
         uses: actions/checkout@v4

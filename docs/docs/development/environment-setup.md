@@ -44,9 +44,9 @@ This installs npm dependencies and links the homelab CLI globally.
 3. **Install tooling** (required for some operations):
 
 :::tip Non-standard PATH
-By default, this Makefile target installs to the local `.bin` folder. This directory will need to be added to your system `PATH`.
+By default, this Makefile target installs to the `/usr/local/bin` folder. This directory will need to be added to your system `PATH`.
 
-Alternatively, use `BIN=/usr/local/bin make install-tools` to install tools to a system location.
+Alternatively, use `BIN=[path] make install-tools` to install tools to another location.
 :::
 
 ```bash
