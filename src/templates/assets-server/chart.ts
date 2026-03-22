@@ -5,6 +5,7 @@ import {
   GarageBucket,
   GarageKey,
   HttpRoute,
+  Namespace,
   VaultAuth,
   VaultStaticSecret,
   VerticalPodAutoscaler,
@@ -14,6 +15,8 @@ import { TemplateChartFn } from "../../context";
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id);
+
+  new Namespace(chart);
 
   const auth = new VaultAuth(chart);
 
