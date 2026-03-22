@@ -1,28 +1,13 @@
-import * as zod from "zod";
-import { EnvVar, Service, StatefulSet } from "../../../assets/kubernetes/k8s";
+import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
 import { Chart, getSecurityContext, Namespace, TcpRoute } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { gameServerImage } from "../../game-server-images";
 
-const optsSchema = zod.object({
-  subdomain: zod.string().default("spt"),
-  port: zod.int().default(6969),
-  mods: zod.array(zod.string()).default([]),
-  version: zod.string().optional(),
-});
-
-export const chart: TemplateChartFn = async (construct, id, context) => {
+export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
-  const opts = await optsSchema.parseAsync(context.opts);
-
   new Namespace(chart);
 
   const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
-
-  const env: EnvVar[] = [];
-  if (opts.version) {
-    env.push({ name: "VERSION", value: opts.version });
-  }
 
   new StatefulSet(chart, `${id}-stateful-set`, {
     metadata: {
@@ -53,7 +38,15 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
               ],
               securityContext: securityContext.container,
               volumeMounts: [{ name: "cache", mountPath: "/cache" }],
-              env: [...env, { name: "LOG_LEVEL", value: "debug" }],
+              env: [
+                { name: "VERSION", value: "4.0.13" },
+                { name: "LOG_LEVEL", value: "debug" },
+                {
+                  name: "MOD_URLS",
+                  value:
+                    "https://github.com/njzydark/SPT-Backend-URL-Rewriter-Mod/releases/download/v1.0.0/SPT.Backend.URL.Rewriter.Release.1.0.0.zip",
+                },
+              ],
             },
           ],
           securityContext: securityContext.pod,
@@ -95,8 +88,7 @@ export const chart: TemplateChartFn = async (construct, id, context) => {
     },
   });
 
-  const url = `${opts.subdomain}.bulia.dev`;
-  new TcpRoute(chart, "trusted", url, opts.port, service, 6969);
+  new TcpRoute(chart, "trusted", "spt.bulia.dev", 6969, service, 6969);
 
   return chart;
 };
