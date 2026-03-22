@@ -1,5 +1,11 @@
 import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
-import { Chart, getSecurityContext, Namespace, TcpRoute } from "../../cdk8s";
+import {
+  Chart,
+  getAssetsServerUrl,
+  getSecurityContext,
+  Namespace,
+  TcpRoute,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -36,7 +42,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 { name: "VERSION", value: "1.21.11" },
                 {
                   name: "MODPACK",
-                  value: `http://assets-server.assets-server.svc/minecraft/mods.zip`,
+                  value: getAssetsServerUrl("minecraft/mods.zip"),
                 },
                 { name: "TYPE", value: "FABRIC" },
               ],

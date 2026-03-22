@@ -56,6 +56,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(12345),
   );
 
+  // assets-server
+  policy("assets-server-to-garage").allowBetween(
+    pod("bucket-server-assets-server", "assets-server"),
+    pod("garage", "garage"),
+    tcp(3900),
+  );
+
   // bucket-sync
   policy("host-to-bucket-sync").allowBetween(
     host(),
@@ -580,15 +587,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // minecraft
-  policy("bucket-server-minecraft-to-garage").allowBetween(
-    pod("bucket-server-minecraft", "minecraft"),
-    pod("garage", "garage"),
-    tcp(3900),
-  );
-
-  policy("minecraft-to-bucket-server-minecraft").allowBetween(
+  policy("minecraft-to-assets-server").allowBetween(
     pod("minecraft", "minecraft"),
-    pod("bucket-server-minecraft", "minecraft"),
+    pod("bucket-server-assets-server", "assets-server"),
     tcp(8080),
   );
 
@@ -835,6 +836,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .allowEgressTo(cidrs(...steamUdpCidrs), udp([27015, 27060]));
 
   // single-player-tarkov
+  policy("single-player-tarkov-to-assets-server").allowBetween(
+    pod("minecraft", "minecraft"),
+    pod("bucket-server-assets-server", "assets-server"),
+    tcp(8080),
+  );
+
   policy("single-player-tarkov-to-github--egress")
     .targets(pod("single-player-tarkov", "single-player-tarkov"))
     .allowEgressTo(dns("github.com"), tcp(443))

@@ -947,3 +947,7 @@ export class BucketServer extends Deployment {
     });
   }
 }
+
+export const getAssetsServerUrl = (path: string) => {
+  return `http://bucket-server-assets-server.assets-server.svc/${path}`;
+};
