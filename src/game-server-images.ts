@@ -1,4 +1,4 @@
-const tag = "0.1.0-alpha-feat-initial.37";
+const tag = "0.2.0";
 
 export const gameServerImage = (name: string) =>
   `ghcr.io/benfiola/game-server-images/${name}:${tag}`;
