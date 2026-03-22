@@ -59,7 +59,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
                 { name: "LOG_LEVEL", value: "debug" },
                 {
                   name: "MOD_URLS",
-                  value: mods.join(" "),
+                  value: mods.join(","),
                 },
               ],
             },
