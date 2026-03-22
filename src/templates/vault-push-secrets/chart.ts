@@ -23,7 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     config: {
       gcsCredentialsSecret: vaultSecret.name,
       gcsCredentialsKey: "google-cloud-credentials-file",
-      gcsDestination: "gs://homelab-8hxm62/secrets-apps.yaml",
+      gcsDestination: "gs://homelab-secrets-262965/secrets-apps.yaml",
       vaultAddr: "http://vault-active.vault.svc:8200",
       vaultAuthMount: "kubernetes/",
       vaultAuthRole: "vault-push-secrets-workload",

@@ -34,7 +34,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new BucketSyncPolicy(
     chart,
     {
-      name: "minecraft-oigim8",
+      name: "homelab-assets-698966/minecraft",
       secret: secret.name,
       credentialsKey: "google-cloud-credentials-file",
     },

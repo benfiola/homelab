@@ -598,11 +598,11 @@ export class VolsyncBackup extends Construct {
       chart,
       auth,
       (secretRef) => ({
-        GOOGLE_PROJECT_ID: "592515172912",
+        GOOGLE_PROJECT_ID: "998272529872",
         GOOGLE_APPLICATION_CREDENTIALS: secretRef(
           "google-cloud-credentials-file",
         ),
-        RESTIC_REPOSITORY: `gs:volsync-wf98ys:/${namespace}/${pvc}`,
+        RESTIC_REPOSITORY: `gs:homelab-volsync-697438:/${namespace}/${pvc}`,
         RESTIC_PASSWORD: secretRef("restic-password"),
       }),
       {
