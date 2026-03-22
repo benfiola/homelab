@@ -1,5 +1,11 @@
 import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
-import { Chart, getSecurityContext, Namespace, TcpRoute } from "../../cdk8s";
+import {
+  Chart,
+  getAssetsServerUrl,
+  getSecurityContext,
+  Namespace,
+  TcpRoute,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { gameServerImage } from "../../game-server-images";
 
@@ -8,6 +14,16 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new Namespace(chart);
 
   const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
+
+  const mods = [
+    "BackendURLRewriter-1.0.0.zip",
+    "DynamicMaps-1.0.5.zip",
+    "LootingBots-1.6.3.zip",
+    "RaidReview-1.0.2.3.zip",
+    "SAIN-4.4.0.zip",
+    "StatTrack-2.0.0.7z",
+    "UIFixes-5.3.7.zip",
+  ].map((m) => getAssetsServerUrl(`single-player-tarkov/${m}`));
 
   new StatefulSet(chart, `${id}-stateful-set`, {
     metadata: {
@@ -43,8 +59,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
                 { name: "LOG_LEVEL", value: "debug" },
                 {
                   name: "MOD_URLS",
-                  value:
-                    "https://github.com/njzydark/SPT-Backend-URL-Rewriter-Mod/releases/download/v1.0.0/SPT.Backend.URL.Rewriter.Release.1.0.0.zip",
+                  value: mods.join(" "),
                 },
               ],
             },
