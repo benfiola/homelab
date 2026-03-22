@@ -837,7 +837,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // single-player-tarkov
   policy("single-player-tarkov-to-assets-server").allowBetween(
-    pod("minecraft", "minecraft"),
+    pod("single-player-tarkov", "single-player-tarkov"),
     pod("bucket-server-assets-server", "assets-server"),
     tcp(8080),
   );
