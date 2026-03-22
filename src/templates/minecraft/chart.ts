@@ -36,7 +36,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 { name: "VERSION", value: "1.21.11" },
                 {
                   name: "MODPACK",
-                  value: `http://${bucketServerService.name}.${chart.namespace}.svc/mods.zip`,
+                  value: `http://assets-server.assets-server.svc/minecraft/mods.zip`,
                 },
                 { name: "TYPE", value: "FABRIC" },
               ],
