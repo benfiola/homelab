@@ -1110,7 +1110,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("gateway-trusted-to-single-player-tarkov").allowBetween(
     gateway("trusted"),
     pod("single-player-tarkov", "single-player-tarkov"),
-    tcp(6969, 7829),
+    tcp(6969, 7828, 7829),
   );
 
   policy("gateway-trusted-to-tunnel").allowBetween(

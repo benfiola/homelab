@@ -147,7 +147,15 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   new TcpRoute(chart, "trusted", "spt.bulia.dev", 6969, service, 6969);
-  new TcpRoute(chart, "trusted", "spt.bulia.dev", 7828, service, 7828);
+
+  new TcpRoute(
+    chart,
+    "trusted",
+    "raid-review.spt.bulia.dev",
+    7828,
+    service,
+    7828,
+  );
   new HttpRoute(chart, "trusted", "raid-review.spt.bulia.dev").match(
     service,
     7829,
