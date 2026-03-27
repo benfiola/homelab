@@ -24,6 +24,7 @@
 - template: minecraft
 - template: monitoring-config
 - template: network-policy
+- template: node-feature-discovery
 - template: piraeus-operator
 - template: postfix
 - template: prometheus
