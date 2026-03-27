@@ -6,7 +6,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id);
 
-  new Namespace(chart, { privileged: true });
+  new Namespace(chart);
 
   const securityContext = getSecurityContext();
 
