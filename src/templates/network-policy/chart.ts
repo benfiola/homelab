@@ -624,6 +624,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("host-to-node-feature-discovery").allowBetween(
+    host(),
+    pod("node-feature-discovery", "node-feature-discovery"),
+    tcp(8080),
+  );
+
   // piraeus-operator
   policy("host-to-linstor-affinity-controller").allowBetween(
     host(),
