@@ -22,6 +22,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           ffmpeg: {
             hwaccel_args: "preset-vaapi",
           },
+          inputs: [
+            {
+              path: "rtsp://viewer:{FRIGATE_RTSP_PASSWORD}@198.51.100.1:554/cam/realmonitor?channel=1&subtype=2",
+              roles: ["detect"],
+            },
+          ],
         },
       },
       detectors: {
