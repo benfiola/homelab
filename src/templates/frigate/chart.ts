@@ -27,8 +27,28 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     }),
     env: {
       HOME: "/tmp/home",
-      S6_YES_I_WANT_A_WORLD_WRITABLE_RUN_BECAUSE_KUBERNETES: "1",
+      S6_READ_ONLY_ROOT: "1",
     },
+    extraVolumes: [
+      {
+        name: "home",
+        emptyDir: {},
+      },
+      {
+        name: "run",
+        emptyDir: {},
+      },
+    ],
+    extraVolumeMounts: [
+      {
+        name: "home",
+        mountPath: "/tmp/home",
+      },
+      {
+        name: "run",
+        mountPath: "/run",
+      },
+    ],
     nodeSelector: {
       "intel.feature.node.kubernetes.io/gpu": "true",
     },
