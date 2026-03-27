@@ -275,7 +275,7 @@ const configureLogger = async (logFormat: LogFormat, logLevel: LogLevel) => {
 const main = async () => {
   // each call to `exec.ts/spawn` briefly attaches event listeners to `processs` to gracefully terminate shut down processes
   // during an async fanout (e.g., 'generate-manifests' or 'generate-libs'), the default max listeners limit (10) gets reached.
-  process.setMaxListeners(30);
+  process.setMaxListeners(50);
 
   const homeDir = homedir();
   const projectDir = join(__dirname, "..");

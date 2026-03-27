@@ -17,6 +17,8 @@
 - template: gateway-route-sync
 - template: grafana
 - template: grafana-operator
+- template: intel-device-plugins
+- template: intel-device-plugins-operator
 - template: kube-state-metrics
 - template: linstor
 - template: loki

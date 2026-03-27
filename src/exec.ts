@@ -32,13 +32,16 @@ export const spawn = (cmd: string[], opts: SpawnOpts = {}) => {
     cancelled = true;
   };
 
+  const cleanup = () => {
+    process.removeListener("SIGINT", cancel);
+    process.removeListener("SIGTERM", cancel);
+  };
+
   process.on("SIGINT", cancel);
   process.on("SIGTERM", cancel);
 
-  proc.on("close", () => {
-    process.removeListener("SIGINT", cancel);
-    process.removeListener("SIGTERM", cancel);
-  });
+  proc.on("close", cleanup);
+  proc.on("error", cleanup);
 
   return { process: proc, cancel };
 };
