@@ -1,3 +1,4 @@
+import { ApiObject } from "cdk8s";
 import {
   Chart,
   findApiObject,
@@ -15,14 +16,23 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
 
-  new VerticalPodAutoscaler(
-    chart,
-    findApiObject(chart, {
-      apiVersion: "apps/v1",
-      kind: "Deployment",
-      name: "inteldeviceplugins-controller-manager",
-    }),
-  );
+  const deployment = findApiObject(chart, {
+    apiVersion: "apps/v1",
+    kind: "Deployment",
+    name: "inteldeviceplugins-controller-manager",
+  });
+
+  patchPodLabel(deployment, id);
+
+  new VerticalPodAutoscaler(chart, deployment);
 
   return chart;
+};
+
+const patchPodLabel = (deployment: ApiObject, name: string) => {
+  const props = (deployment as any).props;
+  props.spec.template.metadata.labels = {
+    ...props.spec.template.metadata.labels,
+    "app.kubernetes.io/name": name,
+  };
 };

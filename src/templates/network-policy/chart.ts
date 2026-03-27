@@ -405,6 +405,19 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(8081),
   );
 
+  // intel-device-plugins-operator
+  policy("intel-device-plugins-operator-to-control-plane").allowBetween(
+    pod("controller-manager", "intel-device-plugins-operator"),
+    controlPlane(),
+    tcp(6443),
+  );
+
+  policy("host-to-intel-device-plugins-operator").allowBetween(
+    host(),
+    pod("controller-manager", "intel-device-plugins-operator"),
+    tcp(8081),
+  );
+
   // kube-state-metrics
   policy("kube-state-metrics-to-control-plane").allowBetween(
     component("metrics", "kube-state-metrics"),
@@ -603,6 +616,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .targets(pod("minecraft", "minecraft"))
     .allowEgressTo(dns("meta.fabricmc.net"), tcp(443))
     .allowEgressTo(dns("maven.fabricmc.net"), tcp(443));
+
+  // node-feature-discovery
+  policy("node-feature-discovery-to-control-plane").allowBetween(
+    pod("node-feature-discovery", "node-feature-discovery"),
+    controlPlane(),
+    tcp(6443),
+  );
 
   // piraeus-operator
   policy("host-to-linstor-affinity-controller").allowBetween(
