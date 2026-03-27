@@ -415,7 +415,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("host-to-intel-device-plugins-operator").allowBetween(
     host(),
     pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
-    tcp(8081),
+    tcp(8081, 9443),
   );
 
   // kube-state-metrics
@@ -621,6 +621,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("node-feature-discovery-to-control-plane").allowBetween(
     pod("node-feature-discovery", "node-feature-discovery"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("node-feature-discovery-to-host").allowBetween(
+    pod("node-feature-discovery", "node-feature-discovery"),
+    host(),
     tcp(6443),
   );
 
