@@ -12,7 +12,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id);
 
-  new Namespace(chart);
+  new Namespace(chart, { privileged: true });
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
 
