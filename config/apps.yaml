@@ -10,6 +10,7 @@
 - template: external-snapshotter
 - template: flux-bootstrap
   flux: false
+- template: frigate
 - template: garage
 - template: garage-operator
 - template: gateway
