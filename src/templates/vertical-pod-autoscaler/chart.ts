@@ -126,5 +126,10 @@ const patchCorrectAdmissionControllerClusterRole = async (obj: Helm) => {
       resources: ["mutatingwebhookconfigurations"],
       verbs: ["create", "delete", "get", "list", "update", "watch"],
     },
+    {
+      apiGroups: ["garage.rajsingh.info"],
+      resources: ["garageclusters/scale"],
+      verbs: ["get"],
+    },
   );
 };
