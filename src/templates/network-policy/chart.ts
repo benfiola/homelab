@@ -406,6 +406,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // intel-device-plugins-operator
+  policy("control-plane-to-intel-device-plugins-operator").allowBetween(
+    controlPlane(),
+    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
+    tcp(9443),
+  );
+
   policy("intel-device-plugins-operator-to-control-plane").allowBetween(
     pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
     controlPlane(),
