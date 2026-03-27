@@ -25,6 +25,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         enabled: false,
       },
     }),
+    env: {
+      HOME: "/tmp/home",
+      S6_YES_I_WANT_A_WORLD_WRITABLE_RUN_BECAUSE_KUBERNETES: "1",
+    },
     nodeSelector: {
       "intel.feature.node.kubernetes.io/gpu": "true",
     },
