@@ -64,6 +64,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     }),
     envFromSecrets: [secrets.name],
+    image: {
+      tag: "0.17.1",
+    },
     nodeSelector: {
       "intel.feature.node.kubernetes.io/gpu": "true",
     },
