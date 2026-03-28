@@ -1121,6 +1121,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(8081),
   );
 
+  policy("gateway-trusted-to-frigate").allowBetween(
+    gateway("trusted"),
+    pod("frigate", "frigate"),
+    tcp(8971),
+  );
+
   policy("gateway-trusted-to-grafana").allowBetween(
     gateway("trusted"),
     pod("grafana", "grafana"),
