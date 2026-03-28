@@ -92,7 +92,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new HttpRoute(chart, "trusted", "frigate.bulia.dev").match(
     findApiObject(chart, {
-      apiVersion: "",
+      apiVersion: "v1",
       kind: "Service",
       name: "frigate",
     }),
