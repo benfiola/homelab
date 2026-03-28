@@ -88,6 +88,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Deployment",
       name: "frigate",
     }),
+    { advisory: true },
   );
 
   new HttpRoute(chart, "trusted", "frigate.bulia.dev").match(
