@@ -509,6 +509,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(3100),
   );
 
+  policy("loki-gateway-to-loki-read").allowBetween(
+    component("gateway", "loki"),
+    component("read", "loki"),
+    tcp(3100),
+  );
+
   policy("loki-gateway-to-loki-write").allowBetween(
     component("gateway", "loki"),
     component("write", "loki"),
