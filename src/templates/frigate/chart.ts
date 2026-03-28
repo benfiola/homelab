@@ -57,6 +57,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       mqtt: {
         enabled: false,
       },
+      telemetry: {
+        stats: {
+          intel_gpu_stats: false,
+        },
+      },
     }),
     envFromSecrets: [secrets.name],
     nodeSelector: {
