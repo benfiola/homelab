@@ -3,6 +3,7 @@ import {
   Chart,
   findApiObject,
   Helm,
+  HttpRoute,
   Namespace,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
@@ -87,6 +88,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Deployment",
       name: "frigate",
     }),
+  );
+
+  new HttpRoute(chart, "trusted", "frigate.bulia.dev").match(
+    findApiObject(chart, {
+      apiVersion: "",
+      kind: "Service",
+      name: "frigate",
+    }),
+    8971,
   );
 
   return chart;
