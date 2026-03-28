@@ -1,3 +1,4 @@
+import { Secret } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   findApiObject,
@@ -13,6 +14,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, id);
 
   new Namespace(chart, { privileged: true });
+
+  const secrets = new Secret(chart, `${id}-secrets`, {
+    metadata: {
+      name: "secrets",
+    },
+    stringData: {
+      FRIGATE_RTSP_PASSWORD: "super-insecure",
+    },
+  });
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: stringify({
@@ -48,6 +58,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         enabled: false,
       },
     }),
+    envFromSecrets: [secrets.name],
     nodeSelector: {
       "intel.feature.node.kubernetes.io/gpu": "true",
     },
