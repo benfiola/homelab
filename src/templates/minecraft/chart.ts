@@ -1,4 +1,9 @@
-import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
+import {
+  PersistentVolumeClaimTemplate,
+  Quantity,
+  Service,
+  StatefulSet,
+} from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   getAssetsServerUrl,
@@ -53,9 +58,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 },
               ],
               securityContext: securityContext.container,
+              volumeMounts: [
+                {
+                  name: "data",
+                  mountPath: "/data",
+                },
+              ],
             },
           ],
           securityContext: securityContext.pod,
+          volumes: [
+            {
+              metadata: {
+                name: "data",
+              },
+              spec: {
+                accessModes: ["ReadWriteOnce"],
+                resources: {
+                  requests: {
+                    storage: Quantity.fromString("10Gi"),
+                  },
+                },
+                storageClassName: "replicated",
+              },
+            } as PersistentVolumeClaimTemplate,
+          ] as any,
         },
       },
     },

@@ -1,4 +1,9 @@
-import { Service, StatefulSet } from "../../../assets/kubernetes/k8s";
+import {
+  PersistentVolumeClaimTemplate,
+  Quantity,
+  Service,
+  StatefulSet,
+} from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   getAssetsServerUrl,
@@ -84,7 +89,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
                 },
               ],
               securityContext: securityContext.container,
-              volumeMounts: [{ name: "cache", mountPath: "/cache" }],
+              volumeMounts: [
+                { name: "cache", mountPath: "/cache" },
+                { name: "data", mountPath: "/data" },
+              ],
               env: [
                 {
                   name: "CONFIG_PATCHES",
@@ -111,13 +119,27 @@ export const chart: TemplateChartFn = async (construct, id) => {
             accessModes: ["ReadWriteOnce"],
             resources: {
               requests: {
-                storage: "10Gi",
+                storage: Quantity.fromString("10Gi"),
+              },
+            },
+            storageClassName: "standard",
+          },
+        } as PersistentVolumeClaimTemplate,
+        {
+          metadata: {
+            name: "data",
+          },
+          spec: {
+            accessModes: ["ReadWriteOnce"],
+            resources: {
+              requests: {
+                storage: Quantity.fromString("10Gi"),
               },
             },
             storageClassName: "replicated",
           },
-        } as any,
-      ],
+        } as PersistentVolumeClaimTemplate,
+      ] as any,
     },
   });
 
@@ -147,19 +169,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   new TcpRoute(chart, "trusted", "spt.bulia.dev", 6969, service, 6969);
-
-  new TcpRoute(
-    chart,
-    "trusted",
-    "raid-review.spt.bulia.dev",
-    7828,
-    service,
-    7828,
-  );
-  new HttpRoute(chart, "trusted", "raid-review.spt.bulia.dev").match(
-    service,
-    7829,
-  );
+  new TcpRoute(chart, "trusted", "spt.bulia.dev", 7828, service, 7828);
+  new HttpRoute(chart, "trusted", "spt.bulia.dev").match(service, 7829);
 
   return chart;
 };
