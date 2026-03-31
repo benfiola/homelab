@@ -1,4 +1,3 @@
-import { Include } from "cdk8s";
 import {
   Chart,
   findApiObject,
@@ -14,10 +13,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
-
-  new Include(chart, `${id}-node-feature-rules`, {
-    url: context.getAsset("node-feature-rules.yaml"),
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    worker: {
+      config: {
+        core: {
+          labelSources: ["kernel", "pci"],
+        },
+      },
+    },
   });
 
   new VerticalPodAutoscaler(
