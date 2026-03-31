@@ -1,6 +1,5 @@
 import {
   PersistentVolumeClaimTemplate,
-  Quantity,
   Service,
   StatefulSet,
 } from "../../../assets/kubernetes/k8s";
@@ -119,7 +118,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
             accessModes: ["ReadWriteOnce"],
             resources: {
               requests: {
-                storage: Quantity.fromString("10Gi"),
+                storage: "10Gi" as any,
               },
             },
             storageClassName: "standard",
@@ -133,7 +132,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
             accessModes: ["ReadWriteOnce"],
             resources: {
               requests: {
-                storage: Quantity.fromString("10Gi"),
+                storage: "10Gi" as any,
               },
             },
             storageClassName: "replicated",
