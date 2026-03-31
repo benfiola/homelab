@@ -66,24 +66,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             },
           ],
           securityContext: securityContext.pod,
-          volumes: [
-            {
-              metadata: {
-                name: "data",
-              },
-              spec: {
-                accessModes: ["ReadWriteOnce"],
-                resources: {
-                  requests: {
-                    storage: "10Gi" as any,
-                  },
-                },
-                storageClassName: "replicated",
-              },
-            } as PersistentVolumeClaimTemplate,
-          ] as any,
         },
       },
+      volumeClaimTemplates: [
+        {
+          metadata: {
+            name: "data",
+          },
+          spec: {
+            accessModes: ["ReadWriteOnce"],
+            resources: {
+              requests: {
+                storage: "10Gi" as any,
+              },
+            },
+            storageClassName: "replicated",
+          },
+        } as PersistentVolumeClaimTemplate,
+      ] as any,
     },
   });
 
