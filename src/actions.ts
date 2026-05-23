@@ -1,6 +1,6 @@
 import { App } from "cdk8s";
-import { glob, mkdir, rename, rm, writeFile } from "fs/promises";
-import { basename, dirname, join } from "path";
+import { glob, mkdir, readFile, rename, rm, writeFile } from "fs/promises";
+import path, { basename, dirname, join } from "path";
 import { createInterface } from "readline/promises";
 import { waitFor } from "./async";
 import * as config from "./config";
@@ -537,6 +537,37 @@ export const generateManifests = async (
     const synthManifestPath = await findSynthAppManifest(output, chart.node.id);
     await processSynthAppManifest(chart.node.id, synthManifestPath, output);
   });
+  await Promise.all(promises);
+};
+
+interface GenerateNetworkConfigOpts {
+  filter?: string[];
+}
+
+export const generateNetworkConfig = async (
+  configDir: string,
+  output: string,
+  opts: GenerateNetworkConfigOpts = {},
+) => {
+  const networkConfigFiles = await config.getNetworkConfigFiles(configDir);
+  const secrets = await config.getNetworkSecrets(configDir);
+
+  await rm(output, { force: true, recursive: true });
+  await mkdir(output);
+
+  const render = (template: string, data: any) => {
+    const fn = new Function(...Object.keys(data), `return \`${template}\``);
+    return fn(...Object.values(data));
+  };
+
+  const promises = Object.entries(networkConfigFiles).map(
+    async ([outFileName, inPath]) => {
+      const templateString = (await readFile(inPath)).toString();
+      const processed = render(templateString, secrets);
+      const outPath = path.join(output, outFileName);
+      await writeFile(outPath, processed);
+    },
+  );
   await Promise.all(promises);
 };
 

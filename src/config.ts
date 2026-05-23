@@ -134,6 +134,15 @@ export const getFluxConfig = async (configDir: string) => {
   return config;
 };
 
+export const getNetworkConfigFiles = async (configDir: string) => {
+  const files: Record<string, string> = {};
+  for await (const filePath of glob(`${configDir}/network-*`)) {
+    const outFileName = pathParse(filePath).base.replace("network-", "");
+    files[outFileName] = filePath;
+  }
+  return files;
+};
+
 const storageConfigSchema = zod.object({
   bucket: zod.string(),
 });
@@ -186,6 +195,20 @@ export const getFluxSecrets = async (configDir: string) => {
   return config;
 };
 
+const networkSecretsSchema = zod.object({
+  router: zod.object({
+    wireguardKey: zod.string(),
+  }),
+});
+
+export const getNetworkSecrets = async (configDir: string) => {
+  const path = await getSecretsPath("network", configDir);
+  const dataStr = (await readFile(path)).toString();
+  const data = await parse(dataStr);
+  const config = await networkSecretsSchema.parseAsync(data);
+  return config;
+};
+
 const vaultSecretsSchema = zod.object({
   rootToken: zod.string(),
   unsealKey: zod.string(),
@@ -201,7 +224,7 @@ export const getVaultSecrets = async (configDir: string) => {
   return config;
 };
 
-export const secrets = ["apps", "flux", "vault", "talos"] as const;
+export const secrets = ["apps", "flux", "network", "vault", "talos"] as const;
 export type Secret = (typeof secrets)[number];
 
 export const isSecret = (v: any): v is Secret => {

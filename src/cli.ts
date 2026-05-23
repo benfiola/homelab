@@ -205,6 +205,20 @@ const generateManifests = async (opts: GenerateManifestOpts) => {
   status("success", "Done");
 };
 
+interface GenerateNetworkConfigOpts {
+  configDir: string;
+  filter?: string[];
+  output: string;
+}
+
+const generateNetworkConfig = async (opts: GenerateNetworkConfigOpts) => {
+  status("work", "Generating network configuration...");
+  await actions.generateNetworkConfig(opts.configDir, opts.output, {
+    filter: opts.filter,
+  });
+  status("success", "Done");
+};
+
 interface GenerateTalosImagesOpts {
   configDir: string;
 }
@@ -284,6 +298,7 @@ const main = async () => {
   const defaultLogLevel = "status";
   const defaultAssetsDir = join(projectDir, "assets");
   const defaultManifestsDir = join(projectDir, "manifests");
+  const defaultNetworkConfigDir = join(projectDir, "network-config");
   const defaultTalosconfigPath = join(homeDir, ".talos", "config");
 
   program.description("homelab administration cli").enablePositionalOptions();
@@ -339,6 +354,14 @@ const main = async () => {
     .option("--filter [apps...]", "filter generated manifests", [])
     .option("--output <path>", "generated manifests path", defaultManifestsDir)
     .action(generateManifests);
+
+  program
+    .command("generate-network-config")
+    .description("generates configuration for networking devices")
+    .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
+    .option("--filter [apps...]", "filter generated manifests", [])
+    .option("--output <path>", "generated config path", defaultNetworkConfigDir)
+    .action(generateNetworkConfig);
 
   program
     .command("generate-talos-images [version]")
