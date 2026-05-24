@@ -195,9 +195,31 @@ export const getFluxSecrets = async (configDir: string) => {
   return config;
 };
 
+const keyPairSchema = zod.object({
+  public: zod.string(),
+  private: zod.string(),
+});
+
 const networkSecretsSchema = zod.object({
-  router: zod.object({
-    wireguardKey: zod.string(),
+  wifi: zod.record(
+    zod.string(),
+    zod.object({
+      key: zod.string(),
+    }),
+  ),
+  wireguard: zod.object({
+    devices: zod.record(
+      zod.string(),
+      zod.object({
+        keyPair: keyPairSchema,
+      }),
+    ),
+    interfaces: zod.record(
+      zod.string(),
+      zod.object({
+        keyPair: keyPairSchema,
+      }),
+    ),
   }),
 });
 

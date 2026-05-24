@@ -22,13 +22,19 @@
 # add ports to bridges
 /interface/bridge/port/add bridge=bridge interface=sfp-sfpplus1 frame-types=admit-only-vlan-tagged 
 
-# create wireguard interfaces 
-# /interface/wireguard/add name=wg-personal listen-port=13231 mtu=1420 private-key="${wireguardKey}"
+# create wireguard interfaces
+/interface/wireguard/add name=wg-users listen-port=13231 mtu=1420 private-key="${wireguard.interfaces.users.keyPair.private}"
+/interface/wireguard/add name=wg-personal listen-port=13232 mtu=1420 private-key="${wireguard.interfaces.users.keyPair.private}"
+/interface/wireguard/add name=wg-iot listen-port=13233 mtu=1420 private-key="${wireguard.interfaces.iot.keyPair.private}"
+/interface/wireguard/add name=wg-infrastructure listen-port=13234 mtu=1420 private-key="${wireguard.interfaces.infrastructure.keyPair.private}"
+/interface/wireguard/add name=wg-management listen-port=13235 mtu=1420 private-key="${wireguard.interfaces.management.keyPair.private}"
 
 # create wireguard peers
-# /interface/wireguard/peers/add allowed-address=192.168.17.2/32 interface=wg-personal name=bfiola-iphone persistent-keepalive=25s public-key="QCU98RVjgQPLf37bMohtP4xfB339jAwoQMw7uH8WFws="
-# /interface/wireguard/peers/add allowed-address=192.168.17.3/32 interface=wg-personal name=bfiola-work-laptop persistent-keepalive=25s public-key="ifWdY8DcGOpokludeMaUycJ0+pIN6LJs3qU9tnCjak8="
-# /interface/wireguard/peers/add allowed-address=192.168.17.4/32 interface=wg-personal name=bfiola-home-laptop persistent-keepalive=25s public-key="wHy7pn0GmN5ytVTSWLoszycLMI1sCBm+nF9a/GtudUw="
+/interface/wireguard/peers/add allowed-address=192.168.8.0/24 interface=wg-personal name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
+/interface/wireguard/peers/add allowed-address=192.168.16.0/24 interface=wg-users name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
+/interface/wireguard/peers/add allowed-address=192.168.24.0/24 interface=wg-iot name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
+/interface/wireguard/peers/add allowed-address=192.168.32.0/24 interface=wg-infrastructure name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
+/interface/wireguard/peers/add allowed-address=192.168.88.0/24 interface=wg-management name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
 
 # create vlan interfaces
 /interface/vlan/add name=users interface=bridge vlan-id=8
@@ -40,15 +46,19 @@
 # create interface lists
 /interface/list/add name=USERS
 /interface/list/member/add list=USERS interface=users
+/interface/list/member/add list=USERS interface=wg-users
 /interface/list/add name=PERSONAL
 /interface/list/member/add list=PERSONAL interface=personal
-# /interface/list/member/add list=PERSONAL interface=wg-personal
+/interface/list/member/add list=PERSONAL interface=wg-personal
 /interface/list/add name=IOT
 /interface/list/member/add list=IOT interface=iot
+/interface/list/member/add list=IOT interface=wg-iot
 /interface/list/add name=INFRASTRUCTURE
 /interface/list/member/add list=INFRASTRUCTURE interface=infrastructure
+/interface/list/member/add list=INFRASTRUCTURE interface=wg-infrastructure
 /interface/list/add name=MANAGEMENT
 /interface/list/member/add list=MANAGEMENT interface=management
+/interface/list/member/add list=MANAGEMENT interface=wg-management
 /interface/list/add name=RESCUE
 /interface/list/member/add list=RESCUE interface=ether10
 /interface/list/add name=WAN
@@ -57,11 +67,15 @@
 
 # define interface networks
 /ip/address/add address=192.168.8.1/24 interface=users network=192.168.8.0
+/ip/address/add address=192.168.8.1/24 interface=wg-users network=192.168.8.0
 /ip/address/add address=192.168.16.1/24 interface=personal network=192.168.16.0
-# /ip/address/add address=192.168.17.1/24 interface=wg-personal network=192.168.17.0
+/ip/address/add address=192.168.16.1/24 interface=wg-personal network=192.168.16.0
 /ip/address/add address=192.168.24.1/24 interface=iot network=192.168.24.0
+/ip/address/add address=192.168.24.1/24 interface=wg-iot network=192.168.24.0
 /ip/address/add address=192.168.32.1/23 interface=infrastructure network=192.168.32.0
+/ip/address/add address=192.168.32.1/23 interface=wg-infrastructure network=192.168.32.0
 /ip/address/add address=192.168.88.1/24 interface=management network=192.168.88.0
+/ip/address/add address=192.168.88.1/24 interface=wg-management network=192.168.88.0
 /ip/address/add address=192.168.255.1/24 interface=ether10 network=192.168.255.0
 
 # create ip pools
@@ -74,10 +88,15 @@
 
 # create dhcp servers
 /ip/dhcp-server/add name=users address-pool=users interface=users lease-time=10m
+/ip/dhcp-server/add name=wg-users address-pool=users interface=wg-users lease-time=10m
 /ip/dhcp-server/add name=personal address-pool=personal interface=personal lease-time=10m
+/ip/dhcp-server/add name=wg-personal address-pool=personal interface=wg-personal lease-time=10m
 /ip/dhcp-server/add name=iot address-pool=iot interface=iot lease-time=10m
+/ip/dhcp-server/add name=wg-iot address-pool=iot interface=wg-iot lease-time=10m
 /ip/dhcp-server/add name=infrastructure address-pool=infrastructure interface=infrastructure lease-time=10m
+/ip/dhcp-server/add name=wg-infrastructure address-pool=infrastructure interface=wg-infrastructure lease-time=10m
 /ip/dhcp-server/add name=management address-pool=management interface=management lease-time=10m
+/ip/dhcp-server/add name=wg-management address-pool=management interface=wg-management lease-time=10m
 /ip/dhcp-server/add name=rescue address-pool=rescue interface=ether10 lease-time=10m
 
 # create dhcp server network
@@ -89,7 +108,6 @@
 /ip/dhcp-server/network/add comment=rescue address=192.168.255.0/24 dns-server=192.168.88.1 gateway=192.168.255.1 netmask=24
 
 # create dhcp clients 
-# NOTE: this appears to be automatically created
 /ip/dhcp-client/add interface=ether1
 
 # assign static ips
@@ -130,7 +148,7 @@
 /ip/firewall/filter/add chain=input action=drop connection-state=invalid comment="drop invalid"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=RESCUE comment="accept rescue"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=VLAN dst-port=53,67 protocol=udp comment="accept vlan (dns,dhcp)"
-/ip/firewall/filter/add chain=input action=accept dst-port=13231 protocol=udp comment="accept wireguard"
+/ip/firewall/filter/add chain=input action=accept dst-port=13231-13235 protocol=udp comment="accept wireguard"
 /ip/firewall/filter/add chain=input action=passthrough comment=router-policy-sync::marker disabled=yes
 /ip/firewall/filter/add chain=input action=drop comment="drop unaccepted"
 /ip/firewall/filter/add chain=forward action=fasttrack connection-state=established,related comment="fasttrack established,related"
