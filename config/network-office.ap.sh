@@ -59,11 +59,13 @@ add_list network.@bridge-vlan[-1].ports='eth0:t'
 
 # create network interfaces
 set network.users=interface
-set network.users.proto='none'
+set network.users.proto='dhcp'
 set network.users.device='br-users'
+set network.users.multipath='off'
 set network.iot=interface
-set network.iot.proto='none'
+set network.iot.proto='dhcp'
 set network.iot.device='br-iot'
+set network.iot.multipath='off'
 set network.management=interface
 set network.management.proto='static'
 set network.management.device='br-management'
