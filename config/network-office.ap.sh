@@ -73,7 +73,8 @@ set network.rescue=interface
 set network.rescue.proto='static'
 set network.rescue.device='lan5'
 set network.rescue.ipaddr='192.168.255.1/24'
-set network.rescue.netmask='255.255.255.0'
+set network.rescue.multipath='off'
+
 
 # create dhcp servers
 set dhcp.rescue=dhcp
