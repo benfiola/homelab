@@ -121,6 +121,7 @@
 /ip/dns/static/add name=router.bulia.dev address=192.168.88.1 ttl=10m
 /ip/dns/static/add name=core.switch.bulia.dev address=192.168.88.2 ttl=10m
 /ip/dns/static/add name=cluster.switch.bulia.dev address=192.168.88.3 ttl=10m
+/ip/dns/static/add name=office.ap.bulia.dev address=192.168.88.4 ttl=10m
 
 # create bgp template
 # NOTE: this appears to be automatically created

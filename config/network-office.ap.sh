@@ -11,24 +11,14 @@ uci delete dhcp.wan || true
 uci delete network.lan || true
 uci delete network.wan || true
 uci delete network.wan6 || true
+uci delete wireless.default_radio0 || true
+uci delete wireless.default_radio1 || true
 
 uci batch <<EOF
 # set general settings
-set system.@system[0].hostname='office.ap.bulia'
+set system.@system[0].hostname='office.ap'
 set system.@system[0].zonename='America/Los_Angeles'
-set uhttpd.defaults.commonname='office.ap.bulia'
-
-# create dhcp servers
-set dhcp.rescue=dhcp
-set dhcp.rescue.interface='rescue'
-set dhcp.rescue.start='10'
-set dhcp.rescue.limit='245'
-set dhcp.rescue.leasetime='12h'
-
-# configure firewalls
-set firewall.@defaults[0].input='ACCEPT'
-set firewall.@defaults[0].output='ACCEPT'
-set firewall.@defaults[0].forward='ACCEPT'
+set uhttpd.defaults.commonname='office.ap'
 
 # configure network devices
 add network device
@@ -59,11 +49,6 @@ add_list network.@bridge-vlan[-1].ports='eth1:t'
 add network bridge-vlan
 set network.@bridge-vlan[-1]=bridge-vlan
 set network.@bridge-vlan[-1].device='br-trunk'
-set network.@bridge-vlan[-1].vlan='16'
-add_list network.@bridge-vlan[-1].ports='eth1:t'
-add network bridge-vlan
-set network.@bridge-vlan[-1]=bridge-vlan
-set network.@bridge-vlan[-1].device='br-trunk'
 set network.@bridge-vlan[-1].vlan='24'
 add_list network.@bridge-vlan[-1].ports='eth1:t'
 add network bridge-vlan
@@ -80,13 +65,28 @@ set network.iot=interface
 set network.iot.proto='none'
 set network.iot.device='br-iot'
 set network.management=interface
-set network.management.proto='dhcp'
+set network.management.proto='static'
 set network.management.device='br-management'
+set network.management.ipaddr='192.168.88.4/24'
+set network.management.netmask='255.255.255.0'
 set network.rescue=interface
 set network.rescue.proto='static'
 set network.rescue.device='lan5'
-set network.rescue.ipaddr='192.168.255.1'
+set network.rescue.ipaddr='192.168.255.1/24'
 set network.rescue.netmask='255.255.255.0'
+
+# create dhcp servers
+set dhcp.rescue=dhcp
+set dhcp.rescue.interface='rescue'
+set dhcp.rescue.start='10'
+set dhcp.rescue.limit='244'
+set dhcp.rescue.leasetime='12h'
+set dhcp.rescue.dhcpv4='server'
+
+# configure firewalls
+set firewall.@defaults[0].input='ACCEPT'
+set firewall.@defaults[0].output='ACCEPT'
+set firewall.@defaults[0].forward='ACCEPT'
 
 # configure wireless radios
 set wireless.radio0.country='US'
