@@ -25,7 +25,7 @@ add network device
 set network.@device[-1]=device
 set network.@device[-1].type='bridge'
 set network.@device[-1].name='br-trunk'
-add_list network.@device[-1].ports='eth1'
+add_list network.@device[-1].ports='eth0'
 add network device
 set network.@device[-1]=device
 set network.@device[-1].type='bridge'
@@ -45,17 +45,17 @@ add network bridge-vlan
 set network.@bridge-vlan[-1]=bridge-vlan
 set network.@bridge-vlan[-1].device='br-trunk'
 set network.@bridge-vlan[-1].vlan='8'
-add_list network.@bridge-vlan[-1].ports='eth1:t'
+add_list network.@bridge-vlan[-1].ports='eth0:t'
 add network bridge-vlan
 set network.@bridge-vlan[-1]=bridge-vlan
 set network.@bridge-vlan[-1].device='br-trunk'
 set network.@bridge-vlan[-1].vlan='24'
-add_list network.@bridge-vlan[-1].ports='eth1:t'
+add_list network.@bridge-vlan[-1].ports='eth0:t'
 add network bridge-vlan
 set network.@bridge-vlan[-1]=bridge-vlan
 set network.@bridge-vlan[-1].device='br-trunk'
 set network.@bridge-vlan[-1].vlan='88'
-add_list network.@bridge-vlan[-1].ports='eth1:t'
+add_list network.@bridge-vlan[-1].ports='eth0:t'
 
 # create network interfaces
 set network.users=interface
@@ -68,13 +68,12 @@ set network.management=interface
 set network.management.proto='static'
 set network.management.device='br-management'
 set network.management.ipaddr='192.168.88.4/24'
-set network.management.netmask='255.255.255.0'
+set network.management.multipath='off'
 set network.rescue=interface
 set network.rescue.proto='static'
 set network.rescue.device='lan5'
 set network.rescue.ipaddr='192.168.255.1/24'
 set network.rescue.multipath='off'
-
 
 # create dhcp servers
 set dhcp.rescue=dhcp
@@ -83,6 +82,7 @@ set dhcp.rescue.start='10'
 set dhcp.rescue.limit='244'
 set dhcp.rescue.leasetime='12h'
 set dhcp.rescue.dhcpv4='server'
+set dhcp.@dnsmasq[0].interface='rescue'
 
 # configure firewalls
 set firewall.@defaults[0].input='ACCEPT'
@@ -94,8 +94,8 @@ set wireless.radio0.country='US'
 set wireless.radio0.channel='auto'
 set wireless.radio0.htmode='HE20'
 set wireless.radio1.country='US'
-set wireless.radio0.channel='auto'
-set wireless.radio0.htmode='HE80'
+set wireless.radio1.channel='auto'
+set wireless.radio1.htmode='HE80'
 
 # create wireless networks
 set wireless.iot2g=wifi-iface
