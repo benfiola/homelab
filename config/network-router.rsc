@@ -106,6 +106,8 @@
 /ip/dhcp-server/lease/add address=192.168.88.2 server=management mac-address=F4:1E:57:F8:8F:89 comment="core.switch"
 /ip/dhcp-server/lease/add address=192.168.88.3 server=management mac-address=F4:1E:57:F8:96:77 comment="cluster.switch"
 /ip/dhcp-server/lease/add address=192.168.88.4 server=management mac-address=94:83:C4:AB:04:1F comment="office.ap"
+/ip/dhcp-server/lease/add address=192.168.88.5 server=management mac-address=94:83:C4:AB:06:68 comment="bedroom-2.ap"
+/ip/dhcp-server/lease/add address=192.168.88.6 server=management mac-address=94:83:C4:AA:F9:1B comment="living-room.ap"
 
 # assign dns
 /ip/dns/static/add name=router.bulia.dev address=192.168.88.1 ttl=10m
