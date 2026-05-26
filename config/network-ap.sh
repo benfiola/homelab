@@ -109,9 +109,11 @@ set firewall.@defaults[0].forward='ACCEPT'
 set wireless.radio0.country='US'
 set wireless.radio0.channel='auto'
 set wireless.radio0.htmode='HE20'
+set wireless.radio0.cell_density='0'
 set wireless.radio1.country='US'
 set wireless.radio1.channel='auto'
 set wireless.radio1.htmode='HE80'
+set wireless.radio1.cell_density='0'
 
 # create wireless networks
 set wireless.iot2g=wifi-iface
@@ -147,6 +149,7 @@ set wireless.personal2g.ft_over_ds='0'
 set wireless.personal2g.ocv='0'
 set wireless.personal2g.network='personal'
 set wireless.personal2g.reassociation_deadline='20000'
+set wireless.personal2g.hidden='1'
 set wireless.personal5g=wifi-iface
 set wireless.personal5g.device='radio1'
 set wireless.personal5g.mode='ap'
@@ -158,6 +161,7 @@ set wireless.personal5g.ft_over_ds='0'
 set wireless.personal5g.ocv='0'
 set wireless.personal5g.network='personal'
 set wireless.personal5g.reassociation_deadline='20000'
+set wireless.personal5g.hidden='1'
 set wireless.users2g=wifi-iface
 set wireless.users2g.device='radio0'
 set wireless.users2g.mode='ap'
