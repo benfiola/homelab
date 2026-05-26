@@ -2,6 +2,7 @@ import { glob, readFile } from "fs/promises";
 import { join, parse as pathParse } from "path";
 import { parse } from "yaml";
 import * as zod from "zod";
+import { renderTemplate } from "./strings";
 
 const hardwareNameSchema = zod.union([zod.literal("rpi4"), zod.literal("tc")]);
 
@@ -134,13 +135,24 @@ export const getFluxConfig = async (configDir: string) => {
   return config;
 };
 
-export const getNetworkConfigFiles = async (configDir: string) => {
-  const files: Record<string, string> = {};
-  for await (const filePath of glob(`${configDir}/network-*`)) {
-    const outFileName = pathParse(filePath).base.replace("network-", "");
-    files[outFileName] = filePath;
-  }
-  return files;
+const networkOutputSchema = zod.object({
+  file: zod.string(),
+  template: zod.string(),
+  inputs: zod.record(zod.string(), zod.any()).optional().default({}),
+});
+
+const networkConfigSchema = zod.object({
+  outputs: zod.array(networkOutputSchema),
+});
+
+export const getNetworkConfig = async (
+  secrets: NetworkSecrets,
+  configDir: string,
+) => {
+  const path = join(configDir, "network.yaml");
+  const raw = (await readFile(path)).toString();
+  const config = parse(renderTemplate(raw, { secrets }));
+  return networkConfigSchema.parseAsync(config);
 };
 
 const storageConfigSchema = zod.object({
@@ -201,27 +213,14 @@ const keyPairSchema = zod.object({
 });
 
 const networkSecretsSchema = zod.object({
-  wifi: zod.record(
-    zod.string(),
-    zod.object({
-      key: zod.string(),
-    }),
-  ),
+  wifi: zod.record(zod.string(), zod.string()),
   wireguard: zod.object({
-    devices: zod.record(
-      zod.string(),
-      zod.object({
-        keyPair: keyPairSchema,
-      }),
-    ),
-    interfaces: zod.record(
-      zod.string(),
-      zod.object({
-        keyPair: keyPairSchema,
-      }),
-    ),
+    interfaces: zod.record(zod.string(), keyPairSchema),
+    devices: zod.record(zod.string(), keyPairSchema),
   }),
 });
+
+type NetworkSecrets = zod.infer<typeof networkSecretsSchema>;
 
 export const getNetworkSecrets = async (configDir: string) => {
   const path = await getSecretsPath("network", configDir);

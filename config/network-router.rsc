@@ -4,7 +4,7 @@
 /system/identity/set name=router
 
 # create bridge interfaces
-/interface/bridge/add name=bridge admin-mac=78:9A:18:16:98:00 auto-mac=no protocol-mode=none pvid=8 vlan-filtering=yes
+/interface/bridge/add name=bridge admin-mac=78:9A:18:16:98:00 auto-mac=no protocol-mode=none pvid=999 vlan-filtering=yes
 
 # configure vlan for bridge
 /interface/bridge/vlan/add bridge=bridge tagged=bridge,sfp-sfpplus1 vlan-ids=8,16,24,32,88
@@ -23,18 +23,16 @@
 /interface/bridge/port/add bridge=bridge interface=sfp-sfpplus1 frame-types=admit-only-vlan-tagged 
 
 # create wireguard interfaces
-/interface/wireguard/add name=wg-users listen-port=13231 mtu=1420 private-key="${wireguard.interfaces.users.keyPair.private}"
-/interface/wireguard/add name=wg-personal listen-port=13232 mtu=1420 private-key="${wireguard.interfaces.users.keyPair.private}"
-/interface/wireguard/add name=wg-iot listen-port=13233 mtu=1420 private-key="${wireguard.interfaces.iot.keyPair.private}"
-/interface/wireguard/add name=wg-infrastructure listen-port=13234 mtu=1420 private-key="${wireguard.interfaces.infrastructure.keyPair.private}"
-/interface/wireguard/add name=wg-management listen-port=13235 mtu=1420 private-key="${wireguard.interfaces.management.keyPair.private}"
+/interface/wireguard/add name=wg-users listen-port=13231 mtu=1420 private-key="${secrets.wireguard.interfaces.users.private}"
+/interface/wireguard/add name=wg-personal listen-port=13232 mtu=1420 private-key="${secrets.wireguard.interfaces.personal.private}"
+/interface/wireguard/add name=wg-infrastructure listen-port=13233 mtu=1420 private-key="${secrets.wireguard.interfaces.infrastructure.private}"
+/interface/wireguard/add name=wg-management listen-port=13234 mtu=1420 private-key="${secrets.wireguard.interfaces.management.private}"
 
 # create wireguard peers
-/interface/wireguard/peers/add allowed-address=192.168.8.0/24 interface=wg-personal name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
-/interface/wireguard/peers/add allowed-address=192.168.16.0/24 interface=wg-users name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
-/interface/wireguard/peers/add allowed-address=192.168.24.0/24 interface=wg-iot name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
-/interface/wireguard/peers/add allowed-address=192.168.32.0/24 interface=wg-infrastructure name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
-/interface/wireguard/peers/add allowed-address=192.168.88.0/24 interface=wg-management name=bfiola-home-laptop persistent-keepalive=25s public-key="${wireguard.devices['bfiola-home-laptop'].keyPair.public}"
+/interface/wireguard/peers/add allowed-address=192.168.8.231/32 interface=wg-users name=jfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.jfiolaIphone.public}"
+/interface/wireguard/peers/add allowed-address=192.168.16.231/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.public}"
+/interface/wireguard/peers/add allowed-address=192.168.32.231/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.public}"
+/interface/wireguard/peers/add allowed-address=192.168.88.231/32 interface=wg-management name=bfiola-home-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.public}"
 
 # create vlan interfaces
 /interface/vlan/add name=users interface=bridge vlan-id=8
@@ -52,7 +50,6 @@
 /interface/list/member/add list=PERSONAL interface=wg-personal
 /interface/list/add name=IOT
 /interface/list/member/add list=IOT interface=iot
-/interface/list/member/add list=IOT interface=wg-iot
 /interface/list/add name=INFRASTRUCTURE
 /interface/list/member/add list=INFRASTRUCTURE interface=infrastructure
 /interface/list/member/add list=INFRASTRUCTURE interface=wg-infrastructure
@@ -61,42 +58,32 @@
 /interface/list/member/add list=MANAGEMENT interface=wg-management
 /interface/list/add name=RESCUE
 /interface/list/member/add list=RESCUE interface=ether10
+/interface/list/add name=VLAN include=USERS,PERSONAL,IOT,INFRASTRUCTURE,MANAGEMENT
 /interface/list/add name=WAN
 /interface/list/member/add list=WAN interface=ether1
-/interface/list/add name=VLAN include=USERS,PERSONAL,IOT,INFRASTRUCTURE,MANAGEMENT
 
 # define interface networks
 /ip/address/add address=192.168.8.1/24 interface=users network=192.168.8.0
-/ip/address/add address=192.168.8.1/24 interface=wg-users network=192.168.8.0
 /ip/address/add address=192.168.16.1/24 interface=personal network=192.168.16.0
-/ip/address/add address=192.168.16.1/24 interface=wg-personal network=192.168.16.0
 /ip/address/add address=192.168.24.1/24 interface=iot network=192.168.24.0
-/ip/address/add address=192.168.24.1/24 interface=wg-iot network=192.168.24.0
 /ip/address/add address=192.168.32.1/23 interface=infrastructure network=192.168.32.0
-/ip/address/add address=192.168.32.1/23 interface=wg-infrastructure network=192.168.32.0
 /ip/address/add address=192.168.88.1/24 interface=management network=192.168.88.0
-/ip/address/add address=192.168.88.1/24 interface=wg-management network=192.168.88.0
 /ip/address/add address=192.168.255.1/24 interface=ether10 network=192.168.255.0
 
 # create ip pools
-/ip/pool/add name=users ranges=192.168.8.10-192.168.8.254
-/ip/pool/add name=personal ranges=192.168.16.10-192.168.16.254
-/ip/pool/add name=iot ranges=192.168.24.10-192.168.24.254
-/ip/pool/add name=infrastructure ranges=192.168.32.10-192.168.32.254
-/ip/pool/add name=management ranges=192.168.88.10-192.168.88.254
-/ip/pool/add name=rescue ranges=192.168.255.10-192.168.255.254
+/ip/pool/add name=users ranges=192.168.8.2-192.168.8.230
+/ip/pool/add name=personal ranges=192.168.16.2-192.168.16.230
+/ip/pool/add name=iot ranges=192.168.24.2-192.168.24.254
+/ip/pool/add name=infrastructure ranges=192.168.32.2-192.168.32.230
+/ip/pool/add name=management ranges=192.168.88.2-192.168.88.230
+/ip/pool/add name=rescue ranges=192.168.255.2-192.168.255.254
 
 # create dhcp servers
 /ip/dhcp-server/add name=users address-pool=users interface=users lease-time=10m
-/ip/dhcp-server/add name=wg-users address-pool=users interface=wg-users lease-time=10m
 /ip/dhcp-server/add name=personal address-pool=personal interface=personal lease-time=10m
-/ip/dhcp-server/add name=wg-personal address-pool=personal interface=wg-personal lease-time=10m
 /ip/dhcp-server/add name=iot address-pool=iot interface=iot lease-time=10m
-/ip/dhcp-server/add name=wg-iot address-pool=iot interface=wg-iot lease-time=10m
 /ip/dhcp-server/add name=infrastructure address-pool=infrastructure interface=infrastructure lease-time=10m
-/ip/dhcp-server/add name=wg-infrastructure address-pool=infrastructure interface=wg-infrastructure lease-time=10m
 /ip/dhcp-server/add name=management address-pool=management interface=management lease-time=10m
-/ip/dhcp-server/add name=wg-management address-pool=management interface=wg-management lease-time=10m
 /ip/dhcp-server/add name=rescue address-pool=rescue interface=ether10 lease-time=10m
 
 # create dhcp server network
@@ -116,12 +103,17 @@
 /ip/dhcp-server/lease/add address=192.168.24.12 server=iot mac-address=34:08:E1:14:CF:4A comment="Ring (Garage)"
 /ip/dhcp-server/lease/add address=192.168.24.13 server=iot mac-address=18:7F:88:13:CF:67 comment="Ring (Living Room)"
 /ip/dhcp-server/lease/add address=192.168.24.14 server=iot mac-address=EC:0D:E4:C3:92:9C comment="Amazon Echo Studio (Bedroom 2)"
+/ip/dhcp-server/lease/add address=192.168.88.2 server=management mac-address=F4:1E:57:F8:8F:89 comment="core.switch"
+/ip/dhcp-server/lease/add address=192.168.88.3 server=management mac-address=F4:1E:57:F8:96:77 comment="cluster.switch"
+/ip/dhcp-server/lease/add address=192.168.88.4 server=management mac-address=94:83:C4:AB:04:1F comment="office.ap"
 
 # assign dns
 /ip/dns/static/add name=router.bulia.dev address=192.168.88.1 ttl=10m
 /ip/dns/static/add name=core.switch.bulia.dev address=192.168.88.2 ttl=10m
 /ip/dns/static/add name=cluster.switch.bulia.dev address=192.168.88.3 ttl=10m
 /ip/dns/static/add name=office.ap.bulia.dev address=192.168.88.4 ttl=10m
+/ip/dns/static/add name=living-room.ap.bulia.dev address=192.168.88.6 ttl=10m
+/ip/dns/static/add name=bedroom-2.ap.bulia.dev address=192.168.88.5 ttl=10m
 
 # create bgp template
 # NOTE: this appears to be automatically created
@@ -138,18 +130,20 @@
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=users,personal,iot
 
 # configure firewall address lists
-/ip/firewall/address-list/add list=IOT_WAN address=192.168.24.10 comment="Ring (Front Door)"
-/ip/firewall/address-list/add list=IOT_WAN address=192.168.24.11 comment="Ring (Front Yard)"
-/ip/firewall/address-list/add list=IOT_WAN address=192.168.24.12 comment="Ring (Garage)"
-/ip/firewall/address-list/add list=IOT_WAN address=192.168.24.13 comment="Ring (Living Room)"
-/ip/firewall/address-list/add list=IOT_WAN address=192.168.24.14 comment="Amazon Echo Studio (Bedroom 2)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.10 comment="ring doorbell"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.11 comment="ring camera (front yard)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.12 comment="ring camera (garage)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.13 comment="ring chime (living room)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.14 comment="echo studio (bedroom 2)"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_USERS address=192.168.33.2/32 comment="cluster gateway (users)"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 
 # configure firewall
 /ip/firewall/filter/add chain=input action=accept connection-state=established,related comment="accept established,related"
 /ip/firewall/filter/add chain=input action=drop connection-state=invalid comment="drop invalid"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=RESCUE comment="accept rescue"
-/ip/firewall/filter/add chain=input action=accept in-interface-list=VLAN dst-port=53,67 protocol=udp comment="accept vlan (dns,dhcp)"
-/ip/firewall/filter/add chain=input action=accept dst-port=13231-13235 protocol=udp comment="accept wireguard"
+/ip/firewall/filter/add chain=input action=accept dst-port=13231-13234 protocol=udp comment="accept wan -> wireguard"
+/ip/firewall/filter/add chain=input action=accept in-interface-list=VLAN dst-port=53,67 protocol=udp comment="accept vlan -> dns,dhcp"
 /ip/firewall/filter/add chain=input action=passthrough comment=router-policy-sync::marker disabled=yes
 /ip/firewall/filter/add chain=input action=drop comment="drop unaccepted"
 /ip/firewall/filter/add chain=forward action=fasttrack connection-state=established,related comment="fasttrack established,related"
@@ -157,14 +151,15 @@
 /ip/firewall/filter/add chain=forward action=drop connection-state=invalid comment="drop invalid"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=RESCUE comment="accept rescue"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=WAN comment="accept infrastructure -> wan"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_WAN out-interface-list=WAN comment="accept iot (with wan) -> wan"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL dst-address=192.168.33.10 out-interface-list=INFRASTRUCTURE comment="accept personal -> infrastructure (users gateway)"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL dst-address=192.168.33.11 out-interface-list=INFRASTRUCTURE comment="accept personal -> infrastructure (personal gateway)"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_WAN out-interface-list=WAN comment="accept iot (allow wan) -> wan"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_PERSONAL comment="accept personal -> infrastructure (personal ingress)"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_USERS comment="accept personal -> infrastructure (users ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=IOT comment="accept personal -> iot"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=WAN comment="accept personal -> wan"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS dst-address=192.168.33.10 out-interface-list=INFRASTRUCTURE comment="accept users -> infrastructure (users gateway)"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_USERS comment="accept users -> infrastructure (users ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=IOT comment="accept users -> iot"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=WAN comment="accept users -> wan"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=WAN connection-nat-state=dstnat comment="accept dstnat wan"
+
 /ip/firewall/filter/add chain=forward action=drop comment="drop unaccepted"
 /ip/firewall/nat/add chain=srcnat action=masquerade comment=masquerade out-interface-list=WAN

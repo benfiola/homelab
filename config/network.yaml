@@ -1,0 +1,50 @@
+outputs:
+  - file: router.rsc
+    template: network-router.rsc
+
+  - file: ap.office.sh
+    template: network-ap.sh
+    inputs:
+      hostname: office.ap
+
+  - file: ap.living-room.sh
+    template: network-ap.sh
+    inputs:
+      hostname: living-room.ap
+
+  - file: ap.bedroom-2.sh
+    template: network-ap.sh
+    inputs:
+      hostname: bedroom-2.ap
+
+  - file: wireguard.jfiola-iphone.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.jfiolaIphone.private}"
+      address: 192.168.8.231/32
+      publicKey: "${secrets.wireguard.interfaces.users.public}"
+      port: 13231
+
+  - file: wireguard.bfiola-home-laptop-personal.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.bfiolaHomeLaptop.private}"
+      address: 192.168.16.231/32
+      publicKey: "${secrets.wireguard.interfaces.personal.public}"
+      port: 13232
+
+  - file: wireguard.bfiola-home-laptop-infrastructure.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.bfiolaHomeLaptop.private}"
+      address: 192.168.32.231/32
+      publicKey: "${secrets.wireguard.interfaces.infrastructure.public}"
+      port: 13233
+
+  - file: wireguard.bfiola-home-laptop-management.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.bfiolaHomeLaptop.private}"
+      address: 192.168.88.231/32
+      publicKey: "${secrets.wireguard.interfaces.management.public}"
+      port: 13234

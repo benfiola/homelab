@@ -8,7 +8,7 @@ import { exec } from "./exec";
 import * as gcloud from "./gcloud";
 import * as kubernetes from "./kubernetes";
 import { logger } from "./logger";
-import { textblock } from "./strings";
+import { renderTemplate, textblock } from "./strings";
 import * as talos from "./talos";
 import * as templates from "./templates";
 import { getTempy } from "./tempy";
@@ -549,26 +549,28 @@ export const generateNetworkConfig = async (
   output: string,
   opts: GenerateNetworkConfigOpts = {},
 ) => {
-  const networkConfigFiles = await config.getNetworkConfigFiles(configDir);
   const secrets = await config.getNetworkSecrets(configDir);
+  const networkConfig = await config.getNetworkConfig(secrets, configDir);
 
   await rm(output, { force: true, recursive: true });
   await mkdir(output);
 
-  const render = (template: string, data: any) => {
-    const fn = new Function(...Object.keys(data), `return \`${template}\``);
-    return fn(...Object.values(data));
-  };
+  const entries =
+    opts.filter && opts.filter.length > 0
+      ? networkConfig.outputs.filter((e) => opts.filter!.includes(e.file))
+      : networkConfig.outputs;
 
-  const promises = Object.entries(networkConfigFiles).map(
-    async ([outFileName, inPath]) => {
-      const templateString = (await readFile(inPath)).toString();
-      const processed = render(templateString, secrets);
-      const outPath = path.join(output, outFileName);
-      await writeFile(outPath, processed);
-    },
+  await Promise.all(
+    entries.map(async (entry) => {
+      const templatePath = path.join(configDir, entry.template);
+      const template = (await readFile(templatePath)).toString();
+      const rendered = renderTemplate(template, {
+        secrets,
+        inputs: entry.inputs,
+      });
+      await writeFile(path.join(output, entry.file), rendered);
+    }),
   );
-  await Promise.all(promises);
 };
 
 export const generateTalosImages = async (

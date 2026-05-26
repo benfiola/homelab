@@ -70,6 +70,7 @@ $(eval $(call tool-from-apt,git,git))
 $(eval $(call tool-from-apt,jsonnet,jsonnet))
 $(eval $(call tool-from-npm,cdk8s,cdk8s-cli))
 $(eval $(call tool-from-npm,tsx,tsx))
+$(eval $(call tool-from-apt,wg,wireguard-tools))
 
 ciliumcli_arch := $(arch)
 ciliumcli_url := https://github.com/cilium/cilium-cli/releases/download/v$(CILIUMCLI_VERSION)/cilium-linux-$(ciliumcli_arch).tar.gz

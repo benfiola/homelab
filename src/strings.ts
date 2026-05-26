@@ -37,3 +37,8 @@ export const randomString = async (length: number) => {
 
   return result;
 };
+
+export const renderTemplate = (template: string, data: Record<string, any>) => {
+  const fn = new Function(...Object.keys(data), `return \`${template}\``);
+  return fn(...Object.values(data));
+};
