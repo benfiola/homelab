@@ -38,7 +38,26 @@ export const randomString = async (length: number) => {
   return result;
 };
 
+const guardedProxy = (obj: Record<string, any>, path: string): any =>
+  new Proxy(obj, {
+    get(target, key) {
+      if (typeof key === "symbol") {
+        return target[key as any];
+      }
+      const fullPath = path ? `${path}.${key}` : key;
+      const value = target[key];
+      if (value === undefined) {
+        throw new Error(`Template accessed undefined field: ${fullPath}`);
+      }
+      if (value !== null && typeof value === "object") {
+        return guardedProxy(value, fullPath);
+      }
+      return value;
+    },
+  });
+
 export const renderTemplate = (template: string, data: Record<string, any>) => {
+  const guarded = guardedProxy(data, "");
   const fn = new Function(...Object.keys(data), `return \`${template}\``);
-  return fn(...Object.values(data));
+  return fn(...Object.keys(data).map((k) => guarded[k]));
 };
