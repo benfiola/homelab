@@ -21,7 +21,7 @@ outputs:
     template: network-wireguard.conf
     inputs:
       privateKey: "${secrets.wireguard.devices.bfiolaHomeLaptop.personal.private}"
-      address: 192.168.16.231/32
+      address: 192.168.17.2/32
       publicKey: "${secrets.wireguard.interfaces.personal.public}"
       port: 13232
 
@@ -29,7 +29,7 @@ outputs:
     template: network-wireguard.conf
     inputs:
       privateKey: "${secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.private}"
-      address: 192.168.32.231/32
+      address: 192.168.34.2/32
       publicKey: "${secrets.wireguard.interfaces.infrastructure.public}"
       port: 13233
 
@@ -37,7 +37,7 @@ outputs:
     template: network-wireguard.conf
     inputs:
       privateKey: "${secrets.wireguard.devices.bfiolaHomeLaptop.management.private}"
-      address: 192.168.88.231/32
+      address: 192.168.89.2/32
       publicKey: "${secrets.wireguard.interfaces.management.public}"
       port: 13234
 
@@ -45,6 +45,6 @@ outputs:
     template: network-wireguard.conf
     inputs:
       privateKey: "${secrets.wireguard.devices.jfiolaIphone.users.private}"
-      address: 192.168.8.231/32
+      address: 192.168.9.2/32
       publicKey: "${secrets.wireguard.interfaces.users.public}"
       port: 13231
