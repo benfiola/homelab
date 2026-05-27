@@ -33,6 +33,8 @@
 /interface/wireguard/peers/add allowed-address=192.168.17.2/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.personal.public}"
 /interface/wireguard/peers/add allowed-address=192.168.34.2/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.public}"
 /interface/wireguard/peers/add allowed-address=192.168.89.2/32 interface=wg-management name=bfiola-home-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.management.public}"
+/interface/wireguard/peers/add allowed-address=192.168.34.3/32 interface=wg-infrastructure name=bfiola-desktop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaDesktop.infrastructure.public}"
+/interface/wireguard/peers/add allowed-address=192.168.89.3/32 interface=wg-management name=bfiola-desktop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaDesktop.management.public}"
 
 # create vlan interfaces
 /interface/vlan/add name=users interface=bridge vlan-id=8

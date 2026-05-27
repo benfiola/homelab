@@ -17,6 +17,22 @@ outputs:
     inputs:
       hostname: bedroom-2.ap
 
+  - file: wireguard.bfiola-desktop-infrastructure.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.bfiolaDesktop.infrastructure.private}"
+      address: 192.168.34.3/32
+      publicKey: "${secrets.wireguard.interfaces.infrastructure.public}"
+      port: 13233
+
+  - file: wireguard.bfiola-desktop-management.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.bfiolaDesktop.management.private}"
+      address: 192.168.89.3/32
+      publicKey: "${secrets.wireguard.interfaces.management.public}"
+      port: 13234
+
   - file: wireguard.bfiola-home-laptop-personal.conf
     template: network-wireguard.conf
     inputs:
