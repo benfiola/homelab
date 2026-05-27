@@ -29,10 +29,10 @@
 /interface/wireguard/add name=wg-management listen-port=13234 mtu=1420 private-key="${secrets.wireguard.interfaces.management.private}"
 
 # create wireguard peers
-/interface/wireguard/peers/add allowed-address=192.168.8.231/32 interface=wg-users name=jfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.jfiolaIphone.public}"
-/interface/wireguard/peers/add allowed-address=192.168.16.231/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.public}"
-/interface/wireguard/peers/add allowed-address=192.168.32.231/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.public}"
-/interface/wireguard/peers/add allowed-address=192.168.88.231/32 interface=wg-management name=bfiola-home-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.public}"
+/interface/wireguard/peers/add allowed-address=192.168.8.231/32 interface=wg-users name=jfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.jfiolaIphone.users.public}"
+/interface/wireguard/peers/add allowed-address=192.168.16.231/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.personal.public}"
+/interface/wireguard/peers/add allowed-address=192.168.32.231/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.public}"
+/interface/wireguard/peers/add allowed-address=192.168.88.231/32 interface=wg-management name=bfiola-home-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.management.public}"
 
 # create vlan interfaces
 /interface/vlan/add name=users interface=bridge vlan-id=8

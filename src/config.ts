@@ -216,7 +216,7 @@ const networkSecretsSchema = zod.object({
   wifi: zod.record(zod.string(), zod.string()),
   wireguard: zod.object({
     interfaces: zod.record(zod.string(), keyPairSchema),
-    devices: zod.record(zod.string(), keyPairSchema),
+    devices: zod.record(zod.string(), zod.record(zod.string(), keyPairSchema)),
   }),
 });
 
