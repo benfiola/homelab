@@ -1,0 +1,151 @@
+system:
+  identity: cluster.switch
+ports:
+  - index: 1
+    name: node-a.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 2
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 3
+    name: node-b.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 4
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 5
+    name: node-c.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 6
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 7
+    name: node-d.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 8
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 9
+    name: node-e.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 10
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 11
+    name: node-f.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 12
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 13
+    name: node-g.cluster
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 32
+  - index: 14
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 15
+    name: rescue
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 88
+  - index: 16
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 17
+    name: router
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 1
+  - index: 18
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+vlans:
+  - id: 8
+    name: users
+    members:
+      - 17
+  - id: 16
+    name: personal
+    members:
+      - 17
+  - id: 24
+    name: iot
+    members:
+      - 17
+  - id: 32
+    name: infrastructure
+    members:
+      - 17
+  - id: 88
+    name: management
+    members:
+      - 15
+      - 17

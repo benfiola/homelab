@@ -104,11 +104,18 @@
 /ip/dhcp-client/add interface=ether1
 
 # assign static ips
-/ip/dhcp-server/lease/add address=192.168.24.10 server=iot mac-address=64:9A:63:A9:FC:54 comment="Ring (Front Door)"
-/ip/dhcp-server/lease/add address=192.168.24.11 server=iot mac-address=60:E8:5B:8C:49:CA comment="Ring (Front Yard)"
-/ip/dhcp-server/lease/add address=192.168.24.12 server=iot mac-address=34:08:E1:14:CF:4A comment="Ring (Garage)"
-/ip/dhcp-server/lease/add address=192.168.24.13 server=iot mac-address=18:7F:88:13:CF:67 comment="Ring (Living Room)"
-/ip/dhcp-server/lease/add address=192.168.24.14 server=iot mac-address=EC:0D:E4:C3:92:9C comment="Amazon Echo Studio (Bedroom 2)"
+/ip/dhcp-server/lease/add address=192.168.24.2 server=iot mac-address=64:9A:63:A9:FC:54 comment="Ring (Front Door)"
+/ip/dhcp-server/lease/add address=192.168.24.3 server=iot mac-address=60:E8:5B:8C:49:CA comment="Ring (Front Yard)"
+/ip/dhcp-server/lease/add address=192.168.24.4 server=iot mac-address=34:08:E1:14:CF:4A comment="Ring (Garage)"
+/ip/dhcp-server/lease/add address=192.168.24.5 server=iot mac-address=18:7F:88:13:CF:67 comment="Ring (Living Room)"
+/ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=EC:0D:E4:C3:92:9C comment="Amazon Echo Studio (Bedroom 2)"
+/ip/dhcp-server/lease/add address=192.168.32.2 server=infrastructure mac-address=DC:A6:32:E8:02:E2 comment="node-a.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=DC:A6:32:C1:49:6F comment="node-b.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=DC:A6:32:E8:02:B3 comment="node-c.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.5 server=infrastructure mac-address=38:F3:AB:E0:C5:DD comment="node-d.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.6 server=infrastructure mac-address=88:A4:C2:A0:B5:BB comment="node-e.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.7 server=infrastructure mac-address=F8:75:A4:FE:1F:E9 comment="node-f.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.8 server=infrastructure mac-address=00:2B:67:D6:40:6B comment="node-g.cluster"
 /ip/dhcp-server/lease/add address=192.168.88.2 server=management mac-address=F4:1E:57:F8:8F:89 comment="core.switch"
 /ip/dhcp-server/lease/add address=192.168.88.3 server=management mac-address=F4:1E:57:F8:96:77 comment="cluster.switch"
 /ip/dhcp-server/lease/add address=192.168.88.4 server=management mac-address=94:83:C4:AB:04:1F comment="office.ap"
@@ -116,7 +123,14 @@
 /ip/dhcp-server/lease/add address=192.168.88.6 server=management mac-address=94:83:C4:AA:F9:1B comment="living-room.ap"
 
 # assign dns
-/ip/dns/static/add name=router.bulia.dev address=192.168.88.1 ttl=10m
+/ip/dns/static/add name=node-a.cluster.bulia.dev address=192.168.32.2 ttl=10m
+/ip/dns/static/add name=node-b.cluster.bulia.dev address=192.168.32.3 ttl=10m
+/ip/dns/static/add name=node-c.cluster.bulia.dev address=192.168.32.4 ttl=10m
+/ip/dns/static/add name=node-d.cluster.bulia.dev address=192.168.32.5 ttl=10m
+/ip/dns/static/add name=node-e.cluster.bulia.dev address=192.168.32.6 ttl=10m
+/ip/dns/static/add name=node-f.cluster.bulia.dev address=192.168.32.7 ttl=10m
+/ip/dns/static/add name=node-g.cluster.bulia.dev address=192.168.32.8 ttl=10m
+/ip/dns/static/add name=cluster.bulia.dev cname=node-a.cluster.bulia.dev type=CNAME ttl=10m
 /ip/dns/static/add name=core.switch.bulia.dev address=192.168.88.2 ttl=10m
 /ip/dns/static/add name=cluster.switch.bulia.dev address=192.168.88.3 ttl=10m
 /ip/dns/static/add name=office.ap.bulia.dev address=192.168.88.4 ttl=10m

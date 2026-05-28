@@ -7,6 +7,7 @@ import { join } from "path";
 import pino from "pino";
 import { exit, stdin } from "process";
 import * as actions from "./actions";
+import * as swos from "./swos";
 import { LogFormat, TransportOpts } from "./cli-logger.mts";
 import { isSecret, Secret } from "./config";
 import { logger, LogLevel, logLevels, LogStatus, setLogger } from "./logger";
@@ -404,6 +405,47 @@ const main = async () => {
     .description("upgrades talos on all nodes")
     .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
     .action(upgradeTalos);
+
+  program
+    .command("apply-swos <config>")
+    .description("applies a SwOS switch configuration from a YAML file")
+    .requiredOption("--address <ip>", "switch IP address")
+    .option("--username <name>", "switch username", "admin")
+    .option("--password <secret>", "switch password", "")
+    .option("--dry-run", "show what would change without writing", false)
+    .action(
+      async (
+        config: string,
+        opts: {
+          address: string;
+          username: string;
+          password: string;
+          dryRun: boolean;
+        },
+      ) => {
+        await swos.applyConfig(
+          config,
+          opts.address,
+          opts.username,
+          opts.password,
+          opts.dryRun,
+        );
+      },
+    );
+
+  program
+    .command("dump-swos <address>")
+    .description("dumps current SwOS switch configuration as YAML")
+    .option("--username <name>", "switch username", "admin")
+    .option("--password <secret>", "switch password", "")
+    .action(
+      async (
+        address: string,
+        opts: { username: string; password: string },
+      ) => {
+        await swos.dumpConfig(address, opts.username, opts.password);
+      },
+    );
 
   await program.parseAsync();
 };

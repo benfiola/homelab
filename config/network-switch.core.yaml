@@ -1,0 +1,171 @@
+system:
+  identity: core.switch
+ports:
+  - index: 1
+    name: hue-bridge
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 24
+  - index: 2
+    name: br1-1
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 3
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 4
+    name: br1-2
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 5
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 6
+    name: br2-1
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 1
+  - index: 7
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 8
+    name: br2-2
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 9
+    name: cameras.switch
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 24
+  - index: 10
+    name: lr-1
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 1
+  - index: 11
+    name: office.ap
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 1
+  - index: 12
+    name: lr-2
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 13
+    name: ""
+    enabled: false
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 14
+    name: o-1
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 16
+  - index: 15
+    name: rescue
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 88
+  - index: 16
+    name: o-2
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 8
+  - index: 17
+    name: router
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 1
+  - index: 18
+    name: cluster.switch
+    enabled: true
+    vlan:
+      mode: strict
+      receive: untagged
+      defaultVlanId: 1
+vlans:
+  - id: 8
+    name: users
+    members:
+      - 6
+      - 10
+      - 11
+      - 17
+      - 18
+  - id: 16
+    name: personal
+    members:
+      - 6
+      - 10
+      - 11
+      - 17
+      - 18
+  - id: 24
+    name: iot
+    members:
+      - 6
+      - 10
+      - 11
+      - 17
+      - 18
+  - id: 32
+    name: infrastructure
+    members:
+      - 6
+      - 10
+      - 11
+      - 17
+      - 18
+  - id: 88
+    name: management
+    members:
+      - 6
+      - 10
+      - 11
+      - 15
+      - 17
+      - 18
