@@ -24,7 +24,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     };
     if (name === "public") {
       annotations["external-dns.alpha.kubernetes.io/target"] =
-        "current.bfiola.dev";
+        "current.fiola.dev";
     }
     new WrappedGateway(chart, `${id}-wrapped-gateway-${name}`, {
       metadata: {

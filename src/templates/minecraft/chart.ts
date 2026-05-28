@@ -106,7 +106,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new TcpRoute(chart, "trusted", "minecraft.bulia.dev", 25565, service, 25565);
 
-  new TcpRoute(chart, "public", "minecraft.bfiola.dev", 25565, service, 25565);
+  new TcpRoute(chart, "public", "minecraft.fiola.dev", 25565, service, 25565);
 
   return chart;
 };

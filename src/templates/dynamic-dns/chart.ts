@@ -25,8 +25,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       cloudflareApiTokenKey: "cloudflare-api-token",
       cloudflareZones: [
         {
-          name: "bfiola.dev",
-          domains: ["current.bfiola.dev", "wireguard.bfiola.dev"],
+          name: "fiola.dev",
+          domains: ["current.fiola.dev", "wireguard.fiola.dev"],
         },
       ],
     },
