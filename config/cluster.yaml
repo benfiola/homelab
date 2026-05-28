@@ -19,7 +19,7 @@ hardware:
             officialExtensions:
               - siderolabs/drbd
               - siderolabs/i915
-    image: factory.talos.dev/metal-installer/322dbdfae3877a291f8977311656b2267aacfe7c15a483f56904d65050814a0c:v1.11.3
+    image: factory.talos.dev/metal-installer/322dbdfae3877a291f8977311656b2267aacfe7c15a483f56904d65050814a0c:v1.13.3
   rpi4:
     disks:
       SYSTEM:
@@ -51,8 +51,8 @@ hardware:
               enable_uart=1
               dtoverlay=disable-bt
               dtoverlay=disable-wifi
-    image: factory.talos.dev/metal-installer/cc039b3437c81179de3cf77be1094d619b88a7044144b2d7153ed14104900272:v1.11.3
-kubernetes: 1.34.2
+    image: factory.talos.dev/metal-installer/cc039b3437c81179de3cf77be1094d619b88a7044144b2d7153ed14104900272:v1.13.3
+kubernetes: 1.36.1
 name: homelab
 
 baseTalosConfig:
