@@ -10,7 +10,6 @@ hardware:
       linstor:
         device: /dev/nvme0n1
         size: 1600GiB
-    # with drbd extension
     imageConfig:
       filename: metal-amd64.iso
       schematic:
