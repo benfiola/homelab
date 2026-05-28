@@ -104,11 +104,11 @@
 /ip/dhcp-client/add interface=ether1
 
 # assign static ips
-/ip/dhcp-server/lease/add address=192.168.24.2 server=iot mac-address=64:9A:63:A9:FC:54 comment="Ring (Front Door)"
-/ip/dhcp-server/lease/add address=192.168.24.3 server=iot mac-address=60:E8:5B:8C:49:CA comment="Ring (Front Yard)"
-/ip/dhcp-server/lease/add address=192.168.24.4 server=iot mac-address=34:08:E1:14:CF:4A comment="Ring (Garage)"
-/ip/dhcp-server/lease/add address=192.168.24.5 server=iot mac-address=18:7F:88:13:CF:67 comment="Ring (Living Room)"
-/ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=EC:0D:E4:C3:92:9C comment="Amazon Echo Studio (Bedroom 2)"
+/ip/dhcp-server/lease/add address=192.168.24.2 server=iot mac-address=64:9A:63:A9:FC:54 comment="ring doorbell"
+/ip/dhcp-server/lease/add address=192.168.24.3 server=iot mac-address=60:E8:5B:8C:49:CA comment="ring camera (front yard)"
+/ip/dhcp-server/lease/add address=192.168.24.4 server=iot mac-address=34:08:E1:14:CF:4A comment="ring camera (garage)"
+/ip/dhcp-server/lease/add address=192.168.24.5 server=iot mac-address=18:7F:88:13:CF:67 comment="ring chime (living room)"
+/ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=EC:0D:E4:C3:92:9C comment="echo studio (bedroom 2)"
 /ip/dhcp-server/lease/add address=192.168.32.2 server=infrastructure mac-address=DC:A6:32:E8:02:E2 comment="node-a.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=DC:A6:32:C1:49:6F comment="node-b.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=DC:A6:32:E8:02:B3 comment="node-c.cluster"
@@ -152,11 +152,11 @@
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=users,personal,iot
 
 # configure firewall address lists
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.10 comment="ring doorbell"
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.11 comment="ring camera (front yard)"
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.12 comment="ring camera (garage)"
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.13 comment="ring chime (living room)"
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.14 comment="echo studio (bedroom 2)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="ring doorbell"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.3 comment="ring camera (front yard)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.4 comment="ring camera (garage)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.5 comment="ring chime (living room)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="echo studio (bedroom 2)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_USERS address=192.168.33.2/32 comment="cluster gateway (users)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 
