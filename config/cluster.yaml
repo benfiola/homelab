@@ -89,6 +89,13 @@ baseTalosConfig:
             - usermode_helper=disabled
         - name: drbd_transport_tcp
     kubelet:
+      extraConfig:
+        systemReserved:
+          cpu: "250m"
+          memory: "512Mi"
+        kubeReserved:
+          cpu: "250m"
+          memory: "512Mi"
       extraMounts:
         # configure r/w mounts (piraeus)
         - destination: /var/local

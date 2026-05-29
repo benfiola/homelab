@@ -130,7 +130,7 @@
 /ip/dns/static/add name=node-e.cluster.bulia.dev address=192.168.32.6 ttl=10m
 /ip/dns/static/add name=node-f.cluster.bulia.dev address=192.168.32.7 ttl=10m
 /ip/dns/static/add name=node-g.cluster.bulia.dev address=192.168.32.8 ttl=10m
-/ip/dns/static/add name=cluster.bulia.dev cname=node-a.cluster.bulia.dev type=CNAME ttl=10m
+/ip/dns/static/add name=cluster.bulia.dev cname=node-d.cluster.bulia.dev type=CNAME ttl=10m
 /ip/dns/static/add name=core.switch.bulia.dev address=192.168.88.2 ttl=10m
 /ip/dns/static/add name=cluster.switch.bulia.dev address=192.168.88.3 ttl=10m
 /ip/dns/static/add name=office.ap.bulia.dev address=192.168.88.4 ttl=10m
