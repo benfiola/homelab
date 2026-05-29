@@ -1092,104 +1092,114 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(18000),
   );
 
-  policy("gateway-public-to-minecraft").allowBetween(
-    gateway("public"),
-    pod("minecraft", "minecraft"),
-    tcp(25565),
-  );
-
   policy("world-to-gateway-public--ingress")
     .targets(gateway("public"))
-    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443, 25565))
+    // fake ip address for purpose of having valid policy
+    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443))
     .syncWithRouter();
 
-  policy("gateway-trusted-to-envoy-gateway-controller").allowBetween(
-    gateway("trusted"),
+  policy("gateway-users-to-envoy-gateway-controller").allowBetween(
+    gateway("users"),
     component("controller", "envoy-gateway"),
     tcp(18000),
   );
 
-  policy("gateway-trusted-to-alertmanager").allowBetween(
-    gateway("trusted"),
-    pod("alertmanager", "alertmanager"),
-    tcp(9093),
-  );
-
-  policy("gateway-trusted-to-assets-server").allowBetween(
-    gateway("trusted"),
-    pod("bucket-server-assets-server", "assets-server"),
-    tcp(8080),
-  );
-
-  policy("gateway-trusted-to-cilium-hubble-ui").allowBetween(
-    gateway("trusted"),
-    pod("hubble-ui", "cilium"),
-    tcp(8081),
-  );
-
-  policy("gateway-trusted-to-frigate").allowBetween(
-    gateway("trusted"),
+  policy("gateway-users-to-frigate").allowBetween(
+    gateway("users"),
     pod("frigate", "frigate"),
     tcp(8971),
   );
 
-  policy("gateway-trusted-to-grafana").allowBetween(
-    gateway("trusted"),
-    pod("grafana", "grafana"),
-    tcp(3000),
-  );
-
-  policy("gateway-trusted-to-bucket-server-minecraft").allowBetween(
-    gateway("trusted"),
-    pod("bucket-server-minecraft", "minecraft"),
-    tcp(8080),
-  );
-
-  policy("gateway-trusted-to-minecraft").allowBetween(
-    gateway("trusted"),
+  policy("gateway-users-to-minecraft").allowBetween(
+    gateway("users"),
     pod("minecraft", "minecraft"),
     tcp(25565),
   );
 
-  policy("gateway-trusted-to-prometheus").allowBetween(
-    gateway("trusted"),
-    pod("prometheus", "prometheus"),
-    tcp(9090),
-  );
-
-  policy("gateway-trusted-to-seven-days-to-die").allowBetween(
-    gateway("trusted"),
+  policy("gateway-users-to-seven-days-to-die").allowBetween(
+    gateway("users"),
     pod("seven-days-to-die", "seven-days-to-die"),
     tcp(26900),
     udp([26900, 26902]),
   );
 
-  policy("gateway-trusted-to-single-player-tarkov").allowBetween(
-    gateway("trusted"),
+  policy("gateway-users-to-single-player-tarkov").allowBetween(
+    gateway("users"),
     pod("single-player-tarkov", "single-player-tarkov"),
     tcp(6969, 7828, 7829),
   );
 
-  policy("gateway-trusted-to-tunnel").allowBetween(
-    gateway("trusted"),
+  policy("world-to-gateway-users--ingress")
+    .targets(gateway("users"))
+    .allowIngressFrom(
+      cidrs(
+        "192.168.8.0/24",
+        "192.168.9.0/24",
+        "192.168.16.0/24",
+        "192.168.17.0/24",
+      ),
+      tcp(6969, 10443, 25565, 26900),
+      udp([26900, 26902]),
+    );
+
+  policy("gateway-personal-to-envoy-gateway-controller").allowBetween(
+    gateway("personal"),
+    component("controller", "envoy-gateway"),
+    tcp(18000),
+  );
+
+  policy("gateway-personal-to-tunnel").allowBetween(
+    gateway("personal"),
     pod("tunnel", "tunnel"),
     tcp(8080, 8081),
   );
 
-  policy("gateway-trusted-to-vault").allowBetween(
-    gateway("trusted"),
+  policy("world-to-gateway-personal--ingress")
+    .targets(gateway("personal"))
+    .allowIngressFrom(
+      cidrs("192.168.16.0/24", "192.168.17.0/24"),
+      tcp(8080, 10443),
+    );
+
+  policy("gateway-infrastructure-to-envoy-gateway-controller").allowBetween(
+    gateway("infrastructure"),
+    component("controller", "envoy-gateway"),
+    tcp(18000),
+  );
+
+  policy("gateway-infrastructure-to-alertmanager").allowBetween(
+    gateway("infrastructure"),
+    pod("alertmanager", "alertmanager"),
+    tcp(9093),
+  );
+
+  policy("gateway-infrastructure-to-cilium-hubble-ui").allowBetween(
+    gateway("infrastructure"),
+    pod("hubble-ui", "cilium"),
+    tcp(8081),
+  );
+
+  policy("gateway-infrastructure-to-grafana").allowBetween(
+    gateway("infrastructure"),
+    pod("grafana", "grafana"),
+    tcp(3000),
+  );
+
+  policy("gateway-infrastructure-to-prometheus").allowBetween(
+    gateway("infrastructure"),
+    pod("prometheus", "prometheus"),
+    tcp(9090),
+  );
+
+  policy("gateway-infrastructure-to-vault").allowBetween(
+    gateway("infrastructure"),
     pod("vault", "vault"),
     tcp(8200),
   );
 
-  policy("world-to-gateway-trusted--ingress")
-    .targets(gateway("trusted"))
-    .allowIngressFrom(
-      cidrs("192.168.16.0/24", "192.168.17.0/24"),
-      tcp(6969, 10443, 25565, 26900),
-      udp([26900, 26902]),
-    )
-    .allowIngressFrom(cidrs("192.168.16.13/32"), tcp(8080));
+  policy("world-to-gateway-infrastructure--ingress")
+    .targets(gateway("infrastructure"))
+    .allowIngressFrom(cidrs("192.168.34.0/24"), tcp(10443));
 
   return chart;
 };

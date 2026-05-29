@@ -372,7 +372,12 @@ export class Helm extends BaseHelm {
   }
 }
 
-export const gateways = ["public", "trusted"] as const;
+export const gateways = [
+  "public",
+  "users",
+  "personal",
+  "infrastructure",
+] as const;
 export type Gateway = (typeof gateways)[number];
 
 const knownAnnotations = {
@@ -384,7 +389,9 @@ type Annotations = typeof knownAnnotations;
 type Annotation = Annotations[keyof Annotations];
 
 const gatewayAnnotations: Record<Gateway, Annotation> = {
-  trusted: knownAnnotations.useMikrotik,
+  users: knownAnnotations.useMikrotik,
+  personal: knownAnnotations.useMikrotik,
+  infrastructure: knownAnnotations.useMikrotik,
   public: knownAnnotations.useCloudflare,
 };
 

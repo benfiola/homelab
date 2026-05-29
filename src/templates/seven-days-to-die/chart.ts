@@ -120,10 +120,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  new TcpRoute(chart, "trusted", "sdtd.bulia.dev", 26900, service, 26900);
-  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26900, service, 26900);
-  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26901, service, 26901);
-  new UdpRoute(chart, "trusted", "sdtd.bulia.dev", 26902, service, 26902);
+  new TcpRoute(chart, "users", "sdtd.bulia.dev", 26900, service, 26900);
+  new UdpRoute(chart, "users", "sdtd.bulia.dev", 26900, service, 26900);
+  new UdpRoute(chart, "users", "sdtd.bulia.dev", 26901, service, 26901);
+  new UdpRoute(chart, "users", "sdtd.bulia.dev", 26902, service, 26902);
 
   return chart;
 };

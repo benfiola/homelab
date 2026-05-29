@@ -208,7 +208,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  new HttpRoute(chart, "trusted", externalUrl.hostname).match(
+  new HttpRoute(chart, "infrastructure", externalUrl.hostname).match(
     {
       name: "grafana-service",
       kind: "Service",

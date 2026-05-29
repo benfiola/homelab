@@ -91,7 +91,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     { advisory: true },
   );
 
-  new HttpRoute(chart, "trusted", "frigate.bulia.dev").match(
+  new HttpRoute(chart, "users", "frigate.bulia.dev").match(
     findApiObject(chart, {
       apiVersion: "v1",
       kind: "Service",

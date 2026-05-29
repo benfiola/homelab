@@ -4,7 +4,6 @@ import {
   Chart,
   GarageBucket,
   GarageKey,
-  HttpRoute,
   Namespace,
   VaultAuth,
   VaultStaticSecret,
@@ -45,13 +44,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const bucketServer = new BucketServer(chart, bucket, readKey);
 
   new VerticalPodAutoscaler(chart, bucketServer);
-
-  const bucketServerService = bucketServer.createService();
-
-  new HttpRoute(chart, "trusted", "assets.bulia.dev").match(
-    bucketServerService,
-    80,
-  );
 
   return chart;
 };
