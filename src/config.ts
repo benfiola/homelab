@@ -4,7 +4,10 @@ import { parse } from "yaml";
 import * as zod from "zod";
 import { renderTemplate } from "./strings";
 
-const loadYaml = async <T>(schema: zod.ZodType<T>, path: string): Promise<T> => {
+const loadYaml = async <T>(
+  schema: zod.ZodType<T>,
+  path: string,
+): Promise<T> => {
   const raw = (await readFile(path)).toString();
   return schema.parseAsync(parse(raw));
 };
@@ -88,6 +91,7 @@ export const listNodes = async (configDir: string) => {
     const node = pathParse(file).name.replace("node-", "");
     nodes.push(node);
   }
+  nodes.sort();
   return nodes;
 };
 
@@ -133,16 +137,21 @@ const networkConfigSchema = zod.object({
   outputs: zod.array(networkOutputSchema),
 });
 
-export const getNetworkConfig = async (
-  secrets: NetworkSecrets,
-  configDir: string,
-) => {
+export const getNetworkConfig = async (configDir: string) => {
+  const secrets = await loadYaml(
+    networkSecretsSchema,
+    getSecretsPath("network", configDir),
+  );
   const raw = (await readFile(join(configDir, "network.yaml"))).toString();
-  return networkConfigSchema.parseAsync(parse(renderTemplate(raw, { secrets })));
+  return networkConfigSchema.parseAsync(
+    parse(renderTemplate(raw, { secrets })),
+  );
 };
 
 const storageConfigSchema = zod.object({
   bucket: zod.string(),
+  privateKeyItemId: zod.string(),
+  publicKey: zod.string(),
 });
 
 export type StorageConfig = zod.infer<typeof storageConfigSchema>;
@@ -164,7 +173,7 @@ const appsSecretsSchema = zod.object({
   ),
 });
 
-export type AppsSecretsSchema = zod.infer<typeof appsSecretsSchema>;
+export type AppsSecrets = zod.infer<typeof appsSecretsSchema>;
 
 export const getAppsSecrets = (configDir: string) =>
   loadYaml(appsSecretsSchema, getSecretsPath("apps", configDir));
@@ -191,10 +200,15 @@ const networkSecretsSchema = zod.object({
   }),
 });
 
-type NetworkSecrets = zod.infer<typeof networkSecretsSchema>;
-
 export const getNetworkSecrets = (configDir: string) =>
   loadYaml(networkSecretsSchema, getSecretsPath("network", configDir));
+
+const storageSecretsSchema = zod.object({
+  privateKey: zod.string(),
+});
+
+export const getStorageSecrets = (configDir: string) =>
+  loadYaml(storageSecretsSchema, getSecretsPath("storage", configDir));
 
 const vaultSecretsSchema = zod.object({
   rootToken: zod.string(),
@@ -206,7 +220,14 @@ export type VaultSecrets = zod.infer<typeof vaultSecretsSchema>;
 export const getVaultSecrets = (configDir: string) =>
   loadYaml(vaultSecretsSchema, getSecretsPath("vault", configDir));
 
-export const secrets = ["apps", "flux", "network", "vault", "talos"] as const;
+export const secrets = [
+  "apps",
+  "flux",
+  "network",
+  "storage",
+  "vault",
+  "talos",
+] as const;
 export type Secret = (typeof secrets)[number];
 
 export const isSecret = (v: any): v is Secret => {

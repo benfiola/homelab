@@ -27,7 +27,7 @@ homelab talosctl gen secrets --output-file ./config/secrets-talos.yaml
 Skip ahead if you already have secrets.
 :::
 
-If secrets exist but aren't local, pull them:
+If secrets exist but aren't local, pull them. This requires your Bitwarden vault to be accessible — the CLI will prompt for your master password:
 
 ```bash
 homelab pull-secrets

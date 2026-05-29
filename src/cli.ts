@@ -7,6 +7,7 @@ import { join } from "path";
 import pino from "pino";
 import { exit, stdin } from "process";
 import * as actions from "./actions";
+import * as hubble from "./hubble";
 import * as swos from "./swos";
 import { LogFormat, TransportOpts } from "./cli-logger.mts";
 import { isSecret, Secret } from "./config";
@@ -27,7 +28,7 @@ const withStatus = async (message: string, fn: () => Promise<void>) => {
 const analyzeHubbleFlows = async (input: string) => {
   const stream = input === "-" ? stdin : createReadStream(input);
 
-  const getFlowDirectionString = (direction: actions.FlowDirection) => {
+  const getFlowDirectionString = (direction: hubble.FlowDirection) => {
     if (direction === "egress") {
       return "→";
     } else if (direction === "ingress") {
@@ -37,7 +38,7 @@ const analyzeHubbleFlows = async (input: string) => {
     }
   };
 
-  const getFlowVerdictColor = (verdict: actions.FlowVerdict) => {
+  const getFlowVerdictColor = (verdict: hubble.FlowVerdict) => {
     let green = "\x1b[32m";
     let red = "\x1b[31m";
     let reset = "\x1b[0m";
@@ -46,7 +47,7 @@ const analyzeHubbleFlows = async (input: string) => {
     return [color, reset];
   };
 
-  const getFlowSubjectString = (subject: actions.FlowSubject) => {
+  const getFlowSubjectString = (subject: hubble.FlowSubject) => {
     if (subject.type === "health") {
       return "health";
     } else if (subject.type === "node") {
@@ -78,7 +79,7 @@ const analyzeHubbleFlows = async (input: string) => {
     }
   };
 
-  const getFlowProtocolString = (protocol: actions.FlowProtocol) => {
+  const getFlowProtocolString = (protocol: hubble.FlowProtocol) => {
     if (protocol.type === "icmpv4" || protocol.type === "icmpv6") {
       return `${protocol.type}/${protocol.icmpType}`;
     } else if (protocol.type === "tcp" || protocol.type === "udp") {
@@ -88,7 +89,7 @@ const analyzeHubbleFlows = async (input: string) => {
     }
   };
 
-  const onFlow = (flow: actions.Flow) => {
+  const onFlow = (flow: hubble.Flow) => {
     const [color, reset] = getFlowVerdictColor(flow.verdict);
 
     const direction = getFlowDirectionString(flow.direction);
@@ -102,7 +103,7 @@ const analyzeHubbleFlows = async (input: string) => {
     );
   };
 
-  await actions.analyzeHubbleFlows(stream, {
+  await hubble.analyze(stream, {
     onFlow,
   });
 };
@@ -149,7 +150,6 @@ const bootstrap = (opts: BootstrapOpts) =>
           "generate-manifests": "Generating manifests...",
           "deploy-cilium": "Deploying cilium...",
           "install-flux": "Installing flux...",
-          "pull-secrets": "Pulling secrets...",
           "initialize-vault": "Initializing vault...",
           "deploy-crds": "Deploying CRDs...",
           "wait-for-cluster-ready": "Waiting for cluster ready...",

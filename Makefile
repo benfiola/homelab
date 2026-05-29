@@ -1,3 +1,4 @@
+AGE_VERSION ?= 1.3.1
 CDK8S_VERSION ?= 2.203.1
 CILIUM_VERSION ?= 1.18.5
 CILIUMCLI_VERSION ?= 0.18.9
@@ -68,9 +69,15 @@ $(eval $(call tool-from-apt,bsdtar,libarchive-tools))
 $(eval $(call tool-from-apt,curl,curl))
 $(eval $(call tool-from-apt,git,git))
 $(eval $(call tool-from-apt,jsonnet,jsonnet))
+$(eval $(call tool-from-npm,bw,@bitwarden/cli))
 $(eval $(call tool-from-npm,cdk8s,cdk8s-cli))
 $(eval $(call tool-from-npm,tsx,tsx))
 $(eval $(call tool-from-apt,wg,wireguard-tools))
+
+age_arch := $(arch)
+age_url := https://github.com/FiloSottile/age/releases/download/v$(AGE_VERSION)/age-v$(AGE_VERSION)-linux-$(age_arch).tar.gz
+$(eval $(call tool-from-tar-gz,age,$(age_url),1))
+$(eval $(call tool-from-tar-gz,age-keygen,$(age_url),1))
 
 ciliumcli_arch := $(arch)
 ciliumcli_url := https://github.com/cilium/cilium-cli/releases/download/v$(CILIUMCLI_VERSION)/cilium-linux-$(ciliumcli_arch).tar.gz

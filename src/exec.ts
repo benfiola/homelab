@@ -23,5 +23,5 @@ export const exec = async (cmd: string[], opts: SpawnOpts = {}) => {
     stdin: "inherit",
   });
 
-  return result.stdout;
+  return result.stdout ?? "";
 };

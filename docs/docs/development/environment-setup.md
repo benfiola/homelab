@@ -14,6 +14,7 @@ Before getting started, ensure you have:
 - **Make** for development automation
 - **Docker** (optional, if using devcontainers)
 - A code editor (VSCode recommended)
+- A **Bitwarden** account.
 
 ## Quick Start
 
