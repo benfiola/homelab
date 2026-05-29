@@ -6,6 +6,7 @@ import {
   CiliumBgpAdvertisement,
   CiliumBgpClusterConfig,
   CiliumBgpPeerConfig,
+  CiliumLoadBalancerIpPool,
   CiliumBgpAdvertisementSpecAdvertisementsSelectorMatchExpressionsOperator as Operator,
   CiliumBgpPeerConfigSpecFamiliesSafi as SAFI,
 } from "../../../assets/cilium/cilium.io";
@@ -117,6 +118,20 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         ],
         cleanCiliumState: ["NET_ADMIN", "SYS_ADMIN", "SYS_RESOURCE"],
       },
+    },
+  });
+
+  new CiliumLoadBalancerIpPool(chart, `${id}-ip-pool`, {
+    metadata: {
+      name: "default",
+    },
+    spec: {
+      blocks: [
+        {
+          start: "192.168.33.2",
+          stop: "192.168.33.254",
+        },
+      ],
     },
   });
 

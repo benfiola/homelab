@@ -18,6 +18,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
+  const staticIps: Record<(typeof gateways)[number], string> = {
+    users: "192.168.33.2",
+    personal: "192.168.33.3",
+    infrastructure: "192.168.33.4",
+    public: "192.168.33.5",
+  };
+
   for (const name of gateways) {
     const annotations: Record<string, string> = {
       "cert-manager.io/cluster-issuer": "cloudflare",
@@ -26,6 +33,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       annotations["external-dns.alpha.kubernetes.io/target"] =
         "current.fiola.dev";
     }
+    const staticIp = staticIps[name];
     new WrappedGateway(chart, `${id}-wrapped-gateway-${name}`, {
       metadata: {
         annotations,
@@ -33,6 +41,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       spec: {
         gatewayClassName: gatewayClass.name,
+        infrastructure: {
+          annotations: {
+            "lbipam.cilium.io/ips": staticIp,
+          },
+        },
       },
     });
   }
