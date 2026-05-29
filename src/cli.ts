@@ -18,6 +18,12 @@ const status = (status: LogStatus, message: string) => {
   logger().status({ status }, message);
 };
 
+const withStatus = async (message: string, fn: () => Promise<void>) => {
+  status("work", message);
+  await fn();
+  status("success", "Done");
+};
+
 const analyzeHubbleFlows = async (input: string) => {
   const stream = input === "-" ? stdin : createReadStream(input);
 
@@ -109,22 +115,24 @@ interface ApplySystemConfigOpts {
 }
 
 const applySystemConfig = async (opts: ApplySystemConfigOpts) => {
-  if (!opts.dryRun) {
-    status("work", "Applying system config...");
-  }
-
-  const systemConfigs = await actions.applySystemConfig(opts.configDir, {
-    dryRun: opts.dryRun,
-    insecure: opts.insecure,
-    nodes: opts.nodes,
-  });
-
   if (opts.dryRun) {
+    const systemConfigs = await actions.applySystemConfig(opts.configDir, {
+      dryRun: true,
+      insecure: opts.insecure,
+      nodes: opts.nodes,
+    });
     console.log(stringify(...Object.values(systemConfigs)));
-  } else {
-    logger().debug(stringify(...Object.values(systemConfigs)));
-    status("success", "Done");
+    return;
   }
+
+  await withStatus("Applying system config...", async () => {
+    const systemConfigs = await actions.applySystemConfig(opts.configDir, {
+      dryRun: false,
+      insecure: opts.insecure,
+      nodes: opts.nodes,
+    });
+    logger().debug(stringify(...Object.values(systemConfigs)));
+  });
 };
 
 interface BootstrapOpts {
@@ -132,65 +140,55 @@ interface BootstrapOpts {
   manifestsDir: string;
 }
 
-const bootstrap = async (opts: BootstrapOpts) => {
-  status("work", "Bootstrapping cluster...");
-  await actions.bootstrap(opts.configDir, opts.manifestsDir, {
-    ...opts,
-    onStepStart: (step) => {
-      if (step === "generate-manifests") {
-        status("work", "Generating manifests...");
-      } else if (step === "deploy-cilium") {
-        status("work", "Deploying cilium...");
-      } else if (step === "install-flux") {
-        status("work", "Installing flux...");
-      } else if (step === "pull-secrets") {
-        status("work", "Pulling secrets...");
-      } else if (step === "initialize-vault") {
-        status("work", "Initializing vault...");
-      } else if (step === "deploy-crds") {
-        status("work", "Deploying CRDs...");
-      } else if (step === "wait-for-cluster-ready") {
-        status("work", "Waiting for cluster ready...");
-      }
-    },
-  });
-  status("success", "Done");
-};
+const bootstrap = (opts: BootstrapOpts) =>
+  withStatus("Bootstrapping cluster...", () =>
+    actions.bootstrap(opts.configDir, opts.manifestsDir, {
+      ...opts,
+      onStepStart: (step) => {
+        const messages: Record<string, string> = {
+          "generate-manifests": "Generating manifests...",
+          "deploy-cilium": "Deploying cilium...",
+          "install-flux": "Installing flux...",
+          "pull-secrets": "Pulling secrets...",
+          "initialize-vault": "Initializing vault...",
+          "deploy-crds": "Deploying CRDs...",
+          "wait-for-cluster-ready": "Waiting for cluster ready...",
+        };
+        const msg = messages[step];
+        if (msg) status("work", msg);
+      },
+    }),
+  );
 
 interface PushSecretOpts {
   configDir: string;
 }
 
-const pushSecret = async (secret: Secret, opts: PushSecretOpts) => {
+const pushSecret = (secret: Secret, opts: PushSecretOpts) => {
   if (!isSecret(secret)) {
     throw new Error(`invalid secret: ${secret}`);
   }
-
-  status("work", `Pushing '${secret}' secret...`);
-  await actions.pushSecrets(secret, opts.configDir);
-  status("success", "Done");
+  return withStatus(`Pushing '${secret}' secret...`, () =>
+    actions.pushSecrets(secret, opts.configDir),
+  );
 };
 
 interface PullSecretsOpts {
   configDir: string;
 }
 
-const pullSecrets = async (opts: PullSecretsOpts) => {
-  status("work", "Pulling secrets...");
-  await actions.pullSecrets(opts.configDir);
-  status("success", "Done");
-};
+const pullSecrets = (opts: PullSecretsOpts) =>
+  withStatus("Pulling secrets...", () => actions.pullSecrets(opts.configDir));
 
 interface GenerateClientConfigOpts {
   configDir: string;
   output: string;
 }
 
-const generateClientConfig = async (opts: GenerateClientConfigOpts) => {
-  status("work", "Generating client config...");
-  await actions.generateClientConfig(opts.configDir, opts.output);
-  status("success", "Done");
-};
+const generateClientConfig = (opts: GenerateClientConfigOpts) =>
+  withStatus("Generating client config...", () =>
+    actions.generateClientConfig(opts.configDir, opts.output),
+  );
 
 interface GenerateManifestOpts {
   configDir: string;
@@ -198,13 +196,12 @@ interface GenerateManifestOpts {
   output: string;
 }
 
-const generateManifests = async (opts: GenerateManifestOpts) => {
-  status("work", "Generating manifests...");
-  await actions.generateManifests(opts.configDir, opts.output, {
-    filter: opts.filter,
-  });
-  status("success", "Done");
-};
+const generateManifests = (opts: GenerateManifestOpts) =>
+  withStatus("Generating manifests...", () =>
+    actions.generateManifests(opts.configDir, opts.output, {
+      filter: opts.filter,
+    }),
+  );
 
 interface GenerateNetworkConfigOpts {
   configDir: string;
@@ -212,13 +209,12 @@ interface GenerateNetworkConfigOpts {
   output: string;
 }
 
-const generateNetworkConfig = async (opts: GenerateNetworkConfigOpts) => {
-  status("work", "Generating network configuration...");
-  await actions.generateNetworkConfig(opts.configDir, opts.output, {
-    filter: opts.filter,
-  });
-  status("success", "Done");
-};
+const generateNetworkConfig = (opts: GenerateNetworkConfigOpts) =>
+  withStatus("Generating network configuration...", () =>
+    actions.generateNetworkConfig(opts.configDir, opts.output, {
+      filter: opts.filter,
+    }),
+  );
 
 interface GenerateTalosImagesOpts {
   configDir: string;
@@ -245,11 +241,10 @@ interface RefreshAssetsOpts {
   output: string;
 }
 
-const refreshAssets = async (opts: RefreshAssetsOpts) => {
-  status("work", "Refreshing assets...");
-  await actions.refreshAssets(opts.output, { filter: opts.filter });
-  status("success", "Done");
-};
+const refreshAssets = (opts: RefreshAssetsOpts) =>
+  withStatus("Refreshing assets...", () =>
+    actions.refreshAssets(opts.output, { filter: opts.filter }),
+  );
 
 interface TalosctlOpts {
   configDir: string;
@@ -288,10 +283,6 @@ const configureLogger = async (logFormat: LogFormat, logLevel: LogLevel) => {
 };
 
 const main = async () => {
-  // each call to `exec.ts/spawn` briefly attaches event listeners to `processs` to gracefully terminate shut down processes
-  // during an async fanout (e.g., 'generate-manifests' or 'generate-libs'), the default max listeners limit (10) gets reached.
-  process.setMaxListeners(50);
-
   const homeDir = homedir();
   const projectDir = join(__dirname, "..");
   const defaultConfigDir = join(projectDir, "config");
@@ -451,7 +442,7 @@ const main = async () => {
 };
 
 const handleError = async (error: any) => {
-  const suffix = await randomString(8);
+  const suffix = randomString(8);
   const file = join("/tmp", `homelab-error.${suffix}.json`);
   await writeFile(file, JSON.stringify(error, null, 2));
 

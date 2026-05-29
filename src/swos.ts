@@ -1,62 +1,9 @@
-import { createHash, randomBytes } from "crypto";
+import { isDeepStrictEqual } from "node:util";
+import { DigestClient } from "digest-fetch";
 import { readFile } from "fs/promises";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import * as zod from "zod";
-
-// ── HTTP Digest Auth ──────────────────────────────────────────────────────────
-
-function md5(s: string) {
-  return createHash("md5").update(s).digest("hex");
-}
-
-interface DigestChallenge {
-  realm: string;
-  nonce: string;
-  qop?: string;
-  opaque?: string;
-}
-
-function parseDigestChallenge(header: string): DigestChallenge {
-  const g = (k: string) => header.match(new RegExp(`${k}="([^"]+)"`))?.[1];
-  return {
-    realm: g("realm") ?? "",
-    nonce: g("nonce") ?? "",
-    qop: g("qop"),
-    opaque: g("opaque"),
-  };
-}
-
-function buildDigestHeader(
-  username: string,
-  password: string,
-  method: string,
-  uri: string,
-  c: DigestChallenge,
-): string {
-  const ha1 = md5(`${username}:${c.realm}:${password}`);
-  const ha2 = md5(`${method}:${uri}`);
-  const parts = [
-    `username="${username}"`,
-    `realm="${c.realm}"`,
-    `nonce="${c.nonce}"`,
-    `uri="${uri}"`,
-  ];
-  if (c.qop) {
-    const nc = "00000001";
-    const cnonce = randomBytes(8).toString("hex");
-    const response = md5(`${ha1}:${c.nonce}:${nc}:${cnonce}:${c.qop}:${ha2}`);
-    parts.push(
-      `qop=${c.qop}`,
-      `nc=${nc}`,
-      `cnonce="${cnonce}"`,
-      `response="${response}"`,
-    );
-  } else {
-    parts.push(`response="${md5(`${ha1}:${c.nonce}:${ha2}`)}"`);
-  }
-  if (c.opaque) parts.push(`opaque="${c.opaque}"`);
-  return `Digest ${parts.join(", ")}`;
-}
+import { logger } from "./logger";
 
 // ── SwOS Wire Protocol ────────────────────────────────────────────────────────
 
@@ -145,50 +92,17 @@ function wireArr(items: Record<string, unknown>[]): string {
 
 // ── SwOS HTTP Client ──────────────────────────────────────────────────────────
 
-async function swosRequest(
-  baseUrl: string,
-  username: string,
-  password: string,
-  method: string,
-  path: string,
-  body?: string,
-): Promise<string> {
-  const url = `${baseUrl}${path}`;
-
-  // First attempt without auth to get the 401 Digest challenge
-  const r1 = await fetch(url, { method });
-  if (r1.status === 200) return r1.text();
-  if (r1.status !== 401)
-    throw new Error(`${method} ${url}: HTTP ${r1.status}`);
-
-  const challenge = parseDigestChallenge(
-    r1.headers.get("www-authenticate") ?? "",
-  );
-  const auth = buildDigestHeader(username, password, method, path, challenge);
-  const headers: Record<string, string> = { Authorization: auth };
-  if (body !== undefined) headers["Content-Type"] = "text/plain";
-
-  const r2 = await fetch(url, { method, headers, body });
-  if (!r2.ok) throw new Error(`${method} ${url}: HTTP ${r2.status}`);
-  return r2.text();
-}
-
 class SwosClient {
-  constructor(
-    private url: string,
-    private username: string,
-    private password: string,
-  ) {}
+  private digest: DigestClient;
+
+  constructor(private url: string, username: string, password: string) {
+    this.digest = new DigestClient(username, password);
+  }
 
   async get(endpoint: string): Promise<unknown> {
-    const text = await swosRequest(
-      this.url,
-      this.username,
-      this.password,
-      "GET",
-      `/${endpoint}.b`,
-    );
-    return parseSwos(text);
+    const res = await this.digest.fetch(`${this.url}/${endpoint}.b`);
+    if (!res.ok) throw new Error(`GET /${endpoint}.b: HTTP ${res.status}`);
+    return parseSwos(await res.text());
   }
 
   async post(
@@ -196,14 +110,12 @@ class SwosClient {
     data: Record<string, unknown> | Record<string, unknown>[],
   ): Promise<void> {
     const body = Array.isArray(data) ? wireArr(data) : wireObj(data);
-    await swosRequest(
-      this.url,
-      this.username,
-      this.password,
-      "POST",
-      `/${endpoint}.b`,
+    const res = await this.digest.fetch(`${this.url}/${endpoint}.b`, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
       body,
-    );
+    });
+    if (!res.ok) throw new Error(`POST /${endpoint}.b: HTTP ${res.status}`);
   }
 }
 
@@ -304,14 +216,14 @@ export async function applyConfig(
   ])) as [LinkData, FwdData, VlanEntry[], SysData];
 
   const numPorts = linkData.nm.length;
-  console.log(`Connected: ${address} (${numPorts} ports detected)`);
+  logger().info(`Connected: ${address} (${numPorts} ports detected)`);
 
   // ── System identity ─────────────────────────────────────────────────────────
   if (config.system?.identity !== undefined) {
     const current = hexDecode(sysData.id);
     const desired = config.system.identity;
     if (current !== desired) {
-      console.log(`  sys.identity: "${current}" → "${desired}"`);
+      logger().info(`  sys.identity: "${current}" → "${desired}"`);
       if (!dryRun) {
         // Only send id; SwOS applies partial updates for sys.b
         await client.post("sys", { id: desired });
@@ -332,7 +244,7 @@ export async function applyConfig(
         throw new Error(`Port index ${p.index} exceeds switch port count ${numPorts}`);
 
       if (p.name !== undefined && newNames[i] !== p.name) {
-        console.log(`  port[${p.index}].name: "${newNames[i]}" → "${p.name}"`);
+        logger().info(`  port[${p.index}].name: "${newNames[i]}" → "${p.name}"`);
         newNames[i] = p.name;
         linkChanged = true;
       }
@@ -340,7 +252,7 @@ export async function applyConfig(
       if (p.enabled !== undefined) {
         const cur = !!(linkData.en & (1 << i));
         if (cur !== p.enabled) {
-          console.log(`  port[${p.index}].enabled: ${cur} → ${p.enabled}`);
+          logger().info(`  port[${p.index}].enabled: ${cur} → ${p.enabled}`);
           newEnabled = p.enabled
             ? newEnabled | (1 << i)
             : newEnabled & ~(1 << i);
@@ -373,7 +285,7 @@ export async function applyConfig(
       if (p.vlan.mode !== undefined) {
         const want = VLAN_MODES.indexOf(p.vlan.mode as VlanMode);
         if (modes[i] !== want) {
-          console.log(
+          logger().info(
             `  port[${p.index}].vlan.mode: ${VLAN_MODES[modes[i]]} → ${p.vlan.mode}`,
           );
           modes[i] = want;
@@ -384,7 +296,7 @@ export async function applyConfig(
       if (p.vlan.receive !== undefined) {
         const want = p.vlan.receive === "any" ? 0 : 1;
         if (receives[i] !== want) {
-          console.log(
+          logger().info(
             `  port[${p.index}].vlan.receive: ${receives[i] === 0 ? "any" : "untagged"} → ${p.vlan.receive}`,
           );
           receives[i] = want;
@@ -396,7 +308,7 @@ export async function applyConfig(
         p.vlan.defaultVlanId !== undefined &&
         dvids[i] !== p.vlan.defaultVlanId
       ) {
-        console.log(
+        logger().info(
           `  port[${p.index}].vlan.defaultVlanId: ${dvids[i]} → ${p.vlan.defaultVlanId}`,
         );
         dvids[i] = p.vlan.defaultVlanId;
@@ -437,7 +349,7 @@ export async function applyConfig(
     );
     const desiredNorm = normalize(desiredVlans);
 
-    if (JSON.stringify(currentNorm) !== JSON.stringify(desiredNorm)) {
+    if (!isDeepStrictEqual(currentNorm, desiredNorm)) {
       const added = desiredNorm
         .filter((d) => !currentNorm.find((c) => c.vid === d.vid))
         .map((v) => `+${v.vid}`);
@@ -447,10 +359,10 @@ export async function applyConfig(
       const changed = desiredNorm
         .filter((d) => {
           const c = currentNorm.find((c) => c.vid === d.vid);
-          return c && JSON.stringify(c) !== JSON.stringify(d);
+          return c && !isDeepStrictEqual(c, d);
         })
         .map((v) => `~${v.vid}`);
-      console.log(
+      logger().info(
         `  vlans: ${[...added, ...removed, ...changed].join(", ") || "reordered"}`,
       );
       if (!dryRun) {
@@ -467,7 +379,7 @@ export async function applyConfig(
     }
   }
 
-  console.log(dryRun ? "Dry run complete — no changes written." : "Done.");
+  logger().info(dryRun ? "Dry run complete — no changes written." : "Done.");
 }
 
 // ── Dump ──────────────────────────────────────────────────────────────────────

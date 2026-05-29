@@ -1,83 +1,27 @@
-import { spawn as baseSpawn, ChildProcess } from "child_process";
-import treeKill from "tree-kill";
+import { execa, ExecaError } from "execa";
 import { logger } from "./logger";
 
+export { ExecaError as ExecError };
+
 export interface SpawnOpts {
+  cwd?: string;
   env?: Record<string, string>;
   output?: "pipe" | "inherit";
 }
 
-export const spawn = (cmd: string[], opts: SpawnOpts = {}) => {
-  const output = opts.output !== undefined ? opts.output : "pipe";
-  const stdio: ("pipe" | "inherit")[] = ["inherit", output, output];
-  let env = process.env;
-  if (opts.env) {
-    env = { ...env, ...opts.env };
-  }
+export const exec = async (cmd: string[], opts: SpawnOpts = {}) => {
+  const output = opts.output ?? "pipe";
+  const env = opts.env ? { ...process.env, ...opts.env } : process.env;
 
-  const cmdStr = cmd.join(" ");
-  logger().trace(`Executing command: ${cmdStr}`);
+  logger().trace(`Executing command: ${cmd.join(" ")}`);
 
-  const proc: ChildProcess | null = baseSpawn(cmd[0], cmd.slice(1), {
+  const result = await execa(cmd[0], cmd.slice(1), {
+    cwd: opts.cwd,
     env,
-    stdio,
-    shell: false,
+    stdout: output,
+    stderr: output,
+    stdin: "inherit",
   });
 
-  let cancelled = false;
-  const cancel = () => {
-    if (!cancelled && proc?.pid !== undefined) {
-      treeKill(proc.pid);
-    }
-    cancelled = true;
-  };
-
-  const cleanup = () => {
-    process.removeListener("SIGINT", cancel);
-    process.removeListener("SIGTERM", cancel);
-  };
-
-  process.on("SIGINT", cancel);
-  process.on("SIGTERM", cancel);
-
-  proc.on("close", cleanup);
-  proc.on("error", cleanup);
-
-  return { process: proc, cancel };
-};
-
-type ExecOpts = SpawnOpts;
-
-export const exec = async (cmd: string[], opts: ExecOpts = {}) => {
-  return new Promise<string>((resolve, reject) => {
-    const { process, cancel } = spawn(cmd, opts);
-    let stdout = "";
-    let stderr = "";
-
-    process.stdout?.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    process.stderr?.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    process.on("close", (code) => {
-      if (code === 0) {
-        resolve(stdout);
-      } else {
-        reject({
-          code,
-          stdout,
-          stderr,
-          command: cmd,
-          message: `command failed with exit code ${code}`,
-        });
-      }
-    });
-
-    process.on("error", (error) => {
-      reject({ message: error.message });
-    });
-  });
+  return result.stdout;
 };

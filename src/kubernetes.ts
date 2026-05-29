@@ -1,8 +1,9 @@
+import { execa } from "execa";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { getPortsPromise } from "portfinder";
 import { parse } from "yaml";
-import { exec as cmdExec, spawn } from "./exec";
+import { exec as cmdExec, ExecError } from "./exec";
 import { getTempy } from "./tempy";
 import { stringify } from "./yaml";
 
@@ -27,7 +28,7 @@ export class ResourceNotFoundError extends KubernetesError {
 export class ResourceTypeNotFoundError extends KubernetesError {
   readonly resourceType: string;
 
-  name = "ResourceTypeNotFound";
+  name = "ResourceTypeNotFoundError";
 
   constructor(resourceType: string) {
     super(`Resource type ${resourceType} not found`);
@@ -65,13 +66,15 @@ export const get = async (namespace: string | null, resource: string) => {
     }
     command.push(resource, "--output=yaml");
     content = await cmdExec(command);
-  } catch (err: any) {
-    if (err.stderr?.includes("doesn't have a resource type")) {
-      const resourceType = resource.split("/")[0];
-      throw new ResourceTypeNotFoundError(resourceType);
-    }
-    if (err.stderr?.includes("not found")) {
-      throw new ResourceNotFoundError(namespace, resource);
+  } catch (err) {
+    if (err instanceof ExecError) {
+      if (err.stderr.includes("doesn't have a resource type")) {
+        const resourceType = resource.split("/")[0];
+        throw new ResourceTypeNotFoundError(resourceType);
+      }
+      if (err.stderr.includes("not found")) {
+        throw new ResourceNotFoundError(namespace, resource);
+      }
     }
     throw err;
   }
@@ -133,10 +136,9 @@ export const rollout = async (
   await cmdExec(command);
 };
 
-export interface KustomizeOpts {
-  url?: string;
-  dynamic?: Record<string, any>;
-}
+export type KustomizeOpts =
+  | { url: string; dynamic?: never }
+  | { dynamic: Record<string, any>; url?: never };
 
 const createDynamicKustomization = async (
   dir: string,
@@ -152,23 +154,11 @@ const createDynamicKustomization = async (
 };
 
 export const kustomize = async (opts: KustomizeOpts) => {
-  if (opts.dynamic && opts.url) {
-    throw new Error("Cannot specify both dynamic and url in kustomize options");
-  }
-
   const tempy = await getTempy();
   return await tempy.temporaryDirectoryTask(async (dir: string) => {
-    let kustomization: string;
-
-    if (opts.dynamic) {
-      kustomization = await createDynamicKustomization(dir, opts.dynamic);
-    } else if (opts.url) {
-      kustomization = opts.url;
-    } else {
-      throw new Error(
-        "Must specify either dynamic or url in kustomize options"
-      );
-    }
+    const kustomization = opts.dynamic
+      ? await createDynamicKustomization(dir, opts.dynamic)
+      : opts.url!;
 
     return await cmdExec([
       "kubectl",
@@ -203,85 +193,37 @@ export const portForward = async (
 ) => {
   const localPorts = await getPortsPromise(remotePorts.length);
   const portPairs = localPorts.map((lp, i) => `${lp}:${remotePorts[i]}`);
-  const command = [
-    "kubectl",
+
+  const ac = new AbortController();
+  const subprocess = execa("kubectl", [
     "port-forward",
     `--namespace=${namespace}`,
     resource,
     ...portPairs,
-  ];
-
-  const { process, cancel: baseCancel } = spawn(command);
-
-  let stdout = "";
-  process.stdout?.on("data", (data: Buffer) => (stdout += data.toString()));
-
-  let stderr = "";
-  process.stderr?.on("data", (data: Buffer) => (stderr += data.toString()));
-
-  let cancelled = false;
-  const cancel = () => {
-    if (!cancelled) {
-      baseCancel();
-    }
-    cancelled = true;
-  };
-
-  const handleClose = (resolve: () => void, reject: (error: any) => void) => {
-    return (code: number) => {
-      if (!code || cancelled) {
-        resolve();
-      } else {
-        reject({
-          code,
-          stdout,
-          stderr,
-          message: `command failed with exit code ${code}`,
-        });
-      }
-    };
-  };
-
-  const waitForReady = () => {
-    return new Promise<void>((resolve, reject) => {
-      const onClose = handleClose(resolve, reject);
-      const onError = reject;
-      const onStdout = (chunk: Buffer) => {
-        if (chunk.toString().includes("Forwarding from")) {
-          cleanup();
-          resolve();
-        }
-      };
-
-      const cleanup = () => {
-        process.off("close", onClose);
-        process.off("error", onError);
-        process.stdout?.off("data", onStdout);
-      };
-
-      process.on("close", onClose);
-      process.on("error", onError);
-      process.stdout?.on("data", onStdout);
-    });
-  };
-
-  const monitor = () => {
-    return new Promise<void>((resolve, reject) => {
-      process.on("close", handleClose(resolve, reject));
-      process.on("error", reject);
-    });
-  };
-
-  const executeCallback = async () => {
-    await cb(localPorts);
-    cancel();
-  };
+  ], {
+    stdout: "pipe",
+    stderr: "pipe",
+    stdin: "inherit",
+    cancelSignal: ac.signal,
+    reject: false,
+  });
 
   try {
-    await waitForReady();
-    await Promise.all([monitor(), executeCallback()]);
+    await new Promise<void>((resolve, reject) => {
+      subprocess.stdout!.on("data", (chunk: Buffer) => {
+        if (chunk.toString().includes("Forwarding from")) resolve();
+      });
+      void subprocess.then((result) => {
+        if (!result.isCanceled) {
+          reject(new Error(`port-forward exited unexpectedly with code ${result.exitCode}`));
+        }
+      });
+    });
+
+    await cb(localPorts);
   } finally {
-    cancel();
+    ac.abort();
+    await subprocess;
   }
 };
 

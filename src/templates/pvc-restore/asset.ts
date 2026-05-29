@@ -2,7 +2,7 @@ import { rename } from "fs/promises";
 import { join } from "path";
 import { TemplateAssetFn } from "../../context.ts";
 import * as helm from "../../helm.ts";
-import { homelabHelper } from "../../homelab-helper.ts";
+import { homelabHelper } from "../../image-refs";
 
 export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(

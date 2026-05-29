@@ -5,7 +5,7 @@ import {
 import { Chart, VerticalPodAutoscaler } from "../../cdk8s";
 import { getClusterConfig, getNodeConfig, listNodes } from "../../config";
 import { TemplateChartContext, TemplateChartFn } from "../../context";
-import { homelabHelper } from "../../homelab-helper";
+import { homelabHelper } from "../../image-refs";
 
 const getNodes = async (context: TemplateChartContext) => {
   const clusterConfig = await getClusterConfig(context.configDir);

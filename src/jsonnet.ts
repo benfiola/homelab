@@ -1,7 +1,6 @@
 import { rm, writeFile } from "fs/promises";
 import path from "path";
 import { cwd } from "process";
-import * as shlex from "shlex";
 import { exec } from "./exec";
 import { getTempy } from "./tempy";
 
@@ -46,27 +45,18 @@ interface InstallOpts {
 export const install = async (opts: InstallOpts, ...bundles: string[]) => {
   const dir = opts.dir ?? cwd();
 
-  const commands = [`jb init`];
+  await exec(["jb", "init"], { cwd: dir });
+
   for (const bundle of bundles) {
     const command = ["jb", "install"];
     if (opts.vendorDir) {
       command.push(`--jsonnetpkg-home=${opts.vendorDir}`);
     }
     command.push(bundle);
-
-    commands.push(shlex.join(command));
+    await exec(command, { cwd: dir });
   }
 
-  for (const command of commands) {
-    const cmd = ["sh", "-c", `cd ${dir} && ${command}`];
-    await exec(cmd);
-  }
-
-  const files = [
-    path.join(dir, "jsonnetfile.json"),
-    path.join(dir, "jsonnetfile.lock.json"),
-  ];
-  for (const file of files) {
-    await rm(file);
+  for (const file of ["jsonnetfile.json", "jsonnetfile.lock.json"]) {
+    await rm(path.join(dir, file));
   }
 };

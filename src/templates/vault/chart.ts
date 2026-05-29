@@ -8,7 +8,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { homelabHelper } from "../../homelab-helper";
+import { homelabHelper } from "../../image-refs";
 import { textblock } from "../../strings";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {

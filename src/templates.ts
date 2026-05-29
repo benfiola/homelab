@@ -1,6 +1,6 @@
 import { App, Chart } from "cdk8s";
 import { glob, mkdir } from "fs/promises";
-import { join } from "path";
+import { basename, dirname, join } from "path";
 import { AppConfig, AppsConfig } from "./config";
 import {
   TemplateAssetFn,
@@ -11,10 +11,7 @@ import {
 const assetsDir = join(__dirname, "..", "assets");
 const templatesDir = join(__dirname, "templates");
 
-const getTemplateName = async (templateFile: string) => {
-  const parts = templateFile.split("/");
-  return parts[parts.length - 2];
-};
+const getTemplateName = (templateFile: string) => basename(dirname(templateFile));
 
 interface FetchAssetsOpts {
   filter?: string[];
@@ -36,7 +33,7 @@ export const fetchAssets = async (
   }
 
   const generateAsset = async (sourceAssetPath: string) => {
-    const templateName = await getTemplateName(sourceAssetPath);
+    const templateName = getTemplateName(sourceAssetPath);
     if (filter.size > 0 && !filter.has(templateName)) {
       return;
     }
@@ -91,12 +88,7 @@ export const attachCharts = async (
       opts: appConfig.options,
     };
 
-    const chart = await template.chart(app, appConfig.id, {
-      configDir,
-      getAsset: createGetAsset(appConfig.template),
-      name: appConfig.template,
-      opts: appConfig.options,
-    });
+    const chart = await template.chart(app, appConfig.id, context);
 
     if (!Chart.isChart(chart)) {
       throw new Error(

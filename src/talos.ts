@@ -162,11 +162,11 @@ const mergeArraysUsingField = (
   const result = [...values[0]];
 
   let destMap: Record<string, any> = {};
-  values[1].forEach((item: any) => (destMap[field] = item));
+  values[1].forEach((item: any) => (destMap[item[field]] = item));
 
   result.forEach((source: any, index: number) => {
-    const dest = destMap[field];
-    delete destMap[field];
+    const dest = destMap[source[field]];
+    delete destMap[source[field]];
     if (!dest) {
       return;
     }

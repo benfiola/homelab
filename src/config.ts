@@ -4,6 +4,11 @@ import { parse } from "yaml";
 import * as zod from "zod";
 import { renderTemplate } from "./strings";
 
+const loadYaml = async <T>(schema: zod.ZodType<T>, path: string): Promise<T> => {
+  const raw = (await readFile(path)).toString();
+  return schema.parseAsync(parse(raw));
+};
+
 const hardwareNameSchema = zod.union([zod.literal("rpi4"), zod.literal("tc")]);
 
 export type HardwareName = zod.infer<typeof hardwareNameSchema>;
@@ -53,13 +58,8 @@ const clusterConfigSchema = zod.object({
 
 export type ClusterConfig = zod.infer<typeof clusterConfigSchema>;
 
-export const getClusterConfig = async (configDir: string) => {
-  const path = join(configDir, "cluster.yaml");
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await clusterConfigSchema.parseAsync(data);
-  return config;
-};
+export const getClusterConfig = (configDir: string) =>
+  loadYaml(clusterConfigSchema, join(configDir, "cluster.yaml"));
 
 const roleSchema = zod.union([
   zod.literal("controlplane"),
@@ -78,10 +78,8 @@ export type NodeConfig = zod.infer<typeof nodeConfigSchema>;
 
 export const getNodeConfig = async (configDir: string, node: string) => {
   const path = join(configDir, `node-${node}.yaml`);
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await nodeConfigSchema.parseAsync({ name: node, ...data });
-  return config;
+  const raw = (await readFile(path)).toString();
+  return nodeConfigSchema.parseAsync({ name: node, ...parse(raw) });
 };
 
 export const listNodes = async (configDir: string) => {
@@ -96,15 +94,15 @@ export const listNodes = async (configDir: string) => {
 const appConfigSchema = zod
   .object({
     dependencies: zod.array(zod.string()).default([]),
-    id: zod.string().default(() => undefined as any as string),
+    id: zod.string().optional(),
     flux: zod.boolean().default(true),
     options: zod.record(zod.string(), zod.any()).default({}),
     template: zod.string(),
   })
-  .transform((data) => {
-    data.id = data.id !== undefined ? data.id : data.template;
-    return data;
-  });
+  .transform((data) => ({
+    ...data,
+    id: data.id ?? data.template,
+  }));
 
 export type AppConfig = zod.infer<typeof appConfigSchema>;
 
@@ -112,13 +110,8 @@ const appsConfigSchema = zod.array(appConfigSchema);
 
 export type AppsConfig = zod.infer<typeof appsConfigSchema>;
 
-export const getAppsConfig = async (configDir: string) => {
-  const path = join(configDir, "apps.yaml");
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await appsConfigSchema.parseAsync(data);
-  return config;
-};
+export const getAppsConfig = (configDir: string) =>
+  loadYaml(appsConfigSchema, join(configDir, "apps.yaml"));
 
 const fluxConfigSchema = zod.object({
   branch: zod.string().optional(),
@@ -127,13 +120,8 @@ const fluxConfigSchema = zod.object({
 
 export type FluxConfig = zod.infer<typeof fluxConfigSchema>;
 
-export const getFluxConfig = async (configDir: string) => {
-  const path = join(configDir, "flux.yaml");
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await fluxConfigSchema.parseAsync(data);
-  return config;
-};
+export const getFluxConfig = (configDir: string) =>
+  loadYaml(fluxConfigSchema, join(configDir, "flux.yaml"));
 
 const networkOutputSchema = zod.object({
   file: zod.string(),
@@ -149,10 +137,8 @@ export const getNetworkConfig = async (
   secrets: NetworkSecrets,
   configDir: string,
 ) => {
-  const path = join(configDir, "network.yaml");
-  const raw = (await readFile(path)).toString();
-  const config = parse(renderTemplate(raw, { secrets }));
-  return networkConfigSchema.parseAsync(config);
+  const raw = (await readFile(join(configDir, "network.yaml"))).toString();
+  return networkConfigSchema.parseAsync(parse(renderTemplate(raw, { secrets })));
 };
 
 const storageConfigSchema = zod.object({
@@ -161,13 +147,8 @@ const storageConfigSchema = zod.object({
 
 export type StorageConfig = zod.infer<typeof storageConfigSchema>;
 
-export const getStorageConfig = async (configDir: string) => {
-  const path = join(configDir, "storage.yaml");
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await storageConfigSchema.parseAsync(data);
-  return config;
-};
+export const getStorageConfig = (configDir: string) =>
+  loadYaml(storageConfigSchema, join(configDir, "storage.yaml"));
 
 const appsSecretsSchema = zod.object({
   secrets: zod.record(zod.string(), zod.record(zod.string(), zod.string())),
@@ -185,13 +166,8 @@ const appsSecretsSchema = zod.object({
 
 export type AppsSecretsSchema = zod.infer<typeof appsSecretsSchema>;
 
-export const getAppsSecrets = async (configDir: string) => {
-  const path = await getSecretsPath("apps", configDir);
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await appsSecretsSchema.parseAsync(data);
-  return config;
-};
+export const getAppsSecrets = (configDir: string) =>
+  loadYaml(appsSecretsSchema, getSecretsPath("apps", configDir));
 
 const fluxSecretsSchema = zod.object({
   token: zod.string(),
@@ -199,13 +175,8 @@ const fluxSecretsSchema = zod.object({
 
 export type FluxSecrets = zod.infer<typeof fluxSecretsSchema>;
 
-export const getFluxSecrets = async (configDir: string) => {
-  const path = await getSecretsPath("flux", configDir);
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await fluxSecretsSchema.parseAsync(data);
-  return config;
-};
+export const getFluxSecrets = (configDir: string) =>
+  loadYaml(fluxSecretsSchema, getSecretsPath("flux", configDir));
 
 const keyPairSchema = zod.object({
   public: zod.string(),
@@ -222,13 +193,8 @@ const networkSecretsSchema = zod.object({
 
 type NetworkSecrets = zod.infer<typeof networkSecretsSchema>;
 
-export const getNetworkSecrets = async (configDir: string) => {
-  const path = await getSecretsPath("network", configDir);
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await networkSecretsSchema.parseAsync(data);
-  return config;
-};
+export const getNetworkSecrets = (configDir: string) =>
+  loadYaml(networkSecretsSchema, getSecretsPath("network", configDir));
 
 const vaultSecretsSchema = zod.object({
   rootToken: zod.string(),
@@ -237,13 +203,8 @@ const vaultSecretsSchema = zod.object({
 
 export type VaultSecrets = zod.infer<typeof vaultSecretsSchema>;
 
-export const getVaultSecrets = async (configDir: string) => {
-  const path = await getSecretsPath("vault", configDir);
-  const dataStr = (await readFile(path)).toString();
-  const data = await parse(dataStr);
-  const config = await vaultSecretsSchema.parseAsync(data);
-  return config;
-};
+export const getVaultSecrets = (configDir: string) =>
+  loadYaml(vaultSecretsSchema, getSecretsPath("vault", configDir));
 
 export const secrets = ["apps", "flux", "network", "vault", "talos"] as const;
 export type Secret = (typeof secrets)[number];
@@ -252,7 +213,7 @@ export const isSecret = (v: any): v is Secret => {
   return secrets.indexOf(v) !== -1;
 };
 
-export const getSecretsPath = async (secret: Secret, configDir: string) => {
+export const getSecretsPath = (secret: Secret, configDir: string) => {
   const file = `secrets-${secret}.yaml`;
   return join(configDir, file);
 };

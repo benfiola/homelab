@@ -12,7 +12,7 @@ import {
   TcpRoute,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { gameServerImage } from "../../game-server-images";
+import { gameServerImage } from "../../image-refs";
 
 export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
