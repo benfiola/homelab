@@ -1058,7 +1058,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("world-to-kube-apiserver--ingress")
     .targets(controlPlane())
-    .allowIngressFrom(cidrs("192.168.16.0/24", "192.168.17.0/24"), tcp(6443));
+    .allowIngressFrom(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(6443));
 
   // kubelet
   policy("nodes-to-kubelet").allowBetween(allNodes(), allNodes(), tcp(10250));
@@ -1072,7 +1072,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("world-to-talos-apid--ingress")
     .targets(controlPlane())
-    .allowIngressFrom(cidrs("192.168.16.0/24", "192.168.17.0/24"), tcp(50000));
+    .allowIngressFrom(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(50000));
 
   policy("nodes-to-talos-trustd").allowBetween(
     allNodes(),
