@@ -201,8 +201,7 @@ export const pushSecrets = async (secret: config.Secret, configDir: string) => {
       `storage key must be stored in Bitwarden manually (item id: ${storageConfig.privateKeyItemId})`,
     );
   } else if (secret === "apps") {
-    await pushSecretsToStorage(secret, configDir);
-    // await pushAppsSecretsToVault(configDir);
+    await pushAppsSecretsToVault(configDir);
   } else {
     await pushSecretsToStorage(secret, configDir);
   }
