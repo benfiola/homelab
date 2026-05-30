@@ -1,3 +1,0 @@
-hardware: rpi4
-hostname: node-b.cluster.bulia.dev
-role: worker

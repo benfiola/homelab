@@ -1,3 +1,5 @@
+apiVersion: v1alpha1
+kind: HomelabStorageConfig
 bucket: homelab-secrets-262965
 privateKeyItemId: 6bf8d177-f190-4b70-a338-b45901791d20
 publicKey: age1g7xpn8zjgukzuvspm7lf2anfg5c57awhsypaa4507ccm39c6heqs6x65vs

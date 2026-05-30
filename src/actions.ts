@@ -48,6 +48,7 @@ export const applySystemConfig = async (
   const systemConfigs: Record<string, Record<any, any>> = {};
 
   const clusterConfig = await config.getClusterConfig(configDir);
+  const baseConfigs = await config.getBaseTalosConfig(configDir);
   const secretsPath = config.getSecretsPath("talos", configDir);
 
   const apply = async (node: string) => {
@@ -55,6 +56,7 @@ export const applySystemConfig = async (
     const systemConfig = await talos.getSystemConfig(
       clusterConfig,
       nodeConfig,
+      baseConfigs,
       secretsPath,
     );
 

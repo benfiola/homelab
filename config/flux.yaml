@@ -1,2 +1,4 @@
+apiVersion: v1alpha1
+kind: HomelabFluxConfig
 branch: main
 repo: https://github.com/benfiola/homelab-manifests.git

@@ -1,48 +1,51 @@
-- template: alertmanager
-- template: alloy
-- template: assets-server
-- template: bucket-sync
-- template: cert-manager
-- template: cilium
-- template: envoy-gateway
-- template: dynamic-dns
-- template: external-dns
-- template: external-snapshotter
-- template: flux-bootstrap
-  flux: false
-- template: frigate
-- template: garage
-- template: garage-operator
-- template: gateway
-- template: gateway-api
-- template: gateway-route-sync
-- template: grafana
-- template: grafana-operator
-- template: intel-device-plugins
-- template: intel-device-plugins-operator
-- template: kube-state-metrics
-- template: linstor
-- template: loki
-- template: metrics-server
-- template: minecraft
-- template: monitoring-config
-- template: network-policy
-- template: node-feature-discovery
-- template: piraeus-operator
-- template: postfix
-- template: prometheus
-- template: prometheus-node-exporter
-- template: prometheus-operator
-- template: pvc-restore
-- template: router-policy-sync
-- template: seven-days-to-die
-- template: single-player-tarkov
-- template: storage-class
-- template: tunnel
-- template: vault
-- template: vault-push-secrets
-- template: vault-secrets-operator
-- template: vertical-pod-autoscaler
-- template: volsync
-- template: volsync-testing
-- template: volume-snapshot-api
+apiVersion: v1alpha1
+kind: HomelabAppsConfig
+apps:
+  - template: alertmanager
+  - template: alloy
+  - template: assets-server
+  - template: bucket-sync
+  - template: cert-manager
+  - template: cilium
+  - template: envoy-gateway
+  - template: dynamic-dns
+  - template: external-dns
+  - template: external-snapshotter
+  - template: flux-bootstrap
+    flux: false
+  - template: frigate
+  - template: garage
+  - template: garage-operator
+  - template: gateway
+  - template: gateway-api
+  - template: gateway-route-sync
+  - template: grafana
+  - template: grafana-operator
+  - template: intel-device-plugins
+  - template: intel-device-plugins-operator
+  - template: kube-state-metrics
+  - template: linstor
+  - template: loki
+  - template: metrics-server
+  - template: minecraft
+  - template: monitoring-config
+  - template: network-policy
+  - template: node-feature-discovery
+  - template: piraeus-operator
+  - template: postfix
+  - template: prometheus
+  - template: prometheus-node-exporter
+  - template: prometheus-operator
+  - template: pvc-restore
+  - template: router-policy-sync
+  - template: seven-days-to-die
+  - template: single-player-tarkov
+  - template: storage-class
+  - template: tunnel
+  - template: vault
+  - template: vault-push-secrets
+  - template: vault-secrets-operator
+  - template: vertical-pod-autoscaler
+  - template: volsync
+  - template: volsync-testing
+  - template: volume-snapshot-api

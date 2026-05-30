@@ -1,6 +1,6 @@
-import { glob, readFile } from "fs/promises";
-import { join, parse as pathParse } from "path";
-import { parse } from "yaml";
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { parse, parseAllDocuments } from "yaml";
 import * as zod from "zod";
 import { renderTemplate } from "./strings";
 
@@ -52,7 +52,8 @@ const hardwareConfigSchema = zod.object({
 });
 
 const clusterConfigSchema = zod.object({
-  baseTalosConfig: zod.record(zod.any(), zod.any()),
+  apiVersion: zod.literal("v1alpha1"),
+  kind: zod.literal("HomelabClusterConfig"),
   endpoint: zod.string(),
   hardware: zod.record(hardwareNameSchema, hardwareConfigSchema),
   kubernetes: zod.string(),
@@ -61,8 +62,9 @@ const clusterConfigSchema = zod.object({
 
 export type ClusterConfig = zod.infer<typeof clusterConfigSchema>;
 
-export const getClusterConfig = (configDir: string) =>
-  loadYaml(clusterConfigSchema, join(configDir, "cluster.yaml"));
+const isClusterConfig = (a: any): a is ClusterConfig => {
+  return a.kind === "HomelabClusterConfig";
+};
 
 const roleSchema = zod.union([
   zod.literal("controlplane"),
@@ -70,6 +72,8 @@ const roleSchema = zod.union([
 ]);
 
 const nodeConfigSchema = zod.object({
+  apiVersion: zod.literal("v1alpha1"),
+  kind: zod.literal("HomelabNodeConfig"),
   enabled: zod.boolean().default(true),
   hardware: hardwareNameSchema,
   hostname: zod.string(),
@@ -79,20 +83,71 @@ const nodeConfigSchema = zod.object({
 
 export type NodeConfig = zod.infer<typeof nodeConfigSchema>;
 
+const isNodeConfig = (a: any): a is NodeConfig => {
+  return a.kind === "HomelabNodeConfig";
+};
+
+const clusterDocumentSchema = zod.union([
+  clusterConfigSchema,
+  nodeConfigSchema,
+  zod.record(zod.string(), zod.any()),
+]);
+
+const parseClusterConfig = async (configDir: string) => {
+  const path = join(configDir, "cluster.yaml");
+  const configStr = (await readFile(path)).toString();
+  const documents = parseAllDocuments(configStr);
+  return Promise.all(
+    documents.map((doc) => clusterDocumentSchema.parseAsync(doc.toJSON())),
+  );
+};
+
+const isBaseTalosConfig = (a: any): a is Record<string, any> => {
+  return !isClusterConfig(a) && !isNodeConfig(a);
+};
+
+export const getBaseTalosConfig = async (configDir: string) => {
+  const parsed = await parseClusterConfig(configDir);
+  return parsed.filter(isBaseTalosConfig);
+};
+
+export const getClusterConfig = async (configDir: string) => {
+  const parsed = await parseClusterConfig(configDir);
+  const configs = parsed.filter(isClusterConfig);
+  if (configs.length !== 1) {
+    throw new Error(`found ${configs.length} cluster configs`);
+  }
+  return configs[0];
+};
+
+const processNodes = (cluster: ClusterConfig, nodes: NodeConfig[]) => {
+  const suffix = `.${cluster.endpoint}`;
+  const prefix = "node-";
+  nodes.forEach(
+    (n) => (n.name = n.hostname.replace(suffix, "").replace(prefix, "")),
+  );
+};
+
 export const getNodeConfig = async (configDir: string, node: string) => {
-  const path = join(configDir, `node-${node}.yaml`);
-  const raw = (await readFile(path)).toString();
-  return nodeConfigSchema.parseAsync({ name: node, ...parse(raw) });
+  const parsed = await parseClusterConfig(configDir);
+  const cluster = await getClusterConfig(configDir);
+  const nodes = parsed.filter(isNodeConfig);
+  processNodes(cluster, nodes);
+  const configs = nodes.filter((n) => n.name === node);
+  if (configs.length !== 1) {
+    throw new Error(`found ${configs.length} node configs`);
+  }
+  return configs[0];
 };
 
 export const listNodes = async (configDir: string) => {
-  let nodes: string[] = [];
-  for await (const file of glob(`${configDir}/node-*.yaml`)) {
-    const node = pathParse(file).name.replace("node-", "");
-    nodes.push(node);
-  }
-  nodes.sort();
-  return nodes;
+  const parsed = await parseClusterConfig(configDir);
+  const cluster = await getClusterConfig(configDir);
+  const nodes = parsed.filter(isNodeConfig);
+  processNodes(cluster, nodes);
+  const nodeNames = nodes.map((n) => n.name);
+  nodeNames.sort();
+  return nodeNames;
 };
 
 const appConfigSchema = zod
@@ -110,7 +165,11 @@ const appConfigSchema = zod
 
 export type AppConfig = zod.infer<typeof appConfigSchema>;
 
-const appsConfigSchema = zod.array(appConfigSchema);
+const appsConfigSchema = zod.object({
+  apiVersion: zod.literal("v1alpha1"),
+  kind: zod.literal("HomelabAppsConfig"),
+  apps: zod.array(appConfigSchema),
+});
 
 export type AppsConfig = zod.infer<typeof appsConfigSchema>;
 
@@ -118,6 +177,8 @@ export const getAppsConfig = (configDir: string) =>
   loadYaml(appsConfigSchema, join(configDir, "apps.yaml"));
 
 const fluxConfigSchema = zod.object({
+  apiVersion: zod.literal("v1alpha1"),
+  kind: zod.literal("HomelabFluxConfig"),
   branch: zod.string().optional(),
   repo: zod.string(),
 });
@@ -134,6 +195,8 @@ const networkOutputSchema = zod.object({
 });
 
 const networkConfigSchema = zod.object({
+  apiVersion: zod.literal("v1alpha1"),
+  kind: zod.literal("HomelabNetworkConfig"),
   outputs: zod.array(networkOutputSchema),
 });
 
@@ -149,6 +212,8 @@ export const getNetworkConfig = async (configDir: string) => {
 };
 
 const storageConfigSchema = zod.object({
+  apiVersion: zod.literal("v1alpha1"),
+  kind: zod.literal("HomelabStorageConfig"),
   bucket: zod.string(),
   privateKeyItemId: zod.string(),
   publicKey: zod.string(),

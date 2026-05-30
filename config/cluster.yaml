@@ -1,3 +1,5 @@
+apiVersion: v1alpha1
+kind: HomelabClusterConfig
 endpoint: cluster.bulia.dev
 hardware:
   tc:
@@ -53,55 +55,97 @@ hardware:
     image: factory.talos.dev/metal-installer/cc039b3437c81179de3cf77be1094d619b88a7044144b2d7153ed14104900272:v1.13.3
 kubernetes: 1.36.1
 name: homelab
-
-baseTalosConfig:
-  cluster:
-    apiServer:
-      admissionControl:
-        - name: PodSecurity
-          configuration:
-            defaults:
-              audit: restricted
-              enforce: restricted
-              warn: restricted
-    controllerManager:
-      extraArgs:
-        bind-address: 0.0.0.0
-    network:
-      cni:
-        name: none
-    proxy:
-      disabled: true
-    scheduler:
-      extraArgs:
-        bind-address: 0.0.0.0
-  machine:
-    features:
-      hostDNS:
-        forwardKubeDNSToHost: false
-    kernel:
-      modules:
-        # configure drbd kernel modules (piraeus)
-        - name: dm_mod
-        - name: dm_thin_pool
-        - name: drbd
-          parameters:
-            - usermode_helper=disabled
-        - name: drbd_transport_tcp
-    kubelet:
-      extraConfig:
-        systemReserved:
-          cpu: "250m"
-          memory: "512Mi"
-        kubeReserved:
-          cpu: "250m"
-          memory: "512Mi"
-      extraMounts:
-        # configure r/w mounts (piraeus)
-        - destination: /var/local
-          source: /var/local
-          type: bind
-          options:
-            - rbind
-            - rshared
-            - rw
+---
+apiVersion: v1alpha1
+cluster:
+  apiServer:
+    admissionControl:
+      - name: PodSecurity
+        configuration:
+          defaults:
+            audit: restricted
+            enforce: restricted
+            warn: restricted
+  controllerManager:
+    extraArgs:
+      bind-address: 0.0.0.0
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true
+  scheduler:
+    extraArgs:
+      bind-address: 0.0.0.0
+machine:
+  features:
+    hostDNS:
+      forwardKubeDNSToHost: false
+  kernel:
+    modules:
+      # configure drbd kernel modules (piraeus)
+      - name: dm_mod
+      - name: dm_thin_pool
+      - name: drbd
+        parameters:
+          - usermode_helper=disabled
+      - name: drbd_transport_tcp
+  kubelet:
+    extraConfig:
+      systemReserved:
+        cpu: "250m"
+        memory: "512Mi"
+      kubeReserved:
+        cpu: "250m"
+        memory: "512Mi"
+    extraMounts:
+      # configure r/w mounts (piraeus)
+      - destination: /var/local
+        source: /var/local
+        type: bind
+        options:
+          - rbind
+          - rshared
+          - rw
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: rpi4
+hostname: node-a.cluster.bulia.dev
+role: worker
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: rpi4
+hostname: node-b.cluster.bulia.dev
+role: worker
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: rpi4
+hostname: node-c.cluster.bulia.dev
+role: worker
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: tc
+hostname: node-d.cluster.bulia.dev
+role: controlplane
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: tc
+hostname: node-e.cluster.bulia.dev
+role: worker
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: tc
+hostname: node-f.cluster.bulia.dev
+role: worker
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: tc
+hostname: node-g.cluster.bulia.dev
+role: worker

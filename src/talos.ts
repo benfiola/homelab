@@ -1,7 +1,7 @@
-import { deepmergeCustom } from "deepmerge-ts";
+import { deepmerge, deepmergeCustom } from "deepmerge-ts";
 import { writeFile } from "fs/promises";
 import { join } from "path";
-import { parse } from "yaml";
+import { parseAllDocuments } from "yaml";
 import { ClusterConfig, ImageSchematic, NodeConfig } from "./config";
 import { exec } from "./exec";
 import { getTempy } from "./tempy";
@@ -88,8 +88,7 @@ const _talosctlGenConfig = async (
 
   const stdout = (await exec(cmd)).toString();
 
-  const config: Record<any, any> = parse(stdout);
-  return config;
+  return parseAllDocuments(stdout).map((doc) => doc.toJSON());
 };
 
 export const getClientConfig = async (
@@ -97,7 +96,7 @@ export const getClientConfig = async (
   nodes: NodeConfig[],
   secretsPath: string,
 ) => {
-  const data = await _talosctlGenConfig(
+  const configs = await _talosctlGenConfig(
     cluster.name,
     `https://${cluster.endpoint}:6443`,
     {
@@ -106,12 +105,13 @@ export const getClientConfig = async (
       withSecrets: secretsPath,
     },
   );
+  const config = configs[0];
 
-  const context = data.contexts[cluster.name];
+  const context = config[cluster.name];
   context.endpoints = [cluster.endpoint];
   context.nodes = nodes.map((n) => n.hostname);
 
-  return data;
+  return config;
 };
 
 interface ApplySystemConfigOpts {
@@ -202,11 +202,15 @@ const machineConfigMerge = deepmergeCustom<unknown>({
 export const getSystemConfig = async (
   cluster: ClusterConfig,
   node: NodeConfig,
+  baseConfigs: Record<string, any>[],
   secretsPath: string,
 ) => {
   const hardware = cluster.hardware[node.hardware];
 
-  const base = await _talosctlGenConfig(
+  const isMachineConfig = (c: any) => c.kind === undefined;
+  const isHostnameConfig = (c: any) => c.kind === "HostnameConfig";
+
+  const genConfigs = await _talosctlGenConfig(
     cluster.name,
     `https://${cluster.endpoint}:6443`,
     {
@@ -223,69 +227,49 @@ export const getSystemConfig = async (
       withSecrets: secretsPath,
     },
   );
-  const clusterPatch = cluster.baseTalosConfig;
-  const nodePatch = {
-    machine: {
-      network: {
-        hostname: node.hostname,
-      },
-    },
+  const genMachine = genConfigs.filter(isMachineConfig)[0];
+  const genHostname = genConfigs.filter(isHostnameConfig)[0];
+
+  const machinePatch = baseConfigs.filter(isMachineConfig)[0];
+  const hostnamePatch = {
+    version: "v1alpha1",
+    kind: "HostnameConfig",
+    auto: "off",
+    hostname: node.hostname,
   };
 
-  let machineConfig = base;
-  for (const patch of [clusterPatch, nodePatch]) {
-    machineConfig = machineConfigMerge(machineConfig, patch);
-  }
-
+  const machineConfig = machineConfigMerge(genMachine, machinePatch);
+  const hostnameConfig = deepmerge(genHostname, hostnamePatch);
   const volumeConfigs: Record<any, any>[] = [];
   for (const [name, disk] of Object.entries(hardware.disks)) {
     if (name === "SYSTEM") {
       continue;
     }
 
-    let volumeConfig: Record<any, any>;
-    if (["STATE", "EPHEMERAL", "IMAGECACHE"].includes(name)) {
-      volumeConfig = {
-        apiVersion: "v1alpha1",
-        kind: "VolumeConfig",
-        name,
-        provisioning: {
-          diskSelector: {
-            match: `disk.dev_path == '${disk.device}'`,
-          },
-          minSize: disk.size,
-          maxSize: disk.size,
-          grow: true,
+    const kind = ["STATE", "EPHEMERAL", "IMAGECACHE"].includes(name)
+      ? "VolumeConfig"
+      : "RawVolumeConfig";
+    volumeConfigs.push({
+      apiVersion: "v1alpha1",
+      kind,
+      name,
+      provisioning: {
+        diskSelector: {
+          match: `disk.dev_path == '${disk.device}'`,
         },
-      };
-    } else {
-      volumeConfig = {
-        apiVersion: "v1alpha1",
-        kind: "RawVolumeConfig",
-        name,
-        provisioning: {
-          diskSelector: {
-            match: `disk.dev_path == '${disk.device}'`,
-          },
-          minSize: disk.size,
-          maxSize: disk.size,
-          grow: true,
-        },
-      };
-    }
-
-    volumeConfigs.push(volumeConfig);
+        minSize: disk.size,
+        maxSize: disk.size,
+        grow: true,
+      },
+    });
   }
 
-  const configs = [machineConfig, ...volumeConfigs];
+  const configs = [machineConfig, hostnameConfig, ...volumeConfigs];
   return configs;
 };
 
-const processTalosctlNodeArgs = async (nodes: NodeConfig[], args: string[]) => {
-  const nodeMap: Record<string, string> = {};
-  for (const node of nodes) {
-    nodeMap[node.name] = node.hostname;
-  }
+const processTalosctlNodeArgs = (nodes: NodeConfig[], args: string[]) => {
+  const nodeMap = Object.fromEntries(nodes.map((n) => [n.name, n.hostname]));
 
   const toReturn = [];
   for (let i = 0; i < args.length; i++) {
@@ -295,26 +279,19 @@ const processTalosctlNodeArgs = async (nodes: NodeConfig[], args: string[]) => {
     if (arg.startsWith("--nodes=")) {
       nodeNames = arg.split("=")[1].split(",");
     } else if (arg === "--nodes" || arg === "-n") {
-      const nextArg = args[++i];
-      nodeNames = nextArg.split(",");
+      nodeNames = args[++i].split(",");
     } else {
       toReturn.push(arg);
       continue;
     }
 
-    for (let i = 0; i < nodeNames.length; i++) {
-      const nodeName = nodeNames[i];
-      const nodeHostname = nodeMap[nodeName];
-      nodeNames[i] = nodeHostname ? nodeHostname : nodeName;
-    }
-
-    toReturn.push(`--nodes=${nodeNames.join(",")}`);
+    toReturn.push(`--nodes=${nodeNames.map((n) => nodeMap[n] ?? n).join(",")}`);
   }
 
   return toReturn;
 };
 
-const processTalosctlUpgradeImageArg = async (
+const processTalosctlUpgradeImageArg = (
   cluster: ClusterConfig,
   nodes: NodeConfig[],
   args: string[],
@@ -363,7 +340,7 @@ const processTalosctlUpgradeImageArg = async (
   return toReturn;
 };
 
-const processTalosctlUpgradeK8sToArg = async (
+const processTalosctlUpgradeK8sToArg = (
   cluster: ClusterConfig,
   args: string[],
 ) => {
@@ -385,9 +362,9 @@ export const talosctl = async (
   nodes: NodeConfig[],
   args: string[],
 ) => {
-  args = await processTalosctlNodeArgs(nodes, args);
-  args = await processTalosctlUpgradeImageArg(cluster, nodes, args);
-  args = await processTalosctlUpgradeK8sToArg(cluster, args);
+  args = processTalosctlNodeArgs(nodes, args);
+  args = processTalosctlUpgradeImageArg(cluster, nodes, args);
+  args = processTalosctlUpgradeK8sToArg(cluster, args);
 
   args = ["talosctl", ...args];
   await exec(args, { output: "inherit" });

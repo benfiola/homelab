@@ -1,3 +1,0 @@
-hardware: tc
-hostname: node-d.cluster.bulia.dev
-role: controlplane
