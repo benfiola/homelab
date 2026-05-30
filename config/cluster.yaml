@@ -56,7 +56,6 @@ hardware:
 kubernetes: 1.36.1
 name: homelab
 ---
-apiVersion: v1alpha1
 cluster:
   apiServer:
     admissionControl:

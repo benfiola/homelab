@@ -232,7 +232,7 @@ export const getSystemConfig = async (
 
   const machinePatch = baseConfigs.filter(isMachineConfig)[0];
   const hostnamePatch = {
-    version: "v1alpha1",
+    apiVersion: "v1alpha1",
     kind: "HostnameConfig",
     auto: "off",
     hostname: node.hostname,
