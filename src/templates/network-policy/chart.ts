@@ -908,7 +908,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("vault-to-vault").allowBetween(
     pod("vault", "vault"),
     pod("vault", "vault"),
-    tcp(8201),
+    tcp(8200, 8201),
   );
 
   // vault-push-secrets

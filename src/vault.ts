@@ -39,10 +39,6 @@ export class Vault {
     this.token = token;
   }
 
-  private cmd(...args: string[]) {
-    return ["vault", ...args, `-address=${this.address}`];
-  }
-
   private env() {
     return { VAULT_TOKEN: this.token };
   }
@@ -50,7 +46,12 @@ export class Vault {
   getStatus = async () => {
     let output: string;
     try {
-      output = await exec(this.cmd("status", "-format=json"));
+      output = await exec([
+        "vault",
+        "status",
+        `-address=${this.address}`,
+        "-format=json",
+      ]);
     } catch (e) {
       if (!(e instanceof ExecError) || e.exitCode !== 2) {
         throw e;
@@ -65,15 +66,15 @@ export class Vault {
     const keyShares = opts.keyShares ?? 1;
     const keyThreshold = opts.keyThreshold ?? 1;
 
-    const output = await exec(
-      this.cmd(
-        "operator",
-        "init",
-        `-key-shares=${keyShares}`,
-        `-key-threshold=${keyThreshold}`,
-        "-format=json",
-      ),
-    );
+    const output = await exec([
+      "vault",
+      "operator",
+      "init",
+      `-address=${this.address}`,
+      `-key-shares=${keyShares}`,
+      `-key-threshold=${keyThreshold}`,
+      "-format=json",
+    ]);
 
     const parsed = await initSchema.parseAsync(JSON.parse(output));
     return {
@@ -83,13 +84,19 @@ export class Vault {
   };
 
   enableAuthEngine = async (engine: string) => {
-    await exec(this.cmd("auth", "enable", engine), { env: this.env() });
+    await exec(
+      ["vault", "auth", "enable", `-address=${this.address}`, engine],
+      { env: this.env() },
+    );
   };
 
   getAuthEngines = async () => {
-    const output = await exec(this.cmd("auth", "list", "-format=json"), {
-      env: this.env(),
-    });
+    const output = await exec(
+      ["vault", "auth", "list", `-address=${this.address}`, "-format=json"],
+      {
+        env: this.env(),
+      },
+    );
     return authEnginesSchema.parseAsync(JSON.parse(output));
   };
 
@@ -98,30 +105,40 @@ export class Vault {
     type: EnableSecretsEngineType,
     opts: EnableSecretsEngineOpts = {},
   ) => {
-    const args = ["secrets", "enable", `-path=${path}`];
+    const cmd = [
+      "vault",
+      "secrets",
+      "enable",
+      `-address=${this.address}`,
+      `-path=${path}`,
+    ];
     if (opts.description) {
-      args.push(`-description=${opts.description}`);
+      cmd.push(`-description=${opts.description}`);
     }
     if (type === "kv2") {
-      args.push("-version=2", "kv");
+      cmd.push("-version=2", "kv");
     } else {
       throw new Error(`Unknown secrets engine type: ${type}`);
     }
-    await exec(this.cmd(...args), { env: this.env() });
+    await exec(cmd, { env: this.env() });
   };
 
   getSecretsEngines = async () => {
     const output = await exec(
-      this.cmd("secrets", "list", "-format=json"),
-      { env: this.env() },
+      ["vault", "secrets", "list", `-address=${this.address}`, "-format=json"],
+      {
+        env: this.env(),
+      },
     );
     return secretsEnginesSchema.parseAsync(JSON.parse(output));
   };
 
   listPolicies = async () => {
     const output = await exec(
-      this.cmd("policy", "list", "-format=json"),
-      { env: this.env() },
+      ["vault", "policy", "list", `-address=${this.address}`, "-format=json"],
+      {
+        env: this.env(),
+      },
     );
     return policiesSchema.parseAsync(JSON.parse(output));
   };
@@ -131,8 +148,18 @@ export class Vault {
     await tempy.temporaryFileTask(async (file: string) => {
       await writeFile(file, JSON.stringify(data));
       await exec(
-        this.cmd("kv", "put", `-mount=${mount}`, path, `@${file}`),
-        { env: this.env() },
+        [
+          "vault",
+          "kv",
+          "put",
+          `-address=${this.address}`,
+          `-mount=${mount}`,
+          path,
+          `@${file}`,
+        ],
+        {
+          env: this.env(),
+        },
       );
     });
   };
@@ -141,12 +168,18 @@ export class Vault {
     const tempy = await getTempy();
     await tempy.temporaryFileTask(async (file: string) => {
       await writeFile(file, policy);
-      await exec(this.cmd("policy", "write", name, file), { env: this.env() });
+      await exec(
+        ["vault", "policy", "write", `-address=${this.address}`, name, file],
+        { env: this.env() },
+      );
     });
   };
 
   write = async (path: string, data: Record<string, string>) => {
     const kvArgs = Object.entries(data).map(([k, v]) => `${k}=${v}`);
-    await exec(this.cmd("write", path, ...kvArgs), { env: this.env() });
+    await exec(
+      ["vault", "write", `-address=${this.address}`, path, ...kvArgs],
+      { env: this.env() },
+    );
   };
 }

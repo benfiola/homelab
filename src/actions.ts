@@ -442,15 +442,6 @@ const initializeVault = async (configDir: string) => {
         logger().info("Initializing...");
         const secrets = await client.init();
 
-        logger().info("Pushing unseal key to pods...");
-        await tempy.temporaryFileTask(async (file) => {
-          await writeFile(file, secrets.unsealKey);
-          for (let i = 0; i < numReplicas; i++) {
-            const dest = `vault/vault-${i}:/vault/data/unseal-key`;
-            await kubernetes.cp(file, dest);
-          }
-        });
-
         logger().info("Writing local vault secrets file...");
         const secretsPath = config.getSecretsPath("vault", configDir);
         await writeFile(secretsPath, stringify(secrets));
@@ -461,6 +452,15 @@ const initializeVault = async (configDir: string) => {
 
       const vaultSecrets = await config.getVaultSecrets(configDir);
       client.token = vaultSecrets.rootToken;
+
+      logger().info("Pushing unseal key to pods...");
+      await tempy.temporaryFileTask(async (file) => {
+        await writeFile(file, vaultSecrets.unsealKey);
+        for (let i = 0; i < numReplicas; i++) {
+          const dest = `vault/vault-${i}:/vault/data/unseal-key`;
+          await kubernetes.cp(file, dest);
+        }
+      });
 
       logger().info("Wait for unseal...");
       await waitFor(async () => {

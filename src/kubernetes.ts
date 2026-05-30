@@ -213,7 +213,7 @@ export const portForward = async (
       subprocess.stdout!.on("data", (chunk: Buffer) => {
         if (chunk.toString().includes("Forwarding from")) resolve();
       });
-      void subprocess.then((result) => {
+      subprocess.then((result) => {
         if (!result.isCanceled) {
           reject(new Error(`port-forward exited unexpectedly with code ${result.exitCode}`));
         }

@@ -57,6 +57,7 @@ kubernetes: 1.36.1
 name: homelab
 ---
 cluster:
+  allowSchedulingOnControlPlanes: true
   apiServer:
     admissionControl:
       - name: PodSecurity
@@ -67,18 +68,23 @@ cluster:
             warn: restricted
   controllerManager:
     extraArgs:
+      # allow remote-node workloads to access server (monitoring)
       bind-address: 0.0.0.0
   network:
     cni:
+      # disable cni (cilium)
       name: none
   proxy:
+    # disable kube-proxy (cilium)
     disabled: true
   scheduler:
     extraArgs:
+      # allow remote-node workloads to access server (monitoring)
       bind-address: 0.0.0.0
 machine:
   features:
     hostDNS:
+      # disable dns forwarding (cilium)
       forwardKubeDNSToHost: false
   kernel:
     modules:
@@ -91,6 +97,7 @@ machine:
       - name: drbd_transport_tcp
   kubelet:
     extraConfig:
+      # ensure the scheduler leaves buffer for system/kube workloads
       systemReserved:
         cpu: "250m"
         memory: "512Mi"
