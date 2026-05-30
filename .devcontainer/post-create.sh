@@ -8,5 +8,6 @@ make install-tools
 make install-docs
 make install-project
 gcloud auth login
+bw login
 homelab generate-client-config
 homelab talosctl -n a kubeconfig

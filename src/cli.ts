@@ -7,12 +7,12 @@ import { join } from "path";
 import pino from "pino";
 import { exit, stdin } from "process";
 import * as actions from "./actions";
-import * as hubble from "./hubble";
-import * as swos from "./swos";
 import { LogFormat, TransportOpts } from "./cli-logger.mts";
 import { isSecret, Secret } from "./config";
+import * as hubble from "./hubble";
 import { logger, LogLevel, logLevels, LogStatus, setLogger } from "./logger";
 import { randomString } from "./strings";
+import * as swos from "./swos";
 import { stringify } from "./yaml";
 
 const status = (status: LogStatus, message: string) => {
@@ -175,10 +175,13 @@ const pushSecret = (secret: Secret, opts: PushSecretOpts) => {
 
 interface PullSecretsOpts {
   configDir: string;
+  reuseKey: boolean;
 }
 
 const pullSecrets = (opts: PullSecretsOpts) =>
-  withStatus("Pulling secrets...", () => actions.pullSecrets(opts.configDir));
+  withStatus("Pulling secrets...", () =>
+    actions.pullSecrets(opts.configDir, { skipKeyIfExists: opts.reuseKey }),
+  );
 
 interface GenerateClientConfigOpts {
   configDir: string;
@@ -260,7 +263,9 @@ interface UpgradeTalosOpts {
 }
 
 const upgradeTalos = async (opts: UpgradeTalosOpts) => {
-  await actions.upgradeTalos(opts.configDir, { nodes: opts.nodes });
+  await actions.upgradeTalos(opts.configDir, {
+    nodes: opts.nodes,
+  });
 };
 
 const configureLogger = async (logFormat: LogFormat, logLevel: LogLevel) => {
@@ -367,6 +372,11 @@ const main = async () => {
     .command("pull-secrets")
     .description("pulls secrets from remote storage")
     .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
+    .option(
+      "--reuse-key",
+      "skip fetching encryption key from bitwarden if it already exists locally",
+      false,
+    )
     .action(pullSecrets);
 
   program
@@ -430,10 +440,7 @@ const main = async () => {
     .option("--username <name>", "switch username", "admin")
     .option("--password <secret>", "switch password", "")
     .action(
-      async (
-        address: string,
-        opts: { username: string; password: string },
-      ) => {
+      async (address: string, opts: { username: string; password: string }) => {
         await swos.dumpConfig(address, opts.username, opts.password);
       },
     );

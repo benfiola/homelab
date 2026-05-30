@@ -1,5 +1,13 @@
 import { App } from "cdk8s";
-import { glob, mkdir, readFile, rename, rm, writeFile } from "fs/promises";
+import {
+  access,
+  glob,
+  mkdir,
+  readFile,
+  rename,
+  rm,
+  writeFile,
+} from "fs/promises";
 import path, { basename, dirname, join } from "path";
 import * as age from "./age";
 import { waitFor } from "./async";
@@ -207,16 +215,34 @@ export const pushSecrets = async (secret: config.Secret, configDir: string) => {
   }
 };
 
-export const pullSecrets = async (configDir: string) => {
+interface PullSecretsOpts {
+  skipKeyIfExists?: boolean;
+}
+
+export const pullSecrets = async (
+  configDir: string,
+  opts: PullSecretsOpts = {},
+) => {
+  const skipKeyIfExists = opts.skipKeyIfExists ?? false;
+
   const storageConfig = await config.getStorageConfig(configDir);
 
-  const encryptionKey = await bitwarden.getSecret(
-    storageConfig.privateKeyItemId,
+  const storageSecretsPath = config.getSecretsPath("storage", configDir);
+
+  const keyExists = await access(storageSecretsPath).then(
+    () => true,
+    () => false,
   );
-  await writeFile(
-    config.getSecretsPath("storage", configDir),
-    stringify({ privateKey: encryptionKey }),
-  );
+
+  if (!keyExists || !skipKeyIfExists) {
+    const encryptionKey = await bitwarden.getSecret(
+      storageConfig.privateKeyItemId,
+    );
+    await writeFile(
+      storageSecretsPath,
+      stringify({ privateKey: encryptionKey }),
+    );
+  }
 
   const storageSecrets = await config.getStorageSecrets(configDir);
 
@@ -666,6 +692,7 @@ export const upgradeTalos = async (
 
   for (const bucket of Object.values(buckets)) {
     const bucketStr = bucket.join(",");
-    await talosctl(configDir, [`--nodes=${bucketStr}`, "upgrade"]);
+    let command = [`--nodes=${bucketStr}`, "upgrade"];
+    await talosctl(configDir, command);
   }
 };
