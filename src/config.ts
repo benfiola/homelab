@@ -77,7 +77,7 @@ const nodeConfigSchema = zod.object({
   enabled: zod.boolean().default(true),
   hardware: hardwareNameSchema,
   hostname: zod.string(),
-  name: zod.string(),
+  name: zod.string().default(""),
   role: roleSchema,
 });
 

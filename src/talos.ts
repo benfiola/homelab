@@ -107,7 +107,7 @@ export const getClientConfig = async (
   );
   const config = configs[0];
 
-  const context = config[cluster.name];
+  const context = config.contexts[cluster.name];
   context.endpoints = [cluster.endpoint];
   context.nodes = nodes.map((n) => n.hostname);
 
