@@ -72,8 +72,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       ui: {
         enabled: true,
-        podSecurityContext: securityContext.pod,
-        securityContext: securityContext.container,
+        backend: {
+          securityContext: securityContext.container,
+        },
+        frontend: {
+          securityContext: securityContext.container,
+        },
+        securityContext: securityContext.pod,
       },
     },
     ipam: {

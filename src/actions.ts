@@ -92,16 +92,11 @@ export const bootstrap = async (
   manifestsDir: string,
   opts: BootstrapOpts,
 ) => {
-  await Promise.all([
-    async () => {
-      opts.onStepStart?.("generate-manifests");
-      generateManifests(configDir, manifestsDir);
-    },
-    async () => {
-      opts.onStepStart?.("wait-for-cluster-ready");
-      waitForClusterReady();
-    },
-  ]);
+  opts.onStepStart?.("generate-manifests");
+  await generateManifests(configDir, manifestsDir);
+
+  opts.onStepStart?.("wait-for-cluster-ready");
+  waitForClusterReady();
 
   opts.onStepStart?.("deploy-crds");
   await deployCrds(manifestsDir);
