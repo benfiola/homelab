@@ -11,7 +11,8 @@ import {
 const assetsDir = join(__dirname, "..", "assets");
 const templatesDir = join(__dirname, "templates");
 
-const getTemplateName = (templateFile: string) => basename(dirname(templateFile));
+const getTemplateName = (templateFile: string) =>
+  basename(dirname(templateFile));
 
 interface FetchAssetsOpts {
   filter?: string[];
@@ -19,7 +20,7 @@ interface FetchAssetsOpts {
 
 export const fetchAssets = async (
   outputPath: string,
-  opts: FetchAssetsOpts = {}
+  opts: FetchAssetsOpts = {},
 ) => {
   interface Template {
     assets: TemplateAssetFn;
@@ -60,7 +61,7 @@ export const attachCharts = async (
   app: App,
   appsConfig: AppsConfig,
   configDir: string,
-  opts: AttachChartsOpts = {}
+  opts: AttachChartsOpts = {},
 ) => {
   const crds = await import("./templates/crds/chart");
   const flux = await import("./templates/flux/chart");
@@ -92,7 +93,7 @@ export const attachCharts = async (
 
     if (!Chart.isChart(chart)) {
       throw new Error(
-        `template '${appConfig.template}' did not produce a chart`
+        `template '${appConfig.template}' did not produce a chart`,
       );
     }
 
@@ -104,7 +105,7 @@ export const attachCharts = async (
     return chart;
   };
 
-  await Promise.all(appsConfig.map(generateChart));
+  await Promise.all(appsConfig.apps.map(generateChart));
 
   const crdChart = await crds.chart(app, "crds", {
     configDir,
@@ -122,7 +123,7 @@ export const attachCharts = async (
     }
   };
 
-  for (const appConfig of appsConfig) {
+  for (const appConfig of appsConfig.apps) {
     for (const appDependency of appConfig.dependencies) {
       dependency(appConfig.id, appDependency);
     }

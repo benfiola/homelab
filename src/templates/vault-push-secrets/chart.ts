@@ -21,6 +21,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: {
+      encryptionKey:
+        "age1g7xpn8zjgukzuvspm7lf2anfg5c57awhsypaa4507ccm39c6heqs6x65vs",
       gcsCredentialsSecret: vaultSecret.name,
       gcsCredentialsKey: "google-cloud-credentials-file",
       gcsDestination: "gs://homelab-secrets-262965/secrets-apps.yaml",
