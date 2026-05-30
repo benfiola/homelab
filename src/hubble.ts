@@ -215,7 +215,7 @@ const getFlowProtocol = (data: any): FlowProtocol => {
   }
 
   const protocols = Object.keys(data.l4 ?? {});
-  const protocol = protocols.length > 0 ? protocols[0] : "unknwon";
+  const protocol = protocols.length > 0 ? protocols[0] : "unknown";
   throw new Error(`unexpected protocol: ${protocol}`);
 };
 

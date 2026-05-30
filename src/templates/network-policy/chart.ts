@@ -44,6 +44,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("alloy-to-host").allowBetween(
+    pod("alloy", "alloy"),
+    host(),
+    tcp(6443),
+  );
+
   policy("alloy-to-loki-gateway").allowBetween(
     pod("alloy", "alloy"),
     component("gateway", "loki"),
@@ -76,6 +82,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("bucket-sync-to-host").allowBetween(
+    pod("bucket-sync", "bucket-sync"),
+    host(),
+    tcp(6443),
+  );
+
   policy("bucket-sync-job-to-garage").allowBetween(
     pod("bucket-sync-job", "*"),
     pod("garage", "garage"),
@@ -90,6 +102,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("cert-manager-cainjector-to-control-plane").allowBetween(
     component("cainjector", "cert-manager"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("cert-manager-cainjector-to-host").allowBetween(
+    component("cainjector", "cert-manager"),
+    host(),
     tcp(6443),
   );
 
@@ -108,6 +126,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("cert-manager-controller-to-host").allowBetween(
+    component("controller", "cert-manager"),
+    host(),
+    tcp(6443),
+  );
+
   policy("host-to-cert-manager-controller").allowBetween(
     host(),
     component("controller", "cert-manager"),
@@ -117,6 +141,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("cert-manager-webhook-to-control-plane").allowBetween(
     component("webhook", "cert-manager"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("cert-manager-webhook-to-host").allowBetween(
+    component("webhook", "cert-manager"),
+    host(),
     tcp(6443),
   );
 
@@ -163,6 +193,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("cilium-hubble-ui-to-host").allowBetween(
+    pod("hubble-ui", "cilium"),
+    host(),
+    tcp(6443),
+  );
+
   policy("host-to-cilium-hubble-ui").allowBetween(
     host(),
     pod("hubble-ui", "cilium"),
@@ -185,6 +221,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("envoy-gateway-certgen-to-host").allowBetween(
+    component("certgen", "envoy-gateway"),
+    host(),
+    tcp(6443),
+  );
+
   policy("control-plane-to-envoy-gateway-controller").allowBetween(
     controlPlane(),
     component("controller", "envoy-gateway"),
@@ -194,6 +236,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("envoy-gateway-controller-to-control-plane").allowBetween(
     component("controller", "envoy-gateway"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("envoy-gateway-controller-to-host").allowBetween(
+    component("controller", "envoy-gateway"),
+    host(),
     tcp(6443),
   );
 
@@ -216,6 +264,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("external-dns-cloudflare-to-host").allowBetween(
+    pod("external-dns-cloudflare", "external-dns"),
+    host(),
+    tcp(6443),
+  );
+
   policy("external-dns-cloudflare-to-cloudflare--egress")
     .targets(pod("external-dns-cloudflare", "external-dns"))
     .allowEgressTo(dns("api.cloudflare.com"), tcp(443));
@@ -229,6 +283,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("external-dns-mikrotik-to-control-plane").allowBetween(
     pod("external-dns-mikrotik", "external-dns"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("external-dns-mikrotik-to-host").allowBetween(
+    pod("external-dns-mikrotik", "external-dns"),
+    host(),
     tcp(6443),
   );
 
@@ -249,10 +309,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("external-snapshotter-to-host").allowBetween(
+    pod("snapshot-controller", "external-snapshotter"),
+    host(),
+    tcp(6443),
+  );
+
   // flux
   policy("flux-helm-controller-to-control-plane").allowBetween(
     component("helm-controller", "flux-system"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("flux-helm-controller-to-host").allowBetween(
+    component("helm-controller", "flux-system"),
+    host(),
     tcp(6443),
   );
 
@@ -265,6 +337,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("flux-kustomize-controller-to-control-plane").allowBetween(
     component("kustomize-controller", "flux-system"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("flux-kustomize-controller-to-host").allowBetween(
+    component("kustomize-controller", "flux-system"),
+    host(),
     tcp(6443),
   );
 
@@ -294,6 +372,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("flux-notification-controller-to-host").allowBetween(
+    component("notification-controller", "flux-system"),
+    host(),
+    tcp(6443),
+  );
+
   policy("host-to-flux-notification-controller").allowBetween(
     host(),
     component("notification-controller", "flux-system"),
@@ -303,6 +387,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("flux-source-controller-to-control-plane").allowBetween(
     component("source-controller", "flux-system"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("flux-source-controller-to-host").allowBetween(
+    component("source-controller", "flux-system"),
+    host(),
     tcp(6443),
   );
 
@@ -349,6 +439,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("garage-operator-to-host").allowBetween(
+    pod("garage-operator", "garage-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("garage-operator-to-garage").allowBetween(
     pod("garage-operator", "garage-operator"),
     pod("garage", "garage"),
@@ -368,10 +464,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("gateway-route-sync-to-host").allowBetween(
+    pod("gateway-route-sync", "gateway-route-sync"),
+    host(),
+    tcp(6443),
+  );
+
   // grafana
   policy("grafana-to-control-plane").allowBetween(
     pod("grafana", "grafana"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("grafana-to-host").allowBetween(
+    pod("grafana", "grafana"),
+    host(),
     tcp(6443),
   );
 
@@ -400,6 +508,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("grafana-operator-to-host").allowBetween(
+    component("operator", "grafana-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("grafana-operator-to-grafana").allowBetween(
     component("operator", "grafana-operator"),
     pod("grafana", "grafana"),
@@ -425,6 +539,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("intel-device-plugins-operator-to-host").allowBetween(
+    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("host-to-intel-device-plugins-operator").allowBetween(
     host(),
     pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
@@ -435,6 +555,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("kube-state-metrics-to-control-plane").allowBetween(
     component("metrics", "kube-state-metrics"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("kube-state-metrics-to-host").allowBetween(
+    component("metrics", "kube-state-metrics"),
+    host(),
     tcp(6443),
   );
 
@@ -459,13 +585,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     udp(53),
   );
 
-  policy("kube-dns-to-host").allowBetween(kubeDns(), host(), tcp(6443));
-
   policy("kube-dns-to-control-plane").allowBetween(
     kubeDns(),
     controlPlane(),
     tcp(6443),
   );
+
+  policy("kube-dns-to-host").allowBetween(kubeDns(), host(), tcp(6443));
 
   policy("kube-dns-to-router-dns--egress")
     .targets(kubeDns())
@@ -482,6 +608,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("loki-backend-to-control-plane").allowBetween(
     component("backend", "loki"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("loki-backend-to-host").allowBetween(
+    component("backend", "loki"),
+    host(),
     tcp(6443),
   );
 
@@ -668,6 +800,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("linstor-affinity-controller-to-host").allowBetween(
+    component("linstor-affinity-controller", "piraeus-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("all-nodes-to-linstor-controller").allowBetween(
     allNodes(),
     component("linstor-controller", "piraeus-operator"),
@@ -683,6 +821,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("linstor-controller-to-control-plane").allowBetween(
     component("linstor-controller", "piraeus-operator"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("linstor-controller-to-host").allowBetween(
+    component("linstor-controller", "piraeus-operator"),
+    host(),
     tcp(6443),
   );
 
@@ -710,6 +854,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("linstor-csi-controller-to-host").allowBetween(
+    component("linstor-csi-controller", "piraeus-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("linstor-csi-controller-to-linstor-controller").allowBetween(
     component("linstor-csi-controller", "piraeus-operator"),
     component("linstor-controller", "piraeus-operator"),
@@ -725,6 +875,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("linstor-csi-nfs-server-to-control-plane").allowBetween(
     component("linstor-csi-nfs-server", "piraeus-operator"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("linstor-csi-nfs-server-to-host").allowBetween(
+    component("linstor-csi-nfs-server", "piraeus-operator"),
+    host(),
     tcp(6443),
   );
 
@@ -752,6 +908,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("piraeus-operator-ha-controller-to-host").allowBetween(
+    component("ha-controller", "piraeus-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("control-plane-to-piraeus-operator").allowBetween(
     controlPlane(),
     component("piraeus-operator", "piraeus-operator"),
@@ -770,6 +932,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("piraeus-operator-to-host").allowBetween(
+    component("piraeus-operator", "piraeus-operator"),
+    host(),
+    tcp(6443),
+  );
+
   policy("piraeus-operator-to-linstor-controller").allowBetween(
     component("piraeus-operator", "piraeus-operator"),
     component("linstor-controller", "piraeus-operator"),
@@ -779,6 +947,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("piraeus-operator-gencert-to-control-plane").allowBetween(
     component("piraeus-operator-gencert", "piraeus-operator"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("piraeus-operator-gencert-to-host").allowBetween(
+    component("piraeus-operator-gencert", "piraeus-operator"),
+    host(),
     tcp(6443),
   );
 
@@ -815,7 +989,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("prometheus-to-host").allowBetween(
     pod("prometheus", "prometheus"),
     host(),
-    tcp(9100, 10250),
+    tcp(6443, 9100, 10250, 10257, 10259),
   );
 
   policy("prometheus-to-kube-state-metrics").allowBetween(
@@ -837,6 +1011,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("prometheus-operator-to-host").allowBetween(
+    component("controller", "prometheus-operator"),
+    host(),
+    tcp(6443),
+  );
+
   // pvc-restore
   policy("host-to-pvc-restore").allowBetween(
     host(),
@@ -850,6 +1030,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("pvc-restore-to-host").allowBetween(
+    pod("pvc-restore", "pvc-restore"),
+    host(),
+    tcp(6443),
+  );
+
   // router-policy-sync
   policy("host-to-router-policy-sync").allowBetween(
     host(),
@@ -860,6 +1046,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("router-policy-sync-to-control-plane").allowBetween(
     pod("router-policy-sync", "router-policy-sync"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("router-policy-sync-to-host").allowBetween(
+    pod("router-policy-sync", "router-policy-sync"),
+    host(),
     tcp(6443),
   );
 
@@ -905,6 +1097,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("vault-to-host").allowBetween(
+    pod("vault", "vault"),
+    host(),
+    tcp(6443),
+  );
+
   policy("vault-to-vault").allowBetween(
     pod("vault", "vault"),
     pod("vault", "vault"),
@@ -932,6 +1130,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("vault-secrets-operator-to-control-plane").allowBetween(
     pod("vault-secrets-operator", "vault-secrets-operator"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("vault-secrets-operator-to-host").allowBetween(
+    pod("vault-secrets-operator", "vault-secrets-operator"),
+    host(),
     tcp(6443),
   );
 
@@ -964,6 +1168,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("vertical-pod-autoscaler-admission-controller-to-host").allowBetween(
+    component("admission-controller", "vertical-pod-autoscaler"),
+    host(),
+    tcp(6443),
+  );
+
   policy("host-to-vertical-pod-autoscaler-recommender").allowBetween(
     host(),
     component("recommender", "vertical-pod-autoscaler"),
@@ -973,6 +1183,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   policy("vertical-pod-autoscaler-recommender-to-control-plane").allowBetween(
     component("recommender", "vertical-pod-autoscaler"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("vertical-pod-autoscaler-recommender-to-host").allowBetween(
+    component("recommender", "vertical-pod-autoscaler"),
+    host(),
     tcp(6443),
   );
 
@@ -988,10 +1204,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(6443),
   );
 
+  policy("vertical-pod-autoscaler-updater-to-host").allowBetween(
+    component("updater", "vertical-pod-autoscaler"),
+    host(),
+    tcp(6443),
+  );
+
   // volsync
   policy("volsync-to-control-plane").allowBetween(
     pod("volsync", "volsync"),
     controlPlane(),
+    tcp(6443),
+  );
+
+  policy("volsync-to-host").allowBetween(
+    pod("volsync", "volsync"),
+    host(),
     tcp(6443),
   );
 
