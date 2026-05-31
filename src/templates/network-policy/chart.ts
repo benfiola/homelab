@@ -1350,6 +1350,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(8971),
   );
 
+  policy("gateway-users-to-home-assistant").allowBetween(
+    gateway("users"),
+    pod("home-assistant", "home-assistant"),
+    tcp(8123),
+  );
+
   policy("gateway-users-to-minecraft").allowBetween(
     gateway("users"),
     pod("minecraft", "minecraft"),

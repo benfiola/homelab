@@ -546,8 +546,8 @@ interface GetSecurityContextOpts {
 }
 
 export const getSecurityContext = (opts: GetSecurityContextOpts = {}) => {
-  const gid = opts.gid ?? defaultGid;
-  const uid = opts.uid ?? defaultUid;
+  const gid = opts.gid !== undefined ? opts.gid : defaultGid
+  const uid = opts.uid !== undefined ? opts.uid : defaultUid
   const caps = opts.caps ?? [];
 
   const runAsNonRoot = uid !== 0;
