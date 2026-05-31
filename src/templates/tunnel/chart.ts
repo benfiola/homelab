@@ -1,17 +1,10 @@
-import { ConfigMap, Deployment, Service } from "../../../assets/kubernetes/k8s";
-import {
-  Chart,
-  getSecurityContext,
-  HttpRoute,
-  Namespace,
-  TcpRoute,
-} from "../../cdk8s";
+import { ConfigMap } from "../../../assets/kubernetes/k8s";
+import { Chart, Deployment, HttpRoute, Namespace, TcpRoute } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id);
-
   new Namespace(chart);
 
   const config = new ConfigMap(chart, `${id}-config-map`, {
@@ -25,87 +18,21 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const securityContext = getSecurityContext();
-
-  new Deployment(chart, `${id}-deployment`, {
-    metadata: {
-      name: "tunnel",
-    },
-    spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": "tunnel",
-        },
-      },
-      template: {
-        metadata: {
-          labels: {
-            "app.kubernetes.io/name": "tunnel",
-          },
-        },
-        spec: {
-          containers: [
-            {
-              name: "tunnel",
-              image: "fatedier/frps:v0.63.0",
-              args: ["--config", "/config/config.json"],
-              ports: [
-                {
-                  name: "server",
-                  containerPort: 8080,
-                },
-                {
-                  name: "desktop",
-                  containerPort: 8081,
-                },
-              ],
-              securityContext: securityContext.container,
-              volumeMounts: [
-                {
-                  name: "config",
-                  mountPath: "/config",
-                },
-              ],
-            },
-          ],
-          securityContext: securityContext.pod,
-          volumes: [
-            {
-              name: "config",
-              configMap: {
-                name: config.name,
-              },
-            },
-          ],
-        },
-      },
+  const deployment = new Deployment(chart, "tunnel", {
+    volumes: {
+      config: { configMap: config.name, mountPath: "/config" },
     },
   });
 
-  const service = new Service(chart, `${id}-service`, {
-    metadata: {
-      name: "tunnel",
-    },
-    spec: {
-      selector: {
-        "app.kubernetes.io/name": "tunnel",
-      },
-      ports: [
-        {
-          name: "server",
-          port: 8080,
-        },
-        {
-          name: "desktop",
-          port: 8081,
-        },
-      ],
-    },
+  deployment.addContainer("tunnel", "fatedier/frps:v0.63.0", {
+    containerPorts: { server: 8080, desktop: 8081 },
+    args: ["--config", "/config/config.json"],
   });
 
-  new TcpRoute(chart, "personal", "tunnel.bulia.dev", 8080, service, 8080);
+  const svc = deployment.createService({ server: 8080, desktop: 8081 });
 
-  new HttpRoute(chart, "personal", "desktop.bulia.dev").match(service, 8081);
+  new TcpRoute(chart, "personal", "tunnel.bulia.dev", 8080, svc, 8080);
+  new HttpRoute(chart, "personal", "desktop.bulia.dev").match(svc, 8081);
 
   return chart;
 };

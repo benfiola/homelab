@@ -20,9 +20,9 @@ import {
   UdpRoute as BaseUdpRoute,
 } from "../assets/gateway-api/gateway.networking.k8s.io";
 import {
+  Deployment as BaseDeployment,
   Namespace as BaseNamespace,
-  Deployment,
-  IntOrString,
+  StatefulSet as BaseStatefulSet,
   Service,
   ServiceAccount,
 } from "../assets/kubernetes/k8s";
@@ -847,108 +847,249 @@ export class BucketSyncPolicy extends Construct {
   }
 }
 
-export class BucketServer extends Deployment {
-  constructor(construct: Chart, bucket: GarageBucket, key: GarageKey) {
-    const id = `${construct.node.id}-bucket-server-${bucket.name}`;
-    const name = `bucket-server-${bucket.name}`;
-    const securityContext = getSecurityContext();
-    super(construct, id, {
-      metadata: {
-        name,
-      },
+export type WorkloadPorts = Record<string, number | [number, "TCP" | "UDP"]>;
+
+export type WorkloadEnv = Record<
+  string,
+  | string
+  | { secretKeyRef: { name: string; key: string; optional?: boolean } }
+  | { configMapKeyRef: { name: string; key: string; optional?: boolean } }
+  | { fieldRef: { fieldPath: string; apiVersion?: string } }
+>;
+
+type VolumeItem = { key: string; path: string };
+
+export type WorkloadVolumes = Record<
+  string,
+  | { pvc: { size: string; storageClass: string }; mountPath: string }
+  | { configMap: string; mountPath: string; subPath?: string; items?: VolumeItem[] }
+  | { secret: string; mountPath: string; subPath?: string; items?: VolumeItem[] }
+  | { emptyDir: { medium?: "Memory"; sizeLimit?: string }; mountPath: string }
+>;
+
+function normalizePorts(ports: WorkloadPorts) {
+  return Object.entries(ports).map(([name, v]) => {
+    const [num, protocol] = Array.isArray(v) ? v : [v, "TCP" as const];
+    return { name, num, protocol };
+  });
+}
+
+function portsToContainerPorts(ports: WorkloadPorts | undefined) {
+  if (!ports) return undefined;
+  return normalizePorts(ports).map(({ name, num, protocol }) => ({
+    name,
+    containerPort: num,
+    protocol,
+  }));
+}
+
+function portsToServicePorts(ports: WorkloadPorts) {
+  return normalizePorts(ports).map(({ name, num, protocol }) => ({
+    name,
+    port: num,
+    protocol,
+  }));
+}
+
+function envToK8s(env: WorkloadEnv | undefined) {
+  if (!env) return undefined;
+  return Object.entries(env).map(([name, v]) => {
+    if (typeof v === "string") return { name, value: v };
+    return { name, valueFrom: v };
+  });
+}
+
+type PvcVolume = { pvc: { size: string; storageClass: string }; mountPath: string };
+type EmptyDirVolume = { emptyDir: { medium?: "Memory"; sizeLimit?: string }; mountPath: string };
+const isPvcVolume = (v: WorkloadVolumes[string]): v is PvcVolume => "pvc" in v;
+
+function volumesToClaimTemplates(volumes: WorkloadVolumes | undefined): any[] | undefined {
+  if (!volumes) return undefined;
+  const result = Object.entries(volumes)
+    .filter((entry): entry is [string, PvcVolume] => isPvcVolume(entry[1]))
+    .map(([name, { pvc }]) => ({
+      metadata: { name },
       spec: {
-        selector: {
-          matchLabels: {
-            "app.kubernetes.io/name": name,
+        accessModes: ["ReadWriteOnce"],
+        resources: { requests: { storage: pvc.size as any } },
+        storageClassName: pvc.storageClass,
+      },
+    }));
+  return result.length ? result : undefined;
+}
+
+function volumesToInlineVolumes(volumes: WorkloadVolumes | undefined): any[] | undefined {
+  if (!volumes) return undefined;
+  const result = Object.entries(volumes)
+    .filter(([, v]) => !isPvcVolume(v))
+    .map(([name, v]) => {
+      if ("configMap" in v) return { name, configMap: { name: v.configMap, items: v.items } };
+      if ("secret" in v) return { name, secret: { secretName: v.secret, items: v.items } };
+      return { name, emptyDir: (v as EmptyDirVolume).emptyDir };
+    });
+  return result.length ? result : undefined;
+}
+
+function volumesToMounts(volumes: WorkloadVolumes) {
+  const result = Object.entries(volumes).map(([name, v]) => ({
+    name,
+    mountPath: v.mountPath,
+    ...("subPath" in v && v.subPath ? { subPath: v.subPath } : {}),
+  }));
+  return result.length ? result : undefined;
+}
+
+interface WorkloadOpts {
+  volumes?: WorkloadVolumes;
+  nodeSelector?: Record<string, string>;
+  securityContext?: GetSecurityContextOpts;
+}
+
+interface ContainerOpts {
+  containerPorts?: WorkloadPorts;
+  env?: WorkloadEnv;
+  args?: string[];
+  volumes?: string[];
+  securityContext?: GetSecurityContextOpts;
+}
+
+function buildContainer(
+  workloadVolumes: WorkloadVolumes,
+  podSecCtx: ReturnType<typeof getSecurityContext>,
+  containerName: string,
+  image: string,
+  opts: ContainerOpts,
+) {
+  const secCtx = opts.securityContext ? getSecurityContext(opts.securityContext) : podSecCtx;
+  const mountedVols = opts.volumes
+    ? Object.fromEntries(
+        Object.entries(workloadVolumes).filter(([n]) => opts.volumes!.includes(n)),
+      )
+    : workloadVolumes;
+  return {
+    name: containerName,
+    image,
+    args: opts.args,
+    env: envToK8s(opts.env),
+    ports: portsToContainerPorts(opts.containerPorts),
+    securityContext: secCtx.container,
+    volumeMounts: volumesToMounts(mountedVols),
+  };
+}
+
+export class StatefulSet extends BaseStatefulSet {
+  private readonly _containers: any[];
+  private readonly _workloadVolumes: WorkloadVolumes;
+  private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
+  private readonly _selector: Record<string, string>;
+
+  constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
+    const id = `${chart.node.id}-statefulset-${name}`;
+    const secCtx = getSecurityContext(opts.securityContext);
+    const selector = { "app.kubernetes.io/name": name };
+    const containers: any[] = [];
+    super(chart, id, {
+      metadata: { name },
+      spec: {
+        selector: { matchLabels: selector },
+        template: {
+          metadata: { labels: selector },
+          spec: {
+            nodeSelector: opts.nodeSelector,
+            securityContext: secCtx.pod,
+            volumes: volumesToInlineVolumes(opts.volumes),
+            containers,
           },
         },
+        volumeClaimTemplates: volumesToClaimTemplates(opts.volumes),
+      },
+    });
+    this._containers = containers;
+    this._workloadVolumes = opts.volumes ?? {};
+    this._podSecCtx = secCtx;
+    this._selector = selector;
+  }
+
+  addContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
+    this._containers.push(buildContainer(this._workloadVolumes, this._podSecCtx, containerName, image, opts));
+    return this;
+  }
+
+  createService(ports: WorkloadPorts): Service {
+    return new Service(this.node.scope!, `${this.node.id}-service`, {
+      metadata: { name: this.name },
+      spec: { selector: this._selector, ports: portsToServicePorts(ports) },
+    });
+  }
+}
+
+interface DeploymentOpts extends WorkloadOpts {
+  replicas?: number;
+}
+
+export class Deployment extends BaseDeployment {
+  private readonly _containers: any[];
+  private readonly _workloadVolumes: WorkloadVolumes;
+  private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
+  private readonly _selector: Record<string, string>;
+
+  constructor(chart: Chart, name: string, opts: DeploymentOpts = {}) {
+    const id = `${chart.node.id}-deployment-${name}`;
+    const secCtx = getSecurityContext(opts.securityContext);
+    const selector = { "app.kubernetes.io/name": name };
+    const containers: any[] = [];
+    super(chart, id, {
+      metadata: { name },
+      spec: {
+        replicas: opts.replicas ?? 1,
+        selector: { matchLabels: selector },
         template: {
-          metadata: {
-            labels: {
-              "app.kubernetes.io/name": name,
-            },
-          },
+          metadata: { labels: selector },
           spec: {
-            containers: [
-              {
-                name: "rclone",
-                image: "rclone/rclone:1.73.1",
-                args: [
-                  "serve",
-                  "http",
-                  `source:${bucket.name}`,
-                  "--addr=:8080",
-                ],
-                ports: [
-                  {
-                    name: "http",
-                    containerPort: 8080,
-                  },
-                ],
-                env: [
-                  {
-                    name: "RCLONE_CONFIG_SOURCE_TYPE",
-                    value: "s3",
-                  },
-                  {
-                    name: "RCLONE_CONFIG_SOURCE_PROVIDER",
-                    value: "Other",
-                  },
-                  {
-                    name: "RCLONE_CONFIG_SOURCE_ACCESS_KEY_ID",
-                    valueFrom: {
-                      secretKeyRef: {
-                        name: key.secret,
-                        key: key.accessKeyIdKey,
-                      },
-                    },
-                  },
-                  {
-                    name: "RCLONE_CONFIG_SOURCE_SECRET_ACCESS_KEY",
-                    valueFrom: {
-                      secretKeyRef: {
-                        name: key.secret,
-                        key: key.secretAccessKeyKey,
-                      },
-                    },
-                  },
-                  {
-                    name: "RCLONE_CONFIG_SOURCE_ENDPOINT",
-                    value: `http://${bucket.clusterName}.garage.svc:3900`,
-                  },
-                  {
-                    name: "RCLONE_CONFIG_SOURCE_REGION",
-                    value: "garage",
-                  },
-                ],
-                securityContext: securityContext.container,
-              },
-            ],
-            securityContext: securityContext.pod,
+            nodeSelector: opts.nodeSelector,
+            securityContext: secCtx.pod,
+            volumes: volumesToInlineVolumes(opts.volumes),
+            containers,
           },
         },
       },
     });
+    this._containers = containers;
+    this._workloadVolumes = opts.volumes ?? {};
+    this._podSecCtx = secCtx;
+    this._selector = selector;
   }
 
-  createService() {
-    const construct = this.node.scope;
-    if (!construct) {
-      throw new Error(`construct not found`);
-    }
-    const selector = (this as any).props.spec.template.metadata.labels;
-    return new Service(construct, `${this.node.id}-service`, {
-      metadata: {
-        name: this.name,
-      },
-      spec: {
-        selector,
-        ports: [
-          {
-            port: 80,
-            targetPort: IntOrString.fromString("http"),
-          },
-        ],
+  addContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
+    this._containers.push(buildContainer(this._workloadVolumes, this._podSecCtx, containerName, image, opts));
+    return this;
+  }
+
+  createService(ports: WorkloadPorts): Service {
+    return new Service(this.node.scope!, `${this.node.id}-service`, {
+      metadata: { name: this.name },
+      spec: { selector: this._selector, ports: portsToServicePorts(ports) },
+    });
+  }
+}
+
+export class BucketServer extends Deployment {
+  constructor(construct: Chart, bucket: GarageBucket, key: GarageKey) {
+    super(construct, `bucket-server-${bucket.name}`, {});
+    this.addContainer("rclone", "rclone/rclone:1.73.1", {
+      containerPorts: { http: 8080 },
+      args: ["serve", "http", `source:${bucket.name}`, "--addr=:8080"],
+      env: {
+        RCLONE_CONFIG_SOURCE_TYPE: "s3",
+        RCLONE_CONFIG_SOURCE_PROVIDER: "Other",
+        RCLONE_CONFIG_SOURCE_ACCESS_KEY_ID: {
+          secretKeyRef: { name: key.secret, key: key.accessKeyIdKey },
+        },
+        RCLONE_CONFIG_SOURCE_SECRET_ACCESS_KEY: {
+          secretKeyRef: { name: key.secret, key: key.secretAccessKeyKey },
+        },
+        RCLONE_CONFIG_SOURCE_ENDPOINT: `http://${bucket.clusterName}.garage.svc:3900`,
+        RCLONE_CONFIG_SOURCE_REGION: "garage",
       },
     });
   }

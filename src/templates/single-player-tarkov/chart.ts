@@ -1,14 +1,9 @@
 import {
-  PersistentVolumeClaimTemplate,
-  Service,
-  StatefulSet,
-} from "../../../assets/kubernetes/k8s";
-import {
   Chart,
   getAssetsServerUrl,
-  getSecurityContext,
   HttpRoute,
   Namespace,
+  StatefulSet,
   TcpRoute,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -17,8 +12,6 @@ import { gameServerImage } from "../../image-refs";
 export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
   new Namespace(chart);
-
-  const securityContext = getSecurityContext({ uid: 1000, gid: 1000 });
 
   const mods = [
     "BackendURLRewriter-1.0.0.zip",
@@ -52,124 +45,46 @@ export const chart: TemplateChartFn = async (construct, id) => {
     ],
   };
 
-  new StatefulSet(chart, `${id}-stateful-set`, {
-    metadata: {
-      name: "single-player-tarkov",
-    },
-    spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": id,
-        },
+  const ss = new StatefulSet(chart, "single-player-tarkov", {
+    securityContext: { uid: 1000, gid: 1000 },
+    volumes: {
+      cache: {
+        pvc: { size: "10Gi", storageClass: "standard" },
+        mountPath: "/cache",
       },
-      template: {
-        metadata: {
-          labels: {
-            "app.kubernetes.io/name": id,
-          },
-        },
-        spec: {
-          containers: [
-            {
-              name: "single-player-tarkov",
-              image: gameServerImage("single-player-tarkov"),
-              ports: [
-                {
-                  name: "game",
-                  containerPort: 6969,
-                },
-                {
-                  name: "raid-rev-sock",
-                  containerPort: 7828,
-                },
-                {
-                  name: "raid-rev-web",
-                  containerPort: 7829,
-                },
-              ],
-              securityContext: securityContext.container,
-              volumeMounts: [
-                { name: "cache", mountPath: "/cache" },
-                { name: "data", mountPath: "/data" },
-              ],
-              env: [
-                {
-                  name: "CONFIG_PATCHES",
-                  value: JSON.stringify(configPatches),
-                },
-                {
-                  name: "MOD_URLS",
-                  value: mods.join(","),
-                },
-                { name: "LOG_LEVEL", value: "debug" },
-                { name: "VERSION", value: "4.0.13" },
-              ],
-            },
-          ],
-          securityContext: securityContext.pod,
-        },
+      data: {
+        pvc: { size: "10Gi", storageClass: "replicated" },
+        mountPath: "/data",
       },
-      volumeClaimTemplates: [
-        {
-          metadata: {
-            name: "cache",
-          },
-          spec: {
-            accessModes: ["ReadWriteOnce"],
-            resources: {
-              requests: {
-                storage: "10Gi" as any,
-              },
-            },
-            storageClassName: "standard",
-          },
-        } as PersistentVolumeClaimTemplate,
-        {
-          metadata: {
-            name: "data",
-          },
-          spec: {
-            accessModes: ["ReadWriteOnce"],
-            resources: {
-              requests: {
-                storage: "10Gi" as any,
-              },
-            },
-            storageClassName: "replicated",
-          },
-        } as PersistentVolumeClaimTemplate,
-      ] as any,
     },
   });
-
-  const service = new Service(chart, `${id}-service`, {
-    metadata: {
-      name: "single-player-tarkov",
-    },
-    spec: {
-      selector: {
-        "app.kubernetes.io/name": id,
+  ss.addContainer(
+    "single-player-tarkov",
+    gameServerImage("single-player-tarkov"),
+    {
+      containerPorts: {
+        game: 6969,
+        "raid-rev-sock": 7828,
+        "raid-rev-web": 7829,
       },
-      ports: [
-        {
-          port: 6969,
-          name: "game",
-        },
-        {
-          port: 7828,
-          name: "raid-rev-sock",
-        },
-        {
-          port: 7829,
-          name: "raid-rev-web",
-        },
-      ],
+      env: {
+        CONFIG_PATCHES: JSON.stringify(configPatches),
+        MOD_URLS: mods.join(","),
+        LOG_LEVEL: "debug",
+        VERSION: "4.0.13",
+      },
     },
+  );
+
+  const svc = ss.createService({
+    game: 6969,
+    "raid-rev-sock": 7828,
+    "raid-rev-web": 7829,
   });
 
-  new TcpRoute(chart, "users", "spt.bulia.dev", 6969, service, 6969);
-  new TcpRoute(chart, "users", "spt.bulia.dev", 7828, service, 7828);
-  new HttpRoute(chart, "users", "spt.bulia.dev").match(service, 7829);
+  new TcpRoute(chart, "users", "spt.bulia.dev", 6969, svc, 6969);
+  new TcpRoute(chart, "users", "spt.bulia.dev", 7828, svc, 7828);
+  new HttpRoute(chart, "users", "spt.bulia.dev").match(svc, 7829);
 
   return chart;
 };

@@ -1,8 +1,9 @@
-import { ConfigMap, StatefulSet } from "../../../assets/kubernetes/k8s";
+import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   getSecurityContext,
   Namespace,
+  StatefulSet,
   VolsyncAuth,
   VolsyncBackup,
 } from "../../cdk8s";
@@ -11,7 +12,6 @@ import { textblock } from "../../strings";
 
 export const chart: TemplateChartFn = async (construct, id: string) => {
   const chart = new Chart(construct, id);
-
   new Namespace(chart);
 
   const scripts = new ConfigMap(chart, `${id}-config-map`, {
@@ -29,88 +29,19 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
     },
   });
 
-  const securityContext = getSecurityContext();
-
-  new StatefulSet(chart, `${id}-stateful-set`, {
-    metadata: {
-      name: "testing",
+  const ss = new StatefulSet(chart, "testing", {
+    volumes: {
+      data: { pvc: { size: "10Gi", storageClass: "standard" }, mountPath: "/data" },
+      scripts: { configMap: scripts.name, mountPath: "/scripts" },
     },
-    spec: {
-      selector: {
-        matchLabels: {
-          "app.kubernetes.io/name": "volsync-testing",
-        },
-      },
-      template: {
-        metadata: {
-          labels: {
-            "app.kubernetes.io/name": "volsync-testing",
-          },
-        },
-        spec: {
-          containers: [
-            {
-              name: "testing",
-              image: "alpine:latest",
-              args: ["sh", "-e", "/scripts/run.sh"],
-              securityContext: securityContext.container,
-              volumeMounts: [
-                {
-                  name: "data",
-                  mountPath: "/data",
-                },
-                {
-                  name: "scripts",
-                  mountPath: "/scripts",
-                },
-              ],
-            },
-          ],
-          securityContext: securityContext.pod,
-          volumes: [
-            {
-              name: "data",
-              persistentVolumeClaim: {
-                claimName: "data",
-              },
-            },
-            {
-              name: "scripts",
-              configMap: {
-                name: scripts.name,
-                items: [
-                  {
-                    key: "run.sh",
-                    path: "./run.sh",
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      },
-      volumeClaimTemplates: [
-        {
-          metadata: {
-            name: "data",
-          },
-          spec: {
-            accessModes: ["ReadWriteOnce"],
-            resources: {
-              requests: {
-                storage: "10Gi",
-              },
-            },
-            storageClassName: "standard",
-          },
-        } as any,
-      ],
-    },
+  });
+  ss.addContainer("testing", "alpine:latest", {
+    args: ["sh", "-e", "/scripts/run.sh"],
   });
 
   const volsyncAuth = new VolsyncAuth(chart);
   new VolsyncBackup(chart, volsyncAuth, "data-testing-0", {
-    securityContext: securityContext.pod,
+    securityContext: getSecurityContext().pod,
   });
 
   return chart;
