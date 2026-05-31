@@ -39,7 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         env: [
           {
             name: "MIKROTIK_BASEURL",
-            value: "http://router.bulia",
+            value: "http://router.bulia.dev",
           },
           {
             name: "MIKROTIK_PASSWORD",

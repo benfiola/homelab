@@ -294,7 +294,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("external-dns-mikrotik-to-router--egress")
     .targets(pod("external-dns-mikrotik", "external-dns"))
-    .allowEgressTo(dns("router.bulia"), tcp(80));
+    .allowEgressTo(dns("router.bulia.dev"), tcp(80));
 
   policy("host-to-external-dns-mikrotik").allowBetween(
     host(),
@@ -1057,7 +1057,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   policy("router-policy-sync-to-router--egress")
     .targets(pod("router-policy-sync", "router-policy-sync"))
-    .allowEgressTo(dns("router.bulia"), tcp(80));
+    .allowEgressTo(dns("router.bulia.dev"), tcp(80));
 
   // seven-days-to-die
   policy("seven-days-to-die-to-epic--egress")

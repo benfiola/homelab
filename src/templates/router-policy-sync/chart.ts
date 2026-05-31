@@ -21,7 +21,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: {
-      mikrotikBaseUrl: "http://router.bulia",
+      mikrotikBaseUrl: "http://router.bulia.dev",
       mikrotikUsername: "router-policy-sync",
       mikrotikPasswordSecret: vaultSecret.name,
       mikrotikPasswordKey: "routeros-password",
