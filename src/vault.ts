@@ -56,7 +56,7 @@ export class Vault {
       if (!(e instanceof ExecError) || e.exitCode !== 2) {
         throw e;
       }
-      output = e.stdout;
+      output = String(e.stdout ?? "");
     }
 
     return statusSchema.parseAsync(JSON.parse(output));

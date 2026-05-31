@@ -68,11 +68,12 @@ export const get = async (namespace: string | null, resource: string) => {
     content = await cmdExec(command);
   } catch (err) {
     if (err instanceof ExecError) {
-      if (err.stderr.includes("doesn't have a resource type")) {
+      const stderr = String(err.stderr ?? "");
+      if (stderr.includes("doesn't have a resource type")) {
         const resourceType = resource.split("/")[0];
         throw new ResourceTypeNotFoundError(resourceType);
       }
-      if (err.stderr.includes("not found")) {
+      if (stderr.includes("not found")) {
         throw new ResourceNotFoundError(namespace, resource);
       }
     }
