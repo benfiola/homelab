@@ -45,10 +45,9 @@ import { getTempy } from "./tempy";
 const defaultGid = 65534;
 const defaultUid = 65534;
 
-export interface KustomizationOpts {
-  url?: string;
-  dynamic?: Record<string, any>;
-}
+export type KustomizationOpts =
+  | { url: string; dynamic?: never }
+  | { dynamic: Record<string, any>; url?: never };
 
 export class Kustomization extends Include {
   static init = async (

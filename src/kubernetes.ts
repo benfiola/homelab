@@ -108,7 +108,7 @@ export const exec = async (
   namespace: string,
   resource: string,
   command: string[],
-  opts: ExecOpts = {}
+  opts: ExecOpts = {},
 ) => {
   const cmd = ["kubectl", "exec", "-it", `--namespace=${namespace}`];
   if (opts.container) {
@@ -126,7 +126,7 @@ interface RolloutOpts {
 export const rollout = async (
   namespace: string,
   resource: string,
-  opts: RolloutOpts = {}
+  opts: RolloutOpts = {},
 ) => {
   const command = ["kubectl", "rollout", "status", `--namespace=${namespace}`];
   if (opts.timeout) {
@@ -142,7 +142,7 @@ export type KustomizeOpts =
 
 const createDynamicKustomization = async (
   dir: string,
-  kustomization: Record<string, any>
+  kustomization: Record<string, any>,
 ): Promise<string> => {
   const kustomizationDir = join(dir, "kustomize");
   await mkdir(kustomizationDir, { recursive: true });
@@ -189,24 +189,23 @@ export const portForward = async (
   namespace: string,
   resource: string,
   remotePorts: number[],
-  cb: PortForwardCb
+  cb: PortForwardCb,
 ) => {
   const localPorts = await getPortsPromise(remotePorts.length);
   const portPairs = localPorts.map((lp, i) => `${lp}:${remotePorts[i]}`);
 
   const ac = new AbortController();
-  const subprocess = execa("kubectl", [
-    "port-forward",
-    `--namespace=${namespace}`,
-    resource,
-    ...portPairs,
-  ], {
-    stdout: "pipe",
-    stderr: "pipe",
-    stdin: "inherit",
-    cancelSignal: ac.signal,
-    reject: false,
-  });
+  const subprocess = execa(
+    "kubectl",
+    ["port-forward", `--namespace=${namespace}`, resource, ...portPairs],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+      stdin: "inherit",
+      cancelSignal: ac.signal,
+      reject: false,
+    },
+  );
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -215,7 +214,11 @@ export const portForward = async (
       });
       subprocess.then((result) => {
         if (!result.isCanceled) {
-          reject(new Error(`port-forward exited unexpectedly with code ${result.exitCode}`));
+          reject(
+            new Error(
+              `port-forward exited unexpectedly with code ${result.exitCode}`,
+            ),
+          );
         }
       });
     });
@@ -237,7 +240,7 @@ interface WaitOpts {
 export const wait = async (
   namespace: string | null,
   resource: string,
-  opts: WaitOpts = {}
+  opts: WaitOpts = {},
 ) => {
   const command = ["kubectl", "wait"];
   if (namespace !== null) {
