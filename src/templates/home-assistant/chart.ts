@@ -27,6 +27,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     securityContext: { gid: 0, uid: 0 },
     volumes: {
       config: { configMap: configMap.name },
+      data: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
   });
 
@@ -40,13 +41,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       args: [
         "bash",
         "-c",
-        "mkdir -p /config && cp /config-ro/configuration.yaml /config && python -m homeassistant --config /config",
+        "cp /config/configuration.yaml /data && python -m homeassistant --config /data",
       ],
       containerPorts: {
         web: [8123, "TCP"],
       },
       volumeMounts: {
-        config: "/config-ro",
+        config: "/config",
+        data: "/data",
       },
     },
   );
