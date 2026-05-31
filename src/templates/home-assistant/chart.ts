@@ -1,5 +1,11 @@
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
-import { Chart, HttpRoute, Namespace, StatefulSet } from "../../cdk8s";
+import {
+  Chart,
+  HttpRoute,
+  Namespace,
+  StatefulSet,
+  VerticalPodAutoscaler,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { stringify } from "../../yaml";
 
@@ -59,6 +65,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     service,
     8123,
   );
+
+  new VerticalPodAutoscaler(chart, statefulSet);
 
   return chart;
 };
