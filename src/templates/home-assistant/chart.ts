@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "configuration.yaml": stringify({
         http: {
           use_x_forwarded_for: true,
-          trusted_proxies: ["192.168.33.2"],
+          trusted_proxies: ["10.244.0.0/16"],
         },
       }),
     },
