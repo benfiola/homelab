@@ -33,11 +33,10 @@ If secrets exist but aren't local, pull them. This requires your Bitwarden vault
 homelab pull-secrets
 ```
 
-Generate client configuration:
+Generate Talos client configuration:
 
 ```bash
 homelab generate-client-config
-homelab talosctl -n [control-plane-node] kubeconfig
 ```
 
 ## 3. Apply system configuration
@@ -66,6 +65,14 @@ To bootstrap the control plane:
 
 ```bash
 homelab talosctl -n [control-plane-node] bootstrap
+```
+
+## 5. Generate kubeconfig
+
+To generate the kubeconfig for the cluster:
+
+```bash
+homelab talosctl -n [control-plane-node] kubeconfig
 ```
 
 ## 5. Bootstrap the cluster
