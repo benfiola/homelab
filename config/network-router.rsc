@@ -140,13 +140,19 @@
 # create bgp template
 # NOTE: this appears to be automatically created
 /routing/bgp/template/remove [find name=default]
-/routing/bgp/template/add name=cluster afi=ip as=64512 disabled=no
+/routing/bgp/template/add name=cluster.bulia.dev afi=ip as=64512 routing-table=main
 
 # create bgp instance
-/routing/bgp/instance/add name=cluster as=64512 disabled=no router-id=main
+/routing/bgp/instance/add name=cluster.bulia.dev as=64512 router-id=main
 
 # create bgp connections
-# /routing/bgp/connection/add name=node-b remote.address=192.168.32.14 afi=ip as=64512 disabled=no instance=cluster local.role=ibgp routing-table=main templates=cluster
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-a.cluster.bulia.dev remote.address=192.168.32.2 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-b.cluster.bulia.dev remote.address=192.168.32.3 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-c.cluster.bulia.dev remote.address=192.168.32.4 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-d.cluster.bulia.dev remote.address=192.168.32.5 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-e.cluster.bulia.dev remote.address=192.168.32.6 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-f.cluster.bulia.dev remote.address=192.168.32.7 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-g.cluster.bulia.dev remote.address=192.168.32.8 local.role=ibgp templates=cluster.bulia.dev
 
 # configure mdns repeater
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=users,personal,iot
