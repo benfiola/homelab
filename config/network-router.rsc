@@ -169,6 +169,7 @@
 /ip/firewall/filter/add chain=input action=accept in-interface-list=RESCUE comment="accept rescue"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=MANAGEMENT comment="accept management"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=VLAN dst-port=53,67 protocol=udp comment="accept vlan -> dns,dhcp"
+/ip/firewall/filter/add chain=input action=accept in-interface-list=INFRASTRUCTURE proto=tcp dst-port=80 comment="accept infrastructure -> http"
 /ip/firewall/filter/add chain=input action=passthrough comment=router-policy-sync::marker disabled=yes
 /ip/firewall/filter/add chain=input action=drop comment="drop unaccepted"
 /ip/firewall/filter/add chain=forward action=fasttrack connection-state=established,related comment="fasttrack established,related"
