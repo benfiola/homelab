@@ -138,6 +138,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(9403),
   );
 
+  policy("cert-manager-startupapicheck-to-control-plane").allowBetween(
+    component("startupapicheck", "cert-manager"),
+    controlPlane(),
+    tcp(6443),
+  );
+
+  policy("cert-manager-startupapicheck-to-host").allowBetween(
+    component("startupapicheck", "cert-manager"),
+    host(),
+    tcp(6443),
+  );
+
   policy("cert-manager-webhook-to-control-plane").allowBetween(
     component("webhook", "cert-manager"),
     controlPlane(),
