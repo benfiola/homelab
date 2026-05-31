@@ -11,7 +11,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "oci://ghcr.io/grafana/helm-charts/grafana-operator",
       version: "5.21.3",
     },
-    dir
+    dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");
   await rename(sourceChartPath, destChartPath);

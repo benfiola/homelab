@@ -1,5 +1,5 @@
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
-import { Chart, Deployment, HttpRoute, Namespace } from "../../cdk8s";
+import { Chart, HttpRoute, Namespace, StatefulSet } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { stringify } from "../../yaml";
 
@@ -23,7 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const deployment = new Deployment(chart, "home-assistant", {
+  const statefulSet = new StatefulSet(chart, "home-assistant", {
     securityContext: { gid: 0, uid: 0 },
     volumes: {
       config: { configMap: configMap.name },
@@ -31,7 +31,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  deployment.addContainer(
+  statefulSet.addContainer(
     "home-assistant",
     "ghcr.io/home-assistant/home-assistant:2026.5.4",
     {
@@ -53,7 +53,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  const service = deployment.createService({ web: 8123 });
+  const service = statefulSet.createService({ web: 8123 });
 
   new HttpRoute(chart, "users", "home-assistant.bulia.dev").match(
     service,

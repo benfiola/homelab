@@ -1,8 +1,8 @@
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import * as cdk8s from "../../cdk8s-cli.ts";
-import { getTempy } from "../../tempy";
 import { TemplateAssetFn } from "../../context.ts";
+import { getTempy } from "../../tempy";
 
 export const assets: TemplateAssetFn = async (dir) => {
   const version = "2.7.3";

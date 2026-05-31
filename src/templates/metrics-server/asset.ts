@@ -10,7 +10,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "metrics-server",
       version: "3.13.0",
     },
-    dir
+    dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");
   await rename(sourceChartPath, destChartPath);

@@ -12,7 +12,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "vertical-pod-autoscaler",
       version: "0.8.0",
     },
-    dir
+    dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");
   await rename(sourceChartPath, destChartPath);

@@ -546,8 +546,8 @@ interface GetSecurityContextOpts {
 }
 
 export const getSecurityContext = (opts: GetSecurityContextOpts = {}) => {
-  const gid = opts.gid !== undefined ? opts.gid : defaultGid
-  const uid = opts.uid !== undefined ? opts.uid : defaultUid
+  const gid = opts.gid !== undefined ? opts.gid : defaultGid;
+  const uid = opts.uid !== undefined ? opts.uid : defaultUid;
   const caps = opts.caps ?? [];
 
   const runAsNonRoot = uid !== 0;
@@ -901,9 +901,24 @@ function envToK8s(env: WorkloadEnv | undefined) {
 
 type PvcVolume = { pvc: { size: string; storageClass: string } };
 type EmptyDirVolume = { emptyDir: { medium?: "Memory"; sizeLimit?: string } };
+
 const isPvcVolume = (v: WorkloadVolumes[string]): v is PvcVolume => "pvc" in v;
 
-function volumesToClaimTemplates(volumes: WorkloadVolumes | undefined): any[] | undefined {
+function ensureNoPvcVolumes(volumes: WorkloadVolumes | undefined) {
+  if (!volumes) return;
+  const pvcVolumes = Object.entries(volumes)
+    .filter(([, v]) => isPvcVolume(v))
+    .map(([name]) => name);
+  if (pvcVolumes.length > 0) {
+    throw new Error(
+      `Deployment does not support PVC volumes (${pvcVolumes.join(", ")}). Use StatefulSet for persistent storage.`,
+    );
+  }
+}
+
+function volumesToClaimTemplates(
+  volumes: WorkloadVolumes | undefined,
+): any[] | undefined {
   if (!volumes) return undefined;
   const result = Object.entries(volumes)
     .filter((entry): entry is [string, PvcVolume] => isPvcVolume(entry[1]))
@@ -918,18 +933,21 @@ function volumesToClaimTemplates(volumes: WorkloadVolumes | undefined): any[] | 
   return result.length ? result : undefined;
 }
 
-function volumesToInlineVolumes(volumes: WorkloadVolumes | undefined): any[] | undefined {
+function volumesToInlineVolumes(
+  volumes: WorkloadVolumes | undefined,
+): any[] | undefined {
   if (!volumes) return undefined;
   const result = Object.entries(volumes)
     .filter(([, v]) => !isPvcVolume(v))
     .map(([name, v]) => {
-      if ("configMap" in v) return { name, configMap: { name: v.configMap, items: v.items } };
-      if ("secret" in v) return { name, secret: { secretName: v.secret, items: v.items } };
+      if ("configMap" in v)
+        return { name, configMap: { name: v.configMap, items: v.items } };
+      if ("secret" in v)
+        return { name, secret: { secretName: v.secret, items: v.items } };
       return { name, emptyDir: (v as EmptyDirVolume).emptyDir };
     });
   return result.length ? result : undefined;
 }
-
 
 interface WorkloadOpts {
   volumes?: WorkloadVolumes;
@@ -951,7 +969,9 @@ function buildContainer(
   image: string,
   opts: ContainerOpts,
 ) {
-  const secCtx = opts.securityContext ? getSecurityContext(opts.securityContext) : podSecCtx;
+  const secCtx = opts.securityContext
+    ? getSecurityContext(opts.securityContext)
+    : podSecCtx;
   const mounts = opts.volumeMounts
     ? Object.entries(opts.volumeMounts).map(([name, mountPath]) => ({
         name,
@@ -1005,13 +1025,25 @@ export class StatefulSet extends BaseStatefulSet {
     this._selector = selector;
   }
 
-  addInitContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
-    this._initContainers.push(buildContainer(this._podSecCtx, containerName, image, opts));
+  addInitContainer(
+    containerName: string,
+    image: string,
+    opts: ContainerOpts = {},
+  ): this {
+    this._initContainers.push(
+      buildContainer(this._podSecCtx, containerName, image, opts),
+    );
     return this;
   }
 
-  addContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
-    this._containers.push(buildContainer(this._podSecCtx, containerName, image, opts));
+  addContainer(
+    containerName: string,
+    image: string,
+    opts: ContainerOpts = {},
+  ): this {
+    this._containers.push(
+      buildContainer(this._podSecCtx, containerName, image, opts),
+    );
     return this;
   }
 
@@ -1034,6 +1066,7 @@ export class Deployment extends BaseDeployment {
   private readonly _selector: Record<string, string>;
 
   constructor(chart: Chart, name: string, opts: DeploymentOpts = {}) {
+    ensureNoPvcVolumes(opts.volumes);
     const id = `${chart.node.id}-deployment-${name}`;
     const secCtx = getSecurityContext(opts.securityContext);
     const selector = { "app.kubernetes.io/name": name };
@@ -1062,13 +1095,25 @@ export class Deployment extends BaseDeployment {
     this._selector = selector;
   }
 
-  addInitContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
-    this._initContainers.push(buildContainer(this._podSecCtx, containerName, image, opts));
+  addInitContainer(
+    containerName: string,
+    image: string,
+    opts: ContainerOpts = {},
+  ): this {
+    this._initContainers.push(
+      buildContainer(this._podSecCtx, containerName, image, opts),
+    );
     return this;
   }
 
-  addContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
-    this._containers.push(buildContainer(this._podSecCtx, containerName, image, opts));
+  addContainer(
+    containerName: string,
+    image: string,
+    opts: ContainerOpts = {},
+  ): this {
+    this._containers.push(
+      buildContainer(this._podSecCtx, containerName, image, opts),
+    );
     return this;
   }
 

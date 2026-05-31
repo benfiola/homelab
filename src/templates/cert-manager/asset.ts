@@ -11,7 +11,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: `oci://quay.io/jetstack/charts/cert-manager`,
       version: "v1.19.1",
     },
-    dir
+    dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");
   await rename(sourceChartPath, destChartPath);

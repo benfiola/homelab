@@ -10,7 +10,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "prometheus-node-exporter",
       version: "4.49.2",
     },
-    dir
+    dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");
   await rename(sourceChartPath, destChartPath);

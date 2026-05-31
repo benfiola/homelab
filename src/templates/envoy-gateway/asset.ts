@@ -13,7 +13,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "oci://docker.io/envoyproxy/gateway-crds-helm",
       version: `v${version}`,
     },
-    dir
+    dir,
   );
   const destCrdChartPath = join(dir, "chart-crds.tar.gz");
   await rename(sourceCrdChartPath, destCrdChartPath);
@@ -23,7 +23,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "oci://docker.io/envoyproxy/gateway-helm",
       version: `v${version}`,
     },
-    dir
+    dir,
   );
   const destGatewayChartPath = join(dir, "chart-gateway.tar.gz");
   await rename(srcGatewayChartPath, destGatewayChartPath);

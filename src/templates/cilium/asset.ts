@@ -56,7 +56,7 @@ export const assets: TemplateAssetFn = async (dir) => {
       chart: "cilium",
       version,
     },
-    dir
+    dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");
   await rename(sourceChartPath, destChartPath);
