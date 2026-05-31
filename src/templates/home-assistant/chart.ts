@@ -37,11 +37,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       env: {
         TZ: "America/Los_Angeles",
       },
+      args: [
+        "bash",
+        "-c",
+        "mkdir -p /config && cp /config-ro/configuration.yaml /config && python -m homeassistant --config /config",
+      ],
       containerPorts: {
         web: [8123, "TCP"],
       },
       volumeMounts: {
-        config: "/config",
+        config: "/config-ro",
       },
     },
   );
