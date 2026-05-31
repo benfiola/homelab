@@ -20,13 +20,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const deployment = new Deployment(chart, "tunnel", {
     volumes: {
-      config: { configMap: config.name, mountPath: "/config" },
+      config: { configMap: config.name },
     },
   });
-
   deployment.addContainer("tunnel", "fatedier/frps:v0.63.0", {
     containerPorts: { server: 8080, desktop: 8081 },
     args: ["--config", "/config/config.json"],
+    volumeMounts: {
+      config: "/config",
+    },
   });
 
   const svc = deployment.createService({ server: 8080, desktop: 8081 });

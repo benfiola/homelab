@@ -17,11 +17,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     volumes: {
       data: {
         pvc: { size: "10Gi", storageClass: "replicated" },
-        mountPath: "/data",
       },
     },
   });
-
   ss.addContainer("minecraft", "itzg/minecraft-server:java25-jdk", {
     containerPorts: { game: 25565 },
     env: {
@@ -29,6 +27,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       VERSION: "1.21.11",
       MODPACK: getAssetsServerUrl("minecraft/mods.zip"),
       TYPE: "FABRIC",
+    },
+    volumeMounts: {
+      data: "/data",
     },
   });
 

@@ -861,10 +861,10 @@ type VolumeItem = { key: string; path: string };
 
 export type WorkloadVolumes = Record<
   string,
-  | { pvc: { size: string; storageClass: string }; mountPath: string }
-  | { configMap: string; mountPath: string; subPath?: string; items?: VolumeItem[] }
-  | { secret: string; mountPath: string; subPath?: string; items?: VolumeItem[] }
-  | { emptyDir: { medium?: "Memory"; sizeLimit?: string }; mountPath: string }
+  | { pvc: { size: string; storageClass: string } }
+  | { configMap: string; items?: VolumeItem[] }
+  | { secret: string; items?: VolumeItem[] }
+  | { emptyDir: { medium?: "Memory"; sizeLimit?: string } }
 >;
 
 function normalizePorts(ports: WorkloadPorts) {
@@ -899,8 +899,8 @@ function envToK8s(env: WorkloadEnv | undefined) {
   });
 }
 
-type PvcVolume = { pvc: { size: string; storageClass: string }; mountPath: string };
-type EmptyDirVolume = { emptyDir: { medium?: "Memory"; sizeLimit?: string }; mountPath: string };
+type PvcVolume = { pvc: { size: string; storageClass: string } };
+type EmptyDirVolume = { emptyDir: { medium?: "Memory"; sizeLimit?: string } };
 const isPvcVolume = (v: WorkloadVolumes[string]): v is PvcVolume => "pvc" in v;
 
 function volumesToClaimTemplates(volumes: WorkloadVolumes | undefined): any[] | undefined {
@@ -930,14 +930,6 @@ function volumesToInlineVolumes(volumes: WorkloadVolumes | undefined): any[] | u
   return result.length ? result : undefined;
 }
 
-function volumesToMounts(volumes: WorkloadVolumes) {
-  const result = Object.entries(volumes).map(([name, v]) => ({
-    name,
-    mountPath: v.mountPath,
-    ...("subPath" in v && v.subPath ? { subPath: v.subPath } : {}),
-  }));
-  return result.length ? result : undefined;
-}
 
 interface WorkloadOpts {
   volumes?: WorkloadVolumes;
@@ -949,23 +941,24 @@ interface ContainerOpts {
   containerPorts?: WorkloadPorts;
   env?: WorkloadEnv;
   args?: string[];
-  volumes?: string[];
+  volumeMounts?: Record<string, string>;
   securityContext?: GetSecurityContextOpts;
 }
 
 function buildContainer(
-  workloadVolumes: WorkloadVolumes,
   podSecCtx: ReturnType<typeof getSecurityContext>,
   containerName: string,
   image: string,
   opts: ContainerOpts,
 ) {
   const secCtx = opts.securityContext ? getSecurityContext(opts.securityContext) : podSecCtx;
-  const mountedVols = opts.volumes
-    ? Object.fromEntries(
-        Object.entries(workloadVolumes).filter(([n]) => opts.volumes!.includes(n)),
-      )
-    : workloadVolumes;
+  const mounts = opts.volumeMounts
+    ? Object.entries(opts.volumeMounts).map(([name, mountPath]) => ({
+        name,
+        mountPath,
+      }))
+    : undefined;
+
   return {
     name: containerName,
     image,
@@ -973,13 +966,13 @@ function buildContainer(
     env: envToK8s(opts.env),
     ports: portsToContainerPorts(opts.containerPorts),
     securityContext: secCtx.container,
-    volumeMounts: volumesToMounts(mountedVols),
+    volumeMounts: mounts,
   };
 }
 
 export class StatefulSet extends BaseStatefulSet {
   private readonly _containers: any[];
-  private readonly _workloadVolumes: WorkloadVolumes;
+  private readonly _initContainers: any[];
   private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
   private readonly _selector: Record<string, string>;
 
@@ -988,6 +981,7 @@ export class StatefulSet extends BaseStatefulSet {
     const secCtx = getSecurityContext(opts.securityContext);
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
+    const initContainers: any[] = [];
     super(chart, id, {
       metadata: { name },
       spec: {
@@ -998,6 +992,7 @@ export class StatefulSet extends BaseStatefulSet {
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
             volumes: volumesToInlineVolumes(opts.volumes),
+            initContainers: initContainers.length ? initContainers : undefined,
             containers,
           },
         },
@@ -1005,13 +1000,18 @@ export class StatefulSet extends BaseStatefulSet {
       },
     });
     this._containers = containers;
-    this._workloadVolumes = opts.volumes ?? {};
+    this._initContainers = initContainers;
     this._podSecCtx = secCtx;
     this._selector = selector;
   }
 
+  addInitContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
+    this._initContainers.push(buildContainer(this._podSecCtx, containerName, image, opts));
+    return this;
+  }
+
   addContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
-    this._containers.push(buildContainer(this._workloadVolumes, this._podSecCtx, containerName, image, opts));
+    this._containers.push(buildContainer(this._podSecCtx, containerName, image, opts));
     return this;
   }
 
@@ -1029,7 +1029,7 @@ interface DeploymentOpts extends WorkloadOpts {
 
 export class Deployment extends BaseDeployment {
   private readonly _containers: any[];
-  private readonly _workloadVolumes: WorkloadVolumes;
+  private readonly _initContainers: any[];
   private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
   private readonly _selector: Record<string, string>;
 
@@ -1038,6 +1038,7 @@ export class Deployment extends BaseDeployment {
     const secCtx = getSecurityContext(opts.securityContext);
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
+    const initContainers: any[] = [];
     super(chart, id, {
       metadata: { name },
       spec: {
@@ -1049,19 +1050,25 @@ export class Deployment extends BaseDeployment {
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
             volumes: volumesToInlineVolumes(opts.volumes),
+            initContainers: initContainers.length ? initContainers : undefined,
             containers,
           },
         },
       },
     });
     this._containers = containers;
-    this._workloadVolumes = opts.volumes ?? {};
+    this._initContainers = initContainers;
     this._podSecCtx = secCtx;
     this._selector = selector;
   }
 
+  addInitContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
+    this._initContainers.push(buildContainer(this._podSecCtx, containerName, image, opts));
+    return this;
+  }
+
   addContainer(containerName: string, image: string, opts: ContainerOpts = {}): this {
-    this._containers.push(buildContainer(this._workloadVolumes, this._podSecCtx, containerName, image, opts));
+    this._containers.push(buildContainer(this._podSecCtx, containerName, image, opts));
     return this;
   }
 

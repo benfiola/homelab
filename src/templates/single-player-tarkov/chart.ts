@@ -50,11 +50,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       cache: {
         pvc: { size: "10Gi", storageClass: "standard" },
-        mountPath: "/cache",
       },
       data: {
         pvc: { size: "10Gi", storageClass: "replicated" },
-        mountPath: "/data",
       },
     },
   });
@@ -72,6 +70,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
         MOD_URLS: mods.join(","),
         LOG_LEVEL: "debug",
         VERSION: "4.0.13",
+      },
+      volumeMounts: {
+        cache: "/cache",
+        data: "/data",
       },
     },
   );

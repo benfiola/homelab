@@ -1,10 +1,4 @@
-import {
-  Chart,
-  Namespace,
-  StatefulSet,
-  TcpRoute,
-  UdpRoute,
-} from "../../cdk8s";
+import { Chart, Namespace, StatefulSet, TcpRoute, UdpRoute } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { gameServerImage } from "../../image-refs";
 
@@ -16,7 +10,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
     securityContext: { uid: 1000, gid: 1000 },
     nodeSelector: { "kubernetes.io/arch": "amd64" },
     volumes: {
-      cache: { pvc: { size: "30Gi", storageClass: "replicated" }, mountPath: "/cache" },
+      cache: {
+        pvc: { size: "30Gi", storageClass: "replicated" },
+      },
     },
   });
   ss.addContainer("seven-days-to-die", gameServerImage("seven-days-to-die"), {
@@ -27,7 +23,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
       udp3: [26902, "UDP"],
     },
     env: { LOG_LEVEL: "debug" },
+    volumeMounts: {
+      cache: "/cache",
+    },
   });
+
   const svc = ss.createService({
     tcp: 26900,
     udp1: [26900, "UDP"],

@@ -31,12 +31,18 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
 
   const ss = new StatefulSet(chart, "testing", {
     volumes: {
-      data: { pvc: { size: "10Gi", storageClass: "standard" }, mountPath: "/data" },
-      scripts: { configMap: scripts.name, mountPath: "/scripts" },
+      data: {
+        pvc: { size: "10Gi", storageClass: "standard" },
+      },
+      scripts: { configMap: scripts.name },
     },
   });
   ss.addContainer("testing", "alpine:latest", {
     args: ["sh", "-e", "/scripts/run.sh"],
+    volumeMounts: {
+      data: "/data",
+      scripts: "/scripts",
+    },
   });
 
   const volsyncAuth = new VolsyncAuth(chart);
