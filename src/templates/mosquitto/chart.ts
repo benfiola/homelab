@@ -31,6 +31,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         persistence_location /mosquitto/data/
         plugin /usr/lib/mosquitto_password_file.so
         plugin_opt_password_file /tmp/password_file
+        acl_file /mosquitto/config/acl.conf
+      `,
+      "acl.conf": dedent`
+        user home-assistant
+        topic readwrite #
+        user frigate
+        topic readwrite frigate/#
       `,
     },
   });
@@ -68,8 +75,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         web: [1883, "TCP"],
       },
       volumeMounts: {
-        config: "/config",
-        data: "/data",
+        config: "/mosquitto/config",
+        data: "/mosquitto/data",
         scripts: "/scripts",
       },
       env: {
