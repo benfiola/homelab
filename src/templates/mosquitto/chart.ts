@@ -59,7 +59,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   statefulSet.addContainer(
     "mosquitto",
-    "docker.io/eclipse-mosquitto/eclipse-mosquitto:2.1.2-alpine",
+    "docker.io/eclipse-mosquitto:2.1.2-alpine",
     {
       args: ["sh", "/scripts/run.sh"],
       containerPorts: {
