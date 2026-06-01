@@ -51,7 +51,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const statefulSet = new StatefulSet(chart, `${id}-stateful-set`, {
-    securityContext: { gid: 0, uid: 0 },
     volumes: {
       config: { configMap: config.name },
       scripts: { configMap: scripts.name },
