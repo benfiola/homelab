@@ -5,6 +5,8 @@ import {
   Helm,
   HttpRoute,
   Namespace,
+  VaultAuth,
+  VaultStaticSecret,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -15,6 +17,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, id);
 
   new Namespace(chart, { privileged: true });
+
+  const vaultAuth = new VaultAuth(chart);
+
+  const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
   const secrets = new Secret(chart, `${id}-secrets`, {
     metadata: {
