@@ -52,11 +52,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         set -e
         touch /tmp/password_file
         chmod 0700 /tmp/password_file
-        /usr/bin/mosquitto_passwd -b /tmp/password_file home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
-        /usr/bin/mosquitto_passwd -b /tmp/password_file frigate "\${USER_PASSWORD_FRIGATE}"
-        while true; do
-          sleep 1
-        done
+        /usr/bin/mosquitto_passwd -b /tmp/password_file home-assistant "\${PASSWORD_HOME_ASSISTANT}"
+        /usr/bin/mosquitto_passwd -b /tmp/password_file frigate "\${PASSWORD_FRIGATE}"
         /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
       `,
     },
@@ -83,10 +80,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         scripts: "/scripts",
       },
       env: {
-        USER_PASSWORD_FRIGATE: {
+        MOSQUITTO_UNSAFE_ALLOW_SYMLINKS: "",
+        PASSWORD_FRIGATE: {
           secretKeyRef: { name: vaultSecret.name, key: "frigate-password" },
         },
-        USER_PASSWORD_HOME_ASSISTANT: {
+        PASSWORD_HOME_ASSISTANT: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "home-assistant-password",
