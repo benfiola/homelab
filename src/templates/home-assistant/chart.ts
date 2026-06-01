@@ -16,9 +16,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  const config = new ConfigMap(chart, "home-assistant", {
+  const config = new ConfigMap(chart, `${id}-config-map-config`, {
     metadata: {
-      name: "home-assistant",
+      name: "home-assistant-config",
     },
     data: {
       "configuration.yaml": stringify({
@@ -30,7 +30,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const scripts = new ConfigMap(chart, "home-assistant", {
+  const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     metadata: {
       name: "home-assistant-scripts",
     },
@@ -44,7 +44,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const statefulSet = new StatefulSet(chart, "home-assistant", {
+  const statefulSet = new StatefulSet(chart, `${id}-stateful-set`, {
     securityContext: { gid: 0, uid: 0 },
     volumes: {
       config: { configMap: config.name },
@@ -52,7 +52,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       data: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
   });
-
   statefulSet.addContainer(
     "home-assistant",
     "ghcr.io/home-assistant/home-assistant:2026.5.4",

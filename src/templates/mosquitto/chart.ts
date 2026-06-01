@@ -2,7 +2,6 @@ import dedent from "ts-dedent";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
-  HttpRoute,
   Namespace,
   StatefulSet,
   VaultAuth,
@@ -21,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
-  const config = new ConfigMap(chart, "mosquitto", {
+  const config = new ConfigMap(chart, `${id}-config-map-config`, {
     metadata: {
       name: "mosquitto-config",
     },
@@ -36,7 +35,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const scripts = new ConfigMap(chart, "mosquitto", {
+  const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     metadata: {
       name: "mosquitto-scripts",
     },
@@ -51,7 +50,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const statefulSet = new StatefulSet(chart, "home-assistant", {
+  const statefulSet = new StatefulSet(chart, `${id}-stateful-set`, {
     securityContext: { gid: 0, uid: 0 },
     volumes: {
       config: { configMap: config.name },
@@ -59,7 +58,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       data: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
   });
-
   statefulSet.addContainer(
     "mosquitto",
     "docker.io/eclipse-mosquitto/eclipse-mosquitto:2.1.2-alpine",
@@ -88,8 +86,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   const service = statefulSet.createService({ db: 1883 });
-
-  new HttpRoute(chart, "users", "mosquitto.bulia.dev").match(service, 1883);
 
   new VerticalPodAutoscaler(chart, statefulSet);
 
