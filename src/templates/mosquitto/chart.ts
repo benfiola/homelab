@@ -43,9 +43,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "run.sh": dedent`
         #!/bin/sh
         set -e
-        /usr/bin/mosquitto_passwd -b home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
-        /usr/bin/mosquitto_passwd -b frigate "\${USER_PASSWORD_FRIGATE}"
-        /usr/sbin/mosquitto -c mosquitto/config/mosquitto.conf
+        /usr/bin/mosquitto_passwd -b /mosquitto/password_file home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
+        /usr/bin/mosquitto_passwd -b /mosquitto/password_file frigate "\${USER_PASSWORD_FRIGATE}"
+        /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
       `,
     },
   });
