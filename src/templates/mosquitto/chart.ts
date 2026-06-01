@@ -54,6 +54,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         chmod 0700 /tmp/password_file
         /usr/bin/mosquitto_passwd -b /tmp/password_file home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
         /usr/bin/mosquitto_passwd -b /tmp/password_file frigate "\${USER_PASSWORD_FRIGATE}"
+        while true; do
+          sleep 1
+        done
         /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
       `,
     },

@@ -33,6 +33,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: stringify({
+      mqtt: {
+        enabled: false,
+      },
       cameras: {
         fake: {
           enabled: false,
@@ -60,9 +63,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         input_pixel_format: "bgr",
         path: "/openvino-model/ssdlite_mobilenet_v2.xml",
         labelmap_path: "/openvino-model/coco_91cl_bkgr.txt",
-      },
-      mqtt: {
-        enabled: false,
       },
       telemetry: {
         stats: {
