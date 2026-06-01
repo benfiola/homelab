@@ -30,7 +30,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         plugin /usr/lib/mosquitto_persist_sqlite.so
         persistence_location /mosquitto/data/
         plugin /usr/lib/mosquitto_password_file.so
-        plugin_opt_password_file /mosquitto/password_file
+        plugin_opt_password_file /tmp/password_file
       `,
     },
   });
@@ -43,16 +43,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "run.sh": dedent`
         #!/bin/sh
         set -e
-        touch /mosquitto/password_file
-        chmod 0700 /mosquitto/password_file
-        /usr/bin/mosquitto_passwd -b /mosquitto/password_file home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
-        /usr/bin/mosquitto_passwd -b /mosquitto/password_file frigate "\${USER_PASSWORD_FRIGATE}"
+        touch /tmp/password_file
+        chmod 0700 /tmp/password_file
+        /usr/bin/mosquitto_passwd -b /tmp/password_file home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
+        /usr/bin/mosquitto_passwd -b /tmp/password_file frigate "\${USER_PASSWORD_FRIGATE}"
         /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
       `,
     },
   });
 
-  const statefulSet = new StatefulSet(chart, `${id}-stateful-set`, {
+  const statefulSet = new StatefulSet(chart, "mosquitto", {
     volumes: {
       config: { configMap: config.name },
       scripts: { configMap: scripts.name },
@@ -86,7 +86,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  const service = statefulSet.createService({ db: 1883 });
+  statefulSet.createService({ db: 1883 });
 
   new VerticalPodAutoscaler(chart, statefulSet);
 
