@@ -30,6 +30,7 @@ apps:
   - template: metrics-server
   - template: minecraft
   - template: monitoring-config
+  - template: mosquitto
   - template: network-policy
   - template: node-feature-discovery
   - template: piraeus-operator

@@ -1,0 +1,97 @@
+import dedent from "ts-dedent";
+import { ConfigMap } from "../../../assets/kubernetes/k8s";
+import {
+  Chart,
+  HttpRoute,
+  Namespace,
+  StatefulSet,
+  VaultAuth,
+  VaultStaticSecret,
+  VerticalPodAutoscaler,
+} from "../../cdk8s";
+import { TemplateChartFn } from "../../context";
+
+export const chart: TemplateChartFn = async (construct, _, context) => {
+  const id = context.name;
+  const chart = new Chart(construct, id);
+
+  new Namespace(chart);
+
+  const vaultAuth = new VaultAuth(chart);
+
+  const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
+
+  const config = new ConfigMap(chart, "mosquitto", {
+    metadata: {
+      name: "mosquitto-config",
+    },
+    data: {
+      "mosquitto.conf": dedent`
+        listener 1883
+        plugin /usr/lib/mosquitto_persist_sqlite.so
+        persistence_location /mosquitto/data/
+        plugin /usr/lib/mosquitto_password_file.so
+        plugin_opt_password_file /mosquitto/password_file
+      `,
+    },
+  });
+
+  const scripts = new ConfigMap(chart, "mosquitto", {
+    metadata: {
+      name: "mosquitto-scripts",
+    },
+    data: {
+      "run.sh": dedent`
+        #!/bin/sh
+        set -e
+        /usr/bin/mosquitto_passwd -b home-assistant "\${USER_PASSWORD_HOME_ASSISTANT}"
+        /usr/bin/mosquitto_passwd -b frigate "\${USER_PASSWORD_FRIGATE}"
+        /usr/sbin/mosquitto -c mosquitto/config/mosquitto.conf
+      `,
+    },
+  });
+
+  const statefulSet = new StatefulSet(chart, "home-assistant", {
+    securityContext: { gid: 0, uid: 0 },
+    volumes: {
+      config: { configMap: config.name },
+      scripts: { configMap: scripts.name },
+      data: { pvc: { size: "10Gi", storageClass: "replicated" } },
+    },
+  });
+
+  statefulSet.addContainer(
+    "mosquitto",
+    "docker.io/eclipse-mosquitto/eclipse-mosquitto:2.1.2-alpine",
+    {
+      args: ["sh", "/scripts/run.sh"],
+      containerPorts: {
+        web: [1883, "TCP"],
+      },
+      volumeMounts: {
+        config: "/config",
+        data: "/data",
+        scripts: "/scripts",
+      },
+      env: {
+        USER_PASSWORD_FRIGATE: {
+          secretKeyRef: { name: vaultSecret.name, key: "frigate-password" },
+        },
+        USER_PASSWORD_HOME_ASSISTANT: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "home-assistant-password",
+          },
+        },
+      },
+    },
+  );
+
+  const service = statefulSet.createService({ db: 1883 });
+
+  new HttpRoute(chart, "users", "mosquitto.bulia.dev").match(service, 1883);
+
+  new VerticalPodAutoscaler(chart, statefulSet);
+
+  return chart;
+};

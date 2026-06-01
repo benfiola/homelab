@@ -1,3 +1,4 @@
+import dedent from "ts-dedent";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
@@ -15,7 +16,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  const configMap = new ConfigMap(chart, "home-assistant", {
+  const config = new ConfigMap(chart, "home-assistant", {
     metadata: {
       name: "home-assistant",
     },
@@ -29,10 +30,25 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
+  const scripts = new ConfigMap(chart, "home-assistant", {
+    metadata: {
+      name: "home-assistant-scripts",
+    },
+    data: {
+      "run.sh": dedent`
+        #!/bin/bash
+        set -e
+        cp /config/configuration.yaml /data
+        python -m homeassistant --config /data"
+      `,
+    },
+  });
+
   const statefulSet = new StatefulSet(chart, "home-assistant", {
     securityContext: { gid: 0, uid: 0 },
     volumes: {
-      config: { configMap: configMap.name },
+      config: { configMap: config.name },
+      scripts: { configMap: scripts.name },
       data: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
   });
@@ -44,17 +60,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       env: {
         TZ: "America/Los_Angeles",
       },
-      args: [
-        "bash",
-        "-c",
-        "cp /config/configuration.yaml /data && python -m homeassistant --config /data",
-      ],
+      args: ["bash", "/scripts/run.sh"],
       containerPorts: {
         web: [8123, "TCP"],
       },
       volumeMounts: {
         config: "/config",
         data: "/data",
+        scripts: "/scripts",
       },
     },
   );
