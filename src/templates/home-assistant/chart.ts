@@ -39,7 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         #!/bin/bash
         set -e
         cp /config/configuration.yaml /data
-        python -m homeassistant --config /data"
+        python -m homeassistant --config /data
       `,
     },
   });
