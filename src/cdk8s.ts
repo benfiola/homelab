@@ -955,10 +955,16 @@ interface WorkloadOpts {
   securityContext?: GetSecurityContextOpts;
 }
 
+interface ContainerResources {
+  requests?: Record<string, string>;
+  limits?: Record<string, string>;
+}
+
 interface ContainerOpts {
   containerPorts?: WorkloadPorts;
   env?: WorkloadEnv;
   args?: string[];
+  resources?: ContainerResources;
   volumeMounts?: Record<string, string>;
   securityContext?: GetSecurityContextOpts;
 }
@@ -985,6 +991,7 @@ function buildContainer(
     args: opts.args,
     env: envToK8s(opts.env),
     ports: portsToContainerPorts(opts.containerPorts),
+    resources: opts.resources,
     securityContext: secCtx.container,
     volumeMounts: mounts,
   };
