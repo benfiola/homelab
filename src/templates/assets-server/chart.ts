@@ -43,7 +43,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const bucketServer = new BucketServer(chart, bucket, readKey);
 
-  bucketServer.createService({ http: 80 });
+  bucketServer.createService({ http: 8080 });
 
   new VerticalPodAutoscaler(chart, bucketServer);
 
