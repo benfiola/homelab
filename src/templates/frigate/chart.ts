@@ -91,7 +91,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         rtmp: 1935,
       },
       env: {
-        S6_YES_I_WANT_A_WORLD_WRITABLE_RUN_BECAUSE_KUBERNETES: "1",
         FRIGATE_MQTT_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
