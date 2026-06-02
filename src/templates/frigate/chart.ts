@@ -1,4 +1,3 @@
-import { Secret } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   findApiObject,
@@ -6,7 +5,7 @@ import {
   HttpRoute,
   Namespace,
   VaultAuth,
-  VaultStaticSecret,
+  VaultDynamicSecret,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
@@ -20,21 +19,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultAuth = new VaultAuth(chart);
 
-  const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
-
-  const secrets = new Secret(chart, `${id}-secrets`, {
-    metadata: {
-      name: "secrets",
-    },
-    stringData: {
-      FRIGATE_RTSP_PASSWORD: "super-insecure",
-    },
-  });
+  const vaultSecret = new VaultDynamicSecret(chart, vaultAuth, (secret) => ({
+    FRIGATE_MQTT_PASSWORD: secret("mqtt-password"),
+    FRIGATE_RTSP_PASSWORD: "super-insecure",
+  }));
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: stringify({
       mqtt: {
-        enabled: false,
+        host: "mosquitto.mosquitto.svc",
+        port: 1883,
+        user: "frigate",
+        password: "{FRIGATE_MQTT_PASSWORD}",
       },
       cameras: {
         fake: {
@@ -70,7 +66,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
     }),
-    envFromSecrets: [secrets.name],
+    envFromSecrets: [vaultSecret.name],
     image: {
       tag: "0.17.1",
     },

@@ -425,6 +425,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
 
   // frigate
+  policy("frigate-to-mosquitto").allowBetween(
+    pod("frigate", "frigate"),
+    pod("mosquitto", "mosquitto"),
+    tcp(1883),
+  );
+
   policy("host-to-frigate").allowBetween(
     host(),
     pod("frigate", "frigate"),
