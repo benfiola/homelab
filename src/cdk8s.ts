@@ -849,6 +849,15 @@ export class BucketSyncPolicy extends Construct {
 
 export type WorkloadPorts = Record<string, number | [number, "TCP" | "UDP"]>;
 
+export type ServicePortConfig =
+  | number
+  | [number, "TCP" | "UDP"]
+  | [number, number]
+  | [number, number, "TCP" | "UDP"]
+  | { targetPort: number; port?: number; protocol?: "TCP" | "UDP" };
+
+export type ServicePorts = Record<string, ServicePortConfig>;
+
 export type WorkloadEnv = Record<
   string,
   | string
@@ -883,12 +892,53 @@ function portsToContainerPorts(ports: WorkloadPorts | undefined) {
   }));
 }
 
-function portsToServicePorts(ports: WorkloadPorts) {
-  return normalizePorts(ports).map(({ name, num, protocol }) => ({
-    name,
-    port: num,
+function normalizeServicePortConfig(config: ServicePortConfig): {
+  port: number;
+  targetPort?: number;
+  protocol: "TCP" | "UDP";
+} {
+  if (typeof config === "number") {
+    return { port: config, protocol: "TCP" };
+  }
+
+  if (Array.isArray(config)) {
+    if (config.length === 2) {
+      const [first, second] = config;
+      if (typeof second === "string") {
+        // [port, protocol]
+        return { port: first, protocol: second };
+      } else {
+        // [port, targetPort]
+        return { port: first, targetPort: second, protocol: "TCP" };
+      }
+    } else if (config.length === 3) {
+      // [port, targetPort, protocol]
+      const [port, targetPort, protocol] = config;
+      return { port, targetPort, protocol };
+    }
+  }
+
+  // Object form
+  const { targetPort, port, protocol = "TCP" } = config;
+  return {
+    port: port ?? targetPort,
+    targetPort: port ? targetPort : undefined,
     protocol,
-  }));
+  };
+}
+
+function portsToServicePorts(ports: ServicePorts): any[] {
+  const result = [];
+  for (const [name, config] of Object.entries(ports)) {
+    const { port, targetPort, protocol } = normalizeServicePortConfig(config);
+    result.push({
+      name,
+      port,
+      ...(targetPort && { targetPort }),
+      protocol,
+    });
+  }
+  return result;
 }
 
 function envToK8s(env: WorkloadEnv | undefined) {
@@ -960,6 +1010,18 @@ interface ContainerResources {
   limits?: Record<string, string>;
 }
 
+type ProbeConfig = {
+  http?: { path: string; port: number | string; scheme?: string };
+  tcp?: { port: number | string };
+  exec?: { command: string[] };
+} & {
+  initialDelaySeconds?: number;
+  periodSeconds?: number;
+  timeoutSeconds?: number;
+  successThreshold?: number;
+  failureThreshold?: number;
+};
+
 interface ContainerOpts {
   containerPorts?: WorkloadPorts;
   env?: WorkloadEnv;
@@ -967,6 +1029,26 @@ interface ContainerOpts {
   resources?: ContainerResources;
   volumeMounts?: Record<string, string>;
   securityContext?: GetSecurityContextOpts;
+  readiness?: ProbeConfig;
+  liveness?: ProbeConfig;
+  startup?: ProbeConfig;
+}
+
+function buildProbe(probeConfig: ProbeConfig | undefined) {
+  if (!probeConfig) return undefined;
+
+  const { http, tcp, exec, ...timingConfig } = probeConfig;
+  const probe: any = { ...timingConfig };
+
+  if (http) {
+    probe.httpGet = http;
+  } else if (tcp) {
+    probe.tcpSocket = tcp;
+  } else if (exec) {
+    probe.exec = exec;
+  }
+
+  return Object.keys(probe).length > 0 ? probe : undefined;
 }
 
 function buildContainer(
@@ -994,6 +1076,9 @@ function buildContainer(
     resources: opts.resources,
     securityContext: secCtx.container,
     volumeMounts: mounts,
+    readinessProbe: buildProbe(opts.readiness),
+    livenessProbe: buildProbe(opts.liveness),
+    startupProbe: buildProbe(opts.startup),
   };
 }
 
@@ -1054,7 +1139,7 @@ export class StatefulSet extends BaseStatefulSet {
     return this;
   }
 
-  createService(ports: WorkloadPorts): Service {
+  createService(ports: ServicePorts): Service {
     return new Service(this.node.scope!, `${this.node.id}-service`, {
       metadata: { name: this.name },
       spec: { selector: this._selector, ports: portsToServicePorts(ports) },
@@ -1124,7 +1209,7 @@ export class Deployment extends BaseDeployment {
     return this;
   }
 
-  createService(ports: WorkloadPorts): Service {
+  createService(ports: ServicePorts): Service {
     return new Service(this.node.scope!, `${this.node.id}-service`, {
       metadata: { name: this.name },
       spec: { selector: this._selector, ports: portsToServicePorts(ports) },
