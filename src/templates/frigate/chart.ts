@@ -77,10 +77,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     nodeSelector: {
       "intel.feature.node.kubernetes.io/gpu": "true",
     },
-    securityContext: { uid: 0, gid: 0, caps: ["CHOWN"] },
+    securityContext: {
+      uid: 0,
+      gid: 0,
+      caps: ["CHOWN", "FOWNER", "SETGID", "SETUID"],
+    },
     volumes: {
-      config: { configMap: config.name },
+      config: { emptyDir: {} },
+      configMap: { configMap: config.name },
       shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
+    },
+  });
+  statefulSet.addInitContainer("copy-config", "alpine:latest", {
+    args: ["cp", "/config-map/config.yaml", "/config/config.yaml"],
+    volumeMounts: {
+      config: "/config",
+      configMap: "/config-map",
     },
   });
   statefulSet.addContainer(
