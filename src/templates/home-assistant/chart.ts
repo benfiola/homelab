@@ -1,4 +1,3 @@
-import dedent from "ts-dedent";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
@@ -22,9 +21,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
-  const config = new ConfigMap(chart, `${id}-config-map-config`, {
+  const config = new ConfigMap(chart, `${id}-config-map`, {
     metadata: {
-      name: "home-assistant-config",
+      name: "home-assistant",
     },
     data: {
       "configuration.yaml": stringify({
@@ -36,26 +35,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
-    metadata: {
-      name: "home-assistant-scripts",
-    },
-    data: {
-      "run.sh": dedent`
-        #!/bin/bash
-        set -e
-        cp /config/configuration.yaml /data
-        python -m homeassistant --config /data
-      `,
-    },
-  });
-
   const statefulSet = new StatefulSet(chart, "home-assistant", {
     securityContext: { gid: 0, uid: 0 },
     volumes: {
-      config: { configMap: config.name },
-      scripts: { configMap: scripts.name },
-      data: { pvc: { size: "10Gi", storageClass: "replicated" } },
+      "config-map": { configMap: config.name },
+      config: { pvc: { size: "10Gi", storageClass: "replicated" } },
+    },
+  });
+  statefulSet.addInitContainer("copy-config", "alpine:latest", {
+    args: [
+      "cp",
+      "/config-map/configuration.yaml",
+      "/config/configuration.yaml",
+    ],
+    volumeMounts: {
+      "config-map": "/config-map",
+      config: "/config",
     },
   });
   statefulSet.addContainer(
@@ -65,14 +60,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       env: {
         TZ: "America/Los_Angeles",
       },
-      args: ["bash", "/scripts/run.sh"],
       containerPorts: {
         web: [8123, "TCP"],
       },
       volumeMounts: {
         config: "/config",
         data: "/data",
-        scripts: "/scripts",
       },
     },
   );
