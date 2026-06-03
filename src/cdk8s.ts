@@ -1175,7 +1175,7 @@ export class Deployment extends BaseDeployment {
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
             volumes: volumesToInlineVolumes(opts.volumes),
-            initContainers: initContainers.length ? initContainers : undefined,
+            initContainers: initContainers,
             containers,
           },
         },
