@@ -74,7 +74,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     nodeSelector: {
       "intel.feature.node.kubernetes.io/gpu": "true",
     },
-    securityContext: { uid: 0, gid: 0 },
+    securityContext: { uid: 0, gid: 0, caps: ["CHOWN"] },
     volumes: {
       config: { configMap: config.name },
       shm: { emptyDir: { medium: "Memory", sizeLimit: "128Mi" } },
