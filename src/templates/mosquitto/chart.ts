@@ -30,7 +30,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         plugin /usr/lib/mosquitto_persist_sqlite.so
         persistence_location /mosquitto/data/
         plugin /usr/lib/mosquitto_password_file.so
-        plugin_opt_password_file /tmp/password_file
+        plugin_opt_password_file /auth/password_file
         acl_file /mosquitto/config/acl.conf
       `,
       "acl.conf": dedent`
@@ -47,40 +47,35 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "mosquitto-scripts",
     },
     data: {
-      "run.sh": dedent`
+      "setup-auth.sh": dedent`
         #!/bin/sh
         set -e
-        touch /tmp/password_file
-        chmod 0700 /tmp/password_file
-        /usr/bin/mosquitto_passwd -b /tmp/password_file home-assistant "\${PASSWORD_HOME_ASSISTANT}"
-        /usr/bin/mosquitto_passwd -b /tmp/password_file frigate "\${PASSWORD_FRIGATE}"
-        /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
+        touch /auth/password_file
+        chmod 0700 /auth/password_file
+        /usr/bin/mosquitto_passwd -b /auth/password_file home-assistant "\${PASSWORD_HOME_ASSISTANT}"
+        /usr/bin/mosquitto_passwd -b /auth/password_file frigate "\${PASSWORD_FRIGATE}"
       `,
     },
   });
 
   const statefulSet = new StatefulSet(chart, "mosquitto", {
     volumes: {
+      auth: { emptyDir: {} },
       config: { configMap: config.name },
       scripts: { configMap: scripts.name },
       data: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
   });
-  statefulSet.addContainer(
-    "mosquitto",
+  statefulSet.addInitContainer(
+    "setup-auth",
     "docker.io/eclipse-mosquitto:2.1.2-alpine",
     {
-      args: ["sh", "/scripts/run.sh"],
-      containerPorts: {
-        web: [1883, "TCP"],
-      },
+      args: ["sh", "/scripts/setup-auth.sh"],
       volumeMounts: {
-        config: "/mosquitto/config",
-        data: "/mosquitto/data",
         scripts: "/scripts",
+        auth: "/auth",
       },
       env: {
-        MOSQUITTO_UNSAFE_ALLOW_SYMLINKS: "",
         PASSWORD_FRIGATE: {
           secretKeyRef: { name: vaultSecret.name, key: "frigate-password" },
         },
@@ -90,6 +85,23 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             key: "home-assistant-password",
           },
         },
+      },
+    },
+  );
+  statefulSet.addContainer(
+    "mosquitto",
+    "docker.io/eclipse-mosquitto:2.1.2-alpine",
+    {
+      containerPorts: {
+        web: [1883, "TCP"],
+      },
+      volumeMounts: {
+        config: "/mosquitto/config",
+        data: "/mosquitto/data",
+        auth: "/auth",
+      },
+      env: {
+        MOSQUITTO_UNSAFE_ALLOW_SYMLINKS: "",
       },
     },
   );
