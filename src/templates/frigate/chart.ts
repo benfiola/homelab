@@ -89,7 +89,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
   statefulSet.addInitContainer("copy-config", "alpine:latest", {
-    args: ["cp", "/config-map/config.yaml", "/config/config.yaml"],
+    args: ["cp", "/config-map/config.yml", "/config/config.yml"],
     volumeMounts: {
       config: "/config",
       configmap: "/config-map",
