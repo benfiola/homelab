@@ -66,6 +66,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             intel_gpu_stats: false,
           },
         },
+        tls: {
+          enabled: false,
+        },
       }),
     },
   });
@@ -77,7 +80,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN"] },
     volumes: {
       config: { configMap: config.name },
-      shm: { emptyDir: { medium: "Memory", sizeLimit: "128Mi" } },
+      shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
     },
   });
   statefulSet.addContainer(
@@ -85,10 +88,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "ghcr.io/blakeblackshear/frigate:0.17.1",
     {
       containerPorts: {
-        http: 5000,
-        auth: 8971,
+        http: 8971,
         rtsp: 8554,
-        rtmp: 1935,
       },
       env: {
         FRIGATE_MQTT_PASSWORD: {
@@ -110,7 +111,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  statefulSet.createService({ auth: 8971 });
+  statefulSet.createService({ http: 8971 });
 
   new VerticalPodAutoscaler(chart, statefulSet, { advisory: true });
 
