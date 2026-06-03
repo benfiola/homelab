@@ -84,7 +84,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
     volumes: {
       config: { emptyDir: {} },
-      configMap: { configMap: config.name },
+      configmap: { configMap: config.name },
       shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
     },
   });
@@ -92,7 +92,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     args: ["cp", "/config-map/config.yaml", "/config/config.yaml"],
     volumeMounts: {
       config: "/config",
-      configMap: "/config-map",
+      configmap: "/config-map",
     },
   });
   statefulSet.addContainer(
