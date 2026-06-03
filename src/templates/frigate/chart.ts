@@ -111,14 +111,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  statefulSet.createService({ http: 8971 });
+  const service = statefulSet.createService({ http: 8971 });
 
   new VerticalPodAutoscaler(chart, statefulSet, { advisory: true });
 
-  new HttpRoute(chart, "users", "frigate.bulia.dev").match(
-    { kind: "Service", name: "frigate" },
-    8971,
-  );
+  new HttpRoute(chart, "users", "frigate.bulia.dev").match(service, 8971);
 
   return chart;
 };
