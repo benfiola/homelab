@@ -544,6 +544,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     tcp(8081),
   );
 
+  // home-assistant
+  policy("home-assistant-to-world--egress")
+    .targets(pod("home-assistant", "home-assistant"))
+    .allowEgressTo(cidrs("192.168.24.0/24"));
+
   // intel-device-plugins-operator
   policy("control-plane-to-intel-device-plugins-operator").allowBetween(
     controlPlane(),
