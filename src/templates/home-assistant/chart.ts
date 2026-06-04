@@ -37,6 +37,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const statefulSet = new StatefulSet(chart, "home-assistant", {
+    hostNetwork: true,
     securityContext: { gid: 0, uid: 0 },
     volumes: {
       "config-map": { configMap: config.name },
