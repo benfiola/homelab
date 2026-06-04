@@ -158,7 +158,7 @@
 /routing/bgp/connection/add instance=cluster.bulia.dev name=node-g.cluster.bulia.dev remote.address=192.168.32.8 local.role=ibgp templates=cluster.bulia.dev
 
 # configure mdns repeater
-/ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=users,personal,iot
+/ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=users,personal,infrastructure,iot
 
 # configure firewall address lists
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="ring doorbell"
