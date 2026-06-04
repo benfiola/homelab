@@ -1394,6 +1394,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       udp([26900, 26902]),
     );
 
+  policy("gateway-iot-to-envoy-gateway-controller").allowBetween(
+    gateway("iot"),
+    component("controller", "envoy-gateway"),
+    tcp(18000),
+  );
+
+  policy("world-to-gateway-iot--ingress")
+    .targets(gateway("iot"))
+    .allowIngressFrom(cidrs("192.168.24.0/24"), tcp(10443));
+
   policy("gateway-personal-to-envoy-gateway-controller").allowBetween(
     gateway("personal"),
     component("controller", "envoy-gateway"),
