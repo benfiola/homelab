@@ -20,6 +20,7 @@ import {
   UdpRoute as BaseUdpRoute,
 } from "../assets/gateway-api/gateway.networking.k8s.io";
 import {
+  DaemonSet as BaseDaemonSet,
   Deployment as BaseDeployment,
   Namespace as BaseNamespace,
   StatefulSet as BaseStatefulSet,
@@ -1003,6 +1004,7 @@ function volumesToInlineVolumes(
 
 interface WorkloadOpts {
   volumes?: WorkloadVolumes;
+  hostNetwork?: boolean;
   nodeSelector?: Record<string, string>;
   securityContext?: GetSecurityContextOpts;
 }
@@ -1103,6 +1105,7 @@ export class StatefulSet extends BaseStatefulSet {
         template: {
           metadata: { labels: selector },
           spec: {
+            hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
             volumes: volumesToInlineVolumes(opts.volumes),
@@ -1174,10 +1177,77 @@ export class Deployment extends BaseDeployment {
         template: {
           metadata: { labels: selector },
           spec: {
+            hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
             volumes: volumesToInlineVolumes(opts.volumes),
             initContainers: initContainers,
+            containers,
+          },
+        },
+      },
+    });
+    this._containers = containers;
+    this._initContainers = initContainers;
+    this._podSecCtx = secCtx;
+    this._selector = selector;
+  }
+
+  addInitContainer(
+    containerName: string,
+    image: string,
+    opts: ContainerOpts = {},
+  ): this {
+    this._initContainers.push(
+      buildContainer(this._podSecCtx, containerName, image, opts),
+    );
+    return this;
+  }
+
+  addContainer(
+    containerName: string,
+    image: string,
+    opts: ContainerOpts = {},
+  ): this {
+    this._containers.push(
+      buildContainer(this._podSecCtx, containerName, image, opts),
+    );
+    return this;
+  }
+
+  createService(ports: ServicePorts): Service {
+    return new Service(this.node.scope!, `${this.node.id}-service`, {
+      metadata: { name: this.name },
+      spec: { selector: this._selector, ports: portsToServicePorts(ports) },
+    });
+  }
+}
+
+export class DaemonSet extends BaseDaemonSet {
+  private readonly _containers: any[];
+  private readonly _initContainers: any[];
+  private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
+  private readonly _selector: Record<string, string>;
+
+  constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
+    ensureNoPvcVolumes(opts.volumes);
+    const id = `${chart.node.id}-daemonset-${name}`;
+    const secCtx = getSecurityContext(opts.securityContext);
+    const selector = { "app.kubernetes.io/name": name };
+    const containers: any[] = [];
+    const initContainers: any[] = [];
+    super(chart, id, {
+      metadata: { name },
+      spec: {
+        selector: { matchLabels: selector },
+        template: {
+          metadata: { labels: selector },
+          spec: {
+            hostNetwork: opts.hostNetwork,
+            nodeSelector: opts.nodeSelector,
+            securityContext: secCtx.pod,
+            volumes: volumesToInlineVolumes(opts.volumes),
+            initContainers,
             containers,
           },
         },
