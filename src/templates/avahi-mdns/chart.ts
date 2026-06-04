@@ -1,6 +1,11 @@
 import dedent from "ts-dedent";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
-import { Chart, DaemonSet, Namespace } from "../../cdk8s";
+import {
+  Chart,
+  DaemonSet,
+  Namespace,
+  VerticalPodAutoscaler,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -47,6 +52,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       config: "/etc/avahi",
     },
   });
+
+  new VerticalPodAutoscaler(chart, daemonSet);
 
   return chart;
 };
