@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     securityContext: {
       uid: 0,
       gid: 0,
-      caps: ["NET_ADMIN", "FOWNER", "SYS_CHROOT", "SETUID", "SETGID"],
+      caps: ["NET_ADMIN", "CHOWN", "FOWNER", "SYS_CHROOT", "SETUID", "SETGID"],
     },
   });
   daemonSet.addContainer("avahi", "docker.io/ydkn/avahi:371", {
