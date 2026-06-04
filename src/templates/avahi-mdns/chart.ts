@@ -15,11 +15,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const daemonSet = new DaemonSet(chart, "avahi", {
     hostNetwork: true,
     securityContext: { uid: 0, gid: 0, caps: ["NET_ADMIN"] },
+    volumes: {
+      run: { emptyDir: {} },
+    },
   });
   daemonSet.addContainer("avahi", "docker.io/ydkn/avahi:371", {
     env: {
       ENABLE_REFLECTOR: "yes",
       DENY_INTERFACES: "lo,cilium_net,cilium_host,geneve_sys_6081,lxc_health",
+    },
+    volumeMounts: {
+      run: "/run",
     },
   });
 
