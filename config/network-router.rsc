@@ -170,6 +170,7 @@
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE address=192.168.33.4/32 comment="cluster gateway (infrastructure)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PUBLIC address=192.168.33.5/32 comment="cluster gateway (public)"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_IOT address=192.168.33.6/32 comment="cluster gateway (iot)"
 
 # configure firewall
 /ip/firewall/filter/add chain=input action=accept connection-state=established,related comment="accept established,related"
@@ -187,9 +188,10 @@
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=RESCUE comment="accept rescue"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=INFRASTRUCTURE comment="accept infrastructure -> infrastructure"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=WAN comment="accept infrastructure -> wan"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE comment="accept infrastructure -> infrastructure (infrastructure ingress)"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE comment="accept infrastructure -> infrastructure (infrastructure ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=IOT comment="accept iot -> iot"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_WAN out-interface-list=WAN comment="accept iot (allow wan) -> wan"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_IOT comment="accept iot -> infrastructure (iot ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=MANAGEMENT out-interface-list=MANAGEMENT comment="accept management -> management"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=PERSONAL comment="accept personal -> personal"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_PERSONAL comment="accept personal -> infrastructure (personal ingress)"

@@ -23,6 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     personal: "192.168.33.3",
     infrastructure: "192.168.33.4",
     public: "192.168.33.5",
+    iot: "192.168.33.6",
   };
 
   for (const name of gateways) {

@@ -376,6 +376,7 @@ export const gateways = [
   "users",
   "personal",
   "infrastructure",
+  "iot",
 ] as const;
 export type Gateway = (typeof gateways)[number];
 
@@ -392,6 +393,7 @@ const gatewayAnnotations: Record<Gateway, Annotation> = {
   personal: knownAnnotations.useMikrotik,
   infrastructure: knownAnnotations.useMikrotik,
   public: knownAnnotations.useCloudflare,
+  iot: knownAnnotations.useMikrotik,
 };
 
 interface RouteTarget {
