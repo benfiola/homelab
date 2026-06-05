@@ -33,7 +33,6 @@ apps:
   - template: monitoring-config
   - template: mosquitto
   - template: network-policy
-  - template: old-network-policy
   - template: node-feature-discovery
   - template: piraeus-operator
   - template: postfix
