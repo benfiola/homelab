@@ -1,1394 +1,548 @@
 import { Chart } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import {
-  allNodes,
-  allPods,
+  allPods as _allPods,
+  controlPlane as _controlPlane,
+  health as _health,
+  kubeApiServer as _kubeApiServer,
+  kubeDns as _kubeDns,
+  nodes as _nodes,
   cidrs,
   component,
-  controlPlane,
-  createPolicyBuilder,
+  createServices,
   dns,
+  dnsWildcard,
   gateway,
-  health,
-  host,
   icmpv4,
-  kubeDns,
   pod,
-  steamUdpCidrs,
   tcp,
   udp,
 } from "./policyBuilder";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, context.name);
+  const svc = createServices(chart);
 
-  const policy = createPolicyBuilder(chart);
+  // infrastructure entities
+  const nodes = svc("nodes", _nodes());
+  const controlPlane = svc("control-plane", _controlPlane());
+  const kubeApi = svc("kube-apiserver", _kubeApiServer());
+  const kubeDns = svc("kube-dns", _kubeDns());
+  const allPods = svc("all-pods", _allPods());
+  const health = svc("health", _health());
+
+  // application services
+  const alertmanager = svc("alertmanager", pod("alertmanager", "alertmanager"));
+  const alloy = svc("alloy", pod("alloy", "alloy"));
+  const assetsServer = svc(
+    "assets-server",
+    pod("bucket-server-assets-server", "assets-server"),
+  );
+  const bucketSync = svc("bucket-sync", pod("bucket-sync", "bucket-sync"));
+  const bucketSyncJob = svc("bucket-sync-job", pod("bucket-sync-job", "*"));
+  const certManagerCainjector = svc(
+    "cert-manager-cainjector",
+    component("cainjector", "cert-manager"),
+  );
+  const certManagerController = svc(
+    "cert-manager-controller",
+    component("controller", "cert-manager"),
+  );
+  const certManagerStartupapicheck = svc(
+    "cert-manager-startupapicheck",
+    component("startupapicheck", "cert-manager"),
+  );
+  const certManagerWebhook = svc(
+    "cert-manager-webhook",
+    component("webhook", "cert-manager"),
+  );
+  const ciliumHubbleRelay = svc(
+    "cilium-hubble-relay",
+    pod("hubble-relay", "cilium"),
+  );
+  const ciliumHubbleUi = svc("cilium-hubble-ui", pod("hubble-ui", "cilium"));
+  const dynamicDns = svc("dynamic-dns", pod("dynamic-dns", "dynamic-dns"));
+  const envoyGatewayCertgen = svc(
+    "envoy-gateway-certgen",
+    component("certgen", "envoy-gateway"),
+  );
+  const envoyGatewayController = svc(
+    "envoy-gateway-controller",
+    component("controller", "envoy-gateway"),
+  );
+  const envoyGatewayProxy = svc(
+    "envoy-gateway-proxy",
+    component("proxy", "envoy-gateway"),
+  );
+  const externalDnsCloudflare = svc(
+    "external-dns-cloudflare",
+    pod("external-dns-cloudflare", "external-dns"),
+  );
+  const externalDnsMikrotik = svc(
+    "external-dns-mikrotik",
+    pod("external-dns-mikrotik", "external-dns"),
+  );
+  const externalSnapshotter = svc(
+    "external-snapshotter",
+    pod("snapshot-controller", "external-snapshotter"),
+  );
+  const fluxHelmController = svc(
+    "flux-helm-controller",
+    component("helm-controller", "flux-system"),
+  );
+  const fluxKustomizeController = svc(
+    "flux-kustomize-controller",
+    component("kustomize-controller", "flux-system"),
+  );
+  const fluxNotificationController = svc(
+    "flux-notification-controller",
+    component("notification-controller", "flux-system"),
+  );
+  const fluxSourceController = svc(
+    "flux-source-controller",
+    component("source-controller", "flux-system"),
+  );
+  const frigate = svc("frigate", pod("frigate", "frigate"));
+  const garage = svc("garage", pod("garage", "garage"));
+  const garageOperator = svc(
+    "garage-operator",
+    pod("garage-operator", "garage-operator"),
+  );
+  const gatewayRouteSync = svc(
+    "gateway-route-sync",
+    pod("gateway-route-sync", "gateway-route-sync"),
+  );
+  const grafana = svc("grafana", pod("grafana", "grafana"));
+  const grafanaOperator = svc(
+    "grafana-operator",
+    component("operator", "grafana-operator"),
+  );
+  const homeAssistant = svc(
+    "home-assistant",
+    pod("home-assistant", "home-assistant"),
+  );
+  const intelDevicePluginsOperator = svc(
+    "intel-device-plugins-operator",
+    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
+  );
+  const kubeStateMetrics = svc(
+    "kube-state-metrics",
+    component("metrics", "kube-state-metrics"),
+  );
+  const lokiBackend = svc("loki-backend", component("backend", "loki"));
+  const lokiGateway = svc("loki-gateway", component("gateway", "loki"));
+  const lokiMemcachedChunksCache = svc(
+    "loki-memcached-chunks-cache",
+    component("memcached-chunks-cache", "loki"),
+  );
+  const lokiMemcachedResultsCache = svc(
+    "loki-memcached-results-cache",
+    component("memcached-results-cache", "loki"),
+  );
+  const lokiRead = svc("loki-read", component("read", "loki"));
+  const lokiWrite = svc("loki-write", component("write", "loki"));
+  const metricsServer = svc(
+    "metrics-server",
+    pod("metrics-server", "metrics-server"),
+  );
+  const minecraft = svc("minecraft", pod("minecraft", "minecraft"));
+  const mosquitto = svc("mosquitto", pod("mosquitto", "mosquitto"));
+  const nodeFeatureDiscovery = svc(
+    "node-feature-discovery",
+    pod("node-feature-discovery", "node-feature-discovery"),
+  );
+  const linstorAffinityController = svc(
+    "linstor-affinity-controller",
+    component("linstor-affinity-controller", "piraeus-operator"),
+  );
+  const linstorController = svc(
+    "linstor-controller",
+    component("linstor-controller", "piraeus-operator"),
+  );
+  const linstorCsiController = svc(
+    "linstor-csi-controller",
+    component("linstor-csi-controller", "piraeus-operator"),
+  );
+  const linstorCsiNfsServer = svc(
+    "linstor-csi-nfs-server",
+    component("linstor-csi-nfs-server", "piraeus-operator"),
+  );
+  const linstorSatellite = svc(
+    "linstor-satellite",
+    component("linstor-satellite", "piraeus-operator"),
+  );
+  const piraeusOperator = svc(
+    "piraeus-operator",
+    component("piraeus-operator", "piraeus-operator"),
+  );
+  const piraeusOperatorGencert = svc(
+    "piraeus-operator-gencert",
+    component("piraeus-operator-gencert", "piraeus-operator"),
+  );
+  const piraeusOperatorHaController = svc(
+    "piraeus-operator-ha-controller",
+    component("ha-controller", "piraeus-operator"),
+  );
+  const postfix = svc("postfix", pod("mail", "postfix"));
+  const prometheus = svc("prometheus", pod("prometheus", "prometheus"));
+  const prometheusOperator = svc(
+    "prometheus-operator",
+    component("controller", "prometheus-operator"),
+  );
+  const pvcRestore = svc("pvc-restore", pod("pvc-restore", "pvc-restore"));
+  const routerPolicySync = svc(
+    "router-policy-sync",
+    pod("router-policy-sync", "router-policy-sync"),
+  );
+  const sevenDaysToDie = svc(
+    "seven-days-to-die",
+    pod("seven-days-to-die", "seven-days-to-die"),
+  );
+  const singlePlayerTarkov = svc(
+    "single-player-tarkov",
+    pod("single-player-tarkov", "single-player-tarkov"),
+  );
+  const tunnel = svc("tunnel", pod("tunnel", "tunnel"));
+  const vault = svc("vault", pod("vault", "vault"));
+  const vaultPushSecrets = svc(
+    "vault-push-secrets",
+    pod("vault-push-secrets", "vault-push-secrets"),
+  );
+  const vaultSecretsOperator = svc(
+    "vault-secrets-operator",
+    pod("vault-secrets-operator", "vault-secrets-operator"),
+  );
+  const verticalPodAutoscalerAdmissionController = svc(
+    "vertical-pod-autoscaler-admission-controller",
+    component("admission-controller", "vertical-pod-autoscaler"),
+  );
+  const verticalPodAutoscalerRecommender = svc(
+    "vertical-pod-autoscaler-recommender",
+    component("recommender", "vertical-pod-autoscaler"),
+  );
+  const verticalPodAutoscalerUpdater = svc(
+    "vertical-pod-autoscaler-updater",
+    component("updater", "vertical-pod-autoscaler"),
+  );
+  const volsync = svc("volsync", pod("volsync", "volsync"));
+  const volsyncMover = svc("volsync-mover", pod("volsync-mover", "*"));
+  const gatewayPublic = svc("gateway-public", gateway("public"));
+  const gatewayUsers = svc("gateway-users", gateway("users"));
+  const gatewayIot = svc("gateway-iot", gateway("iot"));
+  const gatewayPersonal = svc("gateway-personal", gateway("personal"));
+  const gatewayInfrastructure = svc(
+    "gateway-infrastructure",
+    gateway("infrastructure"),
+  );
 
   // alertmanager
-  policy("host-to-alertmanager").allowBetween(
-    host(),
-    pod("alertmanager", "alertmanager"),
-    tcp(9093),
-  );
-
-  policy("alertmanager-to-postfix").allowBetween(
-    pod("alertmanager", "alertmanager"),
-    pod("mail", "postfix"),
-    tcp(587),
-  );
+  alertmanager.to(postfix, tcp(587));
+  nodes.to(alertmanager, tcp(9093));
 
   // alloy
-  policy("alloy-to-control-plane").allowBetween(
-    pod("alloy", "alloy"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("alloy-to-host").allowBetween(
-    pod("alloy", "alloy"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("alloy-to-loki-gateway").allowBetween(
-    pod("alloy", "alloy"),
-    component("gateway", "loki"),
-    tcp(8080),
-  );
-
-  policy("host-to-alloy").allowBetween(
-    host(),
-    pod("alloy", "alloy"),
-    tcp(12345),
-  );
+  alloy.to(kubeApi, tcp(6443)).to(lokiGateway, tcp(8080));
+  nodes.to(alloy, tcp(12345));
 
   // assets-server
-  policy("assets-server-to-garage").allowBetween(
-    pod("bucket-server-assets-server", "assets-server"),
-    pod("garage", "garage"),
-    tcp(3900),
-  );
+  assetsServer.to(garage, tcp(3900));
 
   // bucket-sync
-  policy("host-to-bucket-sync").allowBetween(
-    host(),
-    pod("bucket-sync", "bucket-sync"),
-    tcp(8081),
-  );
-
-  policy("bucket-sync-to-control-plane").allowBetween(
-    pod("bucket-sync", "bucket-sync"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("bucket-sync-to-host").allowBetween(
-    pod("bucket-sync", "bucket-sync"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("bucket-sync-job-to-garage").allowBetween(
-    pod("bucket-sync-job", "*"),
-    pod("garage", "garage"),
-    tcp(3900),
-  );
-
-  policy("bucket-sync-job-to-google--egress")
-    .targets(pod("bucket-sync-job", "*"))
-    .allowEgressTo(dns("*.googleapis.com"), tcp(443));
+  bucketSync.to(kubeApi, tcp(6443));
+  nodes.to(bucketSync, tcp(8081));
+  bucketSyncJob.to(garage, tcp(3900));
+  bucketSyncJob.to(dns("*.googleapis.com"), tcp(443));
 
   // cert-manager
-  policy("cert-manager-cainjector-to-control-plane").allowBetween(
-    component("cainjector", "cert-manager"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("cert-manager-cainjector-to-host").allowBetween(
-    component("cainjector", "cert-manager"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("cert-manager-controller-to-cloudflare--egress")
-    .targets(component("controller", "cert-manager"))
-    .allowEgressTo(dns("api.cloudflare.com"), tcp(443))
-    .allowEgressTo(dns("*.ns.cloudflare.com"), udp(53));
-
-  policy("cert-manager-controller-to-letsencrypt--egress")
-    .targets(component("controller", "cert-manager"))
-    .allowEgressTo(dns("*.api.letsencrypt.org"), tcp(443));
-
-  policy("cert-manager-controller-to-control-plane").allowBetween(
-    component("controller", "cert-manager"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("cert-manager-controller-to-host").allowBetween(
-    component("controller", "cert-manager"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-cert-manager-controller").allowBetween(
-    host(),
-    component("controller", "cert-manager"),
-    tcp(9403),
-  );
-
-  policy("cert-manager-startupapicheck-to-control-plane").allowBetween(
-    component("startupapicheck", "cert-manager"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("cert-manager-startupapicheck-to-host").allowBetween(
-    component("startupapicheck", "cert-manager"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("cert-manager-webhook-to-control-plane").allowBetween(
-    component("webhook", "cert-manager"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("cert-manager-webhook-to-host").allowBetween(
-    component("webhook", "cert-manager"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("control-plane-to-cert-manager-webhook").allowBetween(
-    controlPlane(),
-    component("webhook", "cert-manager"),
-    tcp(10250),
-  );
-
-  policy("host-to-cert-manager-webhook").allowBetween(
-    host(),
-    component("webhook", "cert-manager"),
-    tcp(6080),
-  );
+  certManagerCainjector.to(kubeApi, tcp(6443));
+  certManagerController
+    .to(kubeApi, tcp(6443))
+    .to(dns("api.cloudflare.com"), tcp(443))
+    .to(dns("*.ns.cloudflare.com"), udp(53))
+    .to(dns("*.api.letsencrypt.org"), tcp(443));
+  nodes.to(certManagerController, tcp(9403));
+  certManagerStartupapicheck.to(kubeApi, tcp(6443));
+  certManagerWebhook.to(kubeApi, tcp(6443));
+  controlPlane.to(certManagerWebhook, tcp(10250));
+  nodes.to(certManagerWebhook, tcp(6080));
 
   // cilium
-  policy("cilium-hubble-relay-to-host").allowBetween(
-    pod("hubble-relay", "cilium"),
-    host(),
-    tcp(4244),
-  );
-
-  policy("cilium-hubble-relay-to-nodes").allowBetween(
-    pod("hubble-relay", "cilium"),
-    allNodes(),
-    tcp(4244),
-  );
-
-  policy("host-to-cilium-hubble-relay").allowBetween(
-    host(),
-    pod("hubble-relay", "cilium"),
-    tcp(4222),
-  );
-
-  policy("cilium-hubble-ui-to-cilium-hubble-relay").allowBetween(
-    pod("hubble-ui", "cilium"),
-    pod("hubble-relay", "cilium"),
-    tcp(4245),
-  );
-
-  policy("cilium-hubble-ui-to-control-plane").allowBetween(
-    pod("hubble-ui", "cilium"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("cilium-hubble-ui-to-host").allowBetween(
-    pod("hubble-ui", "cilium"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-cilium-hubble-ui").allowBetween(
-    host(),
-    pod("hubble-ui", "cilium"),
-    tcp(8081),
-  );
+  ciliumHubbleRelay.to(nodes, tcp(4244)).to(nodes, tcp(4244));
+  nodes.to(ciliumHubbleRelay, tcp(4222));
+  ciliumHubbleUi.to(ciliumHubbleRelay, tcp(4245)).to(kubeApi, tcp(6443));
+  nodes.to(ciliumHubbleUi, tcp(8081));
 
   // dynamic-dns
-  policy("dynamic-dns-to-cloudflare--egress")
-    .targets(pod("dynamic-dns", "dynamic-dns"))
-    .allowEgressTo(dns("api.cloudflare.com"), tcp(443));
-
-  policy("dynamic-dns-to-ipify--egress")
-    .targets(pod("dynamic-dns", "dynamic-dns"))
-    .allowEgressTo(dns("api.ipify.org"), tcp(443));
+  dynamicDns
+    .to(dns("api.cloudflare.com"), tcp(443))
+    .to(dns("api.ipify.org"), tcp(443));
 
   // envoy-gateway
-  policy("envoy-gateway-certgen-to-control-plane").allowBetween(
-    component("certgen", "envoy-gateway"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("envoy-gateway-certgen-to-host").allowBetween(
-    component("certgen", "envoy-gateway"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("control-plane-to-envoy-gateway-controller").allowBetween(
-    controlPlane(),
-    component("controller", "envoy-gateway"),
-    tcp(9443),
-  );
-
-  policy("envoy-gateway-controller-to-control-plane").allowBetween(
-    component("controller", "envoy-gateway"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("envoy-gateway-controller-to-host").allowBetween(
-    component("controller", "envoy-gateway"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-envoy-gateway-controller").allowBetween(
-    host(),
-    component("controller", "envoy-gateway"),
-    tcp(8081),
-  );
-
-  policy("host-to-envoy-gateway-proxy").allowBetween(
-    host(),
-    component("proxy", "envoy-gateway"),
-    tcp(19002, 19003),
-  );
+  envoyGatewayCertgen.to(kubeApi, tcp(6443));
+  controlPlane.to(envoyGatewayController, tcp(9443));
+  envoyGatewayController.to(kubeApi, tcp(6443));
+  nodes.to(envoyGatewayController, tcp(8081));
+  nodes.to(envoyGatewayProxy, tcp(19002, 19003));
 
   // external-dns
-  policy("external-dns-cloudflare-to-control-plane").allowBetween(
-    pod("external-dns-cloudflare", "external-dns"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("external-dns-cloudflare-to-host").allowBetween(
-    pod("external-dns-cloudflare", "external-dns"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("external-dns-cloudflare-to-cloudflare--egress")
-    .targets(pod("external-dns-cloudflare", "external-dns"))
-    .allowEgressTo(dns("api.cloudflare.com"), tcp(443));
-
-  policy("host-to-external-dns-cloudflare").allowBetween(
-    host(),
-    pod("external-dns-cloudflare", "external-dns"),
-    tcp(7979, 8080),
-  );
-
-  policy("external-dns-mikrotik-to-control-plane").allowBetween(
-    pod("external-dns-mikrotik", "external-dns"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("external-dns-mikrotik-to-host").allowBetween(
-    pod("external-dns-mikrotik", "external-dns"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("external-dns-mikrotik-to-router--egress")
-    .targets(pod("external-dns-mikrotik", "external-dns"))
-    .allowEgressTo(dns("router.bulia.dev"), tcp(80));
-
-  policy("host-to-external-dns-mikrotik").allowBetween(
-    host(),
-    pod("external-dns-mikrotik", "external-dns"),
-    tcp(7979, 8080),
-  );
+  externalDnsCloudflare
+    .to(kubeApi, tcp(6443))
+    .to(dns("api.cloudflare.com"), tcp(443));
+  nodes.to(externalDnsCloudflare, tcp(7979, 8080));
+  externalDnsMikrotik
+    .to(kubeApi, tcp(6443))
+    .to(dns("router.bulia.dev"), tcp(80));
+  nodes.to(externalDnsMikrotik, tcp(7979, 8080));
 
   // external-snapshotter
-  policy("external-snapshotter-to-control-plane").allowBetween(
-    pod("snapshot-controller", "external-snapshotter"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("external-snapshotter-to-host").allowBetween(
-    pod("snapshot-controller", "external-snapshotter"),
-    host(),
-    tcp(6443),
-  );
+  externalSnapshotter.to(kubeApi, tcp(6443));
 
   // flux
-  policy("flux-helm-controller-to-control-plane").allowBetween(
-    component("helm-controller", "flux-system"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("flux-helm-controller-to-host").allowBetween(
-    component("helm-controller", "flux-system"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-flux-helm-controller").allowBetween(
-    host(),
-    component("helm-controller", "flux-system"),
-    tcp(9440),
-  );
-
-  policy("flux-kustomize-controller-to-control-plane").allowBetween(
-    component("kustomize-controller", "flux-system"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("flux-kustomize-controller-to-host").allowBetween(
-    component("kustomize-controller", "flux-system"),
-    host(),
-    tcp(6443),
-  );
-
-  policy(
-    "flux-kustomize-controller-to-flux-notification-controller",
-  ).allowBetween(
-    component("kustomize-controller", "flux-system"),
-    component("notification-controller", "flux-system"),
-    tcp(9090),
-  );
-
-  policy("flux-kustomize-controller-to-flux-source-controller").allowBetween(
-    component("kustomize-controller", "flux-system"),
-    component("source-controller", "flux-system"),
-    tcp(9090),
-  );
-
-  policy("host-to-flux-kustomize-controller").allowBetween(
-    host(),
-    component("kustomize-controller", "flux-system"),
-    tcp(9440),
-  );
-
-  policy("flux-notification-controller-to-control-plane").allowBetween(
-    component("notification-controller", "flux-system"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("flux-notification-controller-to-host").allowBetween(
-    component("notification-controller", "flux-system"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-flux-notification-controller").allowBetween(
-    host(),
-    component("notification-controller", "flux-system"),
-    tcp(9440),
-  );
-
-  policy("flux-source-controller-to-control-plane").allowBetween(
-    component("source-controller", "flux-system"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("flux-source-controller-to-host").allowBetween(
-    component("source-controller", "flux-system"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("flux-source-controller-to-flux-notification-controller").allowBetween(
-    component("source-controller", "flux-system"),
-    component("notification-controller", "flux-system"),
-    tcp(9090),
-  );
-
-  policy("flux-source-controller-to-github--egress")
-    .targets(component("source-controller", "flux-system"))
-    .allowEgressTo(dns("github.com"), tcp(22));
-
-  policy("host-to-flux-source-controller").allowBetween(
-    host(),
-    component("source-controller", "flux-system"),
-    tcp(9090, 9440),
-  );
+  fluxHelmController.to(kubeApi, tcp(6443));
+  nodes.to(fluxHelmController, tcp(9440));
+  fluxKustomizeController
+    .to(kubeApi, tcp(6443))
+    .to(fluxNotificationController, tcp(9090))
+    .to(fluxSourceController, tcp(9090));
+  nodes.to(fluxKustomizeController, tcp(9440));
+  fluxNotificationController.to(kubeApi, tcp(6443));
+  nodes.to(fluxNotificationController, tcp(9440));
+  fluxSourceController
+    .to(kubeApi, tcp(6443))
+    .to(fluxNotificationController, tcp(9090))
+    .to(dns("github.com"), tcp(22));
+  nodes.to(fluxSourceController, tcp(9090, 9440));
 
   // frigate
-  policy("frigate-to-mosquitto").allowBetween(
-    pod("frigate", "frigate"),
-    pod("mosquitto", "mosquitto"),
-    tcp(1883),
-  );
-
-  policy("host-to-frigate").allowBetween(
-    host(),
-    pod("frigate", "frigate"),
-    tcp(5000),
-  );
+  frigate.to(mosquitto, tcp(1883));
+  nodes.to(frigate, tcp(5000));
 
   // garage
-  policy("garage-to-garage").allowBetween(
-    pod("garage", "garage"),
-    pod("garage", "garage"),
-    tcp(3901),
-  );
+  garage.to(garage, tcp(3901));
 
   // garage-operator
-  policy("host-to-garage-operator").allowBetween(
-    host(),
-    pod("garage-operator", "garage-operator"),
-    tcp(8081),
-  );
-
-  policy("garage-operator-to-control-plane").allowBetween(
-    pod("garage-operator", "garage-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("garage-operator-to-host").allowBetween(
-    pod("garage-operator", "garage-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("garage-operator-to-garage").allowBetween(
-    pod("garage-operator", "garage-operator"),
-    pod("garage", "garage"),
-    tcp(3903),
-  );
+  garageOperator.to(kubeApi, tcp(6443)).to(garage, tcp(3903));
+  nodes.to(garageOperator, tcp(8081));
 
   // gateway-route-sync
-  policy("host-to-gateway-route-sync").allowBetween(
-    host(),
-    pod("gateway-route-sync", "gateway-route-sync"),
-    tcp(8081),
-  );
-
-  policy("gateway-route-sync-to-control-plane").allowBetween(
-    pod("gateway-route-sync", "gateway-route-sync"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("gateway-route-sync-to-host").allowBetween(
-    pod("gateway-route-sync", "gateway-route-sync"),
-    host(),
-    tcp(6443),
-  );
+  gatewayRouteSync.to(kubeApi, tcp(6443));
+  nodes.to(gatewayRouteSync, tcp(8081));
 
   // grafana
-  policy("grafana-to-control-plane").allowBetween(
-    pod("grafana", "grafana"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("grafana-to-host").allowBetween(
-    pod("grafana", "grafana"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("grafana-to-loki-gateway").allowBetween(
-    pod("grafana", "grafana"),
-    component("gateway", "loki"),
-    tcp(8080),
-  );
-
-  policy("grafana-to-prometheus").allowBetween(
-    pod("grafana", "grafana"),
-    pod("prometheus", "prometheus"),
-    tcp(9090),
-  );
-
-  policy("host-to-grafana").allowBetween(
-    host(),
-    pod("grafana", "grafana"),
-    tcp(3000),
-  );
+  grafana
+    .to(kubeApi, tcp(6443))
+    .to(lokiGateway, tcp(8080))
+    .to(prometheus, tcp(9090));
+  nodes.to(grafana, tcp(3000));
 
   // grafana-operator
-  policy("grafana-operator-to-control-plane").allowBetween(
-    component("operator", "grafana-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("grafana-operator-to-host").allowBetween(
-    component("operator", "grafana-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("grafana-operator-to-grafana").allowBetween(
-    component("operator", "grafana-operator"),
-    pod("grafana", "grafana"),
-    tcp(3000),
-  );
-
-  policy("host-to-grafana-operator").allowBetween(
-    host(),
-    component("operator", "grafana-operator"),
-    tcp(8081),
-  );
+  grafanaOperator.to(kubeApi, tcp(6443)).to(grafana, tcp(3000));
+  nodes.to(grafanaOperator, tcp(8081));
 
   // home-assistant
-  policy("home-assistant-to-world--egress")
-    .targets(pod("home-assistant", "home-assistant"))
-    .allowEgressTo(cidrs("192.168.24.0/24"));
+  homeAssistant.to(cidrs("192.168.24.0/24"));
 
   // intel-device-plugins-operator
-  policy("control-plane-to-intel-device-plugins-operator").allowBetween(
-    controlPlane(),
-    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
-    tcp(9443),
-  );
-
-  policy("intel-device-plugins-operator-to-control-plane").allowBetween(
-    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("intel-device-plugins-operator-to-host").allowBetween(
-    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-intel-device-plugins-operator").allowBetween(
-    host(),
-    pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
-    tcp(8081, 9443),
-  );
+  controlPlane.to(intelDevicePluginsOperator, tcp(9443));
+  intelDevicePluginsOperator.to(kubeApi, tcp(6443));
+  nodes.to(intelDevicePluginsOperator, tcp(8081, 9443));
 
   // kube-state-metrics
-  policy("kube-state-metrics-to-control-plane").allowBetween(
-    component("metrics", "kube-state-metrics"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("kube-state-metrics-to-host").allowBetween(
-    component("metrics", "kube-state-metrics"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-kube-state-metrics").allowBetween(
-    host(),
-    component("metrics", "kube-state-metrics"),
-    tcp(8080, 8081),
-  );
+  kubeStateMetrics.to(kubeApi, tcp(6443));
+  nodes.to(kubeStateMetrics, tcp(8080, 8081));
 
   // kube-system
-  policy("all-nodes-to-kube-dns").allowBetween(
-    allNodes(),
-    kubeDns(),
-    tcp(53),
-    udp(53),
-  );
-
-  policy("host-to-kube-dns").allowBetween(
-    host(),
-    kubeDns(),
-    tcp(53, 8080, 8181),
-    udp(53),
-  );
-
-  policy("kube-dns-to-control-plane").allowBetween(
-    kubeDns(),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("kube-dns-to-host").allowBetween(kubeDns(), host(), tcp(6443));
-
-  policy("kube-dns-to-router-dns--egress")
-    .targets(kubeDns())
-    .allowEgressTo(cidrs("192.168.88.1/32"), tcp(53), udp(53));
-
-  policy("pods-to-kube-dns").allowBetween(
-    allPods(),
-    kubeDns(true),
-    tcp(53),
-    udp(53),
-  );
+  nodes.to(kubeDns, tcp(53), udp(53));
+  nodes.to(kubeDns, tcp(53, 8080, 8181), udp(53));
+  kubeDns.to(kubeApi, tcp(6443)).to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
+  allPods.to(kubeDns, tcp(53), udp(53), dnsWildcard());
 
   // loki
-  policy("loki-backend-to-control-plane").allowBetween(
-    component("backend", "loki"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("loki-backend-to-host").allowBetween(
-    component("backend", "loki"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("loki-backend-to-garage").allowBetween(
-    component("backend", "loki"),
-    pod("garage", "garage"),
-    tcp(3900),
-  );
-
-  policy("loki-backend-to-loki-read").allowBetween(
-    component("backend", "loki"),
-    component("read", "loki"),
-    tcp(7946),
-  );
-
-  policy("loki-backend-to-loki-write").allowBetween(
-    component("backend", "loki"),
-    component("write", "loki"),
-    tcp(7946),
-  );
-
-  policy("host-to-loki-backend").allowBetween(
-    host(),
-    component("backend", "loki"),
-    tcp(3100),
-  );
-
-  policy("loki-gateway-to-loki-read").allowBetween(
-    component("gateway", "loki"),
-    component("read", "loki"),
-    tcp(3100),
-  );
-
-  policy("loki-gateway-to-loki-write").allowBetween(
-    component("gateway", "loki"),
-    component("write", "loki"),
-    tcp(3100),
-  );
-
-  policy("host-to-loki-gateway").allowBetween(
-    host(),
-    component("gateway", "loki"),
-    tcp(8080),
-  );
-
-  policy("host-to-loki-memcached-chunks-cache").allowBetween(
-    host(),
-    component("memcached-chunks-cache", "loki"),
-    tcp(9150, 11211),
-  );
-
-  policy("host-to-loki-memcached-results-cache").allowBetween(
-    host(),
-    component("memcached-results-cache", "loki"),
-    tcp(9150, 11211),
-  );
-
-  policy("loki-read-to-loki-backend").allowBetween(
-    component("read", "loki"),
-    component("backend", "loki"),
-    tcp(7946, 9095),
-  );
-
-  policy("loki-read-to-loki-write").allowBetween(
-    component("read", "loki"),
-    component("write", "loki"),
-    tcp(7946, 9095),
-  );
-
-  policy("host-to-loki-read").allowBetween(
-    host(),
-    component("read", "loki"),
-    tcp(3100),
-  );
-
-  policy("host-to-loki-write").allowBetween(
-    host(),
-    component("write", "loki"),
-    tcp(3100),
-  );
-
-  policy("loki-write-to-garage").allowBetween(
-    component("write", "loki"),
-    pod("garage", "garage"),
-    tcp(3900),
-  );
-
-  policy("loki-write-to-loki-backend").allowBetween(
-    component("write", "loki"),
-    component("backend", "loki"),
-    tcp(7946),
-  );
-
-  policy("loki-write-to-loki-memcached-chunks-cache").allowBetween(
-    component("write", "loki"),
-    component("memcached-chunks-cache", "loki"),
-    tcp(11211),
-  );
-
-  policy("loki-write-to-loki-read").allowBetween(
-    component("write", "loki"),
-    component("read", "loki"),
-    tcp(7946),
-  );
+  lokiBackend
+    .to(kubeApi, tcp(6443))
+    .to(garage, tcp(3900))
+    .to(lokiRead, tcp(7946))
+    .to(lokiWrite, tcp(7946));
+  nodes.to(lokiBackend, tcp(3100));
+  lokiGateway.to(lokiRead, tcp(3100)).to(lokiWrite, tcp(3100));
+  nodes.to(lokiGateway, tcp(8080));
+  nodes.to(lokiMemcachedChunksCache, tcp(9150, 11211));
+  nodes.to(lokiMemcachedResultsCache, tcp(9150, 11211));
+  lokiRead.to(lokiBackend, tcp(7946, 9095)).to(lokiWrite, tcp(7946, 9095));
+  nodes.to(lokiRead, tcp(3100));
+  lokiWrite
+    .to(garage, tcp(3900))
+    .to(lokiBackend, tcp(7946))
+    .to(lokiMemcachedChunksCache, tcp(11211))
+    .to(lokiRead, tcp(7946));
+  nodes.to(lokiWrite, tcp(3100));
 
   // metrics-server
-  policy("control-plane-to-metrics-server").allowBetween(
-    controlPlane(),
-    pod("metrics-server", "metrics-server"),
-    tcp(10250),
-  );
-
-  policy("host-to-metrics-server").allowBetween(
-    host(),
-    pod("metrics-server", "metrics-server"),
-    tcp(10250),
-  );
-
-  policy("metrics-server-to-control-plane").allowBetween(
-    pod("metrics-server", "metrics-server"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("metrics-server-to-host").allowBetween(
-    pod("metrics-server", "metrics-server"),
-    host(),
-    tcp(10250),
-  );
-
-  policy("metrics-server-to-nodes").allowBetween(
-    pod("metrics-server", "metrics-server"),
-    allNodes(),
-    tcp(10250),
-  );
+  controlPlane.to(metricsServer, tcp(10250));
+  nodes.to(metricsServer, tcp(10250));
+  metricsServer
+    .to(controlPlane, tcp(6443))
+    .to(nodes, tcp(10250))
+    .to(nodes, tcp(10250));
 
   // minecraft
-  policy("minecraft-to-assets-server").allowBetween(
-    pod("minecraft", "minecraft"),
-    pod("bucket-server-assets-server", "assets-server"),
-    tcp(8080),
-  );
-
-  policy("minecraft-to-mojang--egress")
-    .targets(pod("minecraft", "minecraft"))
-    .allowEgressTo(dns("launchermeta.mojang.com"), tcp(443))
-    .allowEgressTo(dns("api.minecraftservices.com"), tcp(443))
-    .allowEgressTo(dns("sessionserver.mojang.com"), tcp(443));
-
-  policy("minecraft-to-fabricmc--egress")
-    .targets(pod("minecraft", "minecraft"))
-    .allowEgressTo(dns("meta.fabricmc.net"), tcp(443))
-    .allowEgressTo(dns("maven.fabricmc.net"), tcp(443));
+  minecraft
+    .to(assetsServer, tcp(8080))
+    .to(dns("launchermeta.mojang.com"), tcp(443))
+    .to(dns("api.minecraftservices.com"), tcp(443))
+    .to(dns("sessionserver.mojang.com"), tcp(443))
+    .to(dns("meta.fabricmc.net"), tcp(443))
+    .to(dns("maven.fabricmc.net"), tcp(443));
 
   // node-feature-discovery
-  policy("node-feature-discovery-to-control-plane").allowBetween(
-    pod("node-feature-discovery", "node-feature-discovery"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("node-feature-discovery-to-host").allowBetween(
-    pod("node-feature-discovery", "node-feature-discovery"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-node-feature-discovery").allowBetween(
-    host(),
-    pod("node-feature-discovery", "node-feature-discovery"),
-    tcp(8080),
-  );
+  nodeFeatureDiscovery.to(kubeApi, tcp(6443));
+  nodes.to(nodeFeatureDiscovery, tcp(8080));
 
   // piraeus-operator
-  policy("host-to-linstor-affinity-controller").allowBetween(
-    host(),
-    component("linstor-affinity-controller", "piraeus-operator"),
-    tcp(8000),
-  );
-
-  policy("linstor-affinity-controller-to-control-plane").allowBetween(
-    component("linstor-affinity-controller", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("linstor-affinity-controller-to-host").allowBetween(
-    component("linstor-affinity-controller", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("all-nodes-to-linstor-controller").allowBetween(
-    allNodes(),
-    component("linstor-controller", "piraeus-operator"),
-    tcp(3370),
-  );
-
-  policy("linstor-affinity-controller-to-linstor-controller").allowBetween(
-    component("linstor-affinity-controller", "piraeus-operator"),
-    component("linstor-controller", "piraeus-operator"),
-    tcp(3370),
-  );
-
-  policy("linstor-controller-to-control-plane").allowBetween(
-    component("linstor-controller", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("linstor-controller-to-host").allowBetween(
-    component("linstor-controller", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("linstor-controller-to-linstor-satellite").allowBetween(
-    component("linstor-controller", "piraeus-operator"),
-    component("linstor-satellite", "piraeus-operator"),
-    tcp(3366),
-  );
-
-  policy("host-to-linstor-controller").allowBetween(
-    host(),
-    component("linstor-controller", "piraeus-operator"),
-    tcp(3370),
-  );
-
-  policy("host-to-linstor-csi-controller").allowBetween(
-    host(),
-    component("linstor-csi-controller", "piraeus-operator"),
-    tcp([9808, 9813]),
-  );
-
-  policy("linstor-csi-controller-to-control-plane").allowBetween(
-    component("linstor-csi-controller", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("linstor-csi-controller-to-host").allowBetween(
-    component("linstor-csi-controller", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("linstor-csi-controller-to-linstor-controller").allowBetween(
-    component("linstor-csi-controller", "piraeus-operator"),
-    component("linstor-controller", "piraeus-operator"),
-    tcp(3370),
-  );
-
-  policy("linstor-csi-nfs-server-to-linstor-controller").allowBetween(
-    component("linstor-csi-nfs-server", "piraeus-operator"),
-    component("linstor-controller", "piraeus-operator"),
-    tcp(3370),
-  );
-
-  policy("linstor-csi-nfs-server-to-control-plane").allowBetween(
-    component("linstor-csi-nfs-server", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("linstor-csi-nfs-server-to-host").allowBetween(
-    component("linstor-csi-nfs-server", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("linstor-satellite-to-linstor-satellite").allowBetween(
-    component("linstor-satellite", "piraeus-operator"),
-    component("linstor-satellite", "piraeus-operator"),
-    tcp([7000, 7999]),
-  );
-
-  policy("host-to-linstor-satellite").allowBetween(
-    host(),
-    component("linstor-satellite", "piraeus-operator"),
-    tcp(3366),
-  );
-
-  policy("host-to-piraeus-operator-ha-controller").allowBetween(
-    host(),
-    component("ha-controller", "piraeus-operator"),
-    tcp(8000),
-  );
-
-  policy("piraeus-operator-ha-controller-to-control-plane").allowBetween(
-    component("ha-controller", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("piraeus-operator-ha-controller-to-host").allowBetween(
-    component("ha-controller", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("control-plane-to-piraeus-operator").allowBetween(
-    controlPlane(),
-    component("piraeus-operator", "piraeus-operator"),
-    tcp(9443),
-  );
-
-  policy("host-to-piraeus-operator").allowBetween(
-    host(),
-    component("piraeus-operator", "piraeus-operator"),
-    tcp(8081),
-  );
-
-  policy("piraeus-operator-to-control-plane").allowBetween(
-    component("piraeus-operator", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("piraeus-operator-to-host").allowBetween(
-    component("piraeus-operator", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("piraeus-operator-to-linstor-controller").allowBetween(
-    component("piraeus-operator", "piraeus-operator"),
-    component("linstor-controller", "piraeus-operator"),
-    tcp(3370),
-  );
-
-  policy("piraeus-operator-gencert-to-control-plane").allowBetween(
-    component("piraeus-operator-gencert", "piraeus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("piraeus-operator-gencert-to-host").allowBetween(
-    component("piraeus-operator-gencert", "piraeus-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-piraeus-operator-gencert").allowBetween(
-    host(),
-    component("piraeus-operator-gencert", "piraeus-operator"),
-    tcp(8081),
-  );
+  nodes.to(linstorAffinityController, tcp(8000));
+  linstorAffinityController
+    .to(kubeApi, tcp(6443))
+    .to(linstorController, tcp(3370));
+  nodes.to(linstorController, tcp(3370));
+  linstorController.to(kubeApi, tcp(6443)).to(linstorSatellite, tcp(3366));
+  nodes.to(linstorController, tcp(3370));
+  nodes.to(linstorCsiController, tcp([9808, 9813]));
+  linstorCsiController.to(kubeApi, tcp(6443)).to(linstorController, tcp(3370));
+  linstorCsiNfsServer.to(kubeApi, tcp(6443)).to(linstorController, tcp(3370));
+  linstorSatellite.to(linstorSatellite, tcp([7000, 7999]));
+  nodes.to(linstorSatellite, tcp(3366));
+  nodes.to(piraeusOperatorHaController, tcp(8000));
+  piraeusOperatorHaController.to(kubeApi, tcp(6443));
+  controlPlane.to(piraeusOperator, tcp(9443));
+  nodes.to(piraeusOperator, tcp(8081));
+  piraeusOperator.to(kubeApi, tcp(6443)).to(linstorController, tcp(3370));
+  piraeusOperatorGencert.to(kubeApi, tcp(6443));
+  nodes.to(piraeusOperatorGencert, tcp(8081));
 
   // postfix
-  policy("postfix-to-mailgun--egress")
-    .targets(pod("mail", "postfix"))
-    .allowEgressTo(dns("smtp.mailgun.org"), tcp(587));
+  postfix.to(dns("smtp.mailgun.org"), tcp(587));
 
   // prometheus
-  policy("host-to-prometheus").allowBetween(
-    host(),
-    pod("prometheus", "prometheus"),
-    tcp(9090),
-  );
-
-  policy("prometheus-to-alertmanager").allowBetween(
-    pod("prometheus", "prometheus"),
-    pod("alertmanager", "alertmanager"),
-    tcp(9093),
-  );
-
-  policy("prometheus-to-control-plane").allowBetween(
-    pod("prometheus", "prometheus"),
-    controlPlane(),
-    tcp(6443, 10257, 10259),
-  );
-
-  policy("prometheus-to-host").allowBetween(
-    pod("prometheus", "prometheus"),
-    host(),
-    tcp(6443, 9100, 10250, 10257, 10259),
-  );
-
-  policy("prometheus-to-kube-state-metrics").allowBetween(
-    pod("prometheus", "prometheus"),
-    component("metrics", "kube-state-metrics"),
-    tcp(8080),
-  );
-
-  policy("prometheus-to-nodes").allowBetween(
-    pod("prometheus", "prometheus"),
-    allNodes(),
-    tcp(9100, 10250),
-  );
+  nodes.to(prometheus, tcp(9090));
+  prometheus
+    .to(alertmanager, tcp(9093))
+    .to(controlPlane, tcp(6443, 10257, 10259))
+    .to(nodes, tcp(6443, 9100, 10250, 10257, 10259))
+    .to(kubeStateMetrics, tcp(8080))
+    .to(nodes, tcp(9100, 10250));
 
   // prometheus-operator
-  policy("prometheus-operator-to-control-plane").allowBetween(
-    component("controller", "prometheus-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("prometheus-operator-to-host").allowBetween(
-    component("controller", "prometheus-operator"),
-    host(),
-    tcp(6443),
-  );
+  prometheusOperator.to(kubeApi, tcp(6443));
 
   // pvc-restore
-  policy("host-to-pvc-restore").allowBetween(
-    host(),
-    pod("pvc-restore", "pvc-restore"),
-    tcp(8081),
-  );
-
-  policy("pvc-restore-to-control-plane").allowBetween(
-    pod("pvc-restore", "pvc-restore"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("pvc-restore-to-host").allowBetween(
-    pod("pvc-restore", "pvc-restore"),
-    host(),
-    tcp(6443),
-  );
+  pvcRestore.to(kubeApi, tcp(6443));
+  nodes.to(pvcRestore, tcp(8081));
 
   // router-policy-sync
-  policy("host-to-router-policy-sync").allowBetween(
-    host(),
-    pod("router-policy-sync", "router-policy-sync"),
-    tcp(8081),
-  );
-
-  policy("router-policy-sync-to-control-plane").allowBetween(
-    pod("router-policy-sync", "router-policy-sync"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("router-policy-sync-to-host").allowBetween(
-    pod("router-policy-sync", "router-policy-sync"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("router-policy-sync-to-router--egress")
-    .targets(pod("router-policy-sync", "router-policy-sync"))
-    .allowEgressTo(dns("router.bulia.dev"), tcp(80));
+  routerPolicySync.to(kubeApi, tcp(6443)).to(dns("router.bulia.dev"), tcp(80));
+  nodes.to(routerPolicySync, tcp(8081));
 
   // seven-days-to-die
-  policy("seven-days-to-die-to-epic--egress")
-    .targets(pod("seven-days-to-die", "seven-days-to-die"))
-    .allowEgressTo(dns("api.epicgames.dev"), tcp(443));
-
-  policy("seven-days-to-die-to-steam--egress")
-    .targets(pod("seven-days-to-die", "seven-days-to-die"))
-    .allowEgressTo(dns("steampipe.akamaized.net"), tcp(443))
-    .allowEgressTo(dns("*.steamcontent.com"), tcp(443))
-    .allowEgressTo(dns("api.steampowered.com"), tcp(443))
-    .allowEgressTo(dns("test.steampowered.com"), tcp(80))
-    .allowEgressTo(
+  sevenDaysToDie
+    .to(dns("api.epicgames.dev"), tcp(443))
+    .to(dns("steampipe.akamaized.net"), tcp(443))
+    .to(dns("*.steamcontent.com"), tcp(443))
+    .to(dns("api.steampowered.com"), tcp(443))
+    .to(dns("test.steampowered.com"), tcp(80))
+    .to(
       dns("*.steamserver.net"),
       tcp(80, 443),
       udp([27015, 27060]),
       tcp([27015, 27060]),
     )
-    .allowEgressTo(cidrs(...steamUdpCidrs), udp([27015, 27060]));
+    .to(cidrs(...steamUdpCidrs), udp([27015, 27060]));
 
   // single-player-tarkov
-  policy("single-player-tarkov-to-assets-server").allowBetween(
-    pod("single-player-tarkov", "single-player-tarkov"),
-    pod("bucket-server-assets-server", "assets-server"),
-    tcp(8080),
-  );
-
-  policy("single-player-tarkov-to-github--egress")
-    .targets(pod("single-player-tarkov", "single-player-tarkov"))
-    .allowEgressTo(dns("github.com"), tcp(443))
-    .allowEgressTo(dns("release-assets.githubusercontent.com"), tcp(443));
+  singlePlayerTarkov
+    .to(assetsServer, tcp(8080))
+    .to(dns("github.com"), tcp(443))
+    .to(dns("release-assets.githubusercontent.com"), tcp(443));
 
   // vault
-  policy("vault-to-control-plane").allowBetween(
-    pod("vault", "vault"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("vault-to-host").allowBetween(
-    pod("vault", "vault"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("vault-to-vault").allowBetween(
-    pod("vault", "vault"),
-    pod("vault", "vault"),
-    tcp(8200, 8201),
-  );
+  vault.to(kubeApi, tcp(6443)).to(vault, tcp(8200, 8201));
 
   // vault-push-secrets
-  policy("vault-push-secrets-to-google--egress")
-    .targets(pod("vault-push-secrets", "vault-push-secrets"))
-    .allowEgressTo(dns("*.googleapis.com"), tcp(443));
-
-  policy("vault-push-secrets-to-vault").allowBetween(
-    pod("vault-push-secrets", "vault-push-secrets"),
-    pod("vault", "vault"),
-    tcp(8200),
-  );
+  vaultPushSecrets.to(dns("*.googleapis.com"), tcp(443)).to(vault, tcp(8200));
 
   // vault-secrets-operator
-  policy("host-to-vault-secrets-operator").allowBetween(
-    host(),
-    pod("vault-secrets-operator", "vault-secrets-operator"),
-    tcp(8081),
-  );
-
-  policy("vault-secrets-operator-to-control-plane").allowBetween(
-    pod("vault-secrets-operator", "vault-secrets-operator"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("vault-secrets-operator-to-host").allowBetween(
-    pod("vault-secrets-operator", "vault-secrets-operator"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("vault-secrets-operator-to-vault").allowBetween(
-    pod("vault-secrets-operator", "vault-secrets-operator"),
-    pod("vault", "vault"),
-    tcp(8200),
-  );
+  vaultSecretsOperator.to(kubeApi, tcp(6443)).to(vault, tcp(8200));
+  nodes.to(vaultSecretsOperator, tcp(8081));
 
   // vertical-pod-autoscaler
-  policy(
-    "control-plane-to-vertical-pod-autoscaler-admission-controller",
-  ).allowBetween(
-    controlPlane(),
-    component("admission-controller", "vertical-pod-autoscaler"),
-    tcp(8000),
-  );
-
-  policy("host-to-vertical-pod-autoscaler-admission-controller").allowBetween(
-    host(),
-    component("admission-controller", "vertical-pod-autoscaler"),
-    tcp(8000, 8944),
-  );
-
-  policy(
-    "vertical-pod-autoscaler-admission-controller-to-control-plane",
-  ).allowBetween(
-    component("admission-controller", "vertical-pod-autoscaler"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("vertical-pod-autoscaler-admission-controller-to-host").allowBetween(
-    component("admission-controller", "vertical-pod-autoscaler"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-vertical-pod-autoscaler-recommender").allowBetween(
-    host(),
-    component("recommender", "vertical-pod-autoscaler"),
-    tcp(8942),
-  );
-
-  policy("vertical-pod-autoscaler-recommender-to-control-plane").allowBetween(
-    component("recommender", "vertical-pod-autoscaler"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("vertical-pod-autoscaler-recommender-to-host").allowBetween(
-    component("recommender", "vertical-pod-autoscaler"),
-    host(),
-    tcp(6443),
-  );
-
-  policy("host-to-vertical-pod-autoscaler-updater").allowBetween(
-    host(),
-    component("updater", "vertical-pod-autoscaler"),
-    tcp(8943),
-  );
-
-  policy("vertical-pod-autoscaler-updater-to-control-plane").allowBetween(
-    component("updater", "vertical-pod-autoscaler"),
-    controlPlane(),
-    tcp(6443),
-  );
-
-  policy("vertical-pod-autoscaler-updater-to-host").allowBetween(
-    component("updater", "vertical-pod-autoscaler"),
-    host(),
-    tcp(6443),
-  );
+  controlPlane.to(verticalPodAutoscalerAdmissionController, tcp(8000));
+  nodes.to(verticalPodAutoscalerAdmissionController, tcp(8000, 8944));
+  verticalPodAutoscalerAdmissionController.to(kubeApi, tcp(6443));
+  nodes.to(verticalPodAutoscalerRecommender, tcp(8942));
+  verticalPodAutoscalerRecommender.to(kubeApi, tcp(6443));
+  nodes.to(verticalPodAutoscalerUpdater, tcp(8943));
+  verticalPodAutoscalerUpdater.to(kubeApi, tcp(6443));
 
   // volsync
-  policy("volsync-to-control-plane").allowBetween(
-    pod("volsync", "volsync"),
-    controlPlane(),
-    tcp(6443),
-  );
+  volsync.to(kubeApi, tcp(6443));
+  nodes.to(volsync, tcp(8081));
+  volsyncMover.to(dns("*.googleapis.com"), tcp(443));
 
-  policy("volsync-to-host").allowBetween(
-    pod("volsync", "volsync"),
-    host(),
-    tcp(6443),
-  );
+  // general - bgp
+  nodes
+    .from(cidrs("192.168.32.1/32"), tcp(179))
+    .to(cidrs("192.168.32.1/32"), tcp(179));
 
-  policy("host-to-volsync").allowBetween(
-    host(),
-    pod("volsync", "volsync"),
-    tcp(8081),
-  );
+  // general - cilium health
+  nodes.to(nodes, tcp(4240));
 
-  policy("volsync-mover-to-google--egress")
-    .targets(pod("volsync-mover", "*"))
-    .allowEgressTo(dns("*.googleapis.com"), tcp(443));
+  // general - dhcp
+  nodes.to(cidrs("192.168.32.1/32"), udp(67));
 
-  // general
-  // bgp
-  policy("router-bgp-to-nodes--ingress")
-    .targets(allNodes())
-    .allowIngressFrom(cidrs("192.168.32.1/32"), tcp(179));
+  // general - dns
+  nodes.to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
 
-  policy("nodes-to-router-bgp--egress")
-    .targets(allNodes())
-    .allowEgressTo(cidrs("192.168.32.1/32"), tcp(179));
+  // general - geneve
+  nodes.to(nodes, udp(6081));
 
-  // cilium health
-  policy("nodes-to-cilium-health").allowBetween(
-    allNodes(),
-    allNodes(),
-    tcp(4240),
-  );
+  // general - health
+  nodes.to(health);
 
-  // dhcp
-  policy("nodes-to-router-dhcp--egress")
-    .targets(allNodes())
-    .allowEgressTo(cidrs("192.168.32.1/32"), udp(67));
+  // general - icmp
+  nodes.to(nodes, icmpv4(5, 8));
+  nodes.to(allPods, icmpv4(5, 8));
 
-  // dns
-  policy("nodes-to-router-dns--egress")
-    .targets(allNodes())
-    .allowEgressTo(cidrs("192.168.88.1/32"), tcp(53), udp(53));
-
-  // geneve
-  policy("nodes-to-geneve").allowBetween(allNodes(), allNodes(), udp(6081));
-
-  // health
-  policy("nodes-to-health").allowBetween(allNodes(), health());
-
-  // icmp
-  policy("nodes-to-icmp").allowBetween(allNodes(), allNodes(), icmpv4(5, 8));
-
-  policy("pods-to-icmp").allowBetween(allNodes(), allPods(), icmpv4(5, 8));
-
-  // image registries
+  // general - image registries
   // NOTE: cilium 1.18.X doesn't support dns-based rules for host policies. for now, allow host-level 0.0.0.0/32:443 egress.
-  policy("nodes-to-https--egress")
-    .targets(allNodes())
-    .allowEgressTo(cidrs("0.0.0.0/0"), tcp(443));
+  nodes.to(cidrs("0.0.0.0/0"), tcp(443));
 
-  // kube-apiserver
-  policy("nodes-to-kube-apiserver").allowBetween(
-    allNodes(),
-    controlPlane(),
-    tcp(6443),
-  );
+  // general - kube-apiserver
+  nodes.to(controlPlane, tcp(6443));
+  controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(6443));
 
-  policy("world-to-kube-apiserver--ingress")
-    .targets(controlPlane())
-    .allowIngressFrom(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(6443));
+  // general - kubelet
+  nodes.to(nodes, tcp(10250));
 
-  // kubelet
-  policy("nodes-to-kubelet").allowBetween(allNodes(), allNodes(), tcp(10250));
+  // general - talos
+  nodes.to(nodes, tcp(50000));
+  controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(50000));
+  nodes.to(controlPlane, tcp(50001));
 
-  // talos
-  policy("nodes-to-talos-apid").allowBetween(
-    allNodes(),
-    allNodes(),
-    tcp(50000),
-  );
-
-  policy("world-to-talos-apid--ingress")
-    .targets(controlPlane())
-    .allowIngressFrom(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(50000));
-
-  policy("nodes-to-talos-trustd").allowBetween(
-    allNodes(),
-    controlPlane(),
-    tcp(50001),
-  );
-
-  // timeserver
-  policy("nodes-to-ntp--egress")
-    .targets(allNodes())
-    .allowEgressTo(cidrs("162.159.200.1/32", "162.159.200.123/32"), udp(123));
+  // general - timeserver
+  nodes.to(cidrs("162.159.200.1/32", "162.159.200.123/32"), udp(123));
 
   // gateways
-  policy("gateway-public-to-envoy-gateway-controller").allowBetween(
-    gateway("public"),
-    component("controller", "envoy-gateway"),
-    tcp(18000),
-  );
-
-  policy("world-to-gateway-public--ingress")
-    .targets(gateway("public"))
-    // fake ip address for purpose of having valid policy
-    .allowIngressFrom(cidrs("198.51.100.1/32"), tcp(10443))
+  gatewayPublic
+    .to(envoyGatewayController, tcp(18000))
+    .from(cidrs("198.51.100.1/32"), tcp(10443))
     .syncWithRouter();
 
-  policy("gateway-users-to-envoy-gateway-controller").allowBetween(
-    gateway("users"),
-    component("controller", "envoy-gateway"),
-    tcp(18000),
-  );
-
-  policy("gateway-users-to-frigate").allowBetween(
-    gateway("users"),
-    pod("frigate", "frigate"),
-    tcp(8971),
-  );
-
-  policy("gateway-users-to-home-assistant").allowBetween(
-    gateway("users"),
-    pod("home-assistant", "home-assistant"),
-    tcp(8123),
-  );
-
-  policy("gateway-users-to-minecraft").allowBetween(
-    gateway("users"),
-    pod("minecraft", "minecraft"),
-    tcp(25565),
-  );
-
-  policy("gateway-users-to-seven-days-to-die").allowBetween(
-    gateway("users"),
-    pod("seven-days-to-die", "seven-days-to-die"),
-    tcp(26900),
-    udp([26900, 26902]),
-  );
-
-  policy("gateway-users-to-single-player-tarkov").allowBetween(
-    gateway("users"),
-    pod("single-player-tarkov", "single-player-tarkov"),
-    tcp(6969, 7828, 7829),
-  );
-
-  policy("world-to-gateway-users--ingress")
-    .targets(gateway("users"))
-    .allowIngressFrom(
+  gatewayUsers
+    .to(envoyGatewayController, tcp(18000))
+    .to(frigate, tcp(8971))
+    .to(homeAssistant, tcp(8123))
+    .to(minecraft, tcp(25565))
+    .to(sevenDaysToDie, tcp(26900), udp([26900, 26902]))
+    .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
+    .from(
       cidrs(
         "192.168.8.0/24",
         "192.168.9.0/24",
@@ -1399,74 +553,69 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       udp([26900, 26902]),
     );
 
-  policy("gateway-iot-to-envoy-gateway-controller").allowBetween(
-    gateway("iot"),
-    component("controller", "envoy-gateway"),
-    tcp(18000),
-  );
+  gatewayIot
+    .to(envoyGatewayController, tcp(18000))
+    .from(cidrs("192.168.24.0/24"), tcp(10443));
 
-  policy("world-to-gateway-iot--ingress")
-    .targets(gateway("iot"))
-    .allowIngressFrom(cidrs("192.168.24.0/24"), tcp(10443));
+  gatewayPersonal
+    .to(envoyGatewayController, tcp(18000))
+    .to(tunnel, tcp(8080, 8081))
+    .from(cidrs("192.168.16.0/24", "192.168.17.0/24"), tcp(8080, 10443));
 
-  policy("gateway-personal-to-envoy-gateway-controller").allowBetween(
-    gateway("personal"),
-    component("controller", "envoy-gateway"),
-    tcp(18000),
-  );
-
-  policy("gateway-personal-to-tunnel").allowBetween(
-    gateway("personal"),
-    pod("tunnel", "tunnel"),
-    tcp(8080, 8081),
-  );
-
-  policy("world-to-gateway-personal--ingress")
-    .targets(gateway("personal"))
-    .allowIngressFrom(
-      cidrs("192.168.16.0/24", "192.168.17.0/24"),
-      tcp(8080, 10443),
-    );
-
-  policy("gateway-infrastructure-to-envoy-gateway-controller").allowBetween(
-    gateway("infrastructure"),
-    component("controller", "envoy-gateway"),
-    tcp(18000),
-  );
-
-  policy("gateway-infrastructure-to-alertmanager").allowBetween(
-    gateway("infrastructure"),
-    pod("alertmanager", "alertmanager"),
-    tcp(9093),
-  );
-
-  policy("gateway-infrastructure-to-cilium-hubble-ui").allowBetween(
-    gateway("infrastructure"),
-    pod("hubble-ui", "cilium"),
-    tcp(8081),
-  );
-
-  policy("gateway-infrastructure-to-grafana").allowBetween(
-    gateway("infrastructure"),
-    pod("grafana", "grafana"),
-    tcp(3000),
-  );
-
-  policy("gateway-infrastructure-to-prometheus").allowBetween(
-    gateway("infrastructure"),
-    pod("prometheus", "prometheus"),
-    tcp(9090),
-  );
-
-  policy("gateway-infrastructure-to-vault").allowBetween(
-    gateway("infrastructure"),
-    pod("vault", "vault"),
-    tcp(8200),
-  );
-
-  policy("world-to-gateway-infrastructure--ingress")
-    .targets(gateway("infrastructure"))
-    .allowIngressFrom(cidrs("192.168.34.0/24"), tcp(10443));
+  gatewayInfrastructure
+    .to(envoyGatewayController, tcp(18000))
+    .to(alertmanager, tcp(9093))
+    .to(ciliumHubbleUi, tcp(8081))
+    .to(grafana, tcp(3000))
+    .to(prometheus, tcp(9090))
+    .to(vault, tcp(8200))
+    .from(cidrs("192.168.34.0/24"), tcp(10443));
 
   return chart;
 };
+
+export const steamUdpCidrs = [
+  "45.121.184.0/24",
+  "103.10.124.0/24",
+  "103.10.125.0/24",
+  "103.28.54.0/24",
+  "146.66.152.0/24",
+  "146.66.155.0/24",
+  "155.133.224.0/2",
+  "155.133.225.0/2",
+  "155.133.226.0/2",
+  "155.133.227.0/2",
+  "155.133.228.0/2",
+  "155.133.229.0/2",
+  "155.133.230.0/2",
+  "155.133.232.0/2",
+  "155.133.236.0/2",
+  "155.133.238.0/2",
+  "155.133.240.0/2",
+  "155.133.244.0/2",
+  "155.133.246.0/2",
+  "155.133.248.0/2",
+  "155.133.249.0/2",
+  "155.133.250.0/2",
+  "155.133.251.0/2",
+  "155.133.252.0/2",
+  "155.133.253.0/2",
+  "155.133.254.0/2",
+  "155.133.255.0/2",
+  "162.254.192.0/2",
+  "162.254.193.0/2",
+  "162.254.195.0/2",
+  "162.254.196.0/2",
+  "162.254.197.0/2",
+  "162.254.198.0/2",
+  "162.254.199.0/2",
+  "185.25.182.0/24",
+  "185.25.183.0/24",
+  "192.69.96.0/22",
+  "205.196.6.0/24",
+  "208.64.200.0/24",
+  "208.64.201.0/24",
+  "208.64.202.0/24",
+  "208.64.203.0/24",
+  "208.78.164.0/22",
+];

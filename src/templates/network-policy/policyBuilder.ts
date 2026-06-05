@@ -7,92 +7,95 @@ type PortRange = [number, number];
 type Portish = PortRange | Port;
 
 const selectors = {
-  allNodes: () => ({
+  nodes: () => ({
     type: "all-nodes" as const,
-    categories: ["node"] as const,
+    category: "node" as const,
   }),
   allPods: () => ({
     type: "all-pods" as const,
-    categories: ["endpoint"] as const,
+    category: "endpoint" as const,
   }),
   cidrs: (...ranges: string[]) => ({
     type: "cidr" as const,
-    categories: ["cidr"] as const,
+    category: "cidr" as const,
     ranges,
   }),
   component: (name: string, namespace: string) => ({
     type: "component" as const,
-    categories: ["endpoint"] as const,
+    category: "endpoint" as const,
     name,
     namespace,
   }),
   controlPlane: () => ({
     type: "control-plane" as const,
-    categories: ["node"] as const,
+    category: "node" as const,
   }),
   dns: (...names: string[]) => ({
     type: "dns" as const,
-    categories: ["fqdns"] as const,
+    category: "fqdns" as const,
     names,
   }),
   gateway: (name: Gateway) => ({
     type: "gateway" as const,
-    categories: ["endpoint"] as const,
+    category: "endpoint" as const,
     name,
   }),
   health: () => ({
     type: "health" as const,
-    categories: ["endpoint"] as const,
+    category: "endpoint" as const,
   }),
   host: () => ({
     type: "host" as const,
-    categories: ["entity", "node"] as const,
+    category: "entity" as const,
+  }),
+  kubeApiServer: () => ({
+    type: "kube-apiserver" as const,
+    category: "entity" as const,
+  }),
+  dnsWildcard: () => ({
+    type: "dns-wildcard" as const,
+    category: "dns-wildcard" as const,
   }),
   icmpv4: (...icmpTypes: number[]) => ({
     type: "icmpv4" as const,
-    categories: ["icmp"] as const,
+    category: "icmp" as const,
     icmpTypes,
   }),
-  icmpv6: (...icmpTypes: number[]) => ({
-    type: "icmpv6" as const,
-    categories: ["icmp"] as const,
-    icmpTypes,
-  }),
-  kubeDns: (addDnsRule: boolean = false) => ({
+  kubeDns: () => ({
     type: "kube-dns" as const,
-    categories: ["endpoint"] as const,
-    addDnsRule,
+    category: "endpoint" as const,
   }),
   pod: (name: string, namespace: string) => ({
     type: "pod" as const,
-    categories: ["endpoint"] as const,
+    category: "endpoint" as const,
     name,
     namespace,
   }),
   tcp: (...ports: Portish[]) => ({
     type: "tcp" as const,
-    categories: ["port"] as const,
+    category: "port" as const,
     ports,
   }),
   udp: (...ports: Portish[]) => ({
     type: "udp" as const,
-    categories: ["port"] as const,
+    category: "port" as const,
     ports,
   }),
 };
 
 export const {
-  allNodes,
+  nodes,
   allPods,
   cidrs,
   component,
   controlPlane,
   dns,
+  dnsWildcard,
   gateway,
   health,
   host,
   icmpv4,
-  icmpv6,
+  kubeApiServer,
   kubeDns,
   pod,
   tcp,
@@ -101,10 +104,9 @@ export const {
 
 type SelectorMap = typeof selectors;
 type Selector<K extends keyof SelectorMap> = ReturnType<SelectorMap[K]>;
-type SelectorCategories<K extends keyof SelectorMap> =
-  Selector<K>["categories"][number];
+type SelectorCategory<K extends keyof SelectorMap> = Selector<K>["category"];
 type SelectorWithCategory<C extends string> = {
-  [K in keyof SelectorMap]: C extends SelectorCategories<K>
+  [K in keyof SelectorMap]: C extends SelectorCategory<K>
     ? Selector<K>
     : never;
 }[keyof SelectorMap];
@@ -113,8 +115,7 @@ const isSelectorWithCategory = <C extends string>(
   v: any,
   c: C,
 ): v is SelectorWithCategory<C> => {
-  const categories = v.categories ?? [];
-  return categories.indexOf(c) !== -1;
+  return v.category === c;
 };
 
 type CIDRSelector = SelectorWithCategory<"cidr">;
@@ -152,6 +153,11 @@ type PortSelector = SelectorWithCategory<"port">;
 const isPortSelector = (v: any): v is PortSelector =>
   isSelectorWithCategory(v, "port");
 
+type DnsWildcardSelector = SelectorWithCategory<"dns-wildcard">;
+
+const isDnsWildcardSelector = (v: any): v is DnsWildcardSelector =>
+  isSelectorWithCategory(v, "dns-wildcard");
+
 type TargetSelector = EndpointSelector | NodeSelector;
 
 type RuleSelector =
@@ -161,7 +167,7 @@ type RuleSelector =
   | FQDNSSelector
   | NodeSelector;
 
-type ProtocolSelector = PortSelector | ICMPSelector;
+type ProtocolSelector = PortSelector | ICMPSelector | DnsWildcardSelector;
 
 class CiliumPolicy {
   private metadata: Record<string, any>;
@@ -259,11 +265,7 @@ class CiliumPolicy {
       case "icmpv4": {
         return "IPv4";
       }
-      case "icmpv6": {
-        return "IPv6";
-      }
       default: {
-        const _: never = selector;
         throw new Error(`unknown icmp type: ${selector}`);
       }
     }
@@ -291,14 +293,17 @@ class CiliumPolicy {
   separateProtocolSelectors(protocolSelectors: ProtocolSelector[]) {
     const portSelectors: PortSelector[] = [];
     const icmpSelectors: ICMPSelector[] = [];
+    let addDnsRule = false;
     for (const protocolSelector of protocolSelectors) {
       if (isPortSelector(protocolSelector)) {
         portSelectors.push(protocolSelector);
       } else if (isICMPSelector(protocolSelector)) {
         icmpSelectors.push(protocolSelector);
+      } else if (isDnsWildcardSelector(protocolSelector)) {
+        addDnsRule = true;
       }
     }
-    return { icmpSelectors, portSelectors };
+    return { addDnsRule, icmpSelectors, portSelectors };
   }
 
   buildRules(
@@ -311,7 +316,7 @@ class CiliumPolicy {
         ? (this.spec.ingress = this.spec.ingress ?? [])
         : (this.spec.egress = this.spec.egress ?? []);
 
-    const { portSelectors, icmpSelectors } =
+    const { addDnsRule, portSelectors, icmpSelectors } =
       this.separateProtocolSelectors(protocolSelectors);
 
     const cidr = isCIDRSelector(target)
@@ -326,7 +331,7 @@ class CiliumPolicy {
     const fqdns = isFQDNSSelector(target)
       ? this.buildFQDNSelectors(target)
       : undefined;
-    const nodes = isNodeSelector(target)
+    const nodeSelectors = isNodeSelector(target)
       ? this.buildNodeSelectors(target, true)
       : undefined;
     const icmps = this.buildICMPSelectors(icmpSelectors);
@@ -337,18 +342,17 @@ class CiliumPolicy {
       rule["fromEndpoints"] = endpoints;
       rule["fromEntities"] = entities;
       rule["fromFQDNs"] = fqdns;
-      rule["fromNodes"] = nodes;
+      rule["fromNodes"] = nodeSelectors;
       rule["icmps"] = icmps;
     } else {
       rule["toCIDR"] = cidr;
       rule["toEndpoints"] = endpoints;
       rule["toEntities"] = entities;
       rule["toFQDNs"] = fqdns;
-      rule["toNodes"] = nodes;
+      rule["toNodes"] = nodeSelectors;
       rule["icmps"] = icmps;
     }
 
-    const addDnsRule = target.type === "kube-dns" && target.addDnsRule;
     rule["toPorts"] = this.buildPortSelectors(portSelectors, addDnsRule);
     rules.push(rule);
 
@@ -433,7 +437,16 @@ class CiliumPolicy {
   }
 
   buildEntitySelectors(selector: EntitySelector) {
-    return ["host"];
+    switch (selector.type) {
+      case "host":
+        return ["host"];
+      case "kube-apiserver":
+        return ["kube-apiserver"];
+      default: {
+        const _: never = selector;
+        throw new Error(`unknown entity: ${selector}`);
+      }
+    }
   }
 
   buildFQDNSelectors(selector: FQDNSSelector) {
@@ -469,21 +482,6 @@ class CiliumPolicy {
           },
         ];
       }
-      case "host": {
-        if (isRule) {
-          return undefined;
-        }
-        return [
-          {
-            matchExpressions: [
-              {
-                key: `${prefix}kubernetes.io/hostname`,
-                operator: "Exists",
-              },
-            ],
-          },
-        ];
-      }
       default: {
         const _: never = selector;
         throw new Error(`invalid selector: ${selector}`);
@@ -515,87 +513,122 @@ class CiliumPolicy {
   }
 }
 
-class PolicyBuilder {
+// A Cilium entity (e.g. kube-apiserver) used as a policy target. Generates a
+// toEntities/fromEntities rule on the calling service's policy, and adds the
+// corresponding ingress/egress rule to each ingressTarget's host-firewall policy.
+export class EntityTarget {
   constructor(
-    private construct: Construct,
-    private name: string,
+    readonly entity: EntitySelector,
+    readonly ingressTargets: ServiceBuilder[],
   ) {}
+}
 
-  allowBetween(
-    source: TargetSelector,
-    target: TargetSelector,
-    ...protocolSelectors: ProtocolSelector[]
-  ) {
-    const sourceName = `${this.name}--egress`;
-    new CiliumPolicy(this.construct, sourceName, source).allowEgressTo(
-      target,
-      ...protocolSelectors,
-    );
+export class ServiceGroup {
+  constructor(readonly members: ServiceBuilder[]) {}
+}
 
-    const targetName = `${this.name}--ingress`;
-    new CiliumPolicy(this.construct, targetName, target).allowIngressFrom(
-      source,
-      ...protocolSelectors,
-    );
+export const group = (...members: ServiceBuilder[]): ServiceGroup =>
+  new ServiceGroup(members);
+
+type ToTarget = ServiceBuilder | ServiceGroup | EntityTarget | RuleSelector;
+type FromTarget = ServiceBuilder | ServiceGroup | RuleSelector;
+
+const parseProtocols = (
+  args: (ProtocolSelector | string)[],
+): ProtocolSelector[] => {
+  const last = args[args.length - 1];
+  return (
+    typeof last === "string" ? args.slice(0, -1) : args
+  ) as ProtocolSelector[];
+};
+
+export class ServiceBuilder {
+  readonly selector: TargetSelector;
+  readonly _policy: CiliumPolicy;
+
+  constructor(construct: Construct, name: string, selector: TargetSelector) {
+    this.selector = selector;
+    this._policy = new CiliumPolicy(construct, name, selector);
   }
 
-  targets(target: TargetSelector) {
-    const policy = new CiliumPolicy(this.construct, this.name, target);
+  to(target: ToTarget, ...args: (ProtocolSelector | string)[]): this {
+    if (target instanceof ServiceGroup) {
+      for (const member of target.members) this.to(member, ...args);
+      return this;
+    }
+    const protocols = parseProtocols(args);
+    if (target instanceof EntityTarget) {
+      this._policy.allowEgressTo(target.entity, ...protocols);
+      for (const svc of target.ingressTargets) {
+        svc._policy.allowIngressFrom(this.selector, ...protocols);
+      }
+      return this;
+    }
+    const targetSelector =
+      target instanceof ServiceBuilder ? target.selector : target;
+    this._policy.allowEgressTo(targetSelector, ...protocols);
+    if (target instanceof ServiceBuilder) {
+      const ingressProtocols = protocols.filter(
+        (p) => !isDnsWildcardSelector(p),
+      );
+      target._policy.allowIngressFrom(this.selector, ...ingressProtocols);
+    }
+    return this;
+  }
 
-    return policy;
+  from(source: FromTarget, ...args: (ProtocolSelector | string)[]): this {
+    if (source instanceof ServiceGroup) {
+      for (const member of source.members) this.from(member, ...args);
+      return this;
+    }
+    const protocols = parseProtocols(args);
+    const sourceSelector =
+      source instanceof ServiceBuilder ? source.selector : source;
+    this._policy.allowIngressFrom(sourceSelector, ...protocols);
+    if (source instanceof ServiceBuilder) {
+      source._policy.allowEgressTo(this.selector, ...protocols);
+    }
+    return this;
+  }
+
+  syncWithRouter(): this {
+    this._policy.syncWithRouter();
+    return this;
   }
 }
 
-interface CreatePolicyBuilderCbOpts {}
-
-export const createPolicyBuilder = (construct: Construct) => {
-  return (name: string, opts: CreatePolicyBuilderCbOpts = {}) => {
-    return new PolicyBuilder(construct, name);
-  };
+const entityNodeMapping: Partial<Record<string, string[]>> = {
+  [selectors.kubeApiServer().type]: [selectors.controlPlane().type],
+  [selectors.host().type]: [selectors.nodes().type],
 };
 
-export const steamUdpCidrs = [
-  "45.121.184.0/24",
-  "103.10.124.0/24",
-  "103.10.125.0/24",
-  "103.28.54.0/24",
-  "146.66.152.0/24",
-  "146.66.155.0/24",
-  "155.133.224.0/2",
-  "155.133.225.0/2",
-  "155.133.226.0/2",
-  "155.133.227.0/2",
-  "155.133.228.0/2",
-  "155.133.229.0/2",
-  "155.133.230.0/2",
-  "155.133.232.0/2",
-  "155.133.236.0/2",
-  "155.133.238.0/2",
-  "155.133.240.0/2",
-  "155.133.244.0/2",
-  "155.133.246.0/2",
-  "155.133.248.0/2",
-  "155.133.249.0/2",
-  "155.133.250.0/2",
-  "155.133.251.0/2",
-  "155.133.252.0/2",
-  "155.133.253.0/2",
-  "155.133.254.0/2",
-  "155.133.255.0/2",
-  "162.254.192.0/2",
-  "162.254.193.0/2",
-  "162.254.195.0/2",
-  "162.254.196.0/2",
-  "162.254.197.0/2",
-  "162.254.198.0/2",
-  "162.254.199.0/2",
-  "185.25.182.0/24",
-  "185.25.183.0/24",
-  "192.69.96.0/22",
-  "205.196.6.0/24",
-  "208.64.200.0/24",
-  "208.64.201.0/24",
-  "208.64.202.0/24",
-  "208.64.203.0/24",
-  "208.78.164.0/22",
-];
+export const createServices = (construct: Construct) => {
+  const registry = new Map<string, ServiceBuilder>();
+
+  function svc(name: string, selector: TargetSelector): ServiceBuilder;
+  function svc(name: string, entity: EntitySelector): EntityTarget;
+  function svc(
+    name: string,
+    selector: TargetSelector | EntitySelector,
+  ): ServiceBuilder | EntityTarget {
+    if (!isEndpointSelector(selector) && !isNodeSelector(selector)) {
+      const entity = selector as EntitySelector;
+      const ingressTargets = (entityNodeMapping[entity.type] ?? []).map(
+        (selectorType: string) => {
+          const target = registry.get(selectorType);
+          if (!target)
+            throw new Error(
+              `svc for "${selectorType}" must be registered before "${entity.type}"`,
+            );
+          return target;
+        },
+      );
+      return new EntityTarget(entity, ingressTargets);
+    }
+    const builder = new ServiceBuilder(construct, name, selector as TargetSelector);
+    registry.set(selector.type, builder);
+    return builder;
+  }
+
+  return svc;
+};
