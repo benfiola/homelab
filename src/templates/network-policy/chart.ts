@@ -1,34 +1,36 @@
 import { Chart } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import {
-  allPods as _allPods,
   controlPlane as _controlPlane,
   health as _health,
+  host as _host,
   kubeApiServer as _kubeApiServer,
   kubeDns as _kubeDns,
   nodes as _nodes,
+  pods as _pods,
   cidrs,
   component,
-  createServices,
   dns,
   dnsWildcard,
   gateway,
   icmpv4,
   pod,
+  services,
   tcp,
   udp,
 } from "./policyBuilder";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, context.name);
-  const svc = createServices(chart);
+  const svc = services(chart);
 
   // infrastructure entities
-  const nodes = svc("nodes", _nodes());
   const controlPlane = svc("control-plane", _controlPlane());
-  const kubeApi = svc("kube-apiserver", _kubeApiServer());
+  const kubeApiServer = svc("kube-apiserver", _kubeApiServer());
+  const host = svc("host", _host());
   const kubeDns = svc("kube-dns", _kubeDns());
-  const allPods = svc("all-pods", _allPods());
+  const nodes = svc("nodes", _nodes());
+  const pods = svc("pods", _pods());
   const health = svc("health", _health());
 
   // application services
@@ -237,39 +239,39 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // alertmanager
   alertmanager.to(postfix, tcp(587));
-  nodes.to(alertmanager, tcp(9093));
+  host.to(alertmanager, tcp(9093));
 
   // alloy
-  alloy.to(kubeApi, tcp(6443)).to(lokiGateway, tcp(8080));
-  nodes.to(alloy, tcp(12345));
+  alloy.to(kubeApiServer, tcp(6443)).to(lokiGateway, tcp(8080));
+  host.to(alloy, tcp(12345));
 
   // assets-server
   assetsServer.to(garage, tcp(3900));
 
   // bucket-sync
-  bucketSync.to(kubeApi, tcp(6443));
-  nodes.to(bucketSync, tcp(8081));
+  bucketSync.to(kubeApiServer, tcp(6443));
+  host.to(bucketSync, tcp(8081));
   bucketSyncJob.to(garage, tcp(3900));
   bucketSyncJob.to(dns("*.googleapis.com"), tcp(443));
 
   // cert-manager
-  certManagerCainjector.to(kubeApi, tcp(6443));
+  certManagerCainjector.to(kubeApiServer, tcp(6443));
   certManagerController
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(dns("api.cloudflare.com"), tcp(443))
     .to(dns("*.ns.cloudflare.com"), udp(53))
     .to(dns("*.api.letsencrypt.org"), tcp(443));
-  nodes.to(certManagerController, tcp(9403));
-  certManagerStartupapicheck.to(kubeApi, tcp(6443));
-  certManagerWebhook.to(kubeApi, tcp(6443));
+  host.to(certManagerController, tcp(9403));
+  certManagerStartupapicheck.to(kubeApiServer, tcp(6443));
+  certManagerWebhook.to(kubeApiServer, tcp(6443));
   controlPlane.to(certManagerWebhook, tcp(10250));
-  nodes.to(certManagerWebhook, tcp(6080));
+  host.to(certManagerWebhook, tcp(6080));
 
   // cilium
-  ciliumHubbleRelay.to(nodes, tcp(4244)).to(nodes, tcp(4244));
-  nodes.to(ciliumHubbleRelay, tcp(4222));
-  ciliumHubbleUi.to(ciliumHubbleRelay, tcp(4245)).to(kubeApi, tcp(6443));
-  nodes.to(ciliumHubbleUi, tcp(8081));
+  ciliumHubbleRelay.to(nodes, tcp(4244));
+  host.to(ciliumHubbleRelay, tcp(4222));
+  ciliumHubbleUi.to(ciliumHubbleRelay, tcp(4245)).to(kubeApiServer, tcp(6443));
+  host.to(ciliumHubbleUi, tcp(8081));
 
   // dynamic-dns
   dynamicDns
@@ -277,112 +279,111 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("api.ipify.org"), tcp(443));
 
   // envoy-gateway
-  envoyGatewayCertgen.to(kubeApi, tcp(6443));
+  envoyGatewayCertgen.to(kubeApiServer, tcp(6443));
   controlPlane.to(envoyGatewayController, tcp(9443));
-  envoyGatewayController.to(kubeApi, tcp(6443));
-  nodes.to(envoyGatewayController, tcp(8081));
-  nodes.to(envoyGatewayProxy, tcp(19002, 19003));
+  envoyGatewayController.to(kubeApiServer, tcp(6443));
+  host.to(envoyGatewayController, tcp(8081));
+  host.to(envoyGatewayProxy, tcp(19002, 19003));
 
   // external-dns
   externalDnsCloudflare
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(dns("api.cloudflare.com"), tcp(443));
-  nodes.to(externalDnsCloudflare, tcp(7979, 8080));
+  host.to(externalDnsCloudflare, tcp(7979, 8080));
   externalDnsMikrotik
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(dns("router.bulia.dev"), tcp(80));
-  nodes.to(externalDnsMikrotik, tcp(7979, 8080));
+  host.to(externalDnsMikrotik, tcp(7979, 8080));
 
   // external-snapshotter
-  externalSnapshotter.to(kubeApi, tcp(6443));
+  externalSnapshotter.to(kubeApiServer, tcp(6443));
 
   // flux
-  fluxHelmController.to(kubeApi, tcp(6443));
-  nodes.to(fluxHelmController, tcp(9440));
+  fluxHelmController.to(kubeApiServer, tcp(6443));
+  host.to(fluxHelmController, tcp(9440));
   fluxKustomizeController
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(fluxNotificationController, tcp(9090))
     .to(fluxSourceController, tcp(9090));
-  nodes.to(fluxKustomizeController, tcp(9440));
-  fluxNotificationController.to(kubeApi, tcp(6443));
-  nodes.to(fluxNotificationController, tcp(9440));
+  host.to(fluxKustomizeController, tcp(9440));
+  fluxNotificationController.to(kubeApiServer, tcp(6443));
+  host.to(fluxNotificationController, tcp(9440));
   fluxSourceController
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(fluxNotificationController, tcp(9090))
     .to(dns("github.com"), tcp(22));
-  nodes.to(fluxSourceController, tcp(9090, 9440));
+  host.to(fluxSourceController, tcp(9090, 9440));
 
   // frigate
   frigate.to(mosquitto, tcp(1883));
-  nodes.to(frigate, tcp(5000));
+  host.to(frigate, tcp(5000));
 
   // garage
   garage.to(garage, tcp(3901));
 
   // garage-operator
-  garageOperator.to(kubeApi, tcp(6443)).to(garage, tcp(3903));
-  nodes.to(garageOperator, tcp(8081));
+  garageOperator.to(kubeApiServer, tcp(6443)).to(garage, tcp(3903));
+  host.to(garageOperator, tcp(8081));
 
   // gateway-route-sync
-  gatewayRouteSync.to(kubeApi, tcp(6443));
-  nodes.to(gatewayRouteSync, tcp(8081));
+  gatewayRouteSync.to(kubeApiServer, tcp(6443));
+  host.to(gatewayRouteSync, tcp(8081));
 
   // grafana
   grafana
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(lokiGateway, tcp(8080))
     .to(prometheus, tcp(9090));
-  nodes.to(grafana, tcp(3000));
+  host.to(grafana, tcp(3000));
 
   // grafana-operator
-  grafanaOperator.to(kubeApi, tcp(6443)).to(grafana, tcp(3000));
-  nodes.to(grafanaOperator, tcp(8081));
+  grafanaOperator.to(kubeApiServer, tcp(6443)).to(grafana, tcp(3000));
+  host.to(grafanaOperator, tcp(8081));
 
   // home-assistant
   homeAssistant.to(cidrs("192.168.24.0/24"));
 
   // intel-device-plugins-operator
   controlPlane.to(intelDevicePluginsOperator, tcp(9443));
-  intelDevicePluginsOperator.to(kubeApi, tcp(6443));
-  nodes.to(intelDevicePluginsOperator, tcp(8081, 9443));
+  intelDevicePluginsOperator.to(kubeApiServer, tcp(6443));
+  host.to(intelDevicePluginsOperator, tcp(8081, 9443));
 
   // kube-state-metrics
-  kubeStateMetrics.to(kubeApi, tcp(6443));
-  nodes.to(kubeStateMetrics, tcp(8080, 8081));
+  kubeStateMetrics.to(kubeApiServer, tcp(6443));
+  host.to(kubeStateMetrics, tcp(8080, 8081));
 
   // kube-system
   nodes.to(kubeDns, tcp(53), udp(53));
-  nodes.to(kubeDns, tcp(53, 8080, 8181), udp(53));
-  kubeDns.to(kubeApi, tcp(6443)).to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
-  allPods.to(kubeDns, tcp(53), udp(53), dnsWildcard());
+  host.to(kubeDns, tcp(8080, 8181));
+  kubeDns
+    .to(kubeApiServer, tcp(6443))
+    .to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
+  pods.to(kubeDns, tcp(53), udp(53), dnsWildcard());
 
   // loki
   lokiBackend
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(garage, tcp(3900))
     .to(lokiRead, tcp(7946))
     .to(lokiWrite, tcp(7946));
-  nodes.to(lokiBackend, tcp(3100));
+  host.to(lokiBackend, tcp(3100));
   lokiGateway.to(lokiRead, tcp(3100)).to(lokiWrite, tcp(3100));
-  nodes.to(lokiGateway, tcp(8080));
-  nodes.to(lokiMemcachedChunksCache, tcp(9150, 11211));
-  nodes.to(lokiMemcachedResultsCache, tcp(9150, 11211));
+  host.to(lokiGateway, tcp(8080));
+  host.to(lokiMemcachedChunksCache, tcp(9150, 11211));
+  host.to(lokiMemcachedResultsCache, tcp(9150, 11211));
   lokiRead.to(lokiBackend, tcp(7946, 9095)).to(lokiWrite, tcp(7946, 9095));
-  nodes.to(lokiRead, tcp(3100));
+  host.to(lokiRead, tcp(3100));
   lokiWrite
     .to(garage, tcp(3900))
     .to(lokiBackend, tcp(7946))
     .to(lokiMemcachedChunksCache, tcp(11211))
     .to(lokiRead, tcp(7946));
-  nodes.to(lokiWrite, tcp(3100));
+  host.to(lokiWrite, tcp(3100));
 
   // metrics-server
   controlPlane.to(metricsServer, tcp(10250));
-  nodes.to(metricsServer, tcp(10250));
-  metricsServer
-    .to(controlPlane, tcp(6443))
-    .to(nodes, tcp(10250))
-    .to(nodes, tcp(10250));
+  host.to(metricsServer, tcp(10250));
+  metricsServer.to(kubeApiServer, tcp(6443)).to(nodes, tcp(10250));
 
   // minecraft
   minecraft
@@ -394,52 +395,58 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("maven.fabricmc.net"), tcp(443));
 
   // node-feature-discovery
-  nodeFeatureDiscovery.to(kubeApi, tcp(6443));
-  nodes.to(nodeFeatureDiscovery, tcp(8080));
+  nodeFeatureDiscovery.to(kubeApiServer, tcp(6443));
+  host.to(nodeFeatureDiscovery, tcp(8080));
 
   // piraeus-operator
-  nodes.to(linstorAffinityController, tcp(8000));
+  host.to(linstorAffinityController, tcp(8000));
   linstorAffinityController
-    .to(kubeApi, tcp(6443))
+    .to(kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
-  nodes.to(linstorController, tcp(3370));
-  linstorController.to(kubeApi, tcp(6443)).to(linstorSatellite, tcp(3366));
-  nodes.to(linstorController, tcp(3370));
-  nodes.to(linstorCsiController, tcp([9808, 9813]));
-  linstorCsiController.to(kubeApi, tcp(6443)).to(linstorController, tcp(3370));
-  linstorCsiNfsServer.to(kubeApi, tcp(6443)).to(linstorController, tcp(3370));
+  host.to(linstorController, tcp(3370));
+  linstorController
+    .to(kubeApiServer, tcp(6443))
+    .to(linstorSatellite, tcp(3366));
+  host.to(linstorCsiController, tcp([9808, 9813]));
+  linstorCsiController
+    .to(kubeApiServer, tcp(6443))
+    .to(linstorController, tcp(3370));
+  linstorCsiNfsServer
+    .to(kubeApiServer, tcp(6443))
+    .to(linstorController, tcp(3370));
   linstorSatellite.to(linstorSatellite, tcp([7000, 7999]));
   nodes.to(linstorSatellite, tcp(3366));
-  nodes.to(piraeusOperatorHaController, tcp(8000));
-  piraeusOperatorHaController.to(kubeApi, tcp(6443));
+  host.to(piraeusOperatorHaController, tcp(8000));
+  piraeusOperatorHaController.to(kubeApiServer, tcp(6443));
   controlPlane.to(piraeusOperator, tcp(9443));
-  nodes.to(piraeusOperator, tcp(8081));
-  piraeusOperator.to(kubeApi, tcp(6443)).to(linstorController, tcp(3370));
-  piraeusOperatorGencert.to(kubeApi, tcp(6443));
-  nodes.to(piraeusOperatorGencert, tcp(8081));
+  host.to(piraeusOperator, tcp(8081));
+  piraeusOperator.to(kubeApiServer, tcp(6443)).to(linstorController, tcp(3370));
+  piraeusOperatorGencert.to(kubeApiServer, tcp(6443));
+  host.to(piraeusOperatorGencert, tcp(8081));
 
   // postfix
   postfix.to(dns("smtp.mailgun.org"), tcp(587));
 
   // prometheus
-  nodes.to(prometheus, tcp(9090));
+  host.to(prometheus, tcp(9090));
   prometheus
     .to(alertmanager, tcp(9093))
-    .to(controlPlane, tcp(6443, 10257, 10259))
-    .to(nodes, tcp(6443, 9100, 10250, 10257, 10259))
-    .to(kubeStateMetrics, tcp(8080))
-    .to(nodes, tcp(9100, 10250));
+    .to(nodes, tcp(9100, 10250, 10257, 10259))
+    .to(kubeApiServer, tcp(6443))
+    .to(kubeStateMetrics, tcp(8080));
 
   // prometheus-operator
-  prometheusOperator.to(kubeApi, tcp(6443));
+  prometheusOperator.to(kubeApiServer, tcp(6443));
 
   // pvc-restore
-  pvcRestore.to(kubeApi, tcp(6443));
-  nodes.to(pvcRestore, tcp(8081));
+  pvcRestore.to(kubeApiServer, tcp(6443));
+  host.to(pvcRestore, tcp(8081));
 
   // router-policy-sync
-  routerPolicySync.to(kubeApi, tcp(6443)).to(dns("router.bulia.dev"), tcp(80));
-  nodes.to(routerPolicySync, tcp(8081));
+  routerPolicySync
+    .to(kubeApiServer, tcp(6443))
+    .to(dns("router.bulia.dev"), tcp(80));
+  host.to(routerPolicySync, tcp(8081));
 
   // seven-days-to-die
   sevenDaysToDie
@@ -463,27 +470,27 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
 
   // vault
-  vault.to(kubeApi, tcp(6443)).to(vault, tcp(8200, 8201));
+  vault.to(kubeApiServer, tcp(6443)).to(vault, tcp(8200, 8201));
 
   // vault-push-secrets
   vaultPushSecrets.to(dns("*.googleapis.com"), tcp(443)).to(vault, tcp(8200));
 
   // vault-secrets-operator
-  vaultSecretsOperator.to(kubeApi, tcp(6443)).to(vault, tcp(8200));
-  nodes.to(vaultSecretsOperator, tcp(8081));
+  vaultSecretsOperator.to(kubeApiServer, tcp(6443)).to(vault, tcp(8200));
+  host.to(vaultSecretsOperator, tcp(8081));
 
   // vertical-pod-autoscaler
   controlPlane.to(verticalPodAutoscalerAdmissionController, tcp(8000));
-  nodes.to(verticalPodAutoscalerAdmissionController, tcp(8000, 8944));
-  verticalPodAutoscalerAdmissionController.to(kubeApi, tcp(6443));
-  nodes.to(verticalPodAutoscalerRecommender, tcp(8942));
-  verticalPodAutoscalerRecommender.to(kubeApi, tcp(6443));
-  nodes.to(verticalPodAutoscalerUpdater, tcp(8943));
-  verticalPodAutoscalerUpdater.to(kubeApi, tcp(6443));
+  host.to(verticalPodAutoscalerAdmissionController, tcp(8000, 8944));
+  verticalPodAutoscalerAdmissionController.to(kubeApiServer, tcp(6443));
+  host.to(verticalPodAutoscalerRecommender, tcp(8942));
+  verticalPodAutoscalerRecommender.to(kubeApiServer, tcp(6443));
+  host.to(verticalPodAutoscalerUpdater, tcp(8943));
+  verticalPodAutoscalerUpdater.to(kubeApiServer, tcp(6443));
 
   // volsync
-  volsync.to(kubeApi, tcp(6443));
-  nodes.to(volsync, tcp(8081));
+  volsync.to(kubeApiServer, tcp(6443));
+  host.to(volsync, tcp(8081));
   volsyncMover.to(dns("*.googleapis.com"), tcp(443));
 
   // general - bgp
@@ -508,14 +515,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // general - icmp
   nodes.to(nodes, icmpv4(5, 8));
-  nodes.to(allPods, icmpv4(5, 8));
+  nodes.to(pods, icmpv4(5, 8));
 
   // general - image registries
   // NOTE: cilium 1.18.X doesn't support dns-based rules for host policies. for now, allow host-level 0.0.0.0/32:443 egress.
   nodes.to(cidrs("0.0.0.0/0"), tcp(443));
 
   // general - kube-apiserver
-  nodes.to(controlPlane, tcp(6443));
+  nodes.to(kubeApiServer, tcp(6443));
   controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(6443));
 
   // general - kubelet
@@ -530,11 +537,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   nodes.to(cidrs("162.159.200.1/32", "162.159.200.123/32"), udp(123));
 
   // gateways
-  gatewayPublic
-    .to(envoyGatewayController, tcp(18000))
-    .from(cidrs("198.51.100.1/32"), tcp(10443))
-    .syncWithRouter();
-
   gatewayUsers
     .to(envoyGatewayController, tcp(18000))
     .to(frigate, tcp(8971))
@@ -570,6 +572,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(prometheus, tcp(9090))
     .to(vault, tcp(8200))
     .from(cidrs("192.168.34.0/24"), tcp(10443));
+
+  gatewayPublic
+    .to(envoyGatewayController, tcp(18000))
+    .from(cidrs("198.51.100.1/32"), tcp(10443));
 
   return chart;
 };

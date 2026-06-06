@@ -1,5 +1,9 @@
-import { ApiObject } from "cdk8s";
 import { Construct } from "constructs";
+import crypto from "crypto";
+import {
+  CiliumClusterwideNetworkPolicy,
+  CiliumClusterwideNetworkPolicySpec,
+} from "../../../assets/cilium/cilium.io";
 import { Gateway } from "../../cdk8s";
 
 type Port = number;
@@ -8,84 +12,90 @@ type Portish = PortRange | Port;
 
 const selectors = {
   nodes: () => ({
-    type: "all-nodes" as const,
-    category: "node" as const,
+    type: "nodes" as const,
+    category: "subject" as const,
   }),
-  allPods: () => ({
-    type: "all-pods" as const,
-    category: "endpoint" as const,
+  pods: () => ({
+    type: "pods" as const,
+    category: "subject" as const,
   }),
   cidrs: (...ranges: string[]) => ({
     type: "cidr" as const,
-    category: "cidr" as const,
+    category: "object" as const,
     ranges,
   }),
   component: (name: string, namespace: string) => ({
     type: "component" as const,
-    category: "endpoint" as const,
+    category: "subject" as const,
     name,
     namespace,
   }),
   controlPlane: () => ({
     type: "control-plane" as const,
-    category: "node" as const,
+    category: "subject" as const,
   }),
   dns: (...names: string[]) => ({
     type: "dns" as const,
-    category: "fqdns" as const,
+    category: "object" as const,
     names,
   }),
   gateway: (name: Gateway) => ({
     type: "gateway" as const,
-    category: "endpoint" as const,
+    category: "subject" as const,
     name,
   }),
   health: () => ({
     type: "health" as const,
-    category: "endpoint" as const,
+    category: "subject" as const,
   }),
-  host: () => ({
+  host: (...hostnames: string[]) => ({
     type: "host" as const,
-    category: "entity" as const,
+    category: "subject" as const,
+    hostnames,
   }),
   kubeApiServer: () => ({
     type: "kube-apiserver" as const,
-    category: "entity" as const,
+    category: "subject" as const,
   }),
   dnsWildcard: () => ({
     type: "dns-wildcard" as const,
-    category: "dns-wildcard" as const,
+    category: "specifier" as const,
   }),
   icmpv4: (...icmpTypes: number[]) => ({
     type: "icmpv4" as const,
-    category: "icmp" as const,
+    category: "specifier" as const,
     icmpTypes,
   }),
   kubeDns: () => ({
     type: "kube-dns" as const,
-    category: "endpoint" as const,
+    category: "subject" as const,
   }),
   pod: (name: string, namespace: string) => ({
     type: "pod" as const,
-    category: "endpoint" as const,
+    category: "subject" as const,
     name,
     namespace,
   }),
   tcp: (...ports: Portish[]) => ({
     type: "tcp" as const,
-    category: "port" as const,
+    category: "specifier" as const,
     ports,
   }),
   udp: (...ports: Portish[]) => ({
     type: "udp" as const,
-    category: "port" as const,
+    category: "specifier" as const,
     ports,
+  }),
+  description: (description: string) => ({
+    type: "description" as const,
+    category: "specifier" as const,
+    description,
   }),
 };
 
 export const {
   nodes,
-  allPods,
+  pods,
   cidrs,
   component,
   controlPlane,
@@ -102,533 +112,317 @@ export const {
   udp,
 } = selectors;
 
-type SelectorMap = typeof selectors;
-type Selector<K extends keyof SelectorMap> = ReturnType<SelectorMap[K]>;
-type SelectorCategory<K extends keyof SelectorMap> = Selector<K>["category"];
-type SelectorWithCategory<C extends string> = {
-  [K in keyof SelectorMap]: C extends SelectorCategory<K>
-    ? Selector<K>
-    : never;
-}[keyof SelectorMap];
+type Selector = ReturnType<(typeof selectors)[keyof typeof selectors]>;
+type Subject = Selector & { category: "subject" };
+type Object = Selector & { category: "object" };
+type Specifier = Selector & { category: "specifier" };
 
-const isSelectorWithCategory = <C extends string>(
-  v: any,
-  c: C,
-): v is SelectorWithCategory<C> => {
-  return v.category === c;
+type Mutable<T> = {
+  -readonly [K in keyof T]: T[K] extends object ? Mutable<T[K]> : T[K];
 };
 
-type CIDRSelector = SelectorWithCategory<"cidr">;
+const computeHash = (o: unknown) => {
+  const json = JSON.stringify(o);
+  return crypto.createHash("sha256").update(json).digest("hex");
+};
 
-const isCIDRSelector = (v: any): v is CIDRSelector =>
-  isSelectorWithCategory(v, "cidr");
+const buildNodeSelector = (
+  selector: Selector,
+  inRule: boolean = false,
+): Record<string, any>[] | undefined => {
+  // In rules, skip node selectors for 'nodes' and 'host'
+  // since they should use entity selectors instead
+  if (inRule && (selector.type === "nodes" || selector.type === "host")) {
+    return undefined;
+  }
 
-type EntitySelector = SelectorWithCategory<"entity">;
+  const prefix = inRule ? "node:" : "";
 
-const isEntitySelector = (v: any): v is EntitySelector =>
-  isSelectorWithCategory(v, "entity");
+  switch (selector.type) {
+    case "nodes":
+      return [
+        {
+          matchExpressions: [
+            {
+              key: `${prefix}kubernetes.io/hostname`,
+              operator: "Exists",
+            },
+          ],
+        },
+      ];
+    case "control-plane":
+      return [
+        {
+          matchLabels: {
+            [`${prefix}node-role.kubernetes.io/control-plane`]: "",
+          },
+        },
+      ];
+    default:
+      return undefined;
+  }
+};
 
-type EndpointSelector = SelectorWithCategory<"endpoint">;
-
-const isEndpointSelector = (v: any): v is EndpointSelector =>
-  isSelectorWithCategory(v, "endpoint");
-
-type FQDNSSelector = SelectorWithCategory<"fqdns">;
-
-const isFQDNSSelector = (v: any): v is FQDNSSelector =>
-  isSelectorWithCategory(v, "fqdns");
-
-type ICMPSelector = SelectorWithCategory<"icmp">;
-
-const isICMPSelector = (v: any): v is ICMPSelector =>
-  isSelectorWithCategory(v, "icmp");
-
-type NodeSelector = SelectorWithCategory<"node">;
-
-const isNodeSelector = (v: any): v is NodeSelector =>
-  isSelectorWithCategory(v, "node");
-
-type PortSelector = SelectorWithCategory<"port">;
-
-const isPortSelector = (v: any): v is PortSelector =>
-  isSelectorWithCategory(v, "port");
-
-type DnsWildcardSelector = SelectorWithCategory<"dns-wildcard">;
-
-const isDnsWildcardSelector = (v: any): v is DnsWildcardSelector =>
-  isSelectorWithCategory(v, "dns-wildcard");
-
-type TargetSelector = EndpointSelector | NodeSelector;
-
-type RuleSelector =
-  | CIDRSelector
-  | EndpointSelector
-  | EntitySelector
-  | FQDNSSelector
-  | NodeSelector;
-
-type ProtocolSelector = PortSelector | ICMPSelector | DnsWildcardSelector;
-
-class CiliumPolicy {
-  private metadata: Record<string, any>;
-  private spec: Record<string, any>;
-  private policy: ApiObject;
-
-  constructor(construct: Construct, name: string, target: TargetSelector) {
-    const onlyOne = <T extends any>(v: T[] | undefined): T => {
-      if (!v || v.length !== 1) {
-        throw new Error(`invalid selector: ${target}`);
-      }
-      return v[0];
-    };
-
-    const endpointSelector = isEndpointSelector(target)
-      ? onlyOne(this.buildEndpointSelectors(target))
-      : undefined;
-
-    const nodeSelector = isNodeSelector(target)
-      ? onlyOne(this.buildNodeSelectors(target, false))
-      : undefined;
-
-    if (!endpointSelector === !nodeSelector) {
-      throw new Error(`invalid selector: ${target}`);
+const buildEndpointSelector = (
+  selector: Selector,
+): Record<string, any>[] | undefined => {
+  switch (selector.type) {
+    case "pods":
+      return [{}];
+    case "pod": {
+      const ns =
+        selector.namespace === "*"
+          ? {}
+          : {
+              "k8s:io.kubernetes.pod.namespace": selector.namespace,
+            };
+      return [
+        {
+          matchLabels: {
+            ...ns,
+            "k8s:app.kubernetes.io/name": selector.name,
+          },
+        },
+      ];
     }
+    case "component": {
+      const ns =
+        selector.namespace === "*"
+          ? {}
+          : {
+              "k8s:io.kubernetes.pod.namespace": selector.namespace,
+            };
+      return [
+        {
+          matchLabels: {
+            ...ns,
+            "k8s:app.kubernetes.io/component": selector.name,
+          },
+        },
+      ];
+    }
+    case "gateway":
+      return [
+        {
+          matchLabels: {
+            "k8s:gateway.envoyproxy.io/owning-gateway-name": selector.name,
+            "k8s:io.kubernetes.pod.namespace": "envoy-gateway",
+          },
+        },
+      ];
+    case "health":
+      return [
+        {
+          matchLabels: {
+            "reserved:health": "",
+          },
+        },
+      ];
+    case "kube-dns":
+      return [
+        {
+          matchLabels: {
+            "k8s:io.kubernetes.pod.namespace": "kube-system",
+            "k8s:k8s-app": "kube-dns",
+          },
+        },
+      ];
+    default:
+      return undefined;
+  }
+};
 
-    this.policy = new ApiObject(construct, name, {
-      apiVersion: "cilium.io/v2",
-      kind: "CiliumClusterwideNetworkPolicy",
+const buildEntitySelector = (selector: Selector): string[] | undefined => {
+  switch (selector.type) {
+    case "nodes":
+      return ["remote-node", "host"];
+    case "host":
+      return ["host"];
+    case "kube-apiserver":
+      return ["kube-apiserver"];
+    default:
+      return undefined;
+  }
+};
+
+class PolicyBuilder {
+  private policy: CiliumClusterwideNetworkPolicy;
+  private registry: ServiceRegistry;
+  private spec: Mutable<CiliumClusterwideNetworkPolicySpec>;
+  readonly subject: Subject;
+
+  constructor(registry: ServiceRegistry, name: string, subject: Subject) {
+    const nodeSelectors = buildNodeSelector(subject);
+    const endpointSelectors = buildEndpointSelector(subject);
+
+    const spec = {
+      nodeSelector: nodeSelectors?.[0],
+      endpointSelector: endpointSelectors?.[0],
+    };
+    this.policy = new CiliumClusterwideNetworkPolicy(registry.construct, name, {
       metadata: {
         name,
-        annotations: {},
       },
-      spec: {
-        endpointSelector,
-        nodeSelector,
-      },
+      spec,
     });
-
-    this.metadata = this.policy.metadata as any;
-    this.spec = (this.policy as any).props.spec;
+    this.registry = registry;
+    this.spec = spec;
+    this.subject = subject;
   }
 
-  getPortProtocol(selector: PortSelector) {
-    switch (selector.type) {
-      case "tcp": {
-        return "TCP";
-      }
-      case "udp": {
-        return "UDP";
-      }
-      default: {
-        const _: never = selector;
-        throw new Error(`unknown port type: ${selector}`);
-      }
-    }
-  }
+  private buildRule(
+    target: Subject | Object,
+    specifiers: Specifier[],
+    direction: "ingress" | "egress",
+  ) {
+    this.spec[direction] ??= [];
+    const rules = this.spec[direction];
 
-  buildPortSelectors(selectors: PortSelector[], addDnsRule: boolean) {
-    const ports = [];
-    for (const selector of selectors) {
-      const protocol = this.getPortProtocol(selector);
-      for (const portish of selector.ports) {
-        if (Array.isArray(portish)) {
-          ports.push({
-            port: portish[0].toString(),
-            endPort: portish[1],
-            protocol,
-          });
-        } else {
-          ports.push({
-            port: portish.toString(),
-            protocol,
-          });
+    const prefixes = { ingress: "from", egress: "to" } as const;
+    const prefix = prefixes[direction];
+    const ruleKey = (base: string) => prefix + base;
+
+    const rule: Record<string, any> = {
+      [ruleKey("Nodes")]: buildNodeSelector(target, true),
+      [ruleKey("Endpoints")]: buildEndpointSelector(target),
+      [ruleKey("Entities")]: buildEntitySelector(target),
+      [ruleKey("Cidr")]: target.type === "cidr" ? target.ranges : undefined,
+      [ruleKey("FqdNs")]:
+        target.type === "dns"
+          ? target.names.map((n) => ({ matchPattern: n }))
+          : undefined,
+    };
+
+    const ports: Array<Record<string, any>> = [];
+    let dnsRules: Record<string, any> | undefined;
+    const icmps: Array<Record<string, any>> = [];
+
+    for (const spec of specifiers) {
+      switch (spec.type) {
+        case "tcp":
+        case "udp": {
+          const protocols = { tcp: "TCP", udp: "UDP" } as const;
+          const protocol = protocols[spec.type];
+          for (const portish of spec.ports) {
+            if (Array.isArray(portish)) {
+              ports.push({
+                port: portish[0].toString(),
+                endPort: portish[1],
+                protocol,
+              });
+            } else {
+              ports.push({
+                port: portish.toString(),
+                protocol,
+              });
+            }
+          }
+          break;
+        }
+        case "icmpv4": {
+          for (const type of spec.icmpTypes) {
+            icmps.push({
+              type,
+              family: "IPv4",
+            });
+          }
+          break;
+        }
+        case "dns-wildcard": {
+          dnsRules = { dns: [{ matchPattern: "*" }] };
+          break;
+        }
+        case "description": {
+          this.spec.description = spec.description;
+          break;
         }
       }
     }
 
-    if (ports.length === 0) {
-      return undefined;
-    }
-
-    let rules: any;
-    if (addDnsRule) {
-      rules = {
-        dns: [{ matchPattern: "*" }],
-      };
-    }
-
-    return [{ ports, rules }];
-  }
-
-  getICMPFamily(selector: ICMPSelector) {
-    switch (selector.type) {
-      case "icmpv4": {
-        return "IPv4";
-      }
-      default: {
-        throw new Error(`unknown icmp type: ${selector}`);
-      }
-    }
-  }
-
-  buildICMPSelectors(selectors: ICMPSelector[]) {
-    const fields = [];
-    for (const selector of selectors) {
-      const family = this.getICMPFamily(selector);
-      for (const type of selector.icmpTypes) {
-        fields.push({
-          type,
-          family,
-        });
-      }
-    }
-
-    if (fields.length === 0) {
-      return undefined;
-    }
-
-    return [{ fields }];
-  }
-
-  separateProtocolSelectors(protocolSelectors: ProtocolSelector[]) {
-    const portSelectors: PortSelector[] = [];
-    const icmpSelectors: ICMPSelector[] = [];
-    let addDnsRule = false;
-    for (const protocolSelector of protocolSelectors) {
-      if (isPortSelector(protocolSelector)) {
-        portSelectors.push(protocolSelector);
-      } else if (isICMPSelector(protocolSelector)) {
-        icmpSelectors.push(protocolSelector);
-      } else if (isDnsWildcardSelector(protocolSelector)) {
-        addDnsRule = true;
-      }
-    }
-    return { addDnsRule, icmpSelectors, portSelectors };
-  }
-
-  buildRules(
-    target: RuleSelector,
-    protocolSelectors: ProtocolSelector[],
-    ruleType: "ingress" | "egress",
-  ) {
-    const rules =
-      ruleType === "ingress"
-        ? (this.spec.ingress = this.spec.ingress ?? [])
-        : (this.spec.egress = this.spec.egress ?? []);
-
-    const { addDnsRule, portSelectors, icmpSelectors } =
-      this.separateProtocolSelectors(protocolSelectors);
-
-    const cidr = isCIDRSelector(target)
-      ? this.buildCIDRSelectors(target)
-      : undefined;
-    const endpoints = isEndpointSelector(target)
-      ? this.buildEndpointSelectors(target)
-      : undefined;
-    const entities = isEntitySelector(target)
-      ? this.buildEntitySelectors(target)
-      : undefined;
-    const fqdns = isFQDNSSelector(target)
-      ? this.buildFQDNSelectors(target)
-      : undefined;
-    const nodeSelectors = isNodeSelector(target)
-      ? this.buildNodeSelectors(target, true)
-      : undefined;
-    const icmps = this.buildICMPSelectors(icmpSelectors);
-
-    const rule: Record<string, any> = {};
-    if (ruleType === "ingress") {
-      rule["fromCIDR"] = cidr;
-      rule["fromEndpoints"] = endpoints;
-      rule["fromEntities"] = entities;
-      rule["fromFQDNs"] = fqdns;
-      rule["fromNodes"] = nodeSelectors;
-      rule["icmps"] = icmps;
-    } else {
-      rule["toCIDR"] = cidr;
-      rule["toEndpoints"] = endpoints;
-      rule["toEntities"] = entities;
-      rule["toFQDNs"] = fqdns;
-      rule["toNodes"] = nodeSelectors;
-      rule["icmps"] = icmps;
-    }
-
-    rule["toPorts"] = this.buildPortSelectors(portSelectors, addDnsRule);
-    rules.push(rule);
-
-    return this;
-  }
-
-  buildCIDRSelectors(selector: CIDRSelector) {
-    if (selector.ranges.length === 0) {
-      throw new Error("empty cidr list");
-    }
-    return selector.ranges;
-  }
-
-  buildEndpointSelectors(selector: EndpointSelector) {
-    const namespace = (namespace: string) => {
-      if (namespace === "*") {
-        return {};
-      }
-      return {
-        "k8s:io.kubernetes.pod.namespace": namespace,
-      };
-    };
-
-    switch (selector.type) {
-      case "all-pods": {
-        return [{}];
-      }
-      case "component": {
-        return [
-          {
-            matchLabels: {
-              ...namespace(selector.namespace),
-              "k8s:app.kubernetes.io/component": selector.name,
-            },
-          },
-        ];
-      }
-      case "gateway": {
-        return [
-          {
-            matchLabels: {
-              "k8s:gateway.envoyproxy.io/owning-gateway-name": selector.name,
-              "k8s:io.kubernetes.pod.namespace": "envoy-gateway",
-            },
-          },
-        ];
-      }
-      case "health": {
-        return [
-          {
-            matchLabels: {
-              "reserved:health": "",
-            },
-          },
-        ];
-      }
-      case "kube-dns": {
-        return [
-          {
-            matchLabels: {
-              "k8s:io.kubernetes.pod.namespace": "kube-system",
-              "k8s:k8s-app": "kube-dns",
-            },
-          },
-        ];
-      }
-      case "pod": {
-        return [
-          {
-            matchLabels: {
-              ...namespace(selector.namespace),
-              "k8s:app.kubernetes.io/name": selector.name,
-            },
-          },
-        ];
-      }
-      default: {
-        const _: never = selector;
-        throw new Error(`invalid selector: ${selector}`);
-      }
-    }
-  }
-
-  buildEntitySelectors(selector: EntitySelector) {
-    switch (selector.type) {
-      case "host":
-        return ["host"];
-      case "kube-apiserver":
-        return ["kube-apiserver"];
-      default: {
-        const _: never = selector;
-        throw new Error(`unknown entity: ${selector}`);
-      }
-    }
-  }
-
-  buildFQDNSelectors(selector: FQDNSSelector) {
-    return selector.names.map((n) => ({
-      matchPattern: n,
-    }));
-  }
-
-  buildNodeSelectors(
-    selector: NodeSelector,
-    isRule: boolean,
-  ): Record<string, any>[] | undefined {
-    const prefix = isRule ? "node:" : "";
-    switch (selector.type) {
-      case "all-nodes": {
-        return [
-          {
-            matchExpressions: [
-              {
-                key: `${prefix}kubernetes.io/hostname`,
-                operator: "Exists",
-              },
-            ],
-          },
-        ];
-      }
-      case "control-plane": {
-        return [
-          {
-            matchLabels: {
-              [`${prefix}node-role.kubernetes.io/control-plane`]: "",
-            },
-          },
-        ];
-      }
-      default: {
-        const _: never = selector;
-        throw new Error(`invalid selector: ${selector}`);
-      }
-    }
-  }
-
-  allowEgressTo(
-    target: RuleSelector,
-    ...protocolSelectors: ProtocolSelector[]
-  ) {
-    this.buildRules(target, protocolSelectors, "egress");
-    return this;
-  }
-
-  allowIngressFrom(
-    target: RuleSelector,
-    ...protocolSelectors: ProtocolSelector[]
-  ) {
-    this.buildRules(target, protocolSelectors, "ingress");
-    return this;
-  }
-
-  syncWithRouter() {
-    this.metadata.annotations[
-      "router-policy-sync.homelab-helper.benfiola.com/sync-with-router"
-    ] = "";
-    return this;
-  }
-}
-
-// A Cilium entity (e.g. kube-apiserver) used as a policy target. Generates a
-// toEntities/fromEntities rule on the calling service's policy, and adds the
-// corresponding ingress/egress rule to each ingressTarget's host-firewall policy.
-export class EntityTarget {
-  constructor(
-    readonly entity: EntitySelector,
-    readonly ingressTargets: ServiceBuilder[],
-  ) {}
-}
-
-export class ServiceGroup {
-  constructor(readonly members: ServiceBuilder[]) {}
-}
-
-export const group = (...members: ServiceBuilder[]): ServiceGroup =>
-  new ServiceGroup(members);
-
-type ToTarget = ServiceBuilder | ServiceGroup | EntityTarget | RuleSelector;
-type FromTarget = ServiceBuilder | ServiceGroup | RuleSelector;
-
-const parseProtocols = (
-  args: (ProtocolSelector | string)[],
-): ProtocolSelector[] => {
-  const last = args[args.length - 1];
-  return (
-    typeof last === "string" ? args.slice(0, -1) : args
-  ) as ProtocolSelector[];
-};
-
-export class ServiceBuilder {
-  readonly selector: TargetSelector;
-  readonly _policy: CiliumPolicy;
-
-  constructor(construct: Construct, name: string, selector: TargetSelector) {
-    this.selector = selector;
-    this._policy = new CiliumPolicy(construct, name, selector);
-  }
-
-  to(target: ToTarget, ...args: (ProtocolSelector | string)[]): this {
-    if (target instanceof ServiceGroup) {
-      for (const member of target.members) this.to(member, ...args);
-      return this;
-    }
-    const protocols = parseProtocols(args);
-    if (target instanceof EntityTarget) {
-      this._policy.allowEgressTo(target.entity, ...protocols);
-      for (const svc of target.ingressTargets) {
-        svc._policy.allowIngressFrom(this.selector, ...protocols);
-      }
-      return this;
-    }
-    const targetSelector =
-      target instanceof ServiceBuilder ? target.selector : target;
-    this._policy.allowEgressTo(targetSelector, ...protocols);
-    if (target instanceof ServiceBuilder) {
-      const ingressProtocols = protocols.filter(
-        (p) => !isDnsWildcardSelector(p),
-      );
-      target._policy.allowIngressFrom(this.selector, ...ingressProtocols);
-    }
-    return this;
-  }
-
-  from(source: FromTarget, ...args: (ProtocolSelector | string)[]): this {
-    if (source instanceof ServiceGroup) {
-      for (const member of source.members) this.from(member, ...args);
-      return this;
-    }
-    const protocols = parseProtocols(args);
-    const sourceSelector =
-      source instanceof ServiceBuilder ? source.selector : source;
-    this._policy.allowIngressFrom(sourceSelector, ...protocols);
-    if (source instanceof ServiceBuilder) {
-      source._policy.allowEgressTo(this.selector, ...protocols);
-    }
-    return this;
-  }
-
-  syncWithRouter(): this {
-    this._policy.syncWithRouter();
-    return this;
-  }
-}
-
-const entityNodeMapping: Partial<Record<string, string[]>> = {
-  [selectors.kubeApiServer().type]: [selectors.controlPlane().type],
-  [selectors.host().type]: [selectors.nodes().type],
-};
-
-export const createServices = (construct: Construct) => {
-  const registry = new Map<string, ServiceBuilder>();
-
-  function svc(name: string, selector: TargetSelector): ServiceBuilder;
-  function svc(name: string, entity: EntitySelector): EntityTarget;
-  function svc(
-    name: string,
-    selector: TargetSelector | EntitySelector,
-  ): ServiceBuilder | EntityTarget {
-    if (!isEndpointSelector(selector) && !isNodeSelector(selector)) {
-      const entity = selector as EntitySelector;
-      const ingressTargets = (entityNodeMapping[entity.type] ?? []).map(
-        (selectorType: string) => {
-          const target = registry.get(selectorType);
-          if (!target)
-            throw new Error(
-              `svc for "${selectorType}" must be registered before "${entity.type}"`,
-            );
-          return target;
+    if (ports.length > 0) {
+      rule.toPorts = [
+        {
+          ports,
+          ...(dnsRules && { rules: dnsRules }),
         },
-      );
-      return new EntityTarget(entity, ingressTargets);
+      ];
     }
-    const builder = new ServiceBuilder(construct, name, selector as TargetSelector);
-    registry.set(selector.type, builder);
+
+    if (icmps.length > 0) {
+      rule.icmps = [{ fields: icmps }];
+    }
+
+    rules.push(rule);
+  }
+
+  _to(object: Subject | Object, ...specifiers: Specifier[]) {
+    this.buildRule(object, specifiers, "egress");
+    return this;
+  }
+
+  to(object: Subject | Object | PolicyBuilder, ...specifiers: Specifier[]) {
+    if (object instanceof PolicyBuilder) {
+      object._from(this.subject, ...specifiers);
+      this._to(object.subject, ...specifiers);
+    } else if (object.category === "subject") {
+      const builder = this.registry.get(object);
+      builder._from(this.subject, ...specifiers);
+      this._to(object, ...specifiers);
+    } else {
+      this._to(object, ...specifiers);
+    }
+    return this;
+  }
+
+  _from(subject: Subject | Object, ...specifiers: Specifier[]) {
+    this.buildRule(subject, specifiers, "ingress");
+    return this;
+  }
+
+  from(subject: Subject | Object | PolicyBuilder, ...specifiers: Specifier[]) {
+    if (subject instanceof PolicyBuilder) {
+      subject._to(this.subject, ...specifiers);
+      this._from(subject.subject, ...specifiers);
+    } else if (subject.category === "subject") {
+      const builder = this.registry.get(subject);
+      builder._to(this.subject, ...specifiers);
+      this._from(subject, ...specifiers);
+    } else {
+      this._from(subject, ...specifiers);
+    }
+    return this;
+  }
+}
+
+class ServiceRegistry {
+  readonly construct: Construct;
+  readonly builders: Record<string, PolicyBuilder>;
+
+  constructor(construct: Construct) {
+    this.construct = construct;
+    this.builders = {};
+  }
+
+  register(name: string, subject: Subject) {
+    const hash = computeHash(subject);
+    if (this.builders[hash] !== undefined) {
+      throw new Error(`policy builder for ${name} already exists`);
+    }
+    const builder = new PolicyBuilder(this, name, subject);
+    this.builders[hash] = builder;
     return builder;
   }
 
-  return svc;
+  get(subject: Subject) {
+    const hash = computeHash(subject);
+    if (this.builders[hash] === undefined) {
+      throw new Error(`policy builder for ${name} does not exists`);
+    }
+    return this.builders[hash];
+  }
+}
+
+export const services = (construct: Construct) => {
+  const registry = new ServiceRegistry(construct);
+  return registry.register.bind(registry);
 };

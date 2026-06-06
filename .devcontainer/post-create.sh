@@ -10,5 +10,6 @@ make install-project
 gcloud auth login
 bw login
 bw lock
+homelab pull-secrets
 homelab generate-client-config
-homelab talosctl -n a kubeconfig
+homelab talosctl -n d kubeconfig
