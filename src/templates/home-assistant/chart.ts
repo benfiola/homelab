@@ -42,6 +42,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "config-map": { configMap: config.name },
       config: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
+    podAnnotations: {
+      "k8s.v1.cni.cncf.io/networks": "mdns",
+    },
   });
   statefulSet.addInitContainer("copy-config", "alpine:latest", {
     args: [

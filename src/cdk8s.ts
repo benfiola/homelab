@@ -1007,6 +1007,7 @@ interface WorkloadOpts {
   hostNetwork?: boolean;
   nodeSelector?: Record<string, string>;
   securityContext?: GetSecurityContextOpts;
+  podAnnotations?: Record<string, string>;
 }
 
 interface ContainerResources {
@@ -1103,7 +1104,10 @@ export class StatefulSet extends BaseStatefulSet {
       spec: {
         selector: { matchLabels: selector },
         template: {
-          metadata: { labels: selector },
+          metadata: {
+            labels: selector,
+            annotations: opts.podAnnotations,
+          },
           spec: {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
@@ -1241,7 +1245,10 @@ export class DaemonSet extends BaseDaemonSet {
       spec: {
         selector: { matchLabels: selector },
         template: {
-          metadata: { labels: selector },
+          metadata: {
+            labels: selector,
+            annotations: opts.podAnnotations,
+          },
           spec: {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
