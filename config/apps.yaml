@@ -32,6 +32,7 @@ apps:
   - template: minecraft
   - template: monitoring-config
   - template: mosquitto
+  - template: multus
   - template: network-policy
   - template: node-feature-discovery
   - template: piraeus-operator
