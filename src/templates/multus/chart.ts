@@ -74,9 +74,11 @@ const patchForTalos = async (obj: Kustomization) => {
   // Talos fix: Add sleep after binary installation to prevent race conditions
   const initContainer = spec.initContainers[0];
   initContainer.command = [
-    "/bin/sh",
-    "-c",
-    "cp /usr/src/multus-cni/bin/multus /host/opt/cni/bin/ && sleep 5",
+    "/usr/src/multus-cni/bin/install_multus",
+    "-d",
+    "/host/opt/cni/bin",
+    "-t",
+    "thick",
   ];
 
   // Increase memory limit from 50Mi to 150Mi

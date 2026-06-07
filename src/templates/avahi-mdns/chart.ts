@@ -20,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       caps: ["NET_ADMIN", "CHOWN", "FOWNER", "SYS_CHROOT", "SETUID", "SETGID"],
     },
     podAnnotations: {
-      "k8s.v1.cni.cncf.io/networks": "mdns",
+      "k8s.v1.cni.cncf.io/networks": "multus-network/mdns",
     },
   });
   daemonSet.addContainer("avahi", "docker.io/ydkn/avahi:371", {
