@@ -50,6 +50,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     clustermesh: {
       policyDefaultLocalCluster: true,
     },
+    cni: {
+      exclusive: false,
+    },
     hostFirewall: {
       enabled: true,
     },
