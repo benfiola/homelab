@@ -336,7 +336,9 @@ class PolicyBuilder {
           break;
         }
         case "dns-wildcard": {
-          dnsRules = { dns: [{ matchPattern: "*" }] };
+          if (direction === "egress") {
+            dnsRules = { dns: [{ matchPattern: "*" }] };
+          }
           break;
         }
         case "description": {
