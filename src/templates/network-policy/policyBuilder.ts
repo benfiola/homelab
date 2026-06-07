@@ -324,7 +324,7 @@ class PolicyBuilder {
         case "icmpv4": {
           for (const type of spec.icmpTypes) {
             icmps.push({
-              type,
+              type: { value: type },
               family: "IPv4",
             });
           }
