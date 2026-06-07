@@ -151,6 +151,7 @@ const buildNodeSelector = (
           ],
         },
       ];
+    case "kube-apiserver":
     case "control-plane":
       return [
         {

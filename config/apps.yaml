@@ -4,7 +4,6 @@ apps:
   - template: alertmanager
   - template: alloy
   - template: assets-server
-  - template: avahi-mdns
   - template: bucket-sync
   - template: cert-manager
   - template: cilium
