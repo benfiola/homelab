@@ -1,10 +1,12 @@
 import { NetworkAttachmentDefinition } from "../../../assets/multus/k8s.cni.cncf.io";
-import { Chart } from "../../cdk8s";
+import { Chart, Namespace } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id);
+
+  new Namespace(chart);
 
   new NetworkAttachmentDefinition(
     chart,

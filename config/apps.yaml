@@ -33,7 +33,7 @@ apps:
   - template: monitoring-config
   - template: mosquitto
   - template: multus
-  - template: multus-networks
+  - template: multus-network
   - template: network-policy
   - template: node-feature-discovery
   - template: piraeus-operator
