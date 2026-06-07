@@ -139,6 +139,7 @@ const buildNodeSelector = (
   const prefix = inRule ? "node:" : "";
 
   switch (selector.type) {
+    case "host":
     case "nodes":
       return [
         {
