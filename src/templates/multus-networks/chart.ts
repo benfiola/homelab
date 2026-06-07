@@ -1,0 +1,33 @@
+import { NetworkAttachmentDefinition } from "../../../assets/multus/k8s.cni.cncf.io";
+import { Chart } from "../../cdk8s";
+import { TemplateChartFn } from "../../context";
+
+export const chart: TemplateChartFn = async (construct, _, context) => {
+  const id = context.name;
+  const chart = new Chart(construct, id);
+
+  new NetworkAttachmentDefinition(
+    chart,
+    `${id}-network-attachment-definition-mdns`,
+    {
+      metadata: {
+        name: "mdns",
+      },
+      spec: {
+        config: JSON.stringify({
+          cniVersion: "0.3.1",
+          name: "mdns",
+          type: "bridge",
+          bridge: "mdns0",
+          isGateway: false,
+          ipam: {
+            type: "host-local",
+            subnet: "10.244.100.0/24",
+          },
+        }),
+      },
+    },
+  );
+
+  return chart;
+};
