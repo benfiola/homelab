@@ -132,7 +132,12 @@ const buildNodeSelector = (
 ): Record<string, any>[] | undefined => {
   // In rules, skip node selectors for 'nodes' and 'host'
   // since they should use entity selectors instead
-  if (inRule && (selector.type === "nodes" || selector.type === "host")) {
+  if (
+    inRule &&
+    (selector.type === "nodes" ||
+      selector.type === "host" ||
+      selector.type === "kube-apiserver")
+  ) {
     return undefined;
   }
 
