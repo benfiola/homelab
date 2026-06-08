@@ -27,7 +27,7 @@ apps:
   - template: kube-state-metrics
   - template: linstor
   - template: loki
-  # - template: mdns-reflector
+  - template: mdns-reflector
   - template: metrics-server
   - template: minecraft
   - template: monitoring-config
