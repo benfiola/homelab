@@ -9,6 +9,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { alpineImage } from "../../image-refs";
 import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -88,7 +89,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
     },
   });
-  statefulSet.addInitContainer("copy-config", "alpine:latest", {
+  statefulSet.addInitContainer("copy-config", alpineImage, {
     args: ["cp", "/config-map/config.yml", "/config/config.yml"],
     volumeMounts: {
       config: "/config",

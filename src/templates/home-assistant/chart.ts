@@ -9,6 +9,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { alpineImage } from "../../image-refs";
 import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -46,7 +47,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "k8s.v1.cni.cncf.io/networks": "multus-network/mdns@mdns0",
     },
   });
-  statefulSet.addInitContainer("copy-config", "alpine:latest", {
+  statefulSet.addInitContainer("copy-config", alpineImage, {
     args: [
       "cp",
       "/config-map/configuration.yaml",

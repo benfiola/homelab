@@ -37,7 +37,7 @@ export const chart: TemplateChartFn = async (construct, id: string) => {
       scripts: { configMap: scripts.name },
     },
   });
-  ss.addContainer("testing", "alpine:latest", {
+  ss.addContainer("testing", "alpine:3.23.4", {
     args: ["sh", "-e", "/scripts/run.sh"],
     volumeMounts: {
       data: "/data",

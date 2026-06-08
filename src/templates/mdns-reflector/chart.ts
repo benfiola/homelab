@@ -7,12 +7,22 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { alpineImage } from "../../image-refs";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id);
 
   new Namespace(chart, { privileged: true });
+
+  const daemonSetInit = new DaemonSet(chart, "mdns-interface-init", {
+    podAnnotations: {
+      "k8s.v1.cni.cncf.io/networks": "multus-network/mdns@mdns0",
+    },
+  });
+  daemonSetInit.addContainer("mdns-interface-init", alpineImage, {
+    args: ["sleep", "infinity"],
+  });
 
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     metadata: {
@@ -32,7 +42,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const daemonSet = new DaemonSet(chart, "mdns-reflector", {
+  const daemonSetReflector = new DaemonSet(chart, "mdns-reflector", {
     hostNetwork: true,
     securityContext: { caps: ["NET_RAW"] },
     volumes: {
@@ -40,7 +50,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       run: { emptyDir: {} },
     },
   });
-  daemonSet.addContainer(
+  daemonSetReflector.addContainer(
     "mdns-reflector",
     "docker.io/yuxzhu/mdns-reflector@sha256:266837dada296e012d2f622c607886ee255ccc020bc5148c524c31a6bfceaeec",
     {
@@ -52,7 +62,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  new VerticalPodAutoscaler(chart, daemonSet);
+  new VerticalPodAutoscaler(chart, daemonSetInit);
+  new VerticalPodAutoscaler(chart, daemonSetReflector);
 
   return chart;
 };

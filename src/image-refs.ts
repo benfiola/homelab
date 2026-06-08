@@ -13,3 +13,5 @@ export const homelabHelper = {
     version: `v${homelabHelperVersion}`,
   }),
 };
+
+export const alpineImage = "alpine:3.23.4";
