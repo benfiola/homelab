@@ -4,7 +4,6 @@ apps:
   - template: alertmanager
   - template: alloy
   - template: assets-server
-  - template: avahi-mdns
   - template: bucket-sync
   - template: cert-manager
   - template: cilium
@@ -28,6 +27,7 @@ apps:
   - template: kube-state-metrics
   - template: linstor
   - template: loki
+  - template: mdns-reflector
   - template: metrics-server
   - template: minecraft
   - template: monitoring-config

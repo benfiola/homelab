@@ -21,7 +21,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           name: "mdns",
           type: "bridge",
           bridge: "mdns0",
-          isGateway: false,
+          isGateway: true,
           ipam: {
             type: "host-local",
             subnet: "10.244.100.0/24",
