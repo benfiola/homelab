@@ -1,8 +1,8 @@
-import dedent from "ts-dedent";
-import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   DaemonSet,
+  findApiObject,
+  Helm,
   Namespace,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
@@ -24,46 +24,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     args: ["sleep", "infinity"],
   });
 
-  const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
-    metadata: {
-      name: "scripts",
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    config: {
+      destInterfaces: "mdns0",
     },
-    data: {
-      "run.sh": dedent`
-        #!/bin/sh
-        set -e
-        interface="$(ip route | grep default | awk '{print $5}' | head -1)"
-        if [ "\${interface}" = "" ]; then
-          1>&2 echo "could not determine primary interface"
-          exit 1
-        fi
-        mdns-reflector -f \${interface} mdns0
-      `,
+    daemonSet: {
+      hostNetwork: true,
     },
   });
-
-  const daemonSetReflector = new DaemonSet(chart, "mdns-reflector", {
-    hostNetwork: true,
-    securityContext: { caps: ["NET_RAW"] },
-    volumes: {
-      scripts: { configMap: scripts.name },
-      run: { emptyDir: {} },
-    },
-  });
-  daemonSetReflector.addContainer(
-    "mdns-reflector",
-    "docker.io/yuxzhu/mdns-reflector@sha256:266837dada296e012d2f622c607886ee255ccc020bc5148c524c31a6bfceaeec",
-    {
-      args: ["sh", "/scripts/run.sh"],
-      volumeMounts: {
-        scripts: "/scripts",
-        run: "/var/run",
-      },
-    },
-  );
 
   new VerticalPodAutoscaler(chart, daemonSetInit);
-  new VerticalPodAutoscaler(chart, daemonSetReflector);
+  new VerticalPodAutoscaler(
+    chart,
+    findApiObject(chart, {
+      apiVersion: "apps/v1",
+      kind: "DaemonSet",
+      name: "mdns-reflector",
+    }),
+  );
 
   return chart;
 };
