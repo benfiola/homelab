@@ -3,7 +3,7 @@ const gameServerImagesTag = "0.2.1";
 export const gameServerImage = (name: string) =>
   `ghcr.io/benfiola/game-server-images/${name}:${gameServerImagesTag}`;
 
-const homelabHelperVersion = "10.2.3";
+const homelabHelperVersion = "10.2.4";
 
 export const homelabHelper = {
   image: `ghcr.io/benfiola/homelab-helper:${homelabHelperVersion}`,
