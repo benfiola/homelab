@@ -115,6 +115,14 @@ machine:
           - rw
 ---
 apiVersion: v1alpha1
+kind: BridgeConfig
+name: mdns0
+links: []
+up: true
+addresses:
+  - address: 169.254.254.0/24
+---
+apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
 hostname: node-a.cluster.bulia.dev
