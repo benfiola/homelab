@@ -1,4 +1,4 @@
-import { deepmerge, deepmergeCustom } from "deepmerge-ts";
+import { deepmergeCustom } from "deepmerge-ts";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import { parseAllDocuments } from "yaml";
@@ -154,48 +154,32 @@ export const createSchematic = async (schematic: ImageSchematic) => {
   return id;
 };
 
-const mergeArraysUsingField = (
-  values: any,
-  field: string,
-  mergeFn: (a: any, b: any) => any,
-) => {
-  const result = [...values[0]];
+const identityMerge = deepmergeCustom<any>({
+  mergeArrays: (streams, utils, meta) => {
+    const merged = [...streams[0]];
 
-  let destMap: Record<string, any> = {};
-  values[1].forEach((item: any) => (destMap[item[field]] = item));
-
-  result.forEach((source: any, index: number) => {
-    const dest = destMap[source[field]];
-    delete destMap[source[field]];
-    if (!dest) {
-      return;
-    }
-    result[index] = mergeFn(source, dest);
-  });
-
-  result.push(...Object.values(destMap));
-
-  return result;
-};
-
-const machineConfigMerge = deepmergeCustom<unknown>({
-  metaDataUpdater: (previousMeta: any, metaMeta: any) => {
-    const keyPath = [
-      previousMeta?.keyPath ?? "",
-      metaMeta.key ? String(metaMeta.key) : "",
-    ]
-      .filter((k) => k !== "")
-      .join(".");
-    return {
-      ...metaMeta,
-      keyPath,
+    const find = (toFind: any) => {
+      return merged.findIndex((curr: any) => {
+        return (
+          curr.apiVersion === toFind.apiVersion &&
+          curr.kind === toFind.kind &&
+          curr.name === toFind.name
+        );
+      });
     };
-  },
-  mergeArrays: (values, utils, meta: any) => {
-    if (meta?.keyPath === "cluster.apiServer.admissionControl") {
-      return mergeArraysUsingField(values, "name", utils.deepmerge);
+
+    for (let i = 1; i < streams.length; i++) {
+      for (const obj of streams[i]) {
+        const index = find(obj);
+        if (index === -1) {
+          merged.push(obj);
+        } else {
+          merged[index] = identityMerge(merged[index], obj);
+        }
+      }
     }
-    return utils.defaultMergeFunctions.mergeArrays(values);
+
+    return merged;
   },
 });
 
@@ -207,8 +191,39 @@ export const getSystemConfig = async (
 ) => {
   const hardware = cluster.hardware[node.hardware];
 
-  const isMachineConfig = (c: any) => c.kind === undefined;
-  const isHostnameConfig = (c: any) => c.kind === "HostnameConfig";
+  const buildDerivedConfigs = () => {
+    const hostname = {
+      apiVersion: "v1alpha1",
+      kind: "HostnameConfig",
+      auto: "off",
+      hostname: node.hostname,
+    };
+
+    const volumes: Record<any, any>[] = [];
+    for (const [name, disk] of Object.entries(hardware.disks)) {
+      if (name === "SYSTEM") {
+        continue;
+      }
+
+      const kind = ["STATE", "EPHEMERAL", "IMAGECACHE"].includes(name)
+        ? "VolumeConfig"
+        : "RawVolumeConfig";
+      volumes.push({
+        apiVersion: "v1alpha1",
+        kind,
+        name,
+        provisioning: {
+          diskSelector: {
+            match: `disk.dev_path == '${disk.device}'`,
+          },
+          minSize: disk.size,
+          maxSize: disk.size,
+          grow: true,
+        },
+      });
+    }
+    return [hostname, ...volumes];
+  };
 
   const genConfigs = await _talosctlGenConfig(
     cluster.name,
@@ -227,45 +242,10 @@ export const getSystemConfig = async (
       withSecrets: secretsPath,
     },
   );
-  const genMachine = genConfigs.filter(isMachineConfig)[0];
-  const genHostname = genConfigs.filter(isHostnameConfig)[0];
+  const derivedConfigs = buildDerivedConfigs();
 
-  const machinePatch = baseConfigs.filter(isMachineConfig)[0];
-  const hostnamePatch = {
-    apiVersion: "v1alpha1",
-    kind: "HostnameConfig",
-    auto: "off",
-    hostname: node.hostname,
-  };
-
-  const machineConfig = machineConfigMerge(genMachine, machinePatch);
-  const hostnameConfig = deepmerge(genHostname, hostnamePatch);
-  const volumeConfigs: Record<any, any>[] = [];
-  for (const [name, disk] of Object.entries(hardware.disks)) {
-    if (name === "SYSTEM") {
-      continue;
-    }
-
-    const kind = ["STATE", "EPHEMERAL", "IMAGECACHE"].includes(name)
-      ? "VolumeConfig"
-      : "RawVolumeConfig";
-    volumeConfigs.push({
-      apiVersion: "v1alpha1",
-      kind,
-      name,
-      provisioning: {
-        diskSelector: {
-          match: `disk.dev_path == '${disk.device}'`,
-        },
-        minSize: disk.size,
-        maxSize: disk.size,
-        grow: true,
-      },
-    });
-  }
-
-  const configs = [machineConfig, hostnameConfig, ...volumeConfigs];
-  return configs;
+  const result = identityMerge(genConfigs, baseConfigs, derivedConfigs);
+  return result;
 };
 
 const processTalosctlNodeArgs = (nodes: NodeConfig[], args: string[]) => {
