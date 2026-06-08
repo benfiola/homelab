@@ -27,13 +27,13 @@ apps:
   - template: kube-state-metrics
   - template: linstor
   - template: loki
-  - template: mdns-reflector
+  # - template: mdns-reflector
   - template: metrics-server
   - template: minecraft
   - template: monitoring-config
   - template: mosquitto
   - template: multus
-  - template: multus-network
+  # - template: multus-network
   - template: network-policy
   - template: node-feature-discovery
   - template: piraeus-operator
