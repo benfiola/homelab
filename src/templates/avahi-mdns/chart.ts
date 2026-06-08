@@ -14,20 +14,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const daemonSet = new DaemonSet(chart, "avahi", {
     hostNetwork: true,
-    securityContext: {
-      uid: 0,
-      gid: 0,
-      caps: ["NET_ADMIN", "CHOWN", "FOWNER", "SYS_CHROOT", "SETUID", "SETGID"],
-    },
-    podAnnotations: {
-      "k8s.v1.cni.cncf.io/networks": "multus-network/mdns",
-    },
   });
-  daemonSet.addContainer("avahi", "docker.io/ydkn/avahi:371", {
-    env: {
-      ENABLE_REFLECTOR: "yes",
-      DENY_INTERFACES: "lo,cilium_net,cilium_host,geneve_sys_6081,lxc_health",
-    },
+  daemonSet.addContainer("avahi", "docker.io/yuxzhu/mdns-reflector:latest", {
+    args: ["sleep", "infinity"],
   });
 
   new VerticalPodAutoscaler(chart, daemonSet);

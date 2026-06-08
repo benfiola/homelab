@@ -43,7 +43,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       config: { pvc: { size: "10Gi", storageClass: "replicated" } },
     },
     podAnnotations: {
-      "k8s.v1.cni.cncf.io/networks": "multus-network/mdns",
+      "k8s.v1.cni.cncf.io/networks": "multus-network/mdns@mdns0",
     },
   });
   statefulSet.addInitContainer("copy-config", "alpine:latest", {
