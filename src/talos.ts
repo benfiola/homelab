@@ -192,6 +192,12 @@ export const getSystemConfig = async (
   const hardware = cluster.hardware[node.hardware];
 
   const buildDerivedConfigs = () => {
+    const dhcp = {
+      apiVersion: "v1alpha1",
+      kind: "DHCPv4Config",
+      name: node.interface,
+    };
+
     const hostname = {
       apiVersion: "v1alpha1",
       kind: "HostnameConfig",
@@ -222,7 +228,7 @@ export const getSystemConfig = async (
         },
       });
     }
-    return [hostname, ...volumes];
+    return [dhcp, hostname, ...volumes];
   };
 
   const genConfigs = await _talosctlGenConfig(

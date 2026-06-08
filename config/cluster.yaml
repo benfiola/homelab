@@ -120,46 +120,53 @@ name: mdns0
 links: []
 up: true
 addresses:
-  - address: 169.254.254.0/24
+  - address: 169.254.254.1/24
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
 hostname: node-a.cluster.bulia.dev
 role: worker
+interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
 hostname: node-b.cluster.bulia.dev
 role: worker
+interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
 hostname: node-c.cluster.bulia.dev
 role: worker
+interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
 hostname: node-d.cluster.bulia.dev
 role: controlplane
+interface: eno1
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
 hostname: node-e.cluster.bulia.dev
 role: worker
+interface: eno2
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
 hostname: node-f.cluster.bulia.dev
 role: worker
+interface: eno2
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
 hostname: node-g.cluster.bulia.dev
 role: worker
+interface: eno2

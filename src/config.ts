@@ -79,6 +79,7 @@ const nodeConfigSchema = zod.object({
   hostname: zod.string(),
   name: zod.string().default(""),
   role: roleSchema,
+  interface: zod.string(),
 });
 
 export type NodeConfig = zod.infer<typeof nodeConfigSchema>;
