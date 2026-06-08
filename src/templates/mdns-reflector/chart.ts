@@ -22,6 +22,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   daemonSetInit.addContainer("mdns-interface-init", alpineImage, {
     args: ["sleep", "infinity"],
+    readiness: {
+      exec: { command: ["ip", "link", "show", "mdns0"] },
+      periodSeconds: 5,
+      failureThreshold: 6,
+    },
   });
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
