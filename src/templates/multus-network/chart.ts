@@ -19,7 +19,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         config: JSON.stringify({
           cniVersion: "0.3.1",
           name: "mdns",
-          type: "macvlan",
+          type: "bridge",
           bridge: "mdns0",
           isGateway: false,
           ipam: {
