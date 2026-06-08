@@ -26,7 +26,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     config: {
-      sourceInterfaces: "asdf",
       destInterfaces: "mdns0",
     },
     daemonSet: {
