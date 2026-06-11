@@ -104,7 +104,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       securityContext: securityContext.container,
       skipCRDCreation: true,
     },
-    policyAuditMode: true,
+    policyAuditMode: false,
     policyEnforcementMode: "always",
     rollOutCiliumPods: true,
     tunnelProtocol: "geneve",

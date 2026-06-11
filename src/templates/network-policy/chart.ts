@@ -550,6 +550,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.9.0/24",
         "192.168.16.0/24",
         "192.168.17.0/24",
+        "192.168.34.0/24",
       ),
       tcp(6969, 10443, 25565, 26900),
       udp([26900, 26902]),
@@ -562,7 +563,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   gatewayPersonal
     .to(envoyGatewayController, tcp(18000))
     .to(tunnel, tcp(8080, 8081))
-    .from(cidrs("192.168.16.0/24", "192.168.17.0/24"), tcp(8080, 10443));
+    .from(
+      cidrs("192.168.16.0/24", "192.168.17.0/24", "192.168.34.0/24"),
+      tcp(8080, 10443),
+    );
 
   gatewayInfrastructure
     .to(envoyGatewayController, tcp(18000))
