@@ -121,6 +121,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         config: "/config",
         shm: "/dev/shm",
       },
+      liveness: {
+        http: { path: "/api/version", port: 5000 },
+      },
+      readiness: {
+        http: { path: "/api/version", port: 5000 },
+      },
     },
   );
 
