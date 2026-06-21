@@ -37,6 +37,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         cameras: {
           fake: {
             enabled: false,
+            detect: {
+              enabled: false,
+            },
             ffmpeg: {
               hwaccel_args: "preset-vaapi",
               inputs: [
