@@ -1046,7 +1046,10 @@ function buildProbe(probeConfig: ProbeConfig | undefined) {
   const probe: any = { ...timingConfig };
 
   if (http) {
-    probe.httpGet = http;
+    probe.httpGet = {
+      ...http,
+      port: { value: http.port },
+    };
   } else if (tcp) {
     probe.tcpSocket = tcp;
   } else if (exec) {
