@@ -7,7 +7,7 @@ export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
     {
       chart: "oci://ghcr.io/benfiola/homelab-images/charts/pvc-restore",
-      version: "v1.0.1",
+      version: "v1.0.2",
     },
     dir,
   );
