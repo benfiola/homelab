@@ -24,7 +24,7 @@ The network is split into VLANs as described in [Networking](./networking.md). T
 
 ### Rule Management
 
-Firewall rules are kept in sync by a helper controller defined in the companion [homelab-helper](https://github.com/benfiola/homelab-helper) repository. This controller watches the cluster state and automatically updates router firewall rules, ensuring they remain synchronized with their matched Gateway resources.
+Firewall rules are kept in sync by a helper controller defined in the companion [homelab-images](https://github.com/benfiola/homelab-images) repository. This controller watches the cluster state and automatically updates router firewall rules, ensuring they remain synchronized with their matched Gateway resources.
 
 The separation into a dedicated helper controller keeps this operational concern decoupled from the main infrastructure project.
 

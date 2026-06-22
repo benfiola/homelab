@@ -13,7 +13,7 @@ export class WrappedGateway extends ApiObject {
    * Returns the apiVersion and kind for "WrappedGateway"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'gateway-route-sync.homelab-helper.benfiola.com/v1',
+    apiVersion: 'gateway-route-sync.homelab-images.benfiola.com/v1',
     kind: 'WrappedGateway',
   }
 
@@ -186,23 +186,30 @@ export function toJson_WrappedGatewaySpecAddresses(obj: WrappedGatewaySpecAddres
  */
 export interface WrappedGatewaySpecBackendTls {
   /**
-   * ClientCertificateRef is a reference to an object that contains a Client
-   * Certificate and the associated private key.
+   * ClientCertificateRef references an object that contains a client certificate
+   * and its associated private key. It can reference standard Kubernetes resources,
+   * i.e., Secret, or implementation-specific custom resources.
    *
-   * References to a resource in different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
+   * A ClientCertificateRef is considered invalid if:
    *
-   * ClientCertificateRef can reference to standard Kubernetes resources, i.e.
-   * Secret, or implementation-specific custom resources.
+   * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+   * does not exist) or is misconfigured (e.g., a Secret does not contain the keys
+   * named `tls.crt` and `tls.key`). In this case, the `ResolvedRefs` condition
+   * on the Gateway MUST be set to False with the Reason `InvalidClientCertificateRef`
+   * and the Message of the Condition MUST indicate why the reference is invalid.
    *
-   * This setting can be overridden on the service level by use of BackendTLSPolicy.
+   * * It refers to a resource in another namespace UNLESS there is a ReferenceGrant
+   * in the target namespace that allows the certificate to be attached.
+   * If a ReferenceGrant does not allow this reference, the `ResolvedRefs` condition
+   * on the Gateway MUST be set to False with the Reason `RefNotPermitted`.
    *
-   * Support: Core
+   * Implementations MAY choose to perform further validation of the certificate
+   * content (e.g., checking expiry or enforcing specific formats). In such cases,
+   * an implementation-specific Reason and Message MUST be set.
    *
-   * <gateway:experimental>
+   * Support: Core - Reference to a Kubernetes TLS Secret (with the type `kubernetes.io/tls`).
+   * Support: Implementation-specific - Other resource kinds or Secrets with a
+   * different type (e.g., `Opaque`).
    *
    * @schema WrappedGatewaySpecBackendTls#clientCertificateRef
    */
@@ -300,23 +307,30 @@ export function toJson_WrappedGatewaySpecInfrastructure(obj: WrappedGatewaySpecI
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ClientCertificateRef is a reference to an object that contains a Client
- * Certificate and the associated private key.
+ * ClientCertificateRef references an object that contains a client certificate
+ * and its associated private key. It can reference standard Kubernetes resources,
+ * i.e., Secret, or implementation-specific custom resources.
  *
- * References to a resource in different namespace are invalid UNLESS there
- * is a ReferenceGrant in the target namespace that allows the certificate
- * to be attached. If a ReferenceGrant does not allow this reference, the
- * "ResolvedRefs" condition MUST be set to False for this listener with the
- * "RefNotPermitted" reason.
+ * A ClientCertificateRef is considered invalid if:
  *
- * ClientCertificateRef can reference to standard Kubernetes resources, i.e.
- * Secret, or implementation-specific custom resources.
+ * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+ * does not exist) or is misconfigured (e.g., a Secret does not contain the keys
+ * named `tls.crt` and `tls.key`). In this case, the `ResolvedRefs` condition
+ * on the Gateway MUST be set to False with the Reason `InvalidClientCertificateRef`
+ * and the Message of the Condition MUST indicate why the reference is invalid.
  *
- * This setting can be overridden on the service level by use of BackendTLSPolicy.
+ * * It refers to a resource in another namespace UNLESS there is a ReferenceGrant
+ * in the target namespace that allows the certificate to be attached.
+ * If a ReferenceGrant does not allow this reference, the `ResolvedRefs` condition
+ * on the Gateway MUST be set to False with the Reason `RefNotPermitted`.
  *
- * Support: Core
+ * Implementations MAY choose to perform further validation of the certificate
+ * content (e.g., checking expiry or enforcing specific formats). In such cases,
+ * an implementation-specific Reason and Message MUST be set.
  *
- * <gateway:experimental>
+ * Support: Core - Reference to a Kubernetes TLS Secret (with the type `kubernetes.io/tls`).
+ * Support: Implementation-specific - Other resource kinds or Secrets with a
+ * different type (e.g., `Opaque`).
  *
  * @schema WrappedGatewaySpecBackendTlsClientCertificateRef
  */

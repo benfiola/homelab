@@ -1,6 +1,5 @@
 import { Chart, Namespace, StatefulSet, TcpRoute, UdpRoute } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { gameServerImage } from "../../image-refs";
 
 export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
@@ -15,18 +14,22 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
   });
-  ss.addContainer("seven-days-to-die", gameServerImage("seven-days-to-die"), {
-    containerPorts: {
-      tcp: 26900,
-      udp1: [26900, "UDP"],
-      udp2: [26901, "UDP"],
-      udp3: [26902, "UDP"],
+  ss.addContainer(
+    "seven-days-to-die",
+    "ghcr.io/benfiola/homelab-images/seven-days-to-die:v1.0.3",
+    {
+      containerPorts: {
+        tcp: 26900,
+        udp1: [26900, "UDP"],
+        udp2: [26901, "UDP"],
+        udp3: [26902, "UDP"],
+      },
+      env: { LOG_LEVEL: "debug" },
+      volumeMounts: {
+        cache: "/cache",
+      },
     },
-    env: { LOG_LEVEL: "debug" },
-    volumeMounts: {
-      cache: "/cache",
-    },
-  });
+  );
 
   const svc = ss.createService({
     tcp: 26900,

@@ -13,7 +13,7 @@ export class BucketSync extends ApiObject {
    * Returns the apiVersion and kind for "BucketSync"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'bucket-sync.homelab-helper.benfiola.com/v1',
+    apiVersion: 'bucket-sync.homelab-images.benfiola.com/v1',
     kind: 'BucketSync',
   }
 
@@ -898,7 +898,7 @@ export class BucketSyncPolicy extends ApiObject {
    * Returns the apiVersion and kind for "BucketSyncPolicy"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'bucket-sync.homelab-helper.benfiola.com/v1',
+    apiVersion: 'bucket-sync.homelab-images.benfiola.com/v1',
     kind: 'BucketSyncPolicy',
   }
 

@@ -8,7 +8,6 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { homelabHelper } from "../../image-refs";
 import { textblock } from "../../strings";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -36,7 +35,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       extraContainers: [
         {
-          args: ["homelab-helper", "vault-unseal"],
           env: [
             {
               name: "VAULT_UNSEAL_KEY",
@@ -47,7 +45,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               value: "http://127.0.0.1:8200",
             },
           ],
-          image: homelabHelper.image,
+          image: "ghcr.io/benfiola/homelab-images/vault-unseal:v1.0.1",
           name: "vault-unseal",
           securityContext: securityContext.container,
           volumeMounts: [

@@ -7,7 +7,6 @@ import {
   TcpRoute,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { gameServerImage } from "../../image-refs";
 
 export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
@@ -58,7 +57,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   ss.addContainer(
     "single-player-tarkov",
-    gameServerImage("single-player-tarkov"),
+    "ghcr.io/benfiola/homelab-images/single-player-tarkov:v1.0.3",
     {
       containerPorts: {
         game: 6969,

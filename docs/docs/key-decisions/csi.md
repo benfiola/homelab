@@ -44,7 +44,7 @@ What makes Linstor compelling:
 
 **Snapshot and backup capabilities**: Linstor integrates with Kubernetes' snapshot API and external-snapshotter. Combined with Volsync (a PVC backup/restore tool), I can derive backups from just-in-time snapshots. This provides robust recovery options without dedicating separate infrastructure.
 
-**Simple deployment**: Setting up both the operator and supporting custom resources was straightforward. I did create a simple [bootstrap/provisioning controller](https://github.com/benfiola/homelab-helper) that runs as an initContainer for Linstor, but otherwise everything works out of the box.
+**Simple deployment**: Setting up both the operator and supporting custom resources was straightforward. I did create a simple [bootstrap/provisioning controller](https://github.com/benfiola/homelab-images) that runs as an initContainer for Linstor, but otherwise everything works out of the box.
 
 However, there are minor operational quirks worth noting:
 

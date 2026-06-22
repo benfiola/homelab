@@ -3,12 +3,14 @@ import { join } from "path";
 import * as cdk8s from "../../cdk8s-cli.ts";
 import { TemplateAssetFn } from "../../context.ts";
 import * as helm from "../../helm.ts";
-import { homelabHelper } from "../../image-refs";
 import { getTempy } from "../../tempy.ts";
 
 export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
-    homelabHelper.chart("bucket-sync"),
+    {
+      chart: "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync",
+      version: "v1.0.8",
+    },
     dir,
   );
   const destChartPath = join(dir, "chart.tar.gz");

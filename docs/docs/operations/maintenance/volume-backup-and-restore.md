@@ -14,14 +14,14 @@ See [volsync documentation](https://volsync.readthedocs.io/en/stable/) for ad-ho
 
 ## Restores
 
-Use the [homelab-helper](https://benfiola.github.io/homelab-helper) project to perform volume restores by annotating the `PersistentVolumeClaim`:
+Use the [homelab-images](https://benfiola.github.io/homelab-images) project to perform volume restores by annotating the `PersistentVolumeClaim`:
 
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   annotations:
-    pvc-restore.homelab-helper.benfiola.com/backup: ""
+    pvc-restore.homelab-images.benfiola.com/backup: ""
   name: sample
   namespace: sample
 spec:

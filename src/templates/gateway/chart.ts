@@ -1,5 +1,5 @@
 import { GatewayClass } from "../../../assets/gateway-api/gateway.networking.k8s.io";
-import { WrappedGateway } from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-helper.benfiola.com";
+import { WrappedGateway } from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-images.benfiola.com";
 import { Chart, gateways, Namespace } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 

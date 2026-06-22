@@ -7,7 +7,7 @@ import {
 import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import { get } from "lodash";
-import { BucketSyncPolicy as BaseBucketSyncPolicy } from "../assets/bucket-sync/bucket-sync.homelab-helper.benfiola.com";
+import { BucketSyncPolicy as BaseBucketSyncPolicy } from "../assets/bucket-sync/bucket-sync.homelab-images.benfiola.com";
 import {
   GarageBucket as BaseGarageBucket,
   GarageKey as BaseGarageKey,

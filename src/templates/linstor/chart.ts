@@ -5,7 +5,6 @@ import {
 import { Chart, VerticalPodAutoscaler } from "../../cdk8s";
 import { getClusterConfig, getNodeConfig, listNodes } from "../../config";
 import { TemplateChartContext, TemplateChartFn } from "../../context";
-import { homelabHelper } from "../../image-refs";
 
 const getNodes = async (context: TemplateChartContext) => {
   const clusterConfig = await getClusterConfig(context.configDir);
@@ -51,8 +50,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             { name: "drbd-module-loader", $patch: "delete" },
             {
               name: "linstor-provision-disk",
-              image: homelabHelper.image,
-              args: ["homelab-helper", "linstor-provision-disk"],
+              image:
+                "ghcr.io/benfiola/homelab-images/linstor-provision-disk:v1.0.5",
               securityContext: { privileged: true },
               volumeMounts: [
                 {
