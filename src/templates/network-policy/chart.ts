@@ -315,7 +315,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(fluxSourceController, tcp(9090, 9440));
 
   // frigate
-  frigate.to(mosquitto, tcp(1883));
+  frigate.to(mosquitto, tcp(1883)).to(assetsServer, tcp(8080));
   host.to(frigate, tcp(5000));
 
   // garage
