@@ -148,11 +148,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       liveness: {
         http: { path: "/api/", port: 5000 },
-        initialDelaySeconds: 300,
+        initialDelaySeconds: 60,
       },
       readiness: {
         http: { path: "/api/", port: 5000 },
-        initialDelaySeconds: 300,
+        initialDelaySeconds: 60,
       },
     },
   );
