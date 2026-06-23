@@ -45,7 +45,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               value: "http://127.0.0.1:8200",
             },
           ],
-          image: "ghcr.io/benfiola/homelab-images/vault-unseal:v1.0.1",
+          image: "ghcr.io/benfiola/homelab-images/vault-unseal:1.0.2",
           name: "vault-unseal",
           securityContext: securityContext.container,
           volumeMounts: [
