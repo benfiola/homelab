@@ -997,7 +997,14 @@ function volumesToInlineVolumes(
         return { name, configMap: { name: v.configMap, items: v.items } };
       if ("secret" in v)
         return { name, secret: { secretName: v.secret, items: v.items } };
-      return { name, emptyDir: (v as EmptyDirVolume).emptyDir };
+      const { medium, sizeLimit } = (v as EmptyDirVolume).emptyDir;
+      return {
+        name,
+        emptyDir: {
+          medium,
+          ...(sizeLimit ? { sizeLimit: { value: sizeLimit } } : {}),
+        },
+      };
     });
   return result.length ? result : undefined;
 }
@@ -1037,6 +1044,17 @@ interface ContainerOpts {
   readiness?: ProbeConfig;
   liveness?: ProbeConfig;
   startup?: ProbeConfig;
+}
+
+function resourcesToContainerResources(resources: ContainerResources | undefined) {
+  if (!resources) return undefined;
+  const wrap = (r: Record<string, string> | undefined) =>
+    r
+      ? Object.fromEntries(
+          Object.entries(r).map(([k, v]) => [k, { value: v }]),
+        )
+      : undefined;
+  return { limits: wrap(resources.limits), requests: wrap(resources.requests) };
 }
 
 function buildProbe(probeConfig: ProbeConfig | undefined) {
@@ -1081,7 +1099,7 @@ function buildContainer(
     args: opts.args,
     env: envToK8s(opts.env),
     ports: portsToContainerPorts(opts.containerPorts),
-    resources: opts.resources,
+    resources: resourcesToContainerResources(opts.resources),
     securityContext: secCtx.container,
     volumeMounts: mounts,
     readinessProbe: buildProbe(opts.readiness),
