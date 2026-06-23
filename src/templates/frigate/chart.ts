@@ -45,7 +45,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               hwaccel_args: "preset-vaapi",
               inputs: [
                 {
-                  path: "rtsp://localhost:8553/test",
+                  path: "rtsp://localhost:8553/demo",
                   roles: ["detect"],
                 },
               ],
@@ -68,7 +68,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
         telemetry: {
           stats: {
-            intel_gpu_stats: true,
+            intel_gpu_stats: false,
           },
         },
         tls: {
@@ -136,7 +136,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  const testVideoUrl = getAssetsServerUrl(
+  const demoVideoUrl = getAssetsServerUrl(
     "frigate-demo-videos/VIRAT_S_000201_05_001081_001215.mp4",
   );
   statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.19.1-ffmpeg", {
@@ -147,8 +147,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       MTX_HLS: "no",
       MTX_WEBRTC: "no",
       MTX_SRT: "no",
-      MTX_PATHS_TEST_RUNONINIT: `ffmpeg -re -stream_loop -1 -i ${testVideoUrl} -c copy -f rtsp rtsp://localhost:8553/test`,
-      MTX_PATHS_TEST_RUNONINITRESTART: "yes",
+      MTX_PATHS_DEMO_RUNONINIT: `ffmpeg -re -stream_loop -1 -i ${demoVideoUrl} -c:v libx264 -preset ultrafast -c:a copy -f rtsp rtsp://localhost:8553/demo`,
+      MTX_PATHS_DEMO_RUNONINITRESTART: "yes",
     },
   });
 
