@@ -37,6 +37,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     data: {
       "config.yml": stringify({
         mqtt: {
+          enabled: true,
           host: "mosquitto.mosquitto.svc",
           port: 1883,
           user: "frigate",
