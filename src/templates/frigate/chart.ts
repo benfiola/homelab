@@ -125,10 +125,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         shm: "/dev/shm",
       },
       liveness: {
-        http: { path: "/api/version", port: 5000 },
+        http: { path: "/api/", port: 5000 },
+        initialDelaySeconds: 300,
       },
       readiness: {
-        http: { path: "/api/version", port: 5000 },
+        http: { path: "/api/", port: 5000 },
+        initialDelaySeconds: 300,
       },
     },
   );
