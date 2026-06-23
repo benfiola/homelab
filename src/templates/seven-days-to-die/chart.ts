@@ -16,7 +16,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   ss.addContainer(
     "seven-days-to-die",
-    "ghcr.io/benfiola/homelab-images/seven-days-to-die:1.0.4",
+    "ghcr.io/benfiola/homelab-images/seven-days-to-die:1.0.5",
     {
       containerPorts: {
         tcp: 26900,

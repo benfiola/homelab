@@ -57,7 +57,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   ss.addContainer(
     "single-player-tarkov",
-    "ghcr.io/benfiola/homelab-images/single-player-tarkov:1.0.5",
+    "ghcr.io/benfiola/homelab-images/single-player-tarkov:1.0.4",
     {
       containerPorts: {
         game: 6969,
