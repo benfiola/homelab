@@ -214,7 +214,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new VerticalPodAutoscaler(chart, statefulSet, { advisory: true });
 
-  new HttpRoute(chart, "users", "frigate.bulia.dev").match(service, 5000);
+  new HttpRoute(chart, "users", "frigate.bulia.dev").match(service, 8971);
 
   return chart;
 };
