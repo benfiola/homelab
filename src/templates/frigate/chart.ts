@@ -66,6 +66,27 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           path: "/openvino-model/ssdlite_mobilenet_v2.xml",
           labelmap_path: "/openvino-model/coco_91cl_bkgr.txt",
         },
+        record: {
+          enabled: true,
+          continuous: {
+            days: 0,
+          },
+          motion: {
+            days: 1,
+          },
+          alerts: {
+            retain: {
+              days: 1,
+              mode: "all",
+            },
+          },
+          detections: {
+            retain: {
+              days: 1,
+              mode: "all",
+            },
+          },
+        },
         telemetry: {
           stats: {
             intel_gpu_stats: true,
