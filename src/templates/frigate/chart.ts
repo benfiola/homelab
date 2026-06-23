@@ -7,6 +7,7 @@ import {
   VaultAuth,
   VaultStaticSecret,
   VerticalPodAutoscaler,
+  getAssetsServerUrl,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { alpineImage } from "../../image-refs";
@@ -35,16 +36,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           password: "{FRIGATE_MQTT_PASSWORD}",
         },
         cameras: {
-          fake: {
-            enabled: false,
+          demo: {
+            enabled: true,
             detect: {
-              enabled: false,
+              enabled: true,
             },
             ffmpeg: {
               hwaccel_args: "preset-vaapi",
               inputs: [
                 {
-                  path: "rtsp://viewer:{FRIGATE_RTSP_PASSWORD}@198.51.100.1:554/cam/realmonitor?channel=1&subtype=2",
+                  path: "rtsp://localhost:8553/test",
                   roles: ["detect"],
                 },
               ],
@@ -67,7 +68,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
         telemetry: {
           stats: {
-            intel_gpu_stats: false,
+            intel_gpu_stats: true,
           },
         },
         tls: {
@@ -134,6 +135,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   );
+
+  const testVideoUrl = getAssetsServerUrl(
+    "frigate-demo-videos/VIRAT_S_000201_05_001081_001215.mp4",
+  );
+  statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.9.3", {
+    containerPorts: { rtsp: 8553 },
+    env: {
+      MTX_RTSPADDRESS: ":8553",
+      MTX_RTMP: "no",
+      MTX_HLS: "no",
+      MTX_WEBRTC: "no",
+      MTX_SRT: "no",
+      MTX_PATHS_TEST_RUNONINIT: `ffmpeg -re -stream_loop -1 -i ${testVideoUrl} -c copy -f rtsp rtsp://localhost:8553/test`,
+      MTX_PATHS_TEST_RUNONINITRESTART: "yes",
+    },
+  });
 
   const service = statefulSet.createService({ http: 8971 });
 
