@@ -198,7 +198,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         demoVideos.flatMap((url, i) => [
           [
             `MTX_PATHS_DEMO${i}_RUNONINIT`,
-            `ffmpeg -re -stream_loop -1 -i ${url} -c:v libx264 -preset ultrafast -c:a copy -f rtsp rtsp://localhost:8553/demo${i}`,
+            `ffmpeg -re -stream_loop -1 -i ${url} -c:v copy -an -f rtsp rtsp://localhost:8553/demo${i}`,
           ],
           [`MTX_PATHS_DEMO${i}_RUNONINITRESTART`, "yes"],
         ]),
