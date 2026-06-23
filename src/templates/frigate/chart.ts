@@ -155,7 +155,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "ghcr.io/blakeblackshear/frigate:0.17.1",
     {
       containerPorts: {
-        http: 8971,
+        "http-insecure": 5000,
+        "http-secure": 8971,
         rtsp: 8554,
       },
       env: {
@@ -206,11 +207,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const service = statefulSet.createService({ http: 8971 });
+  const service = statefulSet.createService({
+    "http-insecure": 5000,
+    "http-secure": 8971,
+  });
 
   new VerticalPodAutoscaler(chart, statefulSet, { advisory: true });
 
-  new HttpRoute(chart, "users", "frigate.bulia.dev").match(service, 8971);
+  new HttpRoute(chart, "users", "frigate.bulia.dev").match(service, 5000);
 
   return chart;
 };
