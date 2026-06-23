@@ -139,7 +139,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const testVideoUrl = getAssetsServerUrl(
     "frigate-demo-videos/VIRAT_S_000201_05_001081_001215.mp4",
   );
-  statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.9.3", {
+  statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.19.1-ffmpeg", {
     containerPorts: { rtsp: 8553 },
     env: {
       MTX_RTSPADDRESS: ":8553",
