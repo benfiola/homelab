@@ -27,7 +27,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "VIRAT_S_000201_05_001081_001215.mp4",
     "VIRAT_S_040104_07_001268_001348.mp4",
     "VIRAT_S_050201_03_000573_000647.mp4",
-    "VIRAT_S_050301_03_000933_001046.mp4",
   ].map((v) => getAssetsServerUrl(`frigate-demo-videos/${v}`));
 
   const config = new ConfigMap(chart, `${id}-config-map-config`, {
