@@ -68,7 +68,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
         telemetry: {
           stats: {
-            intel_gpu_stats: false,
+            intel_gpu_stats: true,
           },
         },
         tls: {
@@ -85,7 +85,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     securityContext: {
       uid: 0,
       gid: 0,
-      caps: ["CHOWN", "FOWNER", "SETGID", "SETUID"],
+      caps: ["CHOWN", "FOWNER", "SETGID", "SETUID", "PERFMON"],
     },
     volumes: {
       config: { emptyDir: {} },
