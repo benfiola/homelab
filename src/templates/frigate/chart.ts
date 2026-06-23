@@ -66,6 +66,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           path: "/openvino-model/ssdlite_mobilenet_v2.xml",
           labelmap_path: "/openvino-model/coco_91cl_bkgr.txt",
         },
+        objects: {
+          track: [
+            "backpack",
+            "bicycle",
+            "bird",
+            "bus",
+            "car",
+            "cat",
+            "dog",
+            "handbag",
+            "hat",
+            "motorcycle",
+            "person",
+            "skateboard",
+            "suitcase",
+            "umbrella",
+          ],
+        },
         record: {
           enabled: true,
           continuous: {
@@ -86,6 +104,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               mode: "all",
             },
           },
+        },
+        semantic_search: {
+          enabled: true,
         },
         telemetry: {
           stats: {
