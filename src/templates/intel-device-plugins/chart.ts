@@ -9,6 +9,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     name: "gpu-device-plugin",
+    sharedDevNum: 127,
   });
 
   return chart;

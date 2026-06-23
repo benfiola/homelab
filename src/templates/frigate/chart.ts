@@ -189,6 +189,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.19.1-ffmpeg", {
     containerPorts: { rtsp: 8553 },
+    resources: {
+      limits: { "gpu.intel.com/i915": "1" },
+      requests: { "gpu.intel.com/i915": "1" },
+    },
     env: {
       MTX_RTSPADDRESS: ":8553",
       MTX_RTMP: "no",
@@ -199,7 +203,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         demoVideos.flatMap((url, i) => [
           [
             `MTX_PATHS_DEMO${i}_RUNONINIT`,
-            `ffmpeg -re -stream_loop -1 -i ${url} -c:v copy -bsf:v h264_mp4toannexb -an -f rtsp rtsp://localhost:8553/demo${i}`,
+            `ffmpeg -re -stream_loop -1 -i ${url} -c:v h264_qsv -an -f rtsp rtsp://localhost:8553/demo${i}`,
           ],
           [`MTX_PATHS_DEMO${i}_RUNONINITRESTART`, "yes"],
         ]),
