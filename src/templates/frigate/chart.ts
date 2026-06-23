@@ -23,6 +23,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
+  const demoVideos = [
+    "VIRAT_S_000201_05_001081_001215.mp4",
+    "VIRAT_S_040104_07_001268_001348.mp4",
+    "VIRAT_S_050201_03_000573_000647.mp4",
+    "VIRAT_S_050301_03_000933_001046.mp4",
+  ].map((v) => getAssetsServerUrl(`frigate-demo-videos/${v}`));
+
   const config = new ConfigMap(chart, `${id}-config-map-config`, {
     metadata: {
       name: "frigate-config",
@@ -35,23 +42,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           user: "frigate",
           password: "{FRIGATE_MQTT_PASSWORD}",
         },
-        cameras: {
-          demo: {
-            enabled: true,
-            detect: {
+        cameras: Object.fromEntries(
+          demoVideos.map((_, i) => [
+            `demo${i}`,
+            {
               enabled: true,
+              detect: { enabled: true },
+              ffmpeg: {
+                hwaccel_args: "preset-intel-qsv-h264",
+                inputs: [
+                  {
+                    path: `rtsp://localhost:8553/demo${i}`,
+                    roles: ["detect", "record"],
+                  },
+                ],
+              },
             },
-            ffmpeg: {
-              hwaccel_args: "preset-intel-qsv-h264",
-              inputs: [
-                {
-                  path: "rtsp://localhost:8553/demo",
-                  roles: ["detect", "record"],
-                },
-              ],
-            },
-          },
-        },
+          ]),
+        ),
         detectors: {
           ov: {
             type: "openvino",
@@ -178,9 +186,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  const demoVideoUrl = getAssetsServerUrl(
-    "frigate-demo-videos/VIRAT_S_000201_05_001081_001215.mp4",
-  );
   statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.19.1-ffmpeg", {
     containerPorts: { rtsp: 8553 },
     env: {
@@ -189,8 +194,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       MTX_HLS: "no",
       MTX_WEBRTC: "no",
       MTX_SRT: "no",
-      MTX_PATHS_DEMO_RUNONINIT: `ffmpeg -re -stream_loop -1 -i ${demoVideoUrl} -c:v libx264 -preset ultrafast -c:a copy -f rtsp rtsp://localhost:8553/demo`,
-      MTX_PATHS_DEMO_RUNONINITRESTART: "yes",
+      ...Object.fromEntries(
+        demoVideos.flatMap((url, i) => [
+          [
+            `MTX_PATHS_DEMO${i}_RUNONINIT`,
+            `ffmpeg -re -stream_loop -1 -i ${url} -c:v libx264 -preset ultrafast -c:a copy -f rtsp rtsp://localhost:8553/demo${i}`,
+          ],
+          [`MTX_PATHS_DEMO${i}_RUNONINITRESTART`, "yes"],
+        ]),
+      ),
     },
   });
 
