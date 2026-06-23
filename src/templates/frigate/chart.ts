@@ -42,11 +42,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               enabled: true,
             },
             ffmpeg: {
-              hwaccel_args: "preset-vaapi",
+              hwaccel_args: "preset-intel-qsv-h264",
               inputs: [
                 {
                   path: "rtsp://localhost:8553/demo",
-                  roles: ["detect"],
+                  roles: ["detect", "record"],
                 },
               ],
             },
