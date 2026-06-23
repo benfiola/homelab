@@ -54,7 +54,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 inputs: [
                   {
                     path: `rtsp://localhost:8553/demo${i}`,
-                    roles: ["detect", "record"],
+                    roles: ["detect"],
                   },
                 ],
               },
