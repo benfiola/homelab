@@ -35,13 +35,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
     data: {
       "config.yml": stringify({
-        mqtt: {
-          enabled: true,
-          host: "mosquitto.mosquitto.svc",
-          port: 1883,
-          user: "frigate",
-          password: "{FRIGATE_MQTT_PASSWORD}",
-        },
         cameras: Object.fromEntries(
           demoVideos.map((_, i) => [
             `demo${i}`,
@@ -66,6 +59,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             device: "GPU",
           },
         },
+        go2rtc: {
+          streams: Object.fromEntries(
+            demoVideos.map((_, i) => [
+              `demo${i}`,
+              [`rtsp://localhost:8553/demo${i}`],
+            ]),
+          ),
+          webrtc: {
+            candidates: ["10.244.0.0/16"],
+          },
+        },
         model: {
           width: 300,
           height: 300,
@@ -73,6 +77,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           input_pixel_format: "bgr",
           path: "/openvino-model/ssdlite_mobilenet_v2.xml",
           labelmap_path: "/openvino-model/coco_91cl_bkgr.txt",
+        },
+        mqtt: {
+          enabled: true,
+          host: "mosquitto.mosquitto.svc",
+          port: 1883,
+          user: "frigate",
+          password: "{FRIGATE_MQTT_PASSWORD}",
         },
         objects: {
           track: [
