@@ -32,12 +32,67 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           doorbell: {
             enabled: true,
             ffmpeg: {
-              hwaccel_args: "preset-intel-qsv-h264",
+              hwaccel_args: "preset-intel-qsv-h265",
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/doorbell",
+                  path: "rtsp://localhost:8554/doorbell_substream",
                   roles: ["detect"],
+                },
+                {
+                  path: "rtsp://localhost:8554/doorbell",
+                  roles: ["record"],
+                },
+              ],
+            },
+          },
+          "front-yard": {
+            enabled: true,
+            ffmpeg: {
+              hwaccel_args: "preset-intel-qsv-h265",
+              input_args: "preset-rtsp-restream",
+              inputs: [
+                {
+                  path: "rtsp://localhost:8554/front-yard_substream",
+                  roles: ["detect"],
+                },
+                {
+                  path: "rtsp://localhost:8554/front-yard",
+                  roles: ["record"],
+                },
+              ],
+            },
+          },
+          garage: {
+            enabled: true,
+            ffmpeg: {
+              hwaccel_args: "preset-intel-qsv-h265",
+              input_args: "preset-rtsp-restream",
+              inputs: [
+                {
+                  path: "rtsp://localhost:8554/garage-substream",
+                  roles: ["detect"],
+                },
+                {
+                  path: "rtsp://localhost:8554/garage",
+                  roles: ["record"],
+                },
+              ],
+            },
+          },
+          porch: {
+            enabled: true,
+            ffmpeg: {
+              hwaccel_args: "preset-intel-qsv-h265",
+              input_args: "preset-rtsp-restream",
+              inputs: [
+                {
+                  path: "rtsp://localhost:8554/porch_substream",
+                  roles: ["detect"],
+                },
+                {
+                  path: "rtsp://localhost:8554/porch",
+                  roles: ["record"],
                 },
               ],
             },
@@ -51,7 +106,30 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
         go2rtc: {
           webrtc: {
-            doorbell: ["rtsp://192.168.24.13:554"],
+            doorbell: [
+              "rtsp://admin:{CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main",
+            ],
+            doorbell_substream: [
+              "rtsp://admin:{CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub",
+            ],
+            "front-yard": [
+              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101",
+            ],
+            "front-yard_substream": [
+              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102",
+            ],
+            garage: [
+              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101",
+            ],
+            garage_substream: [
+              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102",
+            ],
+            porch: [
+              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101",
+            ],
+            porch_substream: [
+              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102",
+            ],
             candidates: ["10.244.0.0/16"],
           },
         },
@@ -68,7 +146,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           host: "mosquitto.mosquitto.svc",
           port: 1883,
           user: "frigate",
-          password: "{FRIGATE_MQTT_PASSWORD}",
+          password: "{MQTT_PASSWORD}",
         },
         objects: {
           track: [
@@ -158,13 +236,36 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "webrtc-udp": [8555, "UDP"],
       },
       env: {
-        FRIGATE_MQTT_PASSWORD: {
+        CAMERA_DOORBELL_PASSWORD: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "camera-doorbell-password",
+          },
+        },
+        CAMERA_FRONT_YARD_PASSWORD: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "camera-front-yard-password",
+          },
+        },
+        CAMERA_GARAGE_PASSWORD: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "camera-garage-password",
+          },
+        },
+        CAMERA_PORCH_PASSWORD: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "camera-porch-password",
+          },
+        },
+        MQTT_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "mqtt-password",
           },
         },
-        FRIGATE_RTSP_PASSWORD: "super-secure",
       },
       resources: {
         limits: { "gpu.intel.com/i915": "1" },
