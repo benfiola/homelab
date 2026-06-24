@@ -30,13 +30,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "config.yml": stringify({
         cameras: {
           doorbell: {
+            detect: {
+              enabled: true,
+            },
             enabled: true,
             ffmpeg: {
-              hwaccel_args: "preset-intel-qsv-h265",
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/doorbell_substream",
+                  path: "rtsp://localhost:8554/doorbell_sub",
                   roles: ["detect"],
                 },
                 {
@@ -47,13 +49,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             },
           },
           "front-yard": {
+            detect: {
+              enabled: true,
+            },
             enabled: true,
             ffmpeg: {
-              hwaccel_args: "preset-intel-qsv-h265",
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/front-yard_substream",
+                  path: "rtsp://localhost:8554/front-yard_sub",
                   roles: ["detect"],
                 },
                 {
@@ -64,13 +68,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             },
           },
           garage: {
+            detect: {
+              enabled: true,
+            },
             enabled: true,
             ffmpeg: {
-              hwaccel_args: "preset-intel-qsv-h265",
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/garage-substream",
+                  path: "rtsp://localhost:8554/garage_sub",
                   roles: ["detect"],
                 },
                 {
@@ -81,13 +87,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             },
           },
           porch: {
+            detect: {
+              enabled: true,
+            },
             enabled: true,
             ffmpeg: {
-              hwaccel_args: "preset-intel-qsv-h265",
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/porch_substream",
+                  path: "rtsp://localhost:8554/porch_sub",
                   roles: ["detect"],
                 },
                 {
@@ -110,25 +118,25 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             doorbell: [
               "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main",
             ],
-            doorbell_substream: [
+            doorbell_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub",
             ],
             "front-yard": [
               "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101",
             ],
-            "front-yard_substream": [
+            "front-yard_sub": [
               "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102",
             ],
             garage: [
               "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101",
             ],
-            garage_substream: [
+            garage_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102",
             ],
             porch: [
               "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101",
             ],
-            porch_substream: [
+            porch_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102",
             ],
             candidates: ["10.244.0.0/16"],
