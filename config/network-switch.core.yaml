@@ -148,6 +148,7 @@ vlans:
     name: iot
     members:
       - 6
+      - 9
       - 10
       - 11
       - 17

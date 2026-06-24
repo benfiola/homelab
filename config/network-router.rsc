@@ -115,6 +115,10 @@
 /ip/dhcp-server/lease/add address=192.168.24.7 server=iot mac-address=40:D9:5A:3E:62:20 comment="wiim pro"
 /ip/dhcp-server/lease/add address=192.168.24.8 server=iot mac-address=A0:85:E3:E9:43:78 comment="3d printer"
 /ip/dhcp-server/lease/add address=192.168.24.9 server=iot mac-address=00:68:EB:75:E3:B8 comment="printer"
+/ip/dhcp-server/lease/add address=192.168.24.10 server=iot mac-address=24:48:45:4D:1C:00 comment="camera (front yard)"
+/ip/dhcp-server/lease/add address=192.168.24.11 server=iot mac-address=24:48:45:4D:1B:C2 comment="camera (garage)"
+/ip/dhcp-server/lease/add address=192.168.24.12 server=iot mac-address=54:8C:81:DE:3D:C8 comment="camera (porch)"
+/ip/dhcp-server/lease/add address=192.168.24.13 server=iot mac-address=EC:71:DB:2F:D2:68 comment="camera (doorbell)"
 /ip/dhcp-server/lease/add address=192.168.32.2 server=infrastructure mac-address=DC:A6:32:E8:02:E2 comment="node-a.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=DC:A6:32:C1:49:6F comment="node-b.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=DC:A6:32:E8:02:B3 comment="node-c.cluster"
@@ -131,6 +135,10 @@
 # assign dns
 /ip/dns/static/add name=3d-printer.bulia.dev address=192.168.24.8 ttl=10m
 /ip/dns/static/add name=printer.bulia.dev address=192.168.24.9 ttl=10m
+/ip/dns/static/add name=front-yard.camera.bulia.dev address=192.168.24.10 ttl=10m
+/ip/dns/static/add name=garage.camera.bulia.dev address=192.168.24.11 ttl=10m
+/ip/dns/static/add name=porch.camera.bulia.dev address=192.168.24.12 ttl=10m
+/ip/dns/static/add name=doorbell.camera.bulia.dev address=192.168.24.13 ttl=10m
 /ip/dns/static/add name=node-a.cluster.bulia.dev address=192.168.32.2 ttl=10m
 /ip/dns/static/add name=node-b.cluster.bulia.dev address=192.168.32.3 ttl=10m
 /ip/dns/static/add name=node-c.cluster.bulia.dev address=192.168.32.4 ttl=10m
