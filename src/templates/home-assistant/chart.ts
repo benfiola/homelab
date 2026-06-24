@@ -58,7 +58,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   statefulSet.addContainer(
     "home-assistant",
-    "ghcr.io/benfiola/homelab-images/home-assistant:1.0.5",
+    "ghcr.io/benfiola/homelab-images/home-assistant:1.0.6",
     {
       env: {
         TZ: "America/Los_Angeles",
