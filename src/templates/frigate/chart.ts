@@ -42,10 +42,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               enabled: true,
               detect: { enabled: true },
               ffmpeg: {
-                hwaccel_args: "preset-intel-qsv-h264",
+                hwaccel_args: "preset-rtsp-restream",
                 inputs: [
                   {
-                    path: `rtsp://localhost:8553/demo${i}`,
+                    path: `rtsp://localhost:8554/demo${i}`,
                     roles: ["detect"],
                   },
                 ],
