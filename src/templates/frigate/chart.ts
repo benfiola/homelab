@@ -158,6 +158,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "http-insecure": 5000,
         "http-secure": 8971,
         rtsp: 8554,
+        webrtc: 8555,
+        "webrtc-udp": [8555, "UDP"],
       },
       env: {
         FRIGATE_MQTT_PASSWORD: {
@@ -210,6 +212,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const service = statefulSet.createService({
     "http-insecure": 5000,
     "http-secure": 8971,
+    rtsp: 8554,
+    webrtc: 8555,
+    "webrtc-udp": [8555, "UDP"],
   });
 
   new VerticalPodAutoscaler(chart, statefulSet, { advisory: true });
