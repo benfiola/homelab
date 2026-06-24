@@ -27,7 +27,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           trusted_proxies: ["10.244.0.0/16"],
         },
         logger: {
-          defaut: "debug",
+          default: "debug",
         },
         mobile_app: {},
         zeroconf: {},
