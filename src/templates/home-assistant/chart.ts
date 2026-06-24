@@ -26,6 +26,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           use_x_forwarded_for: true,
           trusted_proxies: ["10.244.0.0/16"],
         },
+        logger: {
+          defaut: "debug",
+        },
         mobile_app: {},
         zeroconf: {},
       }),
