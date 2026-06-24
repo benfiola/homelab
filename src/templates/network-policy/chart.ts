@@ -315,7 +315,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(fluxSourceController, tcp(9090, 9440));
 
   // frigate
-  frigate.to(mosquitto, tcp(1883)).to(assetsServer, tcp(8080));
+  frigate
+    .to(mosquitto, tcp(1883))
+    .to(assetsServer, tcp(8080))
+    .to(dns("*.camera.bulia.dev"), tcp(554));
+
   host.to(frigate, tcp(5000));
 
   // garage

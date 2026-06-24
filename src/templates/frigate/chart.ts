@@ -105,30 +105,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           },
         },
         go2rtc: {
-          webrtc: {
+          streams: {
+            // NOTE: go2rtc stream passwords *must* be url-encoded (see: https://github.com/AlexxIT/go2rtc/issues/1217#issuecomment-2242296489)
             doorbell: [
-              "rtsp://admin:{CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main",
+              "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main",
             ],
             doorbell_substream: [
-              "rtsp://admin:{CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub",
+              "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub",
             ],
             "front-yard": [
-              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101",
+              "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101",
             ],
             "front-yard_substream": [
-              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102",
+              "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102",
             ],
             garage: [
-              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101",
+              "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101",
             ],
             garage_substream: [
-              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102",
+              "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102",
             ],
             porch: [
-              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101",
+              "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101",
             ],
             porch_substream: [
-              "rtsp://admin:{CAMERA_GARAGE_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102",
+              "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102",
             ],
             candidates: ["10.244.0.0/16"],
           },
@@ -146,7 +147,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           host: "mosquitto.mosquitto.svc",
           port: 1883,
           user: "frigate",
-          password: "{MQTT_PASSWORD}",
+          password: "{FRIGATE_MQTT_PASSWORD}",
         },
         objects: {
           track: [
@@ -236,31 +237,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "webrtc-udp": [8555, "UDP"],
       },
       env: {
-        CAMERA_DOORBELL_PASSWORD: {
+        FRIGATE_CAMERA_DOORBELL_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "camera-doorbell-password",
           },
         },
-        CAMERA_FRONT_YARD_PASSWORD: {
+        FRIGATE_CAMERA_FRONT_YARD_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "camera-front-yard-password",
           },
         },
-        CAMERA_GARAGE_PASSWORD: {
+        FRIGATE_CAMERA_GARAGE_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "camera-garage-password",
           },
         },
-        CAMERA_PORCH_PASSWORD: {
+        FRIGATE_CAMERA_PORCH_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "camera-porch-password",
           },
         },
-        MQTT_PASSWORD: {
+        FRIGATE_MQTT_PASSWORD: {
           secretKeyRef: {
             name: vaultSecret.name,
             key: "mqtt-password",
