@@ -7,7 +7,6 @@ import {
   VaultAuth,
   VaultStaticSecret,
   VerticalPodAutoscaler,
-  getAssetsServerUrl,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { alpineImage } from "../../image-refs";
@@ -23,37 +22,27 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
-  const demoVideos = [
-    "VIRAT_S_000201_05_001081_001215.mp4",
-    "VIRAT_S_040104_07_001268_001348.mp4",
-    "VIRAT_S_050201_03_000573_000647.mp4",
-  ].map((v) => getAssetsServerUrl(`frigate-demo-videos/${v}`));
-
   const config = new ConfigMap(chart, `${id}-config-map-config`, {
     metadata: {
       name: "frigate-config",
     },
     data: {
       "config.yml": stringify({
-        cameras: Object.fromEntries(
-          demoVideos.map((_, i) => [
-            `demo${i}`,
-            {
-              enabled: true,
-              detect: { enabled: true },
-              ffmpeg: {
-                hwaccel_args: "preset-intel-qsv-h264",
-                input_args: "preset-rtsp-restream",
-                inputs: [
-                  {
-                    path: `rtsp://localhost:8554/demo${i}`,
-                    roles: ["detect"],
-                  },
-                ],
-              },
+        cameras: {
+          doorbell: {
+            enabled: true,
+            ffmpeg: {
+              hwaccel_args: "preset-intel-qsv-h264",
+              input_args: "preset-rtsp-restream",
+              inputs: [
+                {
+                  path: "rtsp://localhost:8554/doorbell",
+                  roles: ["detect"],
+                },
+              ],
             },
-          ]),
-        ),
+          },
+        },
         detectors: {
           ov: {
             type: "openvino",
@@ -61,13 +50,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           },
         },
         go2rtc: {
-          streams: Object.fromEntries(
-            demoVideos.map((_, i) => [
-              `demo${i}`,
-              [`rtsp://localhost:8553/demo${i}`],
-            ]),
-          ),
           webrtc: {
+            doorbell: ["rtsp://192.168.24.13:554"],
             candidates: ["10.244.0.0/16"],
           },
         },
@@ -150,7 +134,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       caps: ["CHOWN", "FOWNER", "SETGID", "SETUID", "PERFMON"],
     },
     volumes: {
-      config: { emptyDir: {} },
+      config: { pvc: { storageClass: "replicated", size: "1Gi" } },
       configmap: { configMap: config.name },
       shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
     },
@@ -200,26 +184,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   );
-
-  statefulSet.addContainer("mediamtx", "bluenviron/mediamtx:1.19.1-ffmpeg", {
-    containerPorts: { rtsp: 8553 },
-    env: {
-      MTX_RTSPADDRESS: ":8553",
-      MTX_RTMP: "no",
-      MTX_HLS: "no",
-      MTX_WEBRTC: "no",
-      MTX_SRT: "no",
-      ...Object.fromEntries(
-        demoVideos.flatMap((url, i) => [
-          [
-            `MTX_PATHS_DEMO${i}_RUNONINIT`,
-            `ffmpeg -re -stream_loop -1 -i ${url} -c:v copy -bsf:v h264_mp4toannexb -an -f rtsp rtsp://localhost:8553/demo${i}`,
-          ],
-          [`MTX_PATHS_DEMO${i}_RUNONINITRESTART`, "yes"],
-        ]),
-      ),
-    },
-  });
 
   const service = statefulSet.createService({
     "http-insecure": 5000,
