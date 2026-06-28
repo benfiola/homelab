@@ -75,7 +75,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   statefulSet.addInitContainer("copy-config", alpineImage, {
     args: [
-      "bash",
+      "sh",
       "-e",
       "-c",
       dedent(`
