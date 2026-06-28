@@ -47,6 +47,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 },
               ],
             },
+            zones: {
+              "front-yard-zone": {
+                coordinates: "0,0.473,0.263,0.482,0.369,0.491,0.404,0.524,0.459,0.532,0.613,0.532,0.633,0.488,0.68,0.465,0.677,0.338,0.852,0,1,0,1,1,0,1",
+                loitering_time: 0,
+              },
+            },
           },
           "front-yard": {
             detect: {
@@ -65,6 +71,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                   roles: ["record"],
                 },
               ],
+            },
+            zones: {
+              "front-yard-zone": {
+                coordinates: "0,0.492,0.14,0.263,0.144,0.296,0.213,0.192,0.218,0.246,0.238,0.242,0.338,0.175,0.48,0.158,0.618,0.188,0.742,0.304,0.819,0.4,0.888,0.517,1,0.713,1,1,0,1",
+                loitering_time: 0,
+              },
             },
           },
           garage: {
@@ -85,6 +97,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                 },
               ],
             },
+            zones: {
+              "side-garden-zone": {
+                coordinates: "0.189,1,0.325,0.246,0.377,0.058,0.162,0.237,0,0.517,0,1",
+                loitering_time: 0,
+              },
+              "driveway-zone": {
+                coordinates: "0.192,1,0.327,0.246,0.377,0.058,0.389,0.275,0.592,0.217,0.775,0.525,0.82,0.158,0.894,0.254,0.926,0,1,0,1,1",
+                loitering_time: 0,
+              },
+            },
           },
           porch: {
             detect: {
@@ -103,6 +125,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                   roles: ["record"],
                 },
               ],
+            },
+            zones: {
+              "front-yard-zone": {
+                coordinates: "0,0.483,0.075,0.318,0.165,0.174,0.181,0.225,0.199,0.219,0.23,0.213,0.487,0.149,0.52,0.099,0.581,0.081,0.663,0.099,0.715,0.097,0.774,0.12,0.79,0,1,0,1,1,0,1",
+                loitering_time: 0,
+              },
             },
           },
         },
@@ -207,6 +235,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         tls: {
           enabled: false,
         },
+        version: "0.17-0",
       }),
     },
   });
