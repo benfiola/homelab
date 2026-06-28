@@ -348,7 +348,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   homeAssistant
     .to(cidrs("192.168.24.0/24"))
     .to(frigate, tcp(5000, 8554, 8555), udp(8555))
-    .to(mosquitto, tcp(1883));
+    .to(mosquitto, tcp(1883))
+    .to(dns("mobile-apps.home-assistant.io"), tcp(443));
 
   // intel-device-plugins-operator
   controlPlane.to(intelDevicePluginsOperator, tcp(9443));
