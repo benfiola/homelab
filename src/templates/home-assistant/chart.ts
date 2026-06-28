@@ -26,6 +26,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           use_x_forwarded_for: true,
           trusted_proxies: ["10.244.0.0/16"],
         },
+        ingress: {
+          frigate: {
+            ui_mode: "toolbar",
+            title: "Frigate",
+            icon: "mdi:cctv",
+            url: "http://frigate.frigate.svc:5000",
+          },
+        },
         logger: {
           default: "info",
         },
