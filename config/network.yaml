@@ -59,6 +59,14 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.management.public}"
       port: 13234
 
+  - file: wireguard.bfiola-iphone.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.bfiolaIphone.personal.private}"
+      address: 192.168.17.4/32
+      publicKey: "${secrets.wireguard.interfaces.personal.public}"
+      port: 13232
+
   - file: wireguard.bfiola-work-laptop-personal.conf
     template: network-wireguard.conf
     inputs:

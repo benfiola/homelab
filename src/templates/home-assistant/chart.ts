@@ -1,3 +1,4 @@
+import dedent from "ts-dedent";
 import { ScalarTag } from "yaml";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
@@ -74,9 +75,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   statefulSet.addInitContainer("copy-config", alpineImage, {
     args: [
-      "cp",
-      "/config-map/configuration.yaml",
-      "/config/configuration.yaml",
+      "bash",
+      "-e",
+      "-c",
+      dedent(`
+        cp /config-map/configuration.yaml /config/configuration.yaml
+        echo '{}' > /config/automations.yaml
+      `),
     ],
     volumeMounts: {
       "config-map": "/config-map",
