@@ -29,7 +29,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         ingress: {
           frigate: {
             ui_mode: "toolbar",
-            title: "Frigate",
+            title: "Cameras",
             icon: "mdi:cctv",
             url: "http://frigate.frigate.svc:5000",
           },
