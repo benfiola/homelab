@@ -19,10 +19,13 @@ echo "Starting game data download from: $GAME_DATA_URL"
 mkdir -p /game-data
 
 echo "Downloading game data..."
-curl -L "$GAME_DATA_URL" > /tmp/data.zip \
-  && echo "Extracting data..." \
-  && unzip -q -o /tmp/data.zip -d /game-data/ \
-  && rm /tmp/data.zip \
-  && echo 'INSTALLED_VERSION=v19' > /game-data/data-version
+curl -o /tmp/data.zip -fsSL "$GAME_DATA_URL"
+
+echo "Extracting data..."
+unzip -q -o /tmp/data.zip -d /game-data/
+rm /tmp/data.zip
+echo 'INSTALLED_VERSION=v19' > /game-data/data-version
+
+sleep infinity
 
 echo "Game data download complete"
