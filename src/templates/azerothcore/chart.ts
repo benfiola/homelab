@@ -70,7 +70,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   azerothSs.addInitContainer("download-game-data", "curlimages/curl:latest", {
-    cmd: ["sh", "-c"],
+    cmd: ["sh"],
     args: ["/scripts/download-game-data.sh"],
     env: {
       GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
