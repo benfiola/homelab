@@ -9,9 +9,9 @@ ingress:
     title: Cameras
     icon: mdi:cctv
     url: http://frigate.frigate.svc:5000
-  frigate_preview:
+  preview:
     parent: frigate
-    url: http://frigate.frigate.svc:5000
+    url: /
 logger:
   default: info
 mobile_app: {}
