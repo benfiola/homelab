@@ -4,6 +4,7 @@ apps:
   - template: alertmanager
   - template: alloy
   - template: assets-server
+  - template: azerothcore
   - template: bucket-sync
   - template: cert-manager
   - template: cilium
