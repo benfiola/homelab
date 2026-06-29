@@ -5,10 +5,12 @@ http:
     - 10.244.0.0/16
 ingress:
   frigate:
-    ui_mode: toolbar
     title: Cameras
     icon: mdi:cctv
     url: http://frigate.frigate.svc:5000
+  preview:
+    parent: preview
+    url: /
 logger:
   default: info
 mobile_app: {}

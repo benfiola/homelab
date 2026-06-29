@@ -572,6 +572,8 @@ export const getSecurityContext = (opts: GetSecurityContextOpts = {}) => {
       add: caps,
     },
     runAsNonRoot,
+    runAsUser: uid,
+    runAsGroup: gid,
   } as const;
 
   return { pod, container };
@@ -1079,14 +1081,14 @@ function buildProbe(probeConfig: ProbeConfig | undefined) {
 }
 
 function buildContainer(
-  podSecCtx: ReturnType<typeof getSecurityContext>,
+  podSecCtxOpts: GetSecurityContextOpts,
   containerName: string,
   image: string,
   opts: ContainerOpts,
 ) {
-  const secCtx = opts.securityContext
-    ? getSecurityContext(opts.securityContext)
-    : podSecCtx;
+  const mergedOpts = { ...podSecCtxOpts, ...opts.securityContext };
+  const { container: containerSec } = getSecurityContext(mergedOpts);
+
   const mounts = opts.volumeMounts
     ? Object.entries(opts.volumeMounts).map(([name, mountPath]) => ({
         name,
@@ -1102,7 +1104,7 @@ function buildContainer(
     env: envToK8s(opts.env),
     ports: portsToContainerPorts(opts.containerPorts),
     resources: resourcesToContainerResources(opts.resources),
-    securityContext: secCtx.container,
+    securityContext: containerSec,
     volumeMounts: mounts,
     readinessProbe: buildProbe(opts.readiness),
     livenessProbe: buildProbe(opts.liveness),
@@ -1113,12 +1115,13 @@ function buildContainer(
 export class StatefulSet extends BaseStatefulSet {
   private readonly _containers: any[];
   private readonly _initContainers: any[];
-  private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
+  private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
   constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
     const id = `${chart.node.id}-statefulset-${name}`;
-    const secCtx = getSecurityContext(opts.securityContext);
+    const podSecCtxOpts = opts.securityContext ?? {};
+    const secCtx = getSecurityContext(podSecCtxOpts);
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
     const initContainers: any[] = [];
@@ -1145,7 +1148,7 @@ export class StatefulSet extends BaseStatefulSet {
     });
     this._containers = containers;
     this._initContainers = initContainers;
-    this._podSecCtx = secCtx;
+    this._podSecCtxOpts = podSecCtxOpts;
     this._selector = selector;
   }
 
@@ -1155,7 +1158,7 @@ export class StatefulSet extends BaseStatefulSet {
     opts: ContainerOpts = {},
   ): this {
     this._initContainers.push(
-      buildContainer(this._podSecCtx, containerName, image, opts),
+      buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
     return this;
   }
@@ -1166,7 +1169,7 @@ export class StatefulSet extends BaseStatefulSet {
     opts: ContainerOpts = {},
   ): this {
     this._containers.push(
-      buildContainer(this._podSecCtx, containerName, image, opts),
+      buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
     return this;
   }
@@ -1186,13 +1189,14 @@ interface DeploymentOpts extends WorkloadOpts {
 export class Deployment extends BaseDeployment {
   private readonly _containers: any[];
   private readonly _initContainers: any[];
-  private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
+  private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
   constructor(chart: Chart, name: string, opts: DeploymentOpts = {}) {
     ensureNoPvcVolumes(opts.volumes);
     const id = `${chart.node.id}-deployment-${name}`;
-    const secCtx = getSecurityContext(opts.securityContext);
+    const podSecCtxOpts = opts.securityContext ?? {};
+    const secCtx = getSecurityContext(podSecCtxOpts);
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
     const initContainers: any[] = [];
@@ -1216,7 +1220,7 @@ export class Deployment extends BaseDeployment {
     });
     this._containers = containers;
     this._initContainers = initContainers;
-    this._podSecCtx = secCtx;
+    this._podSecCtxOpts = podSecCtxOpts;
     this._selector = selector;
   }
 
@@ -1226,7 +1230,7 @@ export class Deployment extends BaseDeployment {
     opts: ContainerOpts = {},
   ): this {
     this._initContainers.push(
-      buildContainer(this._podSecCtx, containerName, image, opts),
+      buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
     return this;
   }
@@ -1237,7 +1241,7 @@ export class Deployment extends BaseDeployment {
     opts: ContainerOpts = {},
   ): this {
     this._containers.push(
-      buildContainer(this._podSecCtx, containerName, image, opts),
+      buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
     return this;
   }
@@ -1253,13 +1257,14 @@ export class Deployment extends BaseDeployment {
 export class DaemonSet extends BaseDaemonSet {
   private readonly _containers: any[];
   private readonly _initContainers: any[];
-  private readonly _podSecCtx: ReturnType<typeof getSecurityContext>;
+  private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
   constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
     ensureNoPvcVolumes(opts.volumes);
     const id = `${chart.node.id}-daemonset-${name}`;
-    const secCtx = getSecurityContext(opts.securityContext);
+    const podSecCtxOpts = opts.securityContext ?? {};
+    const secCtx = getSecurityContext(podSecCtxOpts);
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
     const initContainers: any[] = [];
@@ -1285,7 +1290,7 @@ export class DaemonSet extends BaseDaemonSet {
     });
     this._containers = containers;
     this._initContainers = initContainers;
-    this._podSecCtx = secCtx;
+    this._podSecCtxOpts = podSecCtxOpts;
     this._selector = selector;
   }
 
@@ -1295,7 +1300,7 @@ export class DaemonSet extends BaseDaemonSet {
     opts: ContainerOpts = {},
   ): this {
     this._initContainers.push(
-      buildContainer(this._podSecCtx, containerName, image, opts),
+      buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
     return this;
   }
@@ -1306,7 +1311,7 @@ export class DaemonSet extends BaseDaemonSet {
     opts: ContainerOpts = {},
   ): this {
     this._containers.push(
-      buildContainer(this._podSecCtx, containerName, image, opts),
+      buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
     return this;
   }
