@@ -33,7 +33,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const mariadbSs = new StatefulSet(chart, "mariadb", {
-    securityContext: { uid: 999, gid: 999 },
     volumes: {
       "mariadb-data": {
         pvc: { size: "100Gi", storageClass: "replicated" },

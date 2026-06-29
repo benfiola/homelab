@@ -41,6 +41,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     pod("bucket-server-assets-server", "assets-server"),
   );
   const azerothcore = svc("azerothcore", pod("azerothcore", "azerothcore"));
+  const azerothcoreDb = svc("azerothcore-db", pod("mariadb", "azerothcore"));
   const bucketSync = svc("bucket-sync", pod("bucket-sync", "bucket-sync"));
   const bucketSyncJob = svc("bucket-sync-job", pod("bucket-sync-job", "*"));
   const certManagerCainjector = svc(
@@ -250,7 +251,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   assetsServer.to(garage, tcp(3900));
 
   // azerothcore
-  azerothcore.to(assetsServer, tcp(8080));
+  azerothcore.to(assetsServer, tcp(8080)).to(azerothcoreDb, tcp(3306));
 
   // bucket-sync
   bucketSync.to(kubeApiServer, tcp(6443));
@@ -550,6 +551,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // gateways
   gatewayUsers
+    .to(azerothcore, tcp(3724, 7878, 8085))
     .to(envoyGatewayController, tcp(18000))
     .to(frigate, tcp(8971))
     .to(homeAssistant, tcp(8123))
