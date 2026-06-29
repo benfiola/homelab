@@ -82,7 +82,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "game-data": "/game-data",
         scripts: "/scripts",
       },
-      securityContext: { uid: 100, gid: 100 },
     },
   );
 
