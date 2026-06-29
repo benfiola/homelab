@@ -1,0 +1,7 @@
+views:
+  - type: panel
+    path: ""
+    cards:
+      - type: thermostat
+        entity: climate.thermostat
+        show_current_as_primary: false

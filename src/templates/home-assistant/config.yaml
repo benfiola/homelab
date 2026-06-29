@@ -51,5 +51,14 @@ ingress:
     url: http://frigate.frigate.svc:5000
 logger:
   default: info
+lovelace:
+  resource_mode: yaml
+  dashboards:
+    thermostat:
+      mode: yaml
+      title: Thermostat
+      icon: mdi:thermometer
+      show_in_sidebar: true
+      filename: dashboard-thermostat.yaml
 mobile_app: {}
 zeroconf: {}
