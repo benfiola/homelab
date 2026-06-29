@@ -1,5 +1,6 @@
 import dedent from "ts-dedent";
-import { ScalarTag } from "yaml";
+import { readFile } from "fs/promises";
+import path from "path";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
@@ -10,7 +11,6 @@ import {
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { alpineImage } from "../../image-refs";
-import { options, stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -18,48 +18,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  const include = (file: string) => ({
-    __include: true,
-    toString: () => file,
-  });
-
-  const includeTag: ScalarTag = {
-    identify: (v: any) => v.__include,
-    resolve: (v) => v,
-    tag: "!include",
-  };
-
+  const configFile = path.join(__dirname, "config.yaml");
   const config = new ConfigMap(chart, `${id}-config-map`, {
     metadata: {
       name: "home-assistant",
     },
     data: {
-      "configuration.yaml": stringify(
-        options({
-          customTags: [includeTag],
-          schema: "core",
-        }),
-        {
-          automation: include("automations.yaml"),
-          http: {
-            use_x_forwarded_for: true,
-            trusted_proxies: ["10.244.0.0/16"],
-          },
-          ingress: {
-            frigate: {
-              ui_mode: "toolbar",
-              title: "Cameras",
-              icon: "mdi:cctv",
-              url: "http://frigate.frigate.svc:5000",
-            },
-          },
-          logger: {
-            default: "info",
-          },
-          mobile_app: {},
-          zeroconf: {},
-        },
-      ),
+      "configuration.yaml": (await readFile(configFile)).toString(),
     },
   });
 

@@ -1,3 +1,5 @@
+import { readFile } from "fs/promises";
+import path from "path";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
@@ -9,7 +11,6 @@ import {
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { alpineImage } from "../../image-refs";
-import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -21,226 +22,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
+  const configFile = path.join(__dirname, "config.yaml");
   const config = new ConfigMap(chart, `${id}-config-map-config`, {
     metadata: {
       name: "frigate-config",
     },
     data: {
-      "config.yml": stringify({
-        cameras: {
-          doorbell_camera: {
-            detect: {
-              enabled: true,
-            },
-            enabled: true,
-            ffmpeg: {
-              input_args: "preset-rtsp-restream",
-              inputs: [
-                {
-                  path: "rtsp://localhost:8554/doorbell_camera_sub",
-                  roles: ["detect"],
-                },
-                {
-                  path: "rtsp://localhost:8554/doorbell_camera",
-                  roles: ["record"],
-                },
-              ],
-            },
-            zones: {
-              front_yard: {
-                coordinates:
-                  "0,0.473,0.263,0.482,0.369,0.491,0.404,0.524,0.459,0.532,0.613,0.532,0.633,0.488,0.68,0.465,0.677,0.338,0.852,0,1,0,1,1,0,1",
-                loitering_time: 0,
-              },
-            },
-          },
-          front_yard_camera: {
-            detect: {
-              enabled: true,
-            },
-            enabled: true,
-            ffmpeg: {
-              input_args: "preset-rtsp-restream",
-              inputs: [
-                {
-                  path: "rtsp://localhost:8554/front_yard_camera_sub",
-                  roles: ["detect"],
-                },
-                {
-                  path: "rtsp://localhost:8554/front_yard_camera",
-                  roles: ["record"],
-                },
-              ],
-            },
-            zones: {
-              front_yard: {
-                coordinates:
-                  "0,0.492,0.14,0.263,0.144,0.296,0.213,0.192,0.218,0.246,0.238,0.242,0.338,0.175,0.48,0.158,0.618,0.188,0.742,0.304,0.819,0.4,0.888,0.517,1,0.713,1,1,0,1",
-                loitering_time: 0,
-              },
-            },
-          },
-          garage_camera: {
-            detect: {
-              enabled: true,
-            },
-            enabled: true,
-            ffmpeg: {
-              input_args: "preset-rtsp-restream",
-              inputs: [
-                {
-                  path: "rtsp://localhost:8554/garage_camera_sub",
-                  roles: ["detect"],
-                },
-                {
-                  path: "rtsp://localhost:8554/garage_camera",
-                  roles: ["record"],
-                },
-              ],
-            },
-            zones: {
-              side_garden: {
-                coordinates:
-                  "0.189,1,0.325,0.246,0.377,0.058,0.162,0.237,0,0.517,0,1",
-                loitering_time: 0,
-              },
-              driveway: {
-                coordinates:
-                  "0.192,1,0.327,0.246,0.377,0.058,0.389,0.275,0.592,0.217,0.775,0.525,0.82,0.158,0.894,0.254,0.926,0,1,0,1,1",
-                loitering_time: 0,
-              },
-            },
-          },
-          porch_camera: {
-            detect: {
-              enabled: true,
-            },
-            enabled: true,
-            ffmpeg: {
-              input_args: "preset-rtsp-restream",
-              inputs: [
-                {
-                  path: "rtsp://localhost:8554/porch_camera_sub",
-                  roles: ["detect"],
-                },
-                {
-                  path: "rtsp://localhost:8554/porch_camera",
-                  roles: ["record"],
-                },
-              ],
-            },
-            zones: {
-              front_yard: {
-                coordinates:
-                  "0,0.483,0.075,0.318,0.165,0.174,0.181,0.225,0.199,0.219,0.23,0.213,0.487,0.149,0.52,0.099,0.581,0.081,0.663,0.099,0.715,0.097,0.774,0.12,0.79,0,1,0,1,1,0,1",
-                loitering_time: 0,
-              },
-            },
-          },
-        },
-        detectors: {
-          ov: {
-            type: "openvino",
-            device: "GPU",
-          },
-        },
-        go2rtc: {
-          streams: {
-            // NOTE: go2rtc stream passwords *must* be url-encoded (see: https://github.com/AlexxIT/go2rtc/issues/1217#issuecomment-2242296489)
-            doorbell_camera: [
-              "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main",
-            ],
-            doorbell_camera_sub: [
-              "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub",
-            ],
-            front_yard_camera: [
-              "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101",
-            ],
-            front_yard_camera_sub: [
-              "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102",
-            ],
-            garage_camera: [
-              "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101",
-            ],
-            garage_camera_sub: [
-              "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102",
-            ],
-            porch_camera: [
-              "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101",
-            ],
-            porch_camera_sub: [
-              "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102",
-            ],
-            candidates: ["10.244.0.0/16"],
-          },
-        },
-        model: {
-          width: 300,
-          height: 300,
-          input_tensor: "nhwc",
-          input_pixel_format: "bgr",
-          path: "/openvino-model/ssdlite_mobilenet_v2.xml",
-          labelmap_path: "/openvino-model/coco_91cl_bkgr.txt",
-        },
-        mqtt: {
-          enabled: true,
-          host: "mosquitto.mosquitto.svc",
-          port: 1883,
-          user: "frigate",
-          password: "{FRIGATE_MQTT_PASSWORD}",
-        },
-        objects: {
-          track: [
-            "backpack",
-            "bicycle",
-            "bird",
-            "bus",
-            "car",
-            "cat",
-            "dog",
-            "handbag",
-            "hat",
-            "motorcycle",
-            "person",
-            "skateboard",
-            "suitcase",
-            "umbrella",
-          ],
-        },
-        record: {
-          enabled: true,
-          continuous: {
-            days: 0,
-          },
-          motion: {
-            days: 1,
-          },
-          alerts: {
-            retain: {
-              days: 1,
-              mode: "all",
-            },
-          },
-          detections: {
-            retain: {
-              days: 1,
-              mode: "all",
-            },
-          },
-        },
-        semantic_search: {
-          enabled: false,
-        },
-        telemetry: {
-          stats: {
-            intel_gpu_stats: true,
-          },
-        },
-        tls: {
-          enabled: false,
-        },
-        version: "0.17-0",
-      }),
+      "config.yml": (await readFile(configFile)).toString(),
     },
   });
 
