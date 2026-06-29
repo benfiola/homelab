@@ -45,7 +45,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "-c",
       dedent(`
         cp /config-map/configuration.yaml /config/configuration.yaml
-        [ -f /config/automations.yaml ] || echo '{}' > /config/automations.yaml
       `),
     ],
     volumeMounts: {

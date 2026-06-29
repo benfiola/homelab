@@ -1,4 +1,40 @@
-automation: !include automations.yaml
+automation:
+  - id: "1"
+    alias: Frigate (bfiola-iphone)
+    description: ""
+    use_blueprint:
+      path: frigate_camera_notifications.yaml
+      input:
+        camera:
+          - camera.doorbell_camera
+          - camera.front_yard_camera
+          - camera.garage_camera
+          - camera.porch_camera
+        notify_device: 499b68b6806d7572d381e2b55e5b1eea
+        message: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on
+          the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones
+          | join(', ') | replace('_', ' ' ) | title }}."
+        tap_action: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
+        url_1: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
+        url_2: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
+  - id: "2"
+    alias: Frigate (jfiola-iphone)
+    description: ""
+    use_blueprint:
+      path: frigate_camera_notifications.yaml
+      input:
+        camera:
+          - camera.doorbell_camera
+          - camera.front_yard_camera
+          - camera.garage_camera
+          - camera.porch_camera
+        notify_device: d6e1b5f7aa7548c5871a379f0fdccba3
+        message: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on
+          the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones
+          | join(', ') | replace('_', ' ' ) | title }}."
+        tap_action: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
+        url_1: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
+        url_2: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
 http:
   use_x_forwarded_for: true
   trusted_proxies:
