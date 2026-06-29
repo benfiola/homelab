@@ -18,14 +18,21 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  const configFile = path.join(__dirname, "config.yaml");
+  const files = ["configuration.yaml", "dashboard-thermostat.yaml"].map((v) =>
+    path.join(__dirname, v),
+  );
   const config = new ConfigMap(chart, `${id}-config-map`, {
     metadata: {
       name: "home-assistant",
     },
-    data: {
-      "configuration.yaml": (await readFile(configFile)).toString(),
-    },
+    data: Object.fromEntries(
+      await Promise.all(
+        files.map(async (f) => [
+          path.basename(f),
+          (await readFile(f)).toString(),
+        ]),
+      ),
+    ),
   });
 
   const statefulSet = new StatefulSet(chart, "home-assistant", {
