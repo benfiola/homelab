@@ -69,18 +69,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  azerothSs.addInitContainer("download-game-data", "curlimages/curl:latest", {
-    cmd: ["sh"],
-    args: ["/scripts/download-game-data.sh"],
-    env: {
-      GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
+  azerothSs.addInitContainer(
+    "download-game-data",
+    "ghcr.io/benfiola/homelab-images:1.0.0",
+    {
+      cmd: ["sh"],
+      args: ["/scripts/download-game-data.sh"],
+      env: {
+        GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
+      },
+      volumeMounts: {
+        "game-data": "/game-data",
+        scripts: "/scripts",
+      },
+      securityContext: { uid: 100, gid: 100 },
     },
-    volumeMounts: {
-      "game-data": "/game-data",
-      scripts: "/scripts",
-    },
-    securityContext: { uid: 100, gid: 100 },
-  });
+  );
 
   azerothSs.addInitContainer(
     "db-migration",
