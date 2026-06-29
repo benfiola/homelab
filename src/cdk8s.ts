@@ -1037,6 +1037,7 @@ type ProbeConfig = {
 interface ContainerOpts {
   containerPorts?: WorkloadPorts;
   env?: WorkloadEnv;
+  cmd?: string[];
   args?: string[];
   resources?: ContainerResources;
   volumeMounts?: Record<string, string>;
@@ -1046,13 +1047,13 @@ interface ContainerOpts {
   startup?: ProbeConfig;
 }
 
-function resourcesToContainerResources(resources: ContainerResources | undefined) {
+function resourcesToContainerResources(
+  resources: ContainerResources | undefined,
+) {
   if (!resources) return undefined;
   const wrap = (r: Record<string, string> | undefined) =>
     r
-      ? Object.fromEntries(
-          Object.entries(r).map(([k, v]) => [k, { value: v }]),
-        )
+      ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, { value: v }]))
       : undefined;
   return { limits: wrap(resources.limits), requests: wrap(resources.requests) };
 }
@@ -1096,6 +1097,7 @@ function buildContainer(
   return {
     name: containerName,
     image,
+    command: opts.cmd,
     args: opts.args,
     env: envToK8s(opts.env),
     ports: portsToContainerPorts(opts.containerPorts),
