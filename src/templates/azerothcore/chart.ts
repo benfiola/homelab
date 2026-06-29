@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
-import { Chart, Namespace, StatefulSet, TcpRoute } from "../../cdk8s";
+import { Chart, Namespace, StatefulSet, TcpRoute, getAssetsServerUrl } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -51,7 +51,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: {
       "game-data": {
-        pvc: { size: "100Gi", storageClass: "replicated" },
+        pvc: { size: "100Gi", storageClass: "standard" },
       },
       logs: {
         pvc: { size: "10Gi", storageClass: "standard" },
@@ -65,6 +65,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   azerothSs.addInitContainer("download-game-data", "curlimages/curl:latest", {
     cmd: ["sh", "-c"],
     args: ["/scripts/download-game-data.sh"],
+    env: {
+      GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
+    },
     volumeMounts: {
       "game-data": "/game-data",
       scripts: "/scripts",

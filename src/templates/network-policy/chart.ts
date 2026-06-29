@@ -40,6 +40,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "assets-server",
     pod("bucket-server-assets-server", "assets-server"),
   );
+  const azerothcore = svc("azerothcore", pod("azerothcore", "azerothcore"));
   const bucketSync = svc("bucket-sync", pod("bucket-sync", "bucket-sync"));
   const bucketSyncJob = svc("bucket-sync-job", pod("bucket-sync-job", "*"));
   const certManagerCainjector = svc(
@@ -247,6 +248,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // assets-server
   assetsServer.to(garage, tcp(3900));
+
+  // azerothcore
+  azerothcore.to(assetsServer, tcp(8080));
 
   // bucket-sync
   bucketSync.to(kubeApiServer, tcp(6443));

@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
 
-# Check if download already completed
+if [ -z "$GAME_DATA_URL" ]; then
+  echo "Error: GAME_DATA_URL environment variable is not set"
+  exit 1
+fi
+
 if [ -f /game-data/data-version ]; then
   echo "Game data already downloaded, checking version..."
   source /game-data/data-version
@@ -11,12 +15,11 @@ if [ -f /game-data/data-version ]; then
   fi
 fi
 
-echo "Starting game data download..."
+echo "Starting game data download from: $GAME_DATA_URL"
 mkdir -p /game-data
 
-# Download from the official AzerothCore client-data repository
-echo "Downloading data.zip from github..."
-curl -L https://github.com/wowgaming/client-data/releases/download/v19/data.zip > /tmp/data.zip \
+echo "Downloading game data..."
+curl -L "$GAME_DATA_URL" > /tmp/data.zip \
   && echo "Extracting data..." \
   && unzip -q -o /tmp/data.zip -d /game-data/ \
   && rm /tmp/data.zip \
