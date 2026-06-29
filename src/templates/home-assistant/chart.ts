@@ -1,6 +1,6 @@
-import dedent from "ts-dedent";
 import { readFile } from "fs/promises";
 import path from "path";
+import dedent from "ts-dedent";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
@@ -45,7 +45,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "-c",
       dedent(`
         cp /config-map/configuration.yaml /config/configuration.yaml
-        echo '{}' > /config/automations.yaml
+        [ -f /config/automations.yaml ] || echo '{}' > /config/automations.yaml
       `),
     ],
     volumeMounts: {
