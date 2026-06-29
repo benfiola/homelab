@@ -1,7 +1,14 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
-import { Chart, Namespace, StatefulSet, TcpRoute, getAssetsServerUrl } from "../../cdk8s";
+import {
+  Chart,
+  Namespace,
+  StatefulSet,
+  TcpRoute,
+  VerticalPodAutoscaler,
+  getAssetsServerUrl,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -130,6 +137,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     world: 8085,
     soap: 7878,
   });
+
+  new VerticalPodAutoscaler(chart, azerothSs);
+  new VerticalPodAutoscaler(chart, mariadbSs);
 
   new TcpRoute(chart, "users", hostname, 3724, svc, 3724);
   new TcpRoute(chart, "users", hostname, 8085, svc, 8085);
