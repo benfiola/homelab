@@ -26,6 +26,4 @@ unzip -q -o /tmp/data.zip -d /game-data/
 rm /tmp/data.zip
 echo 'INSTALLED_VERSION=v19' > /game-data/data-version
 
-sleep infinity
-
 echo "Game data download complete"
