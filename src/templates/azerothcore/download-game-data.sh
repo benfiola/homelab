@@ -22,7 +22,7 @@ echo "Downloading game data..."
 curl -o /tmp/data.zip -fsSL "$GAME_DATA_URL"
 
 echo "Extracting data..."
-bsdtar -xf /tmp/data.zip -C /game-data/
+bsdtar -xmf /tmp/data.zip -C /game-data/
 rm /tmp/data.zip
 echo 'INSTALLED_VERSION=v19' > /game-data/data-version
 
