@@ -1,7 +1,6 @@
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
-  HttpRoute,
   Namespace,
   StatefulSet,
   VaultAuth,
@@ -29,7 +28,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     data: {
       "config.yml": stringify({
         cameras: {
-          doorbell: {
+          doorbell_camera: {
             detect: {
               enabled: true,
             },
@@ -38,24 +37,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/doorbell_sub",
+                  path: "rtsp://localhost:8554/doorbell_camera_sub",
                   roles: ["detect"],
                 },
                 {
-                  path: "rtsp://localhost:8554/doorbell",
+                  path: "rtsp://localhost:8554/doorbell_camera",
                   roles: ["record"],
                 },
               ],
             },
             zones: {
-              "front-yard-zone": {
+              front_yard: {
                 coordinates:
                   "0,0.473,0.263,0.482,0.369,0.491,0.404,0.524,0.459,0.532,0.613,0.532,0.633,0.488,0.68,0.465,0.677,0.338,0.852,0,1,0,1,1,0,1",
                 loitering_time: 0,
               },
             },
           },
-          "front-yard": {
+          front_yard_camera: {
             detect: {
               enabled: true,
             },
@@ -64,24 +63,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/front-yard_sub",
+                  path: "rtsp://localhost:8554/front_yard_camera_sub",
                   roles: ["detect"],
                 },
                 {
-                  path: "rtsp://localhost:8554/front-yard",
+                  path: "rtsp://localhost:8554/front_yard_camera",
                   roles: ["record"],
                 },
               ],
             },
             zones: {
-              "front-yard-zone": {
+              front_yard: {
                 coordinates:
                   "0,0.492,0.14,0.263,0.144,0.296,0.213,0.192,0.218,0.246,0.238,0.242,0.338,0.175,0.48,0.158,0.618,0.188,0.742,0.304,0.819,0.4,0.888,0.517,1,0.713,1,1,0,1",
                 loitering_time: 0,
               },
             },
           },
-          garage: {
+          garage_camera: {
             detect: {
               enabled: true,
             },
@@ -90,29 +89,29 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/garage_sub",
+                  path: "rtsp://localhost:8554/garage_camera_sub",
                   roles: ["detect"],
                 },
                 {
-                  path: "rtsp://localhost:8554/garage",
+                  path: "rtsp://localhost:8554/garage_camera",
                   roles: ["record"],
                 },
               ],
             },
             zones: {
-              "side-garden-zone": {
+              side_garden: {
                 coordinates:
                   "0.189,1,0.325,0.246,0.377,0.058,0.162,0.237,0,0.517,0,1",
                 loitering_time: 0,
               },
-              "driveway-zone": {
+              driveway: {
                 coordinates:
                   "0.192,1,0.327,0.246,0.377,0.058,0.389,0.275,0.592,0.217,0.775,0.525,0.82,0.158,0.894,0.254,0.926,0,1,0,1,1",
                 loitering_time: 0,
               },
             },
           },
-          porch: {
+          porch_camera: {
             detect: {
               enabled: true,
             },
@@ -121,17 +120,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               input_args: "preset-rtsp-restream",
               inputs: [
                 {
-                  path: "rtsp://localhost:8554/porch_sub",
+                  path: "rtsp://localhost:8554/porch_camera_sub",
                   roles: ["detect"],
                 },
                 {
-                  path: "rtsp://localhost:8554/porch",
+                  path: "rtsp://localhost:8554/porch_camera",
                   roles: ["record"],
                 },
               ],
             },
             zones: {
-              "front-yard-zone": {
+              front_yard: {
                 coordinates:
                   "0,0.483,0.075,0.318,0.165,0.174,0.181,0.225,0.199,0.219,0.23,0.213,0.487,0.149,0.52,0.099,0.581,0.081,0.663,0.099,0.715,0.097,0.774,0.12,0.79,0,1,0,1,1,0,1",
                 loitering_time: 0,
@@ -148,28 +147,28 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         go2rtc: {
           streams: {
             // NOTE: go2rtc stream passwords *must* be url-encoded (see: https://github.com/AlexxIT/go2rtc/issues/1217#issuecomment-2242296489)
-            doorbell: [
+            doorbell_camera: [
               "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main",
             ],
-            doorbell_sub: [
+            doorbell_camera_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub",
             ],
-            "front-yard": [
+            front_yard_camera: [
               "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101",
             ],
-            "front-yard_sub": [
+            front_yard_camera_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102",
             ],
-            garage: [
+            garage_camera: [
               "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101",
             ],
-            garage_sub: [
+            garage_camera_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102",
             ],
-            porch: [
+            porch_camera: [
               "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101",
             ],
-            porch_sub: [
+            porch_camera_sub: [
               "rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102",
             ],
             candidates: ["10.244.0.0/16"],
@@ -273,10 +272,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     {
       containerPorts: {
         "http-insecure": 5000,
-        "http-secure": 8971,
-        rtsp: 8554,
-        webrtc: 8555,
-        "webrtc-udp": [8555, "UDP"],
       },
       env: {
         FRIGATE_CAMERA_DOORBELL_PASSWORD: {
@@ -329,17 +324,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   );
 
-  const service = statefulSet.createService({
+  statefulSet.createService({
     "http-insecure": 5000,
-    "http-secure": 8971,
-    rtsp: 8554,
-    webrtc: 8555,
-    "webrtc-udp": [8555, "UDP"],
   });
 
   new VerticalPodAutoscaler(chart, statefulSet);
-
-  new HttpRoute(chart, "users", "frigate.bulia.dev").match(service, 8971);
 
   return chart;
 };
