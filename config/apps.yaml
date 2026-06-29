@@ -52,5 +52,4 @@ apps:
   - template: vault-secrets-operator
   - template: vertical-pod-autoscaler
   - template: volsync
-  - template: volsync-testing
   - template: volume-snapshot-api
