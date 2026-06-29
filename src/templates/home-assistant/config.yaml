@@ -10,6 +10,7 @@ ingress:
     icon: mdi:cctv
     url: http://frigate.frigate.svc:5000
   preview:
+    ui_mode: toolbar
     parent: frigate
     url: http://frigate.frigate.svc:5000
 logger:
