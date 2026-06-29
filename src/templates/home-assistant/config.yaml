@@ -28,7 +28,7 @@ automation:
           - camera.front_yard_camera
           - camera.garage_camera
           - camera.porch_camera
-        notify_device: d6e1b5f7aa7548c5871a379f0fdccba3
+        notify_device: d3e32179c47b335afcf177af7c80720c
         message: "{{ label }}{{ ' was' if type == 'end' else '' }} detected on
           the {{ camera_name }} camera{{' in the ' if after_zones|length}}{{ after_zones
           | join(', ') | replace('_', ' ' ) | title }}."
