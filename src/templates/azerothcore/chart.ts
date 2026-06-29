@@ -71,7 +71,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   azerothSs.addInitContainer(
     "download-game-data",
-    "ghcr.io/benfiola/homelab-images:1.0.0",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
     {
       cmd: ["sh"],
       args: ["/scripts/download-game-data.sh"],
