@@ -12,6 +12,17 @@ cameras:
         - path: rtsp://localhost:8554/doorbell_camera
           roles:
             - record
+    review:
+      alerts:
+        required_zones:
+          - left_front_yard
+          - right_front_yard
+          - walkway
+      detections:
+        required_zones:
+          - left_front_yard
+          - right_front_yard
+          - walkway
     zones:
       left_front_yard:
         coordinates: 0,0.476,0.269,0.48,0.342,0.48,0.394,0.516,0.474,0.537,0.495,0.568,0.51,0.59,0.505,0.617,0.47,0.679,0.47,0.736,0.482,0.806,0.484,0.923,0.422,1,0,1
@@ -41,6 +52,13 @@ cameras:
         - path: rtsp://localhost:8554/front_yard_camera
           roles:
             - record
+    review:
+      alerts:
+        required_zones:
+          - right_front_yard
+      detections:
+        required_zones:
+          - right_front_yard
     zones:
       right_front_yard:
         coordinates: 0,0.825,0.065,0.689,0.054,0.526,0.101,0.386,0.166,0.32,0.211,0.307,0.267,0.259,0.297,0.202,0.322,0.188,0.336,0.118,0.37,0.118,0.403,0.175,0.431,0.167,0.438,0.092,0.516,0.101,0.57,0.114,0.586,0.171,0.63,0.189,0.662,0.189,0.704,0.144,0.761,0.241,0.767,0.346,0.796,0.373,0.841,0.443,0.89,0.526,0.971,0.667,1,0.719,1,1,0,1
@@ -60,6 +78,15 @@ cameras:
         - path: rtsp://localhost:8554/garage_camera
           roles:
             - record
+    review:
+      alerts:
+        required_zones:
+          - driveway
+          - side_garden
+      detections:
+        required_zones:
+          - driveway
+          - side_garden
     zones:
       side_garden:
         coordinates: 0.189,1,0.325,0.246,0.377,0.058,0.162,0.237,0,0.517,0,1
@@ -84,6 +111,17 @@ cameras:
         - path: rtsp://localhost:8554/porch_camera
           roles:
             - record
+    review:
+      alerts:
+        required_zones:
+          - left_front_yard
+          - right_front_yard
+          - walkway
+      detections:
+        required_zones:
+          - left_front_yard
+          - right_front_yard
+          - walkway
     zones:
       left_front_yard:
         coordinates: 0.006,0.472,0.14,0.215,0.169,0.178,0.174,0.263,0.334,0.207,0.603,0.617,0.722,0.828,0.513,1,0,1
