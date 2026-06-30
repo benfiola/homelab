@@ -54,7 +54,7 @@ logger:
 lovelace:
   resource_mode: yaml
   dashboards:
-    thermostat:
+    dashboard-thermostat:
       mode: yaml
       title: Thermostat
       icon: mdi:thermometer
