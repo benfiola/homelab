@@ -201,10 +201,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "router-policy-sync",
     pod("router-policy-sync", "router-policy-sync"),
   );
-  const sevenDaysToDie = svc(
-    "seven-days-to-die",
-    pod("seven-days-to-die", "seven-days-to-die"),
-  );
   const singlePlayerTarkov = svc(
     "single-player-tarkov",
     pod("single-player-tarkov", "single-player-tarkov"),
@@ -464,21 +460,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("router.bulia.dev"), tcp(80));
   host.to(routerPolicySync, tcp(8081));
 
-  // seven-days-to-die
-  sevenDaysToDie
-    .to(dns("api.epicgames.dev"), tcp(443))
-    .to(dns("steampipe.akamaized.net"), tcp(443))
-    .to(dns("*.steamcontent.com"), tcp(443))
-    .to(dns("api.steampowered.com"), tcp(443))
-    .to(dns("test.steampowered.com"), tcp(80))
-    .to(
-      dns("*.steamserver.net"),
-      tcp(80, 443),
-      udp([27015, 27060]),
-      tcp([27015, 27060]),
-    )
-    .to(cidrs(...steamUdpCidrs), udp([27015, 27060]));
-
   // single-player-tarkov
   singlePlayerTarkov
     .to(assetsServer, tcp(8080))
@@ -559,7 +540,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(frigate, tcp(8971))
     .to(homeAssistant, tcp(8123))
     .to(minecraft, tcp(25565))
-    .to(sevenDaysToDie, tcp(26900), udp([26900, 26902]))
     .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
     .from(
       cidrs(
@@ -570,7 +550,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.34.0/24",
       ),
       tcp(6969, 10443, 25565, 26900),
-      udp([26900, 26902]),
     );
 
   gatewayIot
@@ -600,49 +579,3 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   return chart;
 };
-
-export const steamUdpCidrs = [
-  "45.121.184.0/24",
-  "103.10.124.0/24",
-  "103.10.125.0/24",
-  "103.28.54.0/24",
-  "146.66.152.0/24",
-  "146.66.155.0/24",
-  "155.133.224.0/2",
-  "155.133.225.0/2",
-  "155.133.226.0/2",
-  "155.133.227.0/2",
-  "155.133.228.0/2",
-  "155.133.229.0/2",
-  "155.133.230.0/2",
-  "155.133.232.0/2",
-  "155.133.236.0/2",
-  "155.133.238.0/2",
-  "155.133.240.0/2",
-  "155.133.244.0/2",
-  "155.133.246.0/2",
-  "155.133.248.0/2",
-  "155.133.249.0/2",
-  "155.133.250.0/2",
-  "155.133.251.0/2",
-  "155.133.252.0/2",
-  "155.133.253.0/2",
-  "155.133.254.0/2",
-  "155.133.255.0/2",
-  "162.254.192.0/2",
-  "162.254.193.0/2",
-  "162.254.195.0/2",
-  "162.254.196.0/2",
-  "162.254.197.0/2",
-  "162.254.198.0/2",
-  "162.254.199.0/2",
-  "185.25.182.0/24",
-  "185.25.183.0/24",
-  "192.69.96.0/22",
-  "205.196.6.0/24",
-  "208.64.200.0/24",
-  "208.64.201.0/24",
-  "208.64.202.0/24",
-  "208.64.203.0/24",
-  "208.78.164.0/22",
-];
