@@ -8,7 +8,7 @@ fi
 
 if [ -f /game-data/data-version ]; then
   echo "Game data already downloaded, checking version..."
-  source /game-data/data-version
+  . /game-data/data-version
   if [ "$INSTALLED_VERSION" = "v19" ]; then
     echo "Data v19 already installed."
     exit 0
