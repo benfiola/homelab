@@ -871,7 +871,7 @@ export type WorkloadEnv = Record<
   | { fieldRef: { fieldPath: string; apiVersion?: string } }
 >;
 
-type VolumeItem = { key: string; path: string };
+type VolumeItem = { key: string; path?: string };
 
 export type WorkloadVolumes = Record<
   string,
@@ -996,9 +996,9 @@ function volumesToInlineVolumes(
     .filter(([, v]) => !isPvcVolume(v))
     .map(([name, v]) => {
       if ("configMap" in v)
-        return { name, configMap: { name: v.configMap, items: v.items } };
+        return { name, configMap: { name: v.configMap, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
       if ("secret" in v)
-        return { name, secret: { secretName: v.secret, items: v.items } };
+        return { name, secret: { secretName: v.secret, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
       const { medium, sizeLimit } = (v as EmptyDirVolume).emptyDir;
       return {
         name,

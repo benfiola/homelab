@@ -51,7 +51,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             {
               name: "linstor-provision-disk",
               image:
-                "ghcr.io/benfiola/homelab-images/linstor-provision-disk:1.0.8",
+                "ghcr.io/benfiola/homelab-images/linstor-provision-disk:1.1.0",
               securityContext: { privileged: true },
               volumeMounts: [
                 {

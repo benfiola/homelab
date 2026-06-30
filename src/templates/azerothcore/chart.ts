@@ -1,15 +1,15 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
-import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
+  getAssetsServerUrl,
   Namespace,
   StatefulSet,
   TcpRoute,
+  VaultAuth,
+  VaultDynamicSecret,
   VerticalPodAutoscaler,
-  getAssetsServerUrl,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -17,22 +17,28 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
+  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.1.2";
   const hostname = "wow.bulia.dev";
   const dbHost = "db.azerothcore.svc";
   const dbPort = 3306;
 
-  const migrationScript = join(__dirname, "db-migration.sh");
-  const downloadScript = join(__dirname, "download-game-data.sh");
-  const makeAccountScript = join(__dirname, "make-account.pl");
-
-  new ConfigMap(chart, "scripts-config", {
-    metadata: { name: "azerothcore-scripts" },
-    data: {
-      "download-game-data.sh": (await readFile(downloadScript)).toString(),
-      "db-migration.sh": (await readFile(migrationScript)).toString(),
-      "make-account.pl": (await readFile(makeAccountScript)).toString(),
-    },
-  });
+  const vaultAuth = new VaultAuth(chart);
+  const secrets = new VaultDynamicSecret(chart, vaultAuth, (secret) => ({
+    "db-password": secret("db-password"),
+    "db-info-login": `${dbHost};${dbPort};root;${secret("db-password")};acore_auth`,
+    "db-info-world": `${dbHost};${dbPort};root;${secret("db-password")};acore_world`,
+    "db-info-characters": `${dbHost};${dbPort};root;${secret("db-password")};acore_characters`,
+    "db-info-playerbots": `${dbHost};${dbPort};root;${secret("db-password")};acore_playerbots`,
+    "config.yaml": stringify({
+      accounts: [
+        {
+          username: "bfiola",
+          password: secret("user-bfiola-password"),
+          gm_level: 3,
+        },
+      ],
+    }),
+  }));
 
   const dbStatefulSet = new StatefulSet(chart, "db", {
     volumes: {
@@ -45,7 +51,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   dbStatefulSet.addContainer("db", "mysql:8.4.10", {
     containerPorts: { db: 3306 },
     env: {
-      MYSQL_ROOT_PASSWORD: "azeroth-root-password",
+      MYSQL_ROOT_PASSWORD: {
+        secretKeyRef: { name: secrets.name, key: "db-password" },
+      },
     },
     volumeMounts: {
       "db-data": "/var/lib/mysql",
@@ -60,67 +68,46 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       data: {
         pvc: { size: "100Gi", storageClass: "standard" },
       },
-      logs: {
-        pvc: { size: "10Gi", storageClass: "standard" },
-      },
-      scripts: {
-        configMap: "azerothcore-scripts",
+      config: {
+        secret: secrets.name,
+        items: [{ key: "config.yaml" }],
       },
     },
   });
 
-  serverStatefulSet.addInitContainer(
-    "download-game-data",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
-    {
-      cmd: ["sh"],
-      args: ["/scripts/download-game-data.sh"],
-      env: {
-        GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
+  serverStatefulSet.addInitContainer("init", image, {
+    env: {
+      AC_GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
+      AC_LOGIN_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-login" },
       },
-      volumeMounts: {
-        data: "/data",
-        scripts: "/scripts",
+      AC_WORLD_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-world" },
       },
+      AC_CHARACTER_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-characters" },
+      },
+      AC_PLAYERBOTS_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
+      },
+      AC_REALMLIST_ADDRESS: "wow.bulia.dev",
     },
-  );
+    args: ["init"],
+    volumeMounts: {
+      data: "/data",
+      config: "/config",
+    },
+  });
 
-  serverStatefulSet.addInitContainer(
-    "db-migration",
-    "acore/ac-wotlk-db-import:master",
-    {
-      env: {
-        AC_LOGIN_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_auth`,
-        AC_WORLD_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_world`,
-        AC_CHARACTER_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_characters`,
-        AC_DATA_DIR: "/data",
-        AC_LOGS_DIR: "/logs",
+  serverStatefulSet.addContainer("authserver", image, {
+    containerPorts: { auth: 3724 },
+    env: {
+      AC_LOGIN_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-login" },
       },
-      args: ["bash", "/scripts/db-migration.sh"],
-      volumeMounts: {
-        data: "/data",
-        logs: "/logs",
-        scripts: "/scripts",
-      },
+      AC_DISABLE_INTERACTIVE: "1",
     },
-  );
-
-  serverStatefulSet.addContainer(
-    "authserver",
-    "acore/ac-wotlk-authserver:master",
-    {
-      containerPorts: { auth: 3724 },
-      env: {
-        AC_LOGIN_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_auth`,
-        AC_LOGS_DIR: "/logs",
-        AC_TEMP_DIR: "/tmp",
-        AC_DISABLE_INTERACTIVE: "1",
-      },
-      volumeMounts: {
-        logs: "/logs",
-      },
-    },
-  );
+  });
 
   serverStatefulSet.addContainer(
     "worldserver",
@@ -131,17 +118,23 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         soap: 7878,
       },
       env: {
-        AC_LOGIN_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_auth`,
-        AC_WORLD_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_world`,
-        AC_CHARACTER_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_characters`,
-        AC_DATA_DIR: "/data",
-        AC_LOGS_DIR: "/logs",
+        AC_LOGIN_DATABASE_INFO: {
+          secretKeyRef: { name: secrets.name, key: "db-info-login" },
+        },
+        AC_WORLD_DATABASE_INFO: {
+          secretKeyRef: { name: secrets.name, key: "db-info-world" },
+        },
+        AC_CHARACTER_DATABASE_INFO: {
+          secretKeyRef: { name: secrets.name, key: "db-info-characters" },
+        },
+        AC_PLAYERBOTS_DATABASE_INFO: {
+          secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
+        },
         AC_DISABLE_INTERACTIVE: "1",
+        AC_CONSOLE_ENABLE: "0",
       },
       volumeMounts: {
         data: "/data",
-        logs: "/logs",
-        scripts: "/scripts",
       },
     },
   );
