@@ -549,7 +549,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.17.0/24",
         "192.168.34.0/24",
       ),
-      tcp(6969, 10443, 25565, 26900),
+      tcp(3724, 6969, 7878, 8085, 10443, 25565),
     );
 
   gatewayIot

@@ -23,12 +23,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const migrationScript = join(__dirname, "db-migration.sh");
   const downloadScript = join(__dirname, "download-game-data.sh");
+  const makeAccountScript = join(__dirname, "make-account.pl");
 
   new ConfigMap(chart, "scripts-config", {
     metadata: { name: "azerothcore-scripts" },
     data: {
       "download-game-data.sh": (await readFile(downloadScript)).toString(),
       "db-migration.sh": (await readFile(migrationScript)).toString(),
+      "make-account.pl": (await readFile(makeAccountScript)).toString(),
     },
   });
 
@@ -139,6 +141,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       volumeMounts: {
         data: "/data",
         logs: "/logs",
+        scripts: "/scripts",
       },
     },
   );
