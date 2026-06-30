@@ -9,7 +9,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { stringify } from "../../yaml";
+import { options, stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -29,15 +29,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "db-info-world": `${dbHost};${dbPort};root;${secret("db-password")};acore_world`,
     "db-info-characters": `${dbHost};${dbPort};root;${secret("db-password")};acore_characters`,
     "db-info-playerbots": `${dbHost};${dbPort};root;${secret("db-password")};acore_playerbots`,
-    "config.yaml": stringify({
-      accounts: [
-        {
-          username: "bfiola",
-          password: secret("user-bfiola-password"),
-          gm_level: 3,
-        },
-      ],
-    }),
+    "config.yaml": stringify(
+      options({ schema: "core", defaultStringType: "QUOTE_SINGLE" }),
+      {
+        accounts: [
+          {
+            username: "bfiola",
+            password: secret("user-bfiola-password"),
+            gm_level: 3,
+          },
+        ],
+      },
+    ),
   }));
 
   const dbStatefulSet = new StatefulSet(chart, "db", {
