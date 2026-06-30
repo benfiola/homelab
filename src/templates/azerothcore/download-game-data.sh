@@ -6,9 +6,9 @@ if [ -z "$GAME_DATA_URL" ]; then
   exit 1
 fi
 
-if [ -f /game-data/data-version ]; then
+if [ -f /data/data-version ]; then
   echo "Game data already downloaded, checking version..."
-  . /game-data/data-version
+  . /data/data-version
   if [ "$INSTALLED_VERSION" = "v19" ]; then
     echo "Data v19 already installed."
     exit 0
@@ -16,14 +16,14 @@ if [ -f /game-data/data-version ]; then
 fi
 
 echo "Starting game data download from: $GAME_DATA_URL"
-mkdir -p /game-data
+mkdir -p /data
 
 echo "Downloading game data..."
 curl -o /tmp/data.zip -fsSL "$GAME_DATA_URL"
 
 echo "Extracting data..."
-bsdtar -xmf /tmp/data.zip -C /game-data/
+bsdtar -xmf /tmp/data.zip -C /data/
 rm /tmp/data.zip
-echo 'INSTALLED_VERSION=v19' > /game-data/data-version
+echo 'INSTALLED_VERSION=v19' > /data/data-version
 
 echo "Game data download complete"

@@ -17,6 +17,13 @@ automation:
         tap_action: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
         url_1: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
         url_2: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
+        zone_filter: true
+        zones:
+          - left_front_yard
+          - walkway
+          - right_front_yard
+          - side_garden
+          - garage
   - id: "2"
     alias: Frigate (jfiola-iphone)
     description: ""
@@ -35,6 +42,13 @@ automation:
         tap_action: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
         url_1: "{{base_url}}/frigate/preview?index=%2Fvod%2Fevent%2F{{id}}%2Fmaster.m3u8"
         url_2: "{{base_url}}/api/frigate{{client_id}}/notifications/{{id}}/snapshot.jpg"
+        zone_filter: true
+        zones:
+          - left_front_yard
+          - walkway
+          - right_front_yard
+          - side_garden
+          - garage
 http:
   use_x_forwarded_for: true
   trusted_proxies:

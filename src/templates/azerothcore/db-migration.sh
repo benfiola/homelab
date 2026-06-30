@@ -2,7 +2,7 @@
 set -e
 
 echo "Waiting for game data download to complete..."
-while [ ! -f /game-data/data-version ]; do
+while [ ! -f /data/data-version ]; do
   echo "Waiting for game data to be ready..."
   sleep 5
 done
