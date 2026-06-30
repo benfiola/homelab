@@ -40,7 +40,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  mariadbSs.addContainer("mariadb", "mariadb:latest", {
+  mariadbSs.addContainer("mariadb", "mariadb:10.11", {
     containerPorts: { db: 3306 },
     env: {
       MARIADB_ROOT_PASSWORD: "azeroth-root-password",
