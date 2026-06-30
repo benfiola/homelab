@@ -129,6 +129,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         soap: 7878,
       },
       env: {
+        AC_LOGIN_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_auth`,
         AC_WORLD_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_world`,
         AC_CHARACTER_DATABASE_INFO: `${dbHost};${dbPort};root;azeroth-root-password;acore_characters`,
         AC_DATA_DIR: "/data",
