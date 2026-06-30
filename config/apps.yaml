@@ -44,7 +44,6 @@ apps:
   - template: prometheus-operator
   - template: pvc-restore
   - template: router-policy-sync
-  - template: seven-days-to-die
   - template: single-player-tarkov
   - template: storage-class
   - template: tunnel
