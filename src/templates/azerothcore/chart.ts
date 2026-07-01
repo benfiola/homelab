@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.1.2";
+  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.1.5";
   const hostname = "wow.bulia.dev";
   const dbHost = "db.azerothcore.svc";
   const dbPort = 3306;
