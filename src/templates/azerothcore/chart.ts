@@ -112,35 +112,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  serverStatefulSet.addContainer(
-    "worldserver",
-    "acore/ac-wotlk-worldserver:master",
-    {
-      containerPorts: {
-        world: 8085,
-        soap: 7878,
-      },
-      env: {
-        AC_LOGIN_DATABASE_INFO: {
-          secretKeyRef: { name: secrets.name, key: "db-info-login" },
-        },
-        AC_WORLD_DATABASE_INFO: {
-          secretKeyRef: { name: secrets.name, key: "db-info-world" },
-        },
-        AC_CHARACTER_DATABASE_INFO: {
-          secretKeyRef: { name: secrets.name, key: "db-info-characters" },
-        },
-        AC_PLAYERBOTS_DATABASE_INFO: {
-          secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
-        },
-        AC_DISABLE_INTERACTIVE: "1",
-        AC_CONSOLE_ENABLE: "0",
-      },
-      volumeMounts: {
-        data: "/data",
-      },
+  serverStatefulSet.addContainer("worldserver", image, {
+    containerPorts: {
+      world: 8085,
+      soap: 7878,
     },
-  );
+    env: {
+      AC_LOGIN_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-login" },
+      },
+      AC_WORLD_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-world" },
+      },
+      AC_CHARACTER_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-characters" },
+      },
+      AC_PLAYERBOTS_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
+      },
+      AC_DISABLE_INTERACTIVE: "1",
+      AC_CONSOLE_ENABLE: "0",
+    },
+    volumeMounts: {
+      data: "/data",
+    },
+  });
 
   const svc = serverStatefulSet.createService({
     auth: 3724,
