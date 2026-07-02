@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.1.12";
+  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.1.13";
   const hostname = "wow.bulia.dev";
   const dbHost = "db.azerothcore.svc";
   const dbPort = 3306;
@@ -58,6 +58,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         secretKeyRef: { name: secrets.name, key: "db-password" },
       },
     },
+    args: [
+      // see: https://github.com/mod-playerbots/mod-playerbots/wiki/Installation-Guide#4-configure-playerbots
+      "--skip-log-bin",
+      "--innodb-buffer-pool-size=1G",
+      "--innodb-io-capacity=200",
+      "--innodb-io-capacity-max=1000",
+      "--transaction-isolation=READ-COMMITTED",
+    ],
     volumeMounts: {
       "db-data": "/var/lib/mysql",
     },
