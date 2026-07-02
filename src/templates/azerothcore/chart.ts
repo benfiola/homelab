@@ -103,6 +103,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   serverStatefulSet.addContainer("authserver", image, {
+    args: ["authserver"],
     containerPorts: { auth: 3724 },
     env: {
       AC_LOGIN_DATABASE_INFO: {
@@ -113,6 +114,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   serverStatefulSet.addContainer("worldserver", image, {
+    args: ["worldserver"],
     containerPorts: {
       world: 8085,
       soap: 7878,
