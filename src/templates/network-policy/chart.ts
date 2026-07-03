@@ -178,6 +178,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "linstor-satellite",
     component("linstor-satellite", "piraeus-operator"),
   );
+  const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
+  const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
+  const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
+  const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
+  const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
+  const mediarrQbittorrent = svc(
+    "mediarr-qbittorrent",
+    pod("qbittorrent", "mediarr"),
+  );
+
   const piraeusOperator = svc(
     "piraeus-operator",
     component("piraeus-operator", "piraeus-operator"),
@@ -391,6 +401,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(lokiMemcachedChunksCache, tcp(11211))
     .to(lokiRead, tcp(7946));
   host.to(lokiWrite, tcp(3100));
+
+  // mediarr
+  host.to(mediarrQbittorrent, tcp(8000));
+  mediarrQbittorrent.to(cidrs("0.0.0.0/0"), udp(51820));
 
   // metrics-server
   controlPlane.to(metricsServer, tcp(10250));
