@@ -161,7 +161,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         PGID: "1000",
         TZ: "America/Los_Angeles",
         WEBUI_PORT: "8080",
-        QBITTORRENT_INTERFACE: "tun0",
+        QBITTORRENT_INTERFACE: "tunl0",
       },
       volumeMounts: {
         config: "/config",
