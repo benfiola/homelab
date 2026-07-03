@@ -423,6 +423,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   linstorCsiController
     .to(kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
+  host.to(linstorCsiNfsServer, tcp(1000));
   linstorCsiNfsServer
     .to(kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));

@@ -875,7 +875,7 @@ type VolumeItem = { key: string; path?: string };
 
 export type WorkloadVolumes = Record<
   string,
-  | { pvc: { size: string; storageClass: string } }
+  | { pvc: { size: string; storageClass: string } | { name: string } }
   | { configMap: string; items?: VolumeItem[] }
   | { secret: string; items?: VolumeItem[] }
   | { emptyDir: { medium?: "Memory"; sizeLimit?: string } }
@@ -954,19 +954,24 @@ function envToK8s(env: WorkloadEnv | undefined) {
   });
 }
 
-type PvcVolume = { pvc: { size: string; storageClass: string } };
+type PvcTemplate = { size: string; storageClass: string };
+type PvcReference = { name: string };
+type PvcVolume = { pvc: PvcTemplate | PvcReference };
 type EmptyDirVolume = { emptyDir: { medium?: "Memory"; sizeLimit?: string } };
 
 const isPvcVolume = (v: WorkloadVolumes[string]): v is PvcVolume => "pvc" in v;
+const isPvcTemplate = (pvc: PvcTemplate | PvcReference): pvc is PvcTemplate =>
+  "size" in pvc;
 
-function ensureNoPvcVolumes(volumes: WorkloadVolumes | undefined) {
+function ensureNoPvcTemplateVolumes(volumes: WorkloadVolumes | undefined) {
   if (!volumes) return;
-  const pvcVolumes = Object.entries(volumes)
-    .filter(([, v]) => isPvcVolume(v))
+  const templateVolumes = Object.entries(volumes)
+    .filter((entry): entry is [string, PvcVolume] => isPvcVolume(entry[1]))
+    .filter(([, { pvc }]) => isPvcTemplate(pvc))
     .map(([name]) => name);
-  if (pvcVolumes.length > 0) {
+  if (templateVolumes.length > 0) {
     throw new Error(
-      `Deployment does not support PVC volumes (${pvcVolumes.join(", ")}). Use StatefulSet for persistent storage.`,
+      `Deployment does not support PVC templates (${templateVolumes.join(", ")}). Use StatefulSet for per-replica persistent storage, or reference an existing PVC with { pvc: { name } }.`,
     );
   }
 }
@@ -977,6 +982,10 @@ function volumesToClaimTemplates(
   if (!volumes) return undefined;
   const result = Object.entries(volumes)
     .filter((entry): entry is [string, PvcVolume] => isPvcVolume(entry[1]))
+    .filter(
+      (entry): entry is [string, { pvc: PvcTemplate }] =>
+        isPvcTemplate(entry[1].pvc),
+    )
     .map(([name, { pvc }]) => ({
       metadata: { name },
       spec: {
@@ -993,12 +1002,14 @@ function volumesToInlineVolumes(
 ): any[] | undefined {
   if (!volumes) return undefined;
   const result = Object.entries(volumes)
-    .filter(([, v]) => !isPvcVolume(v))
+    .filter(([, v]) => !isPvcVolume(v) || !isPvcTemplate(v.pvc))
     .map(([name, v]) => {
       if ("configMap" in v)
         return { name, configMap: { name: v.configMap, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
       if ("secret" in v)
         return { name, secret: { secretName: v.secret, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
+      if ("pvc" in v && !isPvcTemplate(v.pvc))
+        return { name, persistentVolumeClaim: { claimName: v.pvc.name } };
       const { medium, sizeLimit } = (v as EmptyDirVolume).emptyDir;
       return {
         name,
@@ -1193,7 +1204,7 @@ export class Deployment extends BaseDeployment {
   private readonly _selector: Record<string, string>;
 
   constructor(chart: Chart, name: string, opts: DeploymentOpts = {}) {
-    ensureNoPvcVolumes(opts.volumes);
+    ensureNoPvcTemplateVolumes(opts.volumes);
     const id = `${chart.node.id}-deployment-${name}`;
     const podSecCtxOpts = opts.securityContext ?? {};
     const secCtx = getSecurityContext(podSecCtxOpts);
@@ -1261,7 +1272,7 @@ export class DaemonSet extends BaseDaemonSet {
   private readonly _selector: Record<string, string>;
 
   constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
-    ensureNoPvcVolumes(opts.volumes);
+    ensureNoPvcTemplateVolumes(opts.volumes);
     const id = `${chart.node.id}-daemonset-${name}`;
     const podSecCtxOpts = opts.securityContext ?? {};
     const secCtx = getSecurityContext(podSecCtxOpts);
