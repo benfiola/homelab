@@ -178,11 +178,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "linstor-satellite",
     component("linstor-satellite", "piraeus-operator"),
   );
-  const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
-  const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
-  const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
-  const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
-  const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
+  // const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
+  // const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
+  // const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
+  // const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
+  // const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
   const mediarrQbittorrent = svc(
     "mediarr-qbittorrent",
     pod("qbittorrent", "mediarr"),
