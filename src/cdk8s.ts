@@ -983,9 +983,8 @@ function volumesToClaimTemplates(
   if (!volumes) return undefined;
   const result = Object.entries(volumes)
     .filter((entry): entry is [string, PvcVolume] => isPvcVolume(entry[1]))
-    .filter(
-      (entry): entry is [string, { pvc: PvcTemplate }] =>
-        isPvcTemplate(entry[1].pvc),
+    .filter((entry): entry is [string, { pvc: PvcTemplate }] =>
+      isPvcTemplate(entry[1].pvc),
     )
     .map(([name, { pvc }]) => ({
       metadata: { name },
@@ -1006,9 +1005,21 @@ function volumesToInlineVolumes(
     .filter(([, v]) => !isPvcVolume(v) || !isPvcTemplate(v.pvc))
     .map(([name, v]) => {
       if ("configMap" in v)
-        return { name, configMap: { name: v.configMap, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
+        return {
+          name,
+          configMap: {
+            name: v.configMap,
+            items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })),
+          },
+        };
       if ("secret" in v)
-        return { name, secret: { secretName: v.secret, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
+        return {
+          name,
+          secret: {
+            secretName: v.secret,
+            items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })),
+          },
+        };
       if ("pvc" in v && !isPvcTemplate(v.pvc))
         return { name, persistentVolumeClaim: { claimName: v.pvc.name } };
       if ("hostPath" in v) return { name, hostPath: v.hostPath };
@@ -1089,7 +1100,10 @@ function buildProbe(probeConfig: ProbeConfig | undefined) {
       port: { value: http.port },
     };
   } else if (tcp) {
-    probe.tcpSocket = tcp;
+    probe.tcpSocket = {
+      ...tcp,
+      port: { value: tcp.port },
+    };
   } else if (exec) {
     probe.exec = exec;
   }
