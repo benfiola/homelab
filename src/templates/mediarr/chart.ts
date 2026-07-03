@@ -170,7 +170,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   );
   qbittorrent.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
-    securityContext: { uid: 0, gid: 0, caps: ["NET_ADMIN"] },
+    securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "NET_ADMIN"] },
     env: {
       TZ: "America/Los_Angeles",
       VPN_SERVICE_PROVIDER: "protonvpn",
