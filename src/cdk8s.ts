@@ -879,6 +879,7 @@ export type WorkloadVolumes = Record<
   | { configMap: string; items?: VolumeItem[] }
   | { secret: string; items?: VolumeItem[] }
   | { emptyDir: { medium?: "Memory"; sizeLimit?: string } }
+  | { hostPath: { path: string; type?: string } }
 >;
 
 function normalizePorts(ports: WorkloadPorts) {
@@ -1010,6 +1011,7 @@ function volumesToInlineVolumes(
         return { name, secret: { secretName: v.secret, items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })) } };
       if ("pvc" in v && !isPvcTemplate(v.pvc))
         return { name, persistentVolumeClaim: { claimName: v.pvc.name } };
+      if ("hostPath" in v) return { name, hostPath: v.hostPath };
       const { medium, sizeLimit } = (v as EmptyDirVolume).emptyDir;
       return {
         name,

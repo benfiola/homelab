@@ -2,13 +2,22 @@ import {
   PersistentVolumeClaim,
   Quantity,
 } from "../../../assets/kubernetes/k8s";
-import { Chart, Namespace, StatefulSet } from "../../cdk8s";
+import {
+  Chart,
+  Namespace,
+  StatefulSet,
+  VaultAuth,
+  VaultStaticSecret,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id);
 
   new Namespace(chart, { privileged: true });
+
+  const vaultAuth = new VaultAuth(chart);
+  const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
   new PersistentVolumeClaim(chart, "pvc-data", {
     metadata: {
@@ -134,6 +143,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      "dev-net-tun": { hostPath: { path: "/dev/net/tun" } },
     },
   });
   qbittorrent.addContainer(
@@ -157,6 +167,45 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
   );
+  qbittorrent.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
+    securityContext: { uid: 0, gid: 0, caps: ["NET_ADMIN"] },
+    env: {
+      TZ: "America/Los_Angeles",
+      VPN_SERVICE_PROVIDER: "protonvpn",
+      VPN_TYPE: "wireguard",
+      VPN_PORT_FORWARDING: "on",
+      FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
+      WIREGUARD_PRIVATE_KEY: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-wireguard-private-key",
+        },
+      },
+      SERVER_COUNTRIES: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-server-countries",
+        },
+      },
+      SERVER_CITIES: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-server-cities",
+        },
+      },
+    },
+    volumeMounts: {
+      "dev-net-tun": "/dev/net/tun",
+    },
+    readiness: {
+      tcp: { port: 8000 },
+      initialDelaySeconds: 10,
+    },
+    liveness: {
+      tcp: { port: 8000 },
+      initialDelaySeconds: 30,
+    },
+  });
 
   return chart;
 };
