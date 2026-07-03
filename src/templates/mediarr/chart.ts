@@ -8,6 +8,7 @@ import {
   StatefulSet,
   VaultAuth,
   VaultStaticSecret,
+  VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
@@ -206,6 +207,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
       initialDelaySeconds: 30,
     },
   });
+
+  new VerticalPodAutoscaler(chart, sonarr);
+  new VerticalPodAutoscaler(chart, radarr);
+  new VerticalPodAutoscaler(chart, prowlarr);
+  new VerticalPodAutoscaler(chart, seerr);
+  new VerticalPodAutoscaler(chart, jellyfin);
+  new VerticalPodAutoscaler(chart, qbittorrent);
 
   return chart;
 };
