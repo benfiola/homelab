@@ -404,7 +404,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // mediarr
   host.to(mediarrQbittorrent, tcp(8000));
-  mediarrQbittorrent.to(cidrs("0.0.0.0/0"), udp(51820), icmpv4(3));
+  mediarrQbittorrent
+    .to(cidrs("0.0.0.0/0"), udp(51820))
+    .to(cidrs("0.0.0.0/0"), icmpv4(3));
 
   // metrics-server
   controlPlane.to(metricsServer, tcp(10250));
