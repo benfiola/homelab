@@ -171,19 +171,15 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   );
   qbittorrent.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
-    securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "NET_ADMIN"] },
+    securityContext: {
+      uid: 0,
+      gid: 0,
+      caps: ["CHOWN", "DAC_OVERRIDE", "NET_ADMIN", "NET_RAW"],
+    },
     env: {
-      TZ: "America/Los_Angeles",
-      VPN_SERVICE_PROVIDER: "protonvpn",
-      VPN_TYPE: "wireguard",
-      VPN_PORT_FORWARDING: "on",
+      DNS_UPSTREAM_RESOLVER_TYPE: "plain",
       FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
-      WIREGUARD_PRIVATE_KEY: {
-        secretKeyRef: {
-          name: vaultSecret.name,
-          key: "vpn-wireguard-private-key",
-        },
-      },
+      PORT_FORWARD_ONLY: "yes",
       SERVER_COUNTRIES: {
         secretKeyRef: {
           name: vaultSecret.name,
@@ -196,19 +192,23 @@ export const chart: TemplateChartFn = async (construct, id) => {
           key: "vpn-server-cities",
         },
       },
+      TZ: "America/Los_Angeles",
+      VPN_SERVICE_PROVIDER: "protonvpn",
+      VPN_TYPE: "wireguard",
+      VPN_PORT_FORWARDING: "on",
+      WIREGUARD_PRIVATE_KEY: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-wireguard-private-key",
+        },
+      },
     },
     volumeMounts: {
       tun: "/dev/net/tun",
       "gluetun-tmp": "/tmp/gluetun",
     },
-    readiness: {
-      tcp: { port: 8000 },
-      initialDelaySeconds: 10,
-    },
-    liveness: {
-      tcp: { port: 8000 },
-      initialDelaySeconds: 30,
-    },
+    liveness: { tcp: { port: 8000 } },
+    readiness: { tcp: { port: 8000 } },
   });
 
   new VerticalPodAutoscaler(chart, sonarr);
