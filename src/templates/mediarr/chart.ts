@@ -145,6 +145,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
       tun: { hostPath: { path: "/dev/net/tun" } },
+      "gluetun-tmp": { emptyDir: {} },
     },
   });
   qbittorrent.addContainer(
@@ -176,8 +177,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
       VPN_SERVICE_PROVIDER: "protonvpn",
       VPN_TYPE: "wireguard",
       VPN_PORT_FORWARDING: "on",
-      VPN_PORT_FORWARDING_STATUS_FILE: "/tmp/forwarded_port",
-      PUBLICIP_FILE: "/tmp/ip",
       FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
       WIREGUARD_PRIVATE_KEY: {
         secretKeyRef: {
@@ -200,6 +199,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
     volumeMounts: {
       tun: "/dev/net/tun",
+      "gluetun-tmp": "/tmp/gluetun",
     },
     readiness: {
       tcp: { port: 8000 },
