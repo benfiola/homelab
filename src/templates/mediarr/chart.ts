@@ -144,7 +144,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      "dev-net-tun": { hostPath: { path: "/dev/net/tun" } },
+      tun: { hostPath: { path: "/dev/net/tun" } },
     },
   });
   qbittorrent.addContainer(
@@ -161,6 +161,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         PGID: "1000",
         TZ: "America/Los_Angeles",
         WEBUI_PORT: "8080",
+        QBITTORRENT_INTERFACE: "tun0",
       },
       volumeMounts: {
         config: "/config",
@@ -175,6 +176,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
       VPN_SERVICE_PROVIDER: "protonvpn",
       VPN_TYPE: "wireguard",
       VPN_PORT_FORWARDING: "on",
+      VPN_PORT_FORWARDING_STATUS_FILE: "/tmp/forwarded_port",
+      PUBLICIP_FILE: "/tmp/ip",
       FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
       WIREGUARD_PRIVATE_KEY: {
         secretKeyRef: {
@@ -196,7 +199,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
     volumeMounts: {
-      "dev-net-tun": "/dev/net/tun",
+      tun: "/dev/net/tun",
     },
     readiness: {
       tcp: { port: 8000 },
