@@ -29,6 +29,7 @@ apps:
   - template: linstor
   - template: loki
   - template: mdns-reflector
+  - template: mediarr
   - template: metrics-server
   - template: minecraft
   - template: monitoring-config

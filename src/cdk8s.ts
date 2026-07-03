@@ -1047,13 +1047,17 @@ type ProbeConfig = {
   failureThreshold?: number;
 };
 
+type VolumeMountOpts =
+  | string
+  | { mountPath: string; subPath?: string; readOnly?: boolean };
+
 interface ContainerOpts {
   containerPorts?: WorkloadPorts;
   env?: WorkloadEnv;
   cmd?: string[];
   args?: string[];
   resources?: ContainerResources;
-  volumeMounts?: Record<string, string>;
+  volumeMounts?: Record<string, VolumeMountOpts>;
   securityContext?: GetSecurityContextOpts;
   readiness?: ProbeConfig;
   liveness?: ProbeConfig;
@@ -1101,10 +1105,11 @@ function buildContainer(
   const { container: containerSec } = getSecurityContext(mergedOpts);
 
   const mounts = opts.volumeMounts
-    ? Object.entries(opts.volumeMounts).map(([name, mountPath]) => ({
-        name,
-        mountPath,
-      }))
+    ? Object.entries(opts.volumeMounts).map(([name, mount]) => {
+        const { mountPath, subPath, readOnly } =
+          typeof mount === "string" ? { mountPath: mount } : mount;
+        return { name, mountPath, subPath, readOnly };
+      })
     : undefined;
 
   return {
