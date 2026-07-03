@@ -29,12 +29,14 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const sonarr = new Deployment(chart, "sonarr", {
     volumes: {
       data: { pvc: { name: "data" } },
+      run: { emptyDir: {} },
     },
   });
   sonarr.addContainer("sonarr", "lscr.io/linuxserver/sonarr:4.0.19", {
     env: { TZ: timezone },
     volumeMounts: {
       data: "/data",
+      run: "/run",
     },
   });
 
