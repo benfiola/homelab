@@ -42,7 +42,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: {
       "init.sh": dedent(`
-        #/bin/bash
+        #!/bin/bash
         set -e
         echo "initializing data volume"
         mkdir -p /data/torrents/movies
@@ -54,16 +54,20 @@ export const chart: TemplateChartFn = async (construct, id) => {
         sleep infinity
       `),
       "wait-for-init.sh": dedent(`
-        #/bin/bash
+        #!/bin/bash
         set -e
-        timeout=30
-        elapsed=0
         file=/data/.initialized
-        while [ ! -f "\${file}" ] && [ $elapsed -lt $timeout ]; do
-          echo "\${file}: not found"
-          sleep 1
-          ((elapsed++))
-        done
+        (
+          while [ ! -f "\${file}" ]; do
+            echo "\${file}: not found"
+            sleep 1
+          done
+        ) &
+        pid=$!
+        if ! timeout 30 wait $pid; then
+          echo "\${file}: timed out while waiting"
+          exit 1
+        fi
         echo "\${file}: found"
       `),
     },
