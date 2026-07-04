@@ -214,7 +214,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
     volumeMounts: {
       config: "/config",
-      data: { mountPath: "/data", subPath: "media" },
+      data: { mountPath: "/data" },
     },
   });
   const jellyfinSvc = jellyfin.createService({ web: 8096 });
@@ -246,7 +246,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
       volumeMounts: {
         config: "/config",
-        data: { mountPath: "/data", subPath: "torrents" },
+        data: { mountPath: "/data" },
         "qbittorrent-incomplete": "/incomplete",
       },
     },
