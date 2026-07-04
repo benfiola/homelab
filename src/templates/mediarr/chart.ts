@@ -64,7 +64,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
           done
         ) &
         pid=$!
-        if ! timeout 30 wait $pid; then
+        if ! timeout 30 bash -c "wait \${pid}"; then
           echo "\${file}: timed out while waiting"
           exit 1
         fi
