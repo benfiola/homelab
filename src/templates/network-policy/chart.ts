@@ -428,6 +428,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("api.themoviedb.org"), tcp(443));
   mediarrSonarr.to(mediarrProwlarr, tcp(9696));
   mediarrQbittorrent
+    // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
 
