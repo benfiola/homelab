@@ -408,6 +408,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiWrite, tcp(3100));
 
   // mediarr
+  mediarrJellyfin.to(dns("repo.jellyfin.org"), tcp(443));
   mediarrProfilarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
