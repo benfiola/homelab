@@ -1,9 +1,12 @@
+import dedent from "ts-dedent";
 import {
+  ConfigMap,
   PersistentVolumeClaim,
   Quantity,
 } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
+  Deployment,
   HttpRoute,
   Namespace,
   StatefulSet,
@@ -36,11 +39,62 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
+  const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
+    data: {
+      "init.sh": dedent(`
+        #/bin/bash
+        set -e
+        mkdir -p /data/torrents/movies
+        mkdir -p /data/torrents/tv
+        mkdir -p /data/media/movies
+        mkdir -p /data/media/tv
+        touch /data/.initialized
+        sleep infinity
+      `),
+      "wait-for-init.sh": dedent(`
+        #/bin/bash
+        set -e
+        timeout=30
+        elapsed=0
+        file=/data/.initialized
+        while [ ! -f "\${file}" ] && [ $elapsed -lt $timeout ]; do
+          echo "\${file}: not found"
+          sleep 1
+          ((elapsed++))
+        done
+        echo "\${file}: found"
+      `),
+    },
+  });
+
+  const init = new Deployment(chart, "init-fs", {
+    securityContext: { uid: 1000, gid: 1000 },
+    volumes: {
+      data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
+    },
+  });
+  init.addContainer(
+    "init-fs",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
+    {
+      cmd: ["bash"],
+      args: ["/scripts/init.sh"],
+      volumeMounts: {
+        scripts: { mountPath: "/scripts" },
+      },
+    },
+  );
+
   const sonarr = new StatefulSet(chart, "sonarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: {
+        configMap: scripts.name,
+        items: [{ key: "wait-for-init.sh" }],
+      },
     },
   });
   sonarr.addContainer("sonarr", "lscr.io/linuxserver/sonarr:4.0.19", {
@@ -57,7 +111,18 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  const sonarrSvc = sonarr.createService({ web: 8989 });
+  sonarr.addContainer(
+    "wait-for-init",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
+    {
+      cmd: ["bash"],
+      args: ["/scripts/wait-for-init.sh"],
+      volumeMounts: {
+        scripts: { mountPath: "/scripts" },
+      },
+    },
+  );
+  sonarr.createService({ web: 8989 });
 
   const radarr = new StatefulSet(chart, "radarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -80,7 +145,18 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  const radarrSvc = radarr.createService({ web: 7878 });
+  sonarr.addContainer(
+    "wait-for-init",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
+    {
+      cmd: ["bash"],
+      args: ["/scripts/wait-for-init.sh"],
+      volumeMounts: {
+        scripts: { mountPath: "/scripts" },
+      },
+    },
+  );
+  radarr.createService({ web: 7878 });
 
   const prowlarr = new StatefulSet(chart, "prowlarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
