@@ -408,7 +408,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiWrite, tcp(3100));
 
   // mediarr
-
   mediarrProfilarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
@@ -416,7 +415,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
-  mediarrProwlarr.to(mediarrRadarr, tcp(7878)).to(mediarrSonarr, tcp(8989));
+  mediarrProwlarr
+    .to(mediarrRadarr, tcp(7878))
+    .to(mediarrSonarr, tcp(8989))
+    .to(dns("prowlarr.servarr.com"), tcp(443));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSonarr, tcp(8989))
