@@ -123,6 +123,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
   addWaitForInitContainer(sonarr);
+  sonarr.createService({ web: 8989 });
 
   const radarr = new StatefulSet(chart, "radarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
