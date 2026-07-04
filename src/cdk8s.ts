@@ -1059,6 +1059,12 @@ interface WorkloadOpts {
   nodeSelector?: Record<string, string>;
   securityContext?: GetSecurityContextOpts;
   podAnnotations?: Record<string, string>;
+  dnsConfig?: { ndots?: number };
+}
+
+function dnsConfigToK8s(dnsConfig: WorkloadOpts["dnsConfig"]) {
+  if (!dnsConfig?.ndots) return undefined;
+  return { options: [{ name: "ndots", value: String(dnsConfig.ndots) }] };
 }
 
 interface ContainerResources {
@@ -1191,6 +1197,7 @@ export class StatefulSet extends BaseStatefulSet {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
+            dnsConfig: dnsConfigToK8s(opts.dnsConfig),
             volumes,
             initContainers,
             containers,
@@ -1274,6 +1281,7 @@ export class Deployment extends BaseDeployment {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
+            dnsConfig: dnsConfigToK8s(opts.dnsConfig),
             volumes,
             initContainers: initContainers,
             containers,
@@ -1354,6 +1362,7 @@ export class DaemonSet extends BaseDaemonSet {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
+            dnsConfig: dnsConfigToK8s(opts.dnsConfig),
             volumes,
             initContainers,
             containers,

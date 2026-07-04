@@ -295,6 +295,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       data: { pvc: { name: "data" } },
       incomplete: { emptyDir: {} },
     },
+    dnsConfig: { ndots: 1 },
   });
   qbittorrent.addContainer(
     "qbittorrent",
