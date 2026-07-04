@@ -57,6 +57,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
+  sonarr.createService({ web: 8989 });
 
   const radarr = new StatefulSet(chart, "radarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -79,6 +80,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
+  radarr.createService({ web: 7878 });
 
   const prowlarr = new StatefulSet(chart, "prowlarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
