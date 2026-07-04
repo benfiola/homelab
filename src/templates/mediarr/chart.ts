@@ -82,7 +82,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   init.addContainer(
     "init-fs",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.1",
     {
       cmd: ["bash"],
       args: ["/scripts/init.sh"],
@@ -93,6 +93,19 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   );
 
+  const addWaitForInitContainer = (workload: Deployment | StatefulSet) => {
+    workload.addInitContainer(
+      "wait-for-init",
+      "ghcr.io/benfiola/homelab-images/toolbox:1.1.0",
+      {
+        cmd: ["bash"],
+        args: ["/scripts/wait-for-init.sh"],
+        volumeMounts: {
+          scripts: { mountPath: "/scripts" },
+        },
+      },
+    );
+  };
   const sonarr = new StatefulSet(chart, "sonarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
@@ -115,17 +128,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  sonarr.addInitContainer(
-    "wait-for-init",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
-    {
-      cmd: ["bash"],
-      args: ["/scripts/wait-for-init.sh"],
-      volumeMounts: {
-        scripts: { mountPath: "/scripts" },
-      },
-    },
-  );
+  addWaitForInitContainer(sonarr);
 
   const radarr = new StatefulSet(chart, "radarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -149,17 +152,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  radarr.addInitContainer(
-    "wait-for-init",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
-    {
-      cmd: ["bash"],
-      args: ["/scripts/wait-for-init.sh"],
-      volumeMounts: {
-        scripts: { mountPath: "/scripts" },
-      },
-    },
-  );
+  addWaitForInitContainer(radarr);
   radarr.createService({ web: 7878 });
 
   const prowlarr = new StatefulSet(chart, "prowlarr", {
@@ -223,17 +216,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       data: { mountPath: "/data" },
     },
   });
-  jellyfin.addInitContainer(
-    "wait-for-init",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
-    {
-      cmd: ["bash"],
-      args: ["/scripts/wait-for-init.sh"],
-      volumeMounts: {
-        scripts: { mountPath: "/scripts" },
-      },
-    },
-  );
+  addWaitForInitContainer(jellyfin);
   const jellyfinSvc = jellyfin.createService({ web: 8096 });
 
   const qbittorrent = new StatefulSet(chart, "qbittorrent", {
@@ -307,17 +290,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       "gluetun-tmp": "/tmp/gluetun",
     },
   });
-  qbittorrent.addInitContainer(
-    "wait-for-init",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
-    {
-      cmd: ["bash"],
-      args: ["/scripts/wait-for-init.sh"],
-      volumeMounts: {
-        scripts: { mountPath: "/scripts" },
-      },
-    },
-  );
+  addWaitForInitContainer(qbittorrent);
 
   new VerticalPodAutoscaler(chart, sonarr);
   new VerticalPodAutoscaler(chart, radarr);
