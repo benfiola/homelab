@@ -213,7 +213,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  addVpnSidecar(prowlarr);
   prowlarr.createService({ web: 9696 });
 
   const profilarr = new StatefulSet(chart, "profilarr", {

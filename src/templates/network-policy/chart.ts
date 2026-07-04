@@ -418,9 +418,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    // needs access to general VPNs (and VPN healthchecks)
-    .to(cidrs("0.0.0.0/0"), udp(51820))
-    .to(cidrs("0.0.0.0/0"), icmpv4(3));
+    // needs access to indexers and indexers.prowlarr.com
+    .to(cidrs("0.0.0.0/0"), tcp(443));
   mediarrRadarr.to(mediarrProwlarr, tcp(9696));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
