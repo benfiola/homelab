@@ -181,7 +181,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
   const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
-  // const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
+  const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
   const mediarrProfilarr = svc(
     "mediarr-profilarr",
     pod("profilarr", "mediarr"),
@@ -408,6 +408,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiWrite, tcp(3100));
 
   // mediarr
+  mediarrProfilarr.to(dns("github.com"), tcp(443));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSonarr, tcp(8989))
