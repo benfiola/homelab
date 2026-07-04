@@ -419,11 +419,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
     .to(dns("prowlarr.servarr.com"), tcp(443));
+  mediarrRadarr.to(mediarrProwlarr, tcp(9696));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
-    .to(mediarrSonarr, tcp(8989))
     .to(mediarrRadarr, tcp(7878))
+    .to(mediarrSonarr, tcp(8989))
     .to(dns("api.themoviedb.org"), tcp(443));
+  mediarrSonarr.to(mediarrProwlarr, tcp(9696));
   mediarrQbittorrent
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
