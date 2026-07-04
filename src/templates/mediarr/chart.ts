@@ -207,9 +207,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
       tun: "/dev/net/tun",
       "gluetun-tmp": "/tmp/gluetun",
     },
-    liveness: { tcp: { port: 8000 } },
-    readiness: { tcp: { port: 8000 } },
-    startup: { tcp: { port: 8080 }, failureThreshold: 10 },
   });
 
   new VerticalPodAutoscaler(chart, sonarr);
