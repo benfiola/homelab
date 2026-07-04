@@ -82,6 +82,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       args: ["/scripts/init.sh"],
       volumeMounts: {
         scripts: { mountPath: "/scripts" },
+        data: { mountPath: "/data" },
       },
     },
   );
