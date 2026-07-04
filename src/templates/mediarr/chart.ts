@@ -73,6 +73,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
+  const toolbox = "ghcr.io/benfiola/homelab-images/toolbox:1.1.0";
   const init = new Deployment(chart, "init-fs", {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: {
@@ -80,31 +81,23 @@ export const chart: TemplateChartFn = async (construct, id) => {
       scripts: { configMap: scripts.name },
     },
   });
-  init.addContainer(
-    "init-fs",
-    "ghcr.io/benfiola/homelab-images/toolbox:1.0.1",
-    {
-      cmd: ["bash"],
-      args: ["/scripts/init.sh"],
-      volumeMounts: {
-        scripts: { mountPath: "/scripts" },
-        data: { mountPath: "/data" },
-      },
+  init.addContainer("init-fs", toolbox, {
+    cmd: ["bash"],
+    args: ["/scripts/init.sh"],
+    volumeMounts: {
+      scripts: { mountPath: "/scripts" },
+      data: { mountPath: "/data" },
     },
-  );
+  });
 
   const addWaitForInitContainer = (workload: Deployment | StatefulSet) => {
-    workload.addInitContainer(
-      "wait-for-init",
-      "ghcr.io/benfiola/homelab-images/toolbox:1.1.0",
-      {
-        cmd: ["bash"],
-        args: ["/scripts/wait-for-init.sh"],
-        volumeMounts: {
-          scripts: { mountPath: "/scripts" },
-        },
+    workload.addInitContainer("wait-for-init", toolbox, {
+      cmd: ["bash"],
+      args: ["/scripts/wait-for-init.sh"],
+      volumeMounts: {
+        scripts: { mountPath: "/scripts" },
       },
-    );
+    });
   };
   const sonarr = new StatefulSet(chart, "sonarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
