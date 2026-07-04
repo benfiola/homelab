@@ -997,6 +997,24 @@ function volumesToClaimTemplates(
   return result.length ? result : undefined;
 }
 
+function addWorkloadVolume(
+  volumes: any[],
+  volumeNames: Set<string>,
+  name: string,
+  volume: WorkloadVolumes[string],
+) {
+  if (volumeNames.has(name)) {
+    throw new Error(`Volume "${name}" is already defined on this workload.`);
+  }
+  if (isPvcVolume(volume) && isPvcTemplate(volume.pvc)) {
+    throw new Error(
+      `addVolume does not support PVC templates (${name}). Declare it in the workload's volumes instead.`,
+    );
+  }
+  volumes.push(...volumesToInlineVolumes({ [name]: volume })!);
+  volumeNames.add(name);
+}
+
 function volumesToInlineVolumes(
   volumes: WorkloadVolumes | undefined,
 ): any[] | undefined {
@@ -1147,6 +1165,8 @@ function buildContainer(
 export class StatefulSet extends BaseStatefulSet {
   private readonly _containers: any[];
   private readonly _initContainers: any[];
+  private readonly _volumes: any[];
+  private readonly _volumeNames: Set<string>;
   private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
@@ -1157,6 +1177,7 @@ export class StatefulSet extends BaseStatefulSet {
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
     const initContainers: any[] = [];
+    const volumes = volumesToInlineVolumes(opts.volumes) ?? [];
     super(chart, id, {
       metadata: { name },
       spec: {
@@ -1170,7 +1191,7 @@ export class StatefulSet extends BaseStatefulSet {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
-            volumes: volumesToInlineVolumes(opts.volumes),
+            volumes,
             initContainers,
             containers,
           },
@@ -1180,6 +1201,8 @@ export class StatefulSet extends BaseStatefulSet {
     });
     this._containers = containers;
     this._initContainers = initContainers;
+    this._volumes = volumes;
+    this._volumeNames = new Set(Object.keys(opts.volumes ?? {}));
     this._podSecCtxOpts = podSecCtxOpts;
     this._selector = selector;
   }
@@ -1203,6 +1226,11 @@ export class StatefulSet extends BaseStatefulSet {
     this._containers.push(
       buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
+    return this;
+  }
+
+  addVolume(name: string, volume: WorkloadVolumes[string]): this {
+    addWorkloadVolume(this._volumes, this._volumeNames, name, volume);
     return this;
   }
 
@@ -1221,6 +1249,8 @@ interface DeploymentOpts extends WorkloadOpts {
 export class Deployment extends BaseDeployment {
   private readonly _containers: any[];
   private readonly _initContainers: any[];
+  private readonly _volumes: any[];
+  private readonly _volumeNames: Set<string>;
   private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
@@ -1232,6 +1262,7 @@ export class Deployment extends BaseDeployment {
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
     const initContainers: any[] = [];
+    const volumes = volumesToInlineVolumes(opts.volumes) ?? [];
     super(chart, id, {
       metadata: { name },
       spec: {
@@ -1243,7 +1274,7 @@ export class Deployment extends BaseDeployment {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
-            volumes: volumesToInlineVolumes(opts.volumes),
+            volumes,
             initContainers: initContainers,
             containers,
           },
@@ -1252,6 +1283,8 @@ export class Deployment extends BaseDeployment {
     });
     this._containers = containers;
     this._initContainers = initContainers;
+    this._volumes = volumes;
+    this._volumeNames = new Set(Object.keys(opts.volumes ?? {}));
     this._podSecCtxOpts = podSecCtxOpts;
     this._selector = selector;
   }
@@ -1275,6 +1308,11 @@ export class Deployment extends BaseDeployment {
     this._containers.push(
       buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
+    return this;
+  }
+
+  addVolume(name: string, volume: WorkloadVolumes[string]): this {
+    addWorkloadVolume(this._volumes, this._volumeNames, name, volume);
     return this;
   }
 
@@ -1289,6 +1327,8 @@ export class Deployment extends BaseDeployment {
 export class DaemonSet extends BaseDaemonSet {
   private readonly _containers: any[];
   private readonly _initContainers: any[];
+  private readonly _volumes: any[];
+  private readonly _volumeNames: Set<string>;
   private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
@@ -1300,6 +1340,7 @@ export class DaemonSet extends BaseDaemonSet {
     const selector = { "app.kubernetes.io/name": name };
     const containers: any[] = [];
     const initContainers: any[] = [];
+    const volumes = volumesToInlineVolumes(opts.volumes) ?? [];
     super(chart, id, {
       metadata: { name },
       spec: {
@@ -1313,7 +1354,7 @@ export class DaemonSet extends BaseDaemonSet {
             hostNetwork: opts.hostNetwork,
             nodeSelector: opts.nodeSelector,
             securityContext: secCtx.pod,
-            volumes: volumesToInlineVolumes(opts.volumes),
+            volumes,
             initContainers,
             containers,
           },
@@ -1322,6 +1363,8 @@ export class DaemonSet extends BaseDaemonSet {
     });
     this._containers = containers;
     this._initContainers = initContainers;
+    this._volumes = volumes;
+    this._volumeNames = new Set(Object.keys(opts.volumes ?? {}));
     this._podSecCtxOpts = podSecCtxOpts;
     this._selector = selector;
   }
@@ -1345,6 +1388,11 @@ export class DaemonSet extends BaseDaemonSet {
     this._containers.push(
       buildContainer(this._podSecCtxOpts, containerName, image, opts),
     );
+    return this;
+  }
+
+  addVolume(name: string, volume: WorkloadVolumes[string]): this {
+    addWorkloadVolume(this._volumes, this._volumeNames, name, volume);
     return this;
   }
 

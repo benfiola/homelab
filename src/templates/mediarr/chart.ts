@@ -24,7 +24,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const vaultAuth = new VaultAuth(chart);
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
-  new PersistentVolumeClaim(chart, "pvc-data", {
+  const data = new PersistentVolumeClaim(chart, "pvc-data", {
     metadata: {
       name: "data",
     },
@@ -91,21 +91,66 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const addWaitForInitContainer = (workload: Deployment | StatefulSet) => {
+    workload.addVolume("wait-for-init-scripts", { configMap: scripts.name });
+    workload.addVolume("wait-for-init-data", { pvc: { name: data.name } });
     workload.addInitContainer("wait-for-init", toolbox, {
       cmd: ["bash"],
       args: ["/scripts/wait-for-init.sh"],
       volumeMounts: {
-        scripts: { mountPath: "/scripts" },
-        data: { mountPath: "/data" },
+        "wait-for-init-scripts": { mountPath: "/scripts" },
+        "wait-for-init-data": { mountPath: "/data" },
       },
     });
   };
+
+  const addVpnSidecar = (workload: Deployment | StatefulSet) => {
+    workload.addVolume("vpn-tun", { hostPath: { path: "/dev/net/tun" } });
+    workload.addVolume("vpn-tmp", { emptyDir: {} });
+    workload.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
+      securityContext: {
+        uid: 0,
+        gid: 0,
+        caps: ["CHOWN", "DAC_OVERRIDE", "NET_ADMIN", "NET_RAW"],
+      },
+      env: {
+        DNS_UPSTREAM_RESOLVER_TYPE: "plain",
+        FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
+        PORT_FORWARD_ONLY: "yes",
+        SERVER_COUNTRIES: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "vpn-server-countries",
+          },
+        },
+        SERVER_CITIES: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "vpn-server-cities",
+          },
+        },
+        TZ: "America/Los_Angeles",
+        VPN_SERVICE_PROVIDER: "protonvpn",
+        VPN_TYPE: "wireguard",
+        VPN_PORT_FORWARDING: "on",
+        WIREGUARD_PRIVATE_KEY: {
+          secretKeyRef: {
+            name: vaultSecret.name,
+            key: "vpn-wireguard-private-key",
+          },
+        },
+      },
+      volumeMounts: {
+        "vpn-tun": "/dev/net/tun",
+        "vpn-tmp": "/tmp/gluetun",
+      },
+    });
+  };
+
   const sonarr = new StatefulSet(chart, "sonarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
     },
   });
   sonarr.addContainer("sonarr", "lscr.io/linuxserver/sonarr:4.0.19", {
@@ -130,7 +175,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
     },
   });
   radarr.addContainer("radarr", "lscr.io/linuxserver/radarr:6.2.1", {
@@ -169,6 +213,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
+  addVpnSidecar(prowlarr);
   prowlarr.createService({ web: 9696 });
 
   const profilarr = new StatefulSet(chart, "profilarr", {
@@ -219,7 +264,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "3Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
     },
   });
   jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
@@ -244,10 +288,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      tun: { hostPath: { path: "/dev/net/tun" } },
-      "qbittorrent-incomplete": { emptyDir: {} },
-      "gluetun-tmp": { emptyDir: {} },
-      scripts: { configMap: scripts.name },
+      incomplete: { emptyDir: {} },
     },
   });
   qbittorrent.addContainer(
@@ -268,48 +309,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
       volumeMounts: {
         config: "/config",
         data: { mountPath: "/data" },
-        "qbittorrent-incomplete": "/incomplete",
+        incomplete: "/incomplete",
       },
     },
   );
-  qbittorrent.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
-    securityContext: {
-      uid: 0,
-      gid: 0,
-      caps: ["CHOWN", "DAC_OVERRIDE", "NET_ADMIN", "NET_RAW"],
-    },
-    env: {
-      DNS_UPSTREAM_RESOLVER_TYPE: "plain",
-      FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
-      PORT_FORWARD_ONLY: "yes",
-      SERVER_COUNTRIES: {
-        secretKeyRef: {
-          name: vaultSecret.name,
-          key: "vpn-server-countries",
-        },
-      },
-      SERVER_CITIES: {
-        secretKeyRef: {
-          name: vaultSecret.name,
-          key: "vpn-server-cities",
-        },
-      },
-      TZ: "America/Los_Angeles",
-      VPN_SERVICE_PROVIDER: "protonvpn",
-      VPN_TYPE: "wireguard",
-      VPN_PORT_FORWARDING: "on",
-      WIREGUARD_PRIVATE_KEY: {
-        secretKeyRef: {
-          name: vaultSecret.name,
-          key: "vpn-wireguard-private-key",
-        },
-      },
-    },
-    volumeMounts: {
-      tun: "/dev/net/tun",
-      "gluetun-tmp": "/tmp/gluetun",
-    },
-  });
+  addVpnSidecar(qbittorrent);
   addWaitForInitContainer(qbittorrent);
 
   new VerticalPodAutoscaler(chart, sonarr);
