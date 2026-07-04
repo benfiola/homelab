@@ -253,10 +253,11 @@ const buildEntitySelector = (selector: Selector): string[] | undefined => {
 };
 
 class PolicyBuilder {
-  private policy: CiliumClusterwideNetworkPolicy;
+  readonly policy: CiliumClusterwideNetworkPolicy;
   private registry: ServiceRegistry;
   private spec: Mutable<CiliumClusterwideNetworkPolicySpec>;
   readonly subject: Subject;
+  private buildRuleCalled: boolean;
 
   constructor(registry: ServiceRegistry, name: string, subject: Subject) {
     const nodeSelectors = buildNodeSelector(subject);
@@ -275,13 +276,19 @@ class PolicyBuilder {
     this.registry = registry;
     this.spec = spec;
     this.subject = subject;
+    this.buildRuleCalled = false;
   }
+
+  wasUsed = () => {
+    return this.buildRuleCalled;
+  };
 
   private buildRule(
     target: Subject | Object,
     specifiers: Specifier[],
     direction: "ingress" | "egress",
   ) {
+    this.buildRuleCalled = true;
     this.spec[direction] ??= [];
     const rules = this.spec[direction];
 
@@ -403,7 +410,7 @@ class PolicyBuilder {
   }
 }
 
-class ServiceRegistry {
+export class ServiceRegistry {
   readonly construct: Construct;
   readonly builders: Record<string, PolicyBuilder>;
 
@@ -412,7 +419,7 @@ class ServiceRegistry {
     this.builders = {};
   }
 
-  register(name: string, subject: Subject) {
+  register = (name: string, subject: Subject) => {
     const hash = computeHash(subject);
     if (this.builders[hash] !== undefined) {
       throw new Error(`policy builder for ${name} already exists`);
@@ -420,18 +427,26 @@ class ServiceRegistry {
     const builder = new PolicyBuilder(this, name, subject);
     this.builders[hash] = builder;
     return builder;
-  }
+  };
 
-  get(subject: Subject) {
+  get = (subject: Subject) => {
     const hash = computeHash(subject);
     if (this.builders[hash] === undefined) {
       throw new Error(`policy builder for ${name} does not exists`);
     }
     return this.builders[hash];
-  }
-}
+  };
 
-export const services = (construct: Construct) => {
-  const registry = new ServiceRegistry(construct);
-  return registry.register.bind(registry);
-};
+  finalize = () => {
+    const parentNode = this.construct.node;
+    for (const builder of Object.values(this.builders)) {
+      if (builder.wasUsed()) {
+        continue;
+      }
+      const childId = builder.policy.node.id;
+      if (!parentNode.tryRemoveChild(childId)) {
+        throw new Error(`failed to delete unused network policy`);
+      }
+    }
+  };
+}

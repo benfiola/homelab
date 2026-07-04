@@ -170,6 +170,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const profilarr = new StatefulSet(chart, "profilarr", {
+    securityContext: { uid: 1000, gid: 1000 },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
     },
@@ -182,6 +183,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
         web: 6868,
       },
       env: {
+        PUID: "1000",
+        PGID: "1000",
         TZ: "America/Los_Angeles",
       },
       volumeMounts: {

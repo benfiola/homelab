@@ -15,14 +15,15 @@ import {
   gateway,
   icmpv4,
   pod,
-  services,
+  ServiceRegistry,
   tcp,
   udp,
 } from "./policyBuilder";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, context.name);
-  const svc = services(chart);
+  const serviceRegistry = new ServiceRegistry(chart);
+  const svc = serviceRegistry.register;
 
   // infrastructure entities
   const controlPlane = svc("control-plane", _controlPlane());
@@ -181,8 +182,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
   const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
   // const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
-  // const mediarrProfilarr = svc("mediarr-profilarr", pod("profilarr", "mediarr"));
-
+  const mediarrProfilarr = svc(
+    "mediarr-profilarr",
+    pod("profilarr", "mediarr"),
+  );
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
   const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
   const mediarrQbittorrent = svc(
@@ -600,5 +603,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(envoyGatewayController, tcp(18000))
     .from(cidrs("198.51.100.1/32"), tcp(10443));
 
+  serviceRegistry.finalize();
   return chart;
 };
