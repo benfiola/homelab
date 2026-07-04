@@ -103,7 +103,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
     });
   };
 
-  const addVpnSidecar = (workload: Deployment | StatefulSet) => {
+  const addVpnSidecar = (
+    workload: Deployment | StatefulSet,
+    options?: { inputPorts?: number[] },
+  ) => {
     workload.addVolume("vpn-tun", { hostPath: { path: "/dev/net/tun" } });
     workload.addVolume("vpn-tmp", { emptyDir: {} });
     workload.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
@@ -115,6 +118,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
       env: {
         DNS_UPSTREAM_RESOLVER_TYPE: "plain",
         FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
+        ...(options?.inputPorts
+          ? { FIREWALL_INPUT_PORTS: options.inputPorts.join(",") }
+          : {}),
         PORT_FORWARD_ONLY: "yes",
         SERVER_COUNTRIES: {
           secretKeyRef: {
@@ -312,7 +318,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
   );
-  addVpnSidecar(qbittorrent);
+  addVpnSidecar(qbittorrent, { inputPorts: [8080] });
   addWaitForInitContainer(qbittorrent);
   qbittorrent.createService({ web: 8080 });
 
