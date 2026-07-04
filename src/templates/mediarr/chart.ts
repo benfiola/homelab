@@ -44,11 +44,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
       "init.sh": dedent(`
         #/bin/bash
         set -e
+        echo "initializing data volume"
         mkdir -p /data/torrents/movies
         mkdir -p /data/torrents/tv
         mkdir -p /data/media/movies
         mkdir -p /data/media/tv
         touch /data/.initialized
+        echo "data volume initialized"
         sleep infinity
       `),
       "wait-for-init.sh": dedent(`
