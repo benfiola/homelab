@@ -169,6 +169,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
+  prowlarr.createService({ web: 9696 });
 
   const profilarr = new StatefulSet(chart, "profilarr", {
     securityContext: { uid: 1000, gid: 1000 },
