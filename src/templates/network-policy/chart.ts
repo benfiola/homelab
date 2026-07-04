@@ -418,7 +418,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    .to(dns("prowlarr.servarr.com"), tcp(443));
+    .to(dns("indexers.prowlarr.com"), tcp(443));
   mediarrRadarr.to(mediarrProwlarr, tcp(9696));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
