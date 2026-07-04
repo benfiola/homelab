@@ -111,7 +111,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  sonarr.addContainer(
+  sonarr.addInitContainer(
     "wait-for-init",
     "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
     {
@@ -144,7 +144,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  sonarr.addContainer(
+  radarr.addInitContainer(
     "wait-for-init",
     "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
     {
