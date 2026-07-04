@@ -4,6 +4,7 @@ import {
 } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
+  HttpRoute,
   Namespace,
   StatefulSet,
   VaultAuth,
@@ -116,6 +117,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/app/config",
     },
   });
+  const seerrSvc = seerr.createService({ web: 5055 });
 
   const jellyfin = new StatefulSet(chart, "jellyfin", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -138,6 +140,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       data: { mountPath: "/data", subPath: "media" },
     },
   });
+  const jellyfinSvc = jellyfin.createService({ web: 8096 });
 
   const qbittorrent = new StatefulSet(chart, "qbittorrent", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -216,6 +219,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new VerticalPodAutoscaler(chart, seerr);
   new VerticalPodAutoscaler(chart, jellyfin);
   new VerticalPodAutoscaler(chart, qbittorrent);
+
+  new HttpRoute(chart, "users", "seerr.bulia.dev").match(seerrSvc, 5055);
+  new HttpRoute(chart, "users", "jellyfin.bulia.dev").match(jellyfinSvc, 8096);
 
   return chart;
 };
