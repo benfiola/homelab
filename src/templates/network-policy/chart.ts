@@ -435,7 +435,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrSonarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
-    .to(dns("skyhook.sonarr.tv"), tcp(443));
+    .to(dns("skyhook.sonarr.tv"), tcp(443))
+    .to(dns("thexem.info"), tcp(443));
   mediarrQbittorrent
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
