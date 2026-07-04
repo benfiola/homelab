@@ -169,8 +169,25 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
+  const profilarr = new StatefulSet(chart, "profilarr", {
+    volumes: {
+      config: { pvc: { size: "1Gi", storageClass: "standard" } },
+    },
+  });
+  profilarr.addContainer(
+    "profilarr",
+    "ghcr.io/dictionarry-hub/profilarr:2.0.9",
+    {
+      containerPorts: {
+        web: 6868,
+      },
+      env: {
+        TZ: "America/Los_Angeles",
+      },
+    },
+  );
+
   const seerr = new StatefulSet(chart, "seerr", {
-    securityContext: { uid: 1000, gid: 1000 },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
     },
