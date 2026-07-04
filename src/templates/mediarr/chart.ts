@@ -183,6 +183,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         web: 6868,
       },
       env: {
+        AUTH: "local",
         PUID: "1000",
         PGID: "1000",
         TZ: "America/Los_Angeles",

@@ -409,6 +409,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // mediarr
   mediarrProfilarr
+    .to(mediarrRadarr, tcp(7878))
+    .to(mediarrSonarr, tcp(8989))
     .to(dns("github.com"), tcp(443))
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
