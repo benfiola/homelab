@@ -184,6 +184,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
       env: {
         TZ: "America/Los_Angeles",
       },
+      volumeMounts: {
+        config: "/config",
+      },
     },
   );
 

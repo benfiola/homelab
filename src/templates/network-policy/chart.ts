@@ -181,6 +181,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
   const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
   // const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
+  // const mediarrProfilarr = svc("mediarr-profilarr", pod("profilarr", "mediarr"));
+
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
   const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
   const mediarrQbittorrent = svc(
