@@ -91,10 +91,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: {
-        configMap: scripts.name,
-        items: [{ key: "wait-for-init.sh" }],
-      },
+      scripts: { configMap: scripts.name },
     },
   });
   sonarr.addContainer("sonarr", "lscr.io/linuxserver/sonarr:4.0.19", {
@@ -128,6 +125,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
     },
   });
   radarr.addContainer("radarr", "lscr.io/linuxserver/radarr:6.2.1", {
