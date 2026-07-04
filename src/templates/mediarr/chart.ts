@@ -145,6 +145,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
       tun: { hostPath: { path: "/dev/net/tun" } },
+      "qbittorrent-incomplete": { emptyDir: {} },
       "gluetun-tmp": { emptyDir: {} },
     },
   });
@@ -167,6 +168,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       volumeMounts: {
         config: "/config",
         data: { mountPath: "/data", subPath: "torrents" },
+        "qbittorrent-incomplete": "/incomplete",
       },
     },
   );
