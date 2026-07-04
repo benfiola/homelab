@@ -122,7 +122,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
   );
-  sonarr.createService({ web: 8989 });
 
   const radarr = new StatefulSet(chart, "radarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -298,8 +297,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new VerticalPodAutoscaler(chart, jellyfin);
   new VerticalPodAutoscaler(chart, qbittorrent);
 
-  new HttpRoute(chart, "users", "sonarr.bulia.dev").match(radarrSvc, 8989);
-  new HttpRoute(chart, "users", "radarr.bulia.dev").match(radarrSvc, 7878);
   new HttpRoute(chart, "users", "seerr.bulia.dev").match(seerrSvc, 5055);
   new HttpRoute(chart, "users", "jellyfin.bulia.dev").match(jellyfinSvc, 8096);
 
