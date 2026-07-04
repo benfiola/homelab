@@ -418,7 +418,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    .to(dns("indexers.prowlarr.com"), tcp(443));
+    // needs access to indexers, indexers.prowlarr.com
+    .to(cidrs("0.0.0.0/0"), tcp(443));
   mediarrRadarr.to(mediarrProwlarr, tcp(9696));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
