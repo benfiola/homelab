@@ -314,6 +314,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   );
   addVpnSidecar(qbittorrent);
   addWaitForInitContainer(qbittorrent);
+  qbittorrent.createService({ web: 8080 });
 
   new VerticalPodAutoscaler(chart, sonarr);
   new VerticalPodAutoscaler(chart, radarr);

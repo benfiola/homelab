@@ -420,13 +420,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrSonarr, tcp(8989))
     // needs access to indexers and indexers.prowlarr.com
     .to(cidrs("0.0.0.0/0"), tcp(443));
-  mediarrRadarr.to(mediarrProwlarr, tcp(9696));
+  mediarrRadarr
+    .to(mediarrProwlarr, tcp(9696))
+    .to(mediarrQbittorrent, tcp(8080));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
     .to(dns("api.themoviedb.org"), tcp(443));
-  mediarrSonarr.to(mediarrProwlarr, tcp(9696));
+  mediarrSonarr
+    .to(mediarrProwlarr, tcp(9696))
+    .to(mediarrQbittorrent, tcp(8080));
   mediarrQbittorrent
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
