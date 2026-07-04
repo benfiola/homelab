@@ -199,6 +199,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "3Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
     },
   });
   jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
@@ -215,6 +216,17 @@ export const chart: TemplateChartFn = async (construct, id) => {
       data: { mountPath: "/data" },
     },
   });
+  jellyfin.addInitContainer(
+    "wait-for-init",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
+    {
+      cmd: ["bash"],
+      args: ["/scripts/wait-for-init.sh"],
+      volumeMounts: {
+        scripts: { mountPath: "/scripts" },
+      },
+    },
+  );
   const jellyfinSvc = jellyfin.createService({ web: 8096 });
 
   const qbittorrent = new StatefulSet(chart, "qbittorrent", {
@@ -225,6 +237,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       tun: { hostPath: { path: "/dev/net/tun" } },
       "qbittorrent-incomplete": { emptyDir: {} },
       "gluetun-tmp": { emptyDir: {} },
+      scripts: { configMap: scripts.name },
     },
   });
   qbittorrent.addContainer(
@@ -287,6 +300,17 @@ export const chart: TemplateChartFn = async (construct, id) => {
       "gluetun-tmp": "/tmp/gluetun",
     },
   });
+  qbittorrent.addInitContainer(
+    "wait-for-init",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.0.0",
+    {
+      cmd: ["bash"],
+      args: ["/scripts/wait-for-init.sh"],
+      volumeMounts: {
+        scripts: { mountPath: "/scripts" },
+      },
+    },
+  );
 
   new VerticalPodAutoscaler(chart, sonarr);
   new VerticalPodAutoscaler(chart, radarr);
