@@ -406,7 +406,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSonarr, tcp(8989))
-    .to(mediarrRadarr, tcp(7878));
+    .to(mediarrRadarr, tcp(7878))
+    .to(dns("api.themoviedb.org"), tcp(443));
   mediarrQbittorrent
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
