@@ -326,7 +326,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const flaresolverr = new StatefulSet(chart, "flaresolverr", {});
   flaresolverr.addContainer(
     "flaresolverr",
-    "lscr.io/linuxserver/qbittorrent:v5.2.2",
+    "ghcr.io/flaresolverr/flaresolverr:v3.5.0",
     {
       containerPorts: {
         web: 8191,
