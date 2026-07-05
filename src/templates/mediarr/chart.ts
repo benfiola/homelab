@@ -323,21 +323,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   addWaitForInitContainer(qbittorrent);
   qbittorrent.createService({ web: 8080 });
 
-  const flaresolverr = new StatefulSet(chart, "flaresolverr", {});
-  flaresolverr.addContainer(
-    "flaresolverr",
-    "ghcr.io/flaresolverr/flaresolverr:v3.5.0",
-    {
-      containerPorts: {
-        web: 8191,
-      },
-      env: {
-        TZ: "America/Los_Angeles",
-      },
-    },
-  );
-  flaresolverr.createService({ web: 8080 });
-
   new VerticalPodAutoscaler(chart, sonarr);
   new VerticalPodAutoscaler(chart, radarr);
   new VerticalPodAutoscaler(chart, prowlarr);
