@@ -604,8 +604,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   gatewayUsers
     .to(azerothcoreServer, tcp(3724, 7878, 8085))
     .to(envoyGatewayController, tcp(18000))
-    .to(frigate, tcp(8971))
     .to(homeAssistant, tcp(8123))
+    .to(mediarrJellyfin, tcp(8096))
+    .to(mediarrSeerr, tcp(5055))
     .to(minecraft, tcp(25565))
     .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
     .from(
