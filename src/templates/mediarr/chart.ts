@@ -281,7 +281,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
       gluetun: { emptyDir: {} },
       scripts: { configMap: scripts.name },
     },
-    dnsConfig: { ndots: 1 },
   });
   qbittorrent.addContainer(
     "qbittorrent",
