@@ -276,10 +276,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      incomplete: { emptyDir: {} },
-      tun: { hostPath: { path: "/dev/net/tun" } },
-      gluetun: { emptyDir: {} },
       scripts: { configMap: scripts.name },
+      "qb-incomplete": { emptyDir: {} },
+      "gt-tun": { hostPath: { path: "/dev/net/tun" } },
+      "gt-state": { emptyDir: {} },
+    },
+    dnsConfig: {
+      ndots: 1,
     },
   });
   qbittorrent.addContainer(
@@ -300,7 +303,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       volumeMounts: {
         config: "/config",
         data: { mountPath: "/data" },
-        incomplete: "/incomplete",
+        "qb-incomplete": "/incomplete",
       },
     },
   );
@@ -343,8 +346,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
     volumeMounts: {
-      tun: "/dev/net/tun",
-      gluetun: "/tmp/gluetun",
+      "gt-tun": "/dev/net/tun",
+      "gt-state": "/tmp/gluetun",
       scripts: "/scripts",
     },
   });

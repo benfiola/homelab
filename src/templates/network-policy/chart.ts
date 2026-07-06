@@ -431,6 +431,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrRadarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
+    .to(dns("radarr.servarr.com"), tcp(443))
     .to(dns("api.radarr.video"), tcp(443))
     .to(dns("image.tmdb.org"), tcp(443));
   mediarrSeerr
@@ -446,6 +447,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrSonarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
+    .to(dns("services.sonarr.tv"), tcp(443))
     .to(dns("skyhook.sonarr.tv"), tcp(443))
     .to(dns("artworks.thetvdb.com"), tcp(443))
     .to(dns("thexem.info"), tcp(443));
