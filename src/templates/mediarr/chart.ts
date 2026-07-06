@@ -77,9 +77,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
         if [ "\${direction}" = "up" ]; then
           port="\${2}"
           interface="\${3}"
-          payload="{\"listen_port\":\${port},\"current_network_interface\":\"\${interface}\",\"random_port\":false,\"upnp\":false}"
+          payload=$(printf '{"listen_port":%s,"current_network_interface":"%s","random_port":false,"upnp":false}' "\${port}" "\${interface}")
         else
-          payload="{\"listen_port\":0,\"current_network_interface\":\"lo\"}"
+          payload='{"listen_port":0,"current_network_interface":"lo"}'
         fi
         wget -O- -nv --retry-connrefused --post-data "json=\${payload}" http://127.0.0.1:8080/api/v2/app/setPreferences
       `),
