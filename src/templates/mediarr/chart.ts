@@ -71,7 +71,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         echo "\${file}: found"
       `),
       "notify-vpn-forwarding-port.sh": dedent(`
-        #!/bin/bash
+        #!/bin/sh
         set -e
         direction="\${1}"
         if [ "\${direction}" = "up" ]; then
@@ -333,9 +333,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
       VPN_TYPE: "wireguard",
       VPN_PORT_FORWARDING: "on",
       VPN_PORT_FORWARDING_UP_COMMAND:
-        "/bin/bash /scripts/notify-vpn-forwarding-port.sh up {{PORT}} {{VPN_INTERFACE}}",
+        "/bin/sh /scripts/notify-vpn-forwarding-port.sh up {{PORT}} {{VPN_INTERFACE}}",
       VPN_PORT_FORWARDING_DOWN_COMMAND:
-        "/bin/bash /scripts/notify-vpn-forwarding-port.sh down",
+        "/bin/sh /scripts/notify-vpn-forwarding-port.sh down",
       WIREGUARD_PRIVATE_KEY: {
         secretKeyRef: {
           name: vaultSecret.name,
