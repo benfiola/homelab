@@ -41,7 +41,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
 
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: {
-      "init.sh": dedent(`
+      "init-data.sh": dedent(`
         #!/bin/bash
         set -e
         echo "initializing data volume"
@@ -53,7 +53,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         echo "data volume initialized"
         sleep infinity
       `),
-      "wait-for-init.sh": dedent(`
+      "wait-for-data-init.sh": dedent(`
         #!/bin/bash
         set -e
         file=/data/.initialized
@@ -83,6 +83,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
         fi
         wget -O- -nv --retry-connrefused --post-data "json=\${payload}" http://127.0.0.1:8080/api/v2/app/setPreferences
       `),
+      "prepare-install-jellyfin-theme.sh": dedent(`
+        #!/bin/sh
+        set -e
+        url="https://raw.githubusercontent.com/AumGupta/abyss-jellyfin/refs/tags/v1.2.1/scripts/docker/abyss-spotlight.sh"
+        curl -fsSL -o /custom-cont-init.d/install-theme.sh "\${url}"
+        chmod +x /custom-cont-init.d/install-theme.sh
+      `),
     },
   });
 
@@ -96,22 +103,22 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   init.addContainer("init-fs", toolbox, {
     cmd: ["bash"],
-    args: ["/scripts/init.sh"],
+    args: ["/scripts/init-data.sh"],
     volumeMounts: {
-      scripts: { mountPath: "/scripts" },
-      data: { mountPath: "/data" },
+      scripts: "/scripts",
+      data: "/data",
     },
   });
 
-  const addWaitForInitContainer = (workload: Deployment | StatefulSet) => {
-    workload.addVolume("wait-for-init-scripts", { configMap: scripts.name });
-    workload.addVolume("wait-for-init-data", { pvc: { name: data.name } });
-    workload.addInitContainer("wait-for-init", toolbox, {
+  const addWaitForDataInitContainer = (workload: Deployment | StatefulSet) => {
+    workload.addVolume("wfdi-scripts", { configMap: scripts.name });
+    workload.addVolume("wfdi-data", { pvc: { name: data.name } });
+    workload.addInitContainer("wait-for-data-init", toolbox, {
       cmd: ["bash"],
-      args: ["/scripts/wait-for-init.sh"],
+      args: ["/scripts/wait-for-data-init.sh"],
       volumeMounts: {
-        "wait-for-init-scripts": { mountPath: "/scripts" },
-        "wait-for-init-data": { mountPath: "/data" },
+        "wfdi-scripts": "/scripts",
+        "wfdi-data": "/data",
       },
     });
   };
@@ -142,7 +149,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  addWaitForInitContainer(sonarr);
+  addWaitForDataInitContainer(sonarr);
   sonarr.createService({ web: 8989 });
 
   const radarr = new StatefulSet(chart, "radarr", {
@@ -171,7 +178,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  addWaitForInitContainer(radarr);
+  addWaitForDataInitContainer(radarr);
   radarr.createService({ web: 7878 });
 
   const prowlarr = new StatefulSet(chart, "prowlarr", {
@@ -248,6 +255,15 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "3Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      init: { emptyDir: {} },
+    },
+  });
+  jellyfin.addInitContainer("prepare-install-jellyfin-theme", toolbox, {
+    cmd: ["bash"],
+    args: ["/scripts/prepare-install-jellyfin-theme.sh"],
+    volumeMounts: {
+      scripts: "/scripts",
+      init: "/custom-cont-init.d",
     },
   });
   jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
@@ -265,10 +281,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
     volumeMounts: {
       config: "/config",
-      data: { mountPath: "/data" },
+      data: "/data",
+      init: "/custom-cont-init.d",
     },
   });
-  addWaitForInitContainer(jellyfin);
+  addWaitForDataInitContainer(jellyfin);
   const jellyfinSvc = jellyfin.createService({ web: 8096 });
 
   const qbittorrent = new StatefulSet(chart, "qbittorrent", {
@@ -302,7 +319,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
       volumeMounts: {
         config: "/config",
-        data: { mountPath: "/data" },
+        data: "/data",
         "qb-incomplete": "/incomplete",
       },
     },
@@ -351,7 +368,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       scripts: "/scripts",
     },
   });
-  addWaitForInitContainer(qbittorrent);
+  addWaitForDataInitContainer(qbittorrent);
   qbittorrent.createService({ web: 8080 });
 
   const byparr = new StatefulSet(chart, "byparr", {
