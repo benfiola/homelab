@@ -256,6 +256,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: { pvc: { size: "3Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
       init: { emptyDir: {} },
+      scripts: { configMap: scripts.name },
     },
   });
   jellyfin.addInitContainer("prepare-install-jellyfin-theme", toolbox, {
