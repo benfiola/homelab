@@ -179,10 +179,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "linstor-satellite",
     component("linstor-satellite", "piraeus-operator"),
   );
-  const mediarrFlaresolverr = svc(
-    "mediarr-flaresolverr",
-    pod("flaresolverr", "mediarr"),
-  );
+  const mediarrByparr = svc("mediarr-byparr", pod("byparr", "mediarr"));
   const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
   const mediarrProfilarr = svc(
     "mediarr-profilarr",
@@ -412,7 +409,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiWrite, tcp(3100));
 
   // mediarr
-  mediarrJellyfin.to(dns("repo.jellyfin.org"), tcp(443));
+  mediarrByparr.to(cidrs("0.0.0.0/0"));
+  mediarrJellyfin
+    .to(dns("repo.jellyfin.org"), tcp(443))
+    .to(dns("api.themoviedb.org"), tcp(443))
+    .to(dns("image.tmdb.org"), tcp(443))
+    .to(dns("www.omdbapi.com"), tcp(443))
+    .to(dns("raw.githubusercontent.com"), tcp(443));
   mediarrProfilarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
@@ -423,11 +426,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    // needs access to indexers and indexers.prowlarr.com
-    .to(cidrs("0.0.0.0/0"), tcp(443));
+    .to(mediarrByparr, tcp(8191))
+    .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrRadarr
     .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrQbittorrent, tcp(8080));
+    .to(mediarrQbittorrent, tcp(8080))
+    .to(dns("api.radarr.video"), tcp(443))
+    .to(dns("image.tmdb.org"), tcp(443));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrRadarr, tcp(7878))
@@ -435,6 +440,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("api.themoviedb.org"), tcp(443))
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
+    .to(dns("api.radarr.video"), tcp(443))
     // rotten tomatoes ratings
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
   mediarrSonarr

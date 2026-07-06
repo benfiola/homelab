@@ -1,4 +1,3 @@
-import { URL } from "url";
 import {
   ClusterRole,
   ClusterRoleBinding,
@@ -9,12 +8,7 @@ import {
   Prometheus,
   PrometheusSpecStorageVolumeClaimTemplateSpecResourcesRequests as Storage,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
-import {
-  Chart,
-  HttpRoute,
-  Namespace,
-  VerticalPodAutoscaler,
-} from "../../cdk8s";
+import { Chart, Namespace, VerticalPodAutoscaler } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -79,7 +73,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     ],
   });
 
-  const externalUrl = new URL("https://prometheus.bulia.dev");
   const prometheus = new Prometheus(chart, `${id}-prometheus`, {
     metadata: { name: "prometheus" },
     spec: {
@@ -92,7 +85,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           },
         ],
       },
-      externalUrl: externalUrl.toString(),
       evaluationInterval: "30s",
       podMonitorNamespaceSelector: {},
       podMonitorSelector: {},
@@ -141,14 +133,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   });
-
-  new HttpRoute(chart, "infrastructure", "prometheus.bulia.dev").match(
-    {
-      name: "prometheus-operated",
-      kind: "Service",
-    },
-    9090,
-  );
 
   new VerticalPodAutoscaler(chart, prometheus);
 

@@ -167,6 +167,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
       PUID: "1000",
       PGID: "1000",
       TZ: "America/Los_Angeles",
+      SONARR__APP__INSTANCENAME: "Sonarr",
+      SONARR__APP__LAUNCHBROWSER: "false",
+      SONARR__AUTH__METHOD: "Forms",
+      SONARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
+      SONARR__LOG__ANALYTICSENABLED: "False",
     },
     volumeMounts: {
       data: "/data",
@@ -191,6 +196,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
       PUID: "1000",
       PGID: "1000",
       TZ: "America/Los_Angeles",
+      RADARR__APP__INSTANCENAME: "Radarr",
+      RADARR__APP__LAUNCHBROWSER: "false",
+      RADARR__AUTH__METHOD: "Forms",
+      RADARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
+      RADARR__LOG__ANALYTICSENABLED: "False",
     },
     volumeMounts: {
       data: "/data",
@@ -214,6 +224,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
       PUID: "1000",
       PGID: "1000",
       TZ: "America/Los_Angeles",
+      PROWLARR__APP__INSTANCENAME: "Prowlarr",
+      PROWLARR__APP__LAUNCHBROWSER: "false",
+      PROWLARR__AUTH__METHOD: "Forms",
+      PROWLARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
+      PROWLARR__LOG__ANALYTICSENABLED: "False",
     },
     volumeMounts: {
       config: "/config",
@@ -235,10 +250,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
         web: 6868,
       },
       env: {
-        AUTH: "local",
         PUID: "1000",
         PGID: "1000",
         TZ: "America/Los_Angeles",
+        AUTH: "local",
       },
       volumeMounts: {
         config: "/config",
@@ -279,6 +294,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
       PUID: "1000",
       PGID: "1000",
       TZ: "America/Los_Angeles",
+    },
+    resources: {
+      limits: { "gpu.intel.com/i915": "1" },
+      requests: { "gpu.intel.com/i915": "1" },
     },
     volumeMounts: {
       config: "/config",
@@ -323,15 +342,29 @@ export const chart: TemplateChartFn = async (construct, id) => {
   addWaitForInitContainer(qbittorrent);
   qbittorrent.createService({ web: 8080 });
 
+  const byparr = new StatefulSet(chart, "byparr", {
+    securityContext: { uid: 1000, gid: 1000 },
+  });
+  byparr.addContainer("byparr", "ghcr.io/thephaseless/byparr:2.1.0", {
+    containerPorts: {
+      web: 8191,
+    },
+    env: {
+      LOG_LEVEL: "DEBUG",
+    },
+  });
+  byparr.createService({ web: 8191 });
+
   new VerticalPodAutoscaler(chart, sonarr);
   new VerticalPodAutoscaler(chart, radarr);
   new VerticalPodAutoscaler(chart, prowlarr);
   new VerticalPodAutoscaler(chart, seerr);
   new VerticalPodAutoscaler(chart, jellyfin);
   new VerticalPodAutoscaler(chart, qbittorrent);
+  new VerticalPodAutoscaler(chart, byparr);
 
-  new HttpRoute(chart, "users", "seerr.bulia.dev").match(seerrSvc, 5055);
-  new HttpRoute(chart, "users", "jellyfin.bulia.dev").match(jellyfinSvc, 8096);
+  new HttpRoute(chart, "users", "discover.bulia.dev").match(seerrSvc, 5055);
+  new HttpRoute(chart, "users", "watch.bulia.dev").match(jellyfinSvc, 8096);
 
   return chart;
 };

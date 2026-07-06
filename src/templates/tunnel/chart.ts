@@ -1,5 +1,5 @@
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
-import { Chart, Deployment, HttpRoute, Namespace, TcpRoute } from "../../cdk8s";
+import { Chart, Deployment, Namespace } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -32,9 +32,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const svc = deployment.createService({ server: 8080, desktop: 8081 });
-
-  new TcpRoute(chart, "personal", "tunnel.bulia.dev", 8080, svc, 8080);
-  new HttpRoute(chart, "personal", "desktop.bulia.dev").match(svc, 8081);
 
   return chart;
 };

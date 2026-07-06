@@ -16,7 +16,6 @@ import {
   getField,
   getSecurityContext,
   Helm,
-  HttpRoute,
   Namespace,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
@@ -228,15 +227,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       ],
     },
   });
-
-  new HttpRoute(chart, "infrastructure", "cilium.bulia.dev").match(
-    findApiObject(chart, {
-      apiVersion: "v1",
-      kind: "Service",
-      name: "hubble-ui",
-    }),
-    80,
-  );
 
   new VerticalPodAutoscaler(
     chart,

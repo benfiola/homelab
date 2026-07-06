@@ -1,4 +1,3 @@
-import { URL } from "url";
 import { Namespace } from "../../../assets/kubernetes/k8s";
 import {
   Alertmanager,
@@ -8,12 +7,7 @@ import {
   AlertmanagerConfigSpecInhibitRulesSourceMatchMatchType as SourceMatchType,
   AlertmanagerConfigSpecInhibitRulesTargetMatchMatchType as TargetMatchType,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
-import {
-  Chart,
-  getSecurityContext,
-  HttpRoute,
-  VerticalPodAutoscaler,
-} from "../../cdk8s";
+import { Chart, getSecurityContext, VerticalPodAutoscaler } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -140,7 +134,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const securityContext = getSecurityContext();
 
-  const externalUrl = new URL("https://alertmanager.bulia.dev");
   const alertmanager = new Alertmanager(chart, `${id}-alertmanager`, {
     metadata: { name: "alertmanager" },
     spec: {
@@ -154,7 +147,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         { name: "alertmanager", securityContext: securityContext.container },
         { name: "config-reloader", securityContext: securityContext.container },
       ],
-      externalUrl: externalUrl.toString(),
       // replicas must be set for autoscaling
       replicas: 1,
       securityContext: securityContext.pod,
@@ -178,14 +170,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   });
-
-  new HttpRoute(chart, "infrastructure", externalUrl.hostname).match(
-    {
-      kind: "Service",
-      name: "alertmanager-operated",
-    },
-    9093,
-  );
 
   new VerticalPodAutoscaler(chart, alertmanager);
 

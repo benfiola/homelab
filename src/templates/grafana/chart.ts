@@ -98,7 +98,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const securityContext = getSecurityContext();
 
-  const externalUrl = new URL("https://grafana.bulia.dev");
+  const externalUrl = new URL("https://metrics.bulia.dev");
   new Grafana(chart, `${id}-grafana`, {
     metadata: { name: "grafana", labels: { instance: id } },
     spec: {

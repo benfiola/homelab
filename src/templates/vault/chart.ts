@@ -3,7 +3,6 @@ import {
   findApiObject,
   getSecurityContext,
   Helm,
-  HttpRoute,
   Namespace,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
@@ -96,15 +95,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       enabled: true,
     },
   });
-
-  new HttpRoute(chart, "infrastructure", "vault.bulia.dev").match(
-    findApiObject(chart, {
-      apiVersion: "v1",
-      kind: "Service",
-      name: "vault-active",
-    }),
-    8200,
-  );
 
   new VerticalPodAutoscaler(
     chart,

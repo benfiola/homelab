@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.1.13";
+  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.3.0";
   const hostname = "wow.bulia.dev";
   const dbHost = "db.azerothcore.svc";
   const dbPort = 3306;
@@ -141,7 +141,33 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
       },
       AC_DISABLE_INTERACTIVE: "1",
+
+      // see: https://www.azerothcore.org/wiki/config-overrides-with-env-var
+      // see: https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Configuration#recommended-config
+      AC_AIPLAYERBOT_GUILD_FEEDBACK: "0",
+      AC_AI_PLAYERBOT_AUTO_GEAR_QUALITY_LIMIT: "4",
+      AC_AI_PLAYERBOT_CONTACT_DISTANCE: "0.5",
+      AC_AI_PLAYERBOT_DISABLED_WITHOUT_REAL_PLAYER: "1",
+      AC_AI_PLAYERBOT_ENABLE_BROADCASTS: "0",
+      AC_AI_PLAYERBOT_FLEE_DISTANCE: "8.0",
+      AC_AI_PLAYERBOT_GUILD_REPLIES_RATE: "0",
+      AC_AI_PLAYERBOT_LOOT_DISTANCE: "25.0",
+      AC_AI_PLAYERBOT_MAX_RANDOM_BOT_IN_WORLD_TIME: "1209600",
+      AC_AI_PLAYERBOT_MELEE_DISTANCE: "1.5",
+      AC_AI_PLAYERBOT_MIN_RANDOM_BOT_IN_WORLD_TIME: "3600",
+      AC_AI_PLAYERBOT_RANDOM_BOT_MAX_LEVEL_CHANCE: "0.01",
+      AC_AI_PLAYERBOT_RANDOM_BOT_SUGGEST_DUNGEONS: "0",
+      AC_AI_PLAYERBOT_RANDOM_BOT_TALK: "0",
+      AC_AI_PLAYERBOT_SHOOT_DISTANCE: "26.0",
+      AC_AI_PLAYERBOT_SIGHT_DISTANCE: "75.0",
+      AC_AI_PLAYERBOT_THUNDERFURY_REPLIES_CHANCE: "0",
+      AC_AI_PLAYERBOT_TOXIC_LINKS_REPLIES_CHANCE: "0",
       AC_CONSOLE_ENABLE: "0",
+      AC_LEAVE_GROUP_ON_LOGOUT_ENABLED: "1",
+      AC_MAP_UPDATE_THREADS: "4",
+      AC_PLAYERBOTS_DATABASE_SYNCH_THREADS: "2",
+      AC_PLAYER_LIMIT: "0",
+      AC_QUESTS_IGNORE_AUTO_ACCEPT: "1",
     },
     volumeMounts: {
       data: "/data",

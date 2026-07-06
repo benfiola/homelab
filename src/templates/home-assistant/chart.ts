@@ -82,6 +82,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     8123,
   );
 
+  new HttpRoute(chart, "users", "automation.bulia.dev").match(service, 8123);
+
   new VerticalPodAutoscaler(chart, statefulSet);
 
   return chart;
