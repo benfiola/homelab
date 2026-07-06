@@ -33,7 +33,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       storageClassName: "standard",
       resources: {
         requests: {
-          storage: Quantity.fromString("100Gi"),
+          storage: Quantity.fromString("1000Gi"),
         },
       },
     },
