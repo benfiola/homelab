@@ -70,6 +70,19 @@ export const chart: TemplateChartFn = async (construct, id) => {
         done
         echo "\${file}: found"
       `),
+      "notify-vpn-forwarding-port.sh": dedent(`
+        #!/bin/bash
+        set -e
+        direction="\${1}"
+        if [ "\${direction}" = "up" ]; then
+          port="\${2}"
+          interface="\${3}"
+          payload="{\"listen_port\":\${port},\"current_network_interface\":\"\${interface}\",\"random_port\":false,\"upnp\":false}"
+        else
+          payload="{\"listen_port\":0,\"current_network_interface\":\"lo\"}"
+        fi
+        wget -O- -nv --retry-connrefused --post-data "json=\${payload}" http://127.0.0.1:8080/api/v2/app/setPreferences
+      `),
     },
   });
 
@@ -99,55 +112,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
       volumeMounts: {
         "wait-for-init-scripts": { mountPath: "/scripts" },
         "wait-for-init-data": { mountPath: "/data" },
-      },
-    });
-  };
-
-  const addVpnSidecar = (
-    workload: Deployment | StatefulSet,
-    options?: { inputPorts?: number[] },
-  ) => {
-    workload.addVolume("vpn-tun", { hostPath: { path: "/dev/net/tun" } });
-    workload.addVolume("vpn-tmp", { emptyDir: {} });
-    workload.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
-      securityContext: {
-        uid: 0,
-        gid: 0,
-        caps: ["CHOWN", "DAC_OVERRIDE", "NET_ADMIN", "NET_RAW"],
-      },
-      env: {
-        DNS_UPSTREAM_RESOLVER_TYPE: "plain",
-        FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
-        ...(options?.inputPorts
-          ? { FIREWALL_INPUT_PORTS: options.inputPorts.join(",") }
-          : {}),
-        PORT_FORWARD_ONLY: "yes",
-        SERVER_COUNTRIES: {
-          secretKeyRef: {
-            name: vaultSecret.name,
-            key: "vpn-server-countries",
-          },
-        },
-        SERVER_CITIES: {
-          secretKeyRef: {
-            name: vaultSecret.name,
-            key: "vpn-server-cities",
-          },
-        },
-        TZ: "America/Los_Angeles",
-        VPN_SERVICE_PROVIDER: "protonvpn",
-        VPN_TYPE: "wireguard",
-        VPN_PORT_FORWARDING: "on",
-        WIREGUARD_PRIVATE_KEY: {
-          secretKeyRef: {
-            name: vaultSecret.name,
-            key: "vpn-wireguard-private-key",
-          },
-        },
-      },
-      volumeMounts: {
-        "vpn-tun": "/dev/net/tun",
-        "vpn-tmp": "/tmp/gluetun",
       },
     });
   };
@@ -313,6 +277,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
       incomplete: { emptyDir: {} },
+      tun: { hostPath: { path: "/dev/net/tun" } },
+      gluetun: { emptyDir: {} },
+      scripts: { configMap: scripts.name },
     },
     dnsConfig: { ndots: 1 },
   });
@@ -338,7 +305,50 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
     },
   );
-  addVpnSidecar(qbittorrent, { inputPorts: [8080] });
+  qbittorrent.addContainer("gluetun", "ghcr.io/qdm12/gluetun:v3.41.1", {
+    securityContext: {
+      uid: 0,
+      gid: 0,
+      caps: ["CHOWN", "DAC_OVERRIDE", "NET_ADMIN", "NET_RAW"],
+    },
+    env: {
+      DNS_UPSTREAM_RESOLVER_TYPE: "plain",
+      FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
+      FIREWALL_INPUT_PORTS: "8080",
+      PORT_FORWARD_ONLY: "yes",
+      SERVER_COUNTRIES: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-server-countries",
+        },
+      },
+      SERVER_CITIES: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-server-cities",
+        },
+      },
+      TZ: "America/Los_Angeles",
+      VPN_SERVICE_PROVIDER: "protonvpn",
+      VPN_TYPE: "wireguard",
+      VPN_PORT_FORWARDING: "on",
+      VPN_PORT_FORWARDING_UP_COMMAND:
+        "/bin/bash /scripts/notify-vpn-forwarding-port.sh up {{PORT}} {{VPN_INTERFACE}}",
+      VPN_PORT_FORWARDING_DOWN_COMMAND:
+        "/bin/bash /scripts/notify-vpn-forwarding-port.sh down",
+      WIREGUARD_PRIVATE_KEY: {
+        secretKeyRef: {
+          name: vaultSecret.name,
+          key: "vpn-wireguard-private-key",
+        },
+      },
+    },
+    volumeMounts: {
+      tun: "/dev/net/tun",
+      gluetun: "/tmp/gluetun",
+      scripts: "/scripts",
+    },
+  });
   addWaitForInitContainer(qbittorrent);
   qbittorrent.createService({ web: 8080 });
 
