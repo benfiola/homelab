@@ -411,6 +411,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // mediarr
   mediarrByparr.to(cidrs("0.0.0.0/0"));
   mediarrJellyfin
+    .to(dns("*.mirror.jellyfin.org"), tcp(443))
     .to(dns("repo.jellyfin.org"), tcp(443))
     .to(dns("api.themoviedb.org"), tcp(443))
     .to(dns("image.tmdb.org"), tcp(443))
