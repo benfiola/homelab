@@ -191,6 +191,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     pod("qbittorrent", "mediarr"),
   );
   const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
+  const mediarrSabnzbd = svc("mediarr-sabnzbd", pod("sabnzbd", "mediarr"));
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
 
@@ -432,6 +433,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrRadarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
+    .to(mediarrSabnzbd, tcp(8080))
     .to(dns("radarr.servarr.com"), tcp(443))
     .to(dns("api.radarr.video"), tcp(443))
     .to(dns("image.tmdb.org"), tcp(443));
@@ -448,11 +450,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   mediarrSonarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
+    .to(mediarrSabnzbd, tcp(8080))
     .to(dns("services.sonarr.tv"), tcp(443))
     .to(dns("skyhook.sonarr.tv"), tcp(443))
     .to(dns("artworks.thetvdb.com"), tcp(443))
     .to(dns("thexem.info"), tcp(443));
   mediarrQbittorrent
+    .to(dns("download.db-ip.com"), tcp(443))
+    // needs access to general VPNs (and VPN healthchecks)
+    .to(cidrs("0.0.0.0/0"), udp(51820))
+    .to(cidrs("0.0.0.0/0"), icmpv4(3));
+  mediarrSabnzbd
     .to(dns("download.db-ip.com"), tcp(443))
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
