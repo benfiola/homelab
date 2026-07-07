@@ -350,51 +350,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   addWaitForDataInitContainer(jellyfin);
   const jellyfinSvc = jellyfin.createService({ web: 8096 });
 
-  const qbittorrent = new StatefulSet(chart, "qbittorrent", {
-    securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
-    volumes: {
-      config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
-      "qb-incomplete": { emptyDir: {} },
-    },
-    dnsConfig: {
-      ndots: 1,
-    },
-  });
-  qbittorrent.addContainer(
-    "qbittorrent",
-    "lscr.io/linuxserver/qbittorrent:5.2.2",
-    {
-      containerPorts: {
-        web: 8080,
-        torrent: 6881,
-        "torrent-udp": [6881, "UDP"],
-      },
-      env: {
-        PUID: "1000",
-        PGID: "1000",
-        TZ: "America/Los_Angeles",
-        WEBUI_PORT: "8080",
-      },
-      volumeMounts: {
-        config: "/config",
-        data: "/data",
-        "qb-incomplete": "/incomplete",
-      },
-    },
-  );
-  addVpnSidecar(qbittorrent, {
-    firewallInputPorts: [8080],
-    portForwarding: {
-      upCommand:
-        "/bin/sh /scripts/notify-vpn-forwarding-port.sh up {{PORT}} {{VPN_INTERFACE}}",
-      downCommand: "/bin/sh /scripts/notify-vpn-forwarding-port.sh down",
-    },
-  });
-  addWaitForDataInitContainer(qbittorrent);
-  qbittorrent.createService({ web: 8080 });
-
   const sabnzbd = new StatefulSet(chart, "sabnzbd", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
@@ -425,27 +380,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
   addWaitForDataInitContainer(sabnzbd);
   sabnzbd.createService({ web: 8080 });
 
-  const byparr = new StatefulSet(chart, "byparr", {
-    securityContext: { uid: 1000, gid: 1000 },
-  });
-  byparr.addContainer("byparr", "ghcr.io/thephaseless/byparr:2.1.0", {
-    containerPorts: {
-      web: 8191,
-    },
-    env: {
-      LOG_LEVEL: "DEBUG",
-    },
-  });
-  byparr.createService({ web: 8191 });
-
   new VerticalPodAutoscaler(chart, sonarr);
   new VerticalPodAutoscaler(chart, radarr);
   new VerticalPodAutoscaler(chart, prowlarr);
   new VerticalPodAutoscaler(chart, seerr);
   new VerticalPodAutoscaler(chart, jellyfin);
-  new VerticalPodAutoscaler(chart, qbittorrent);
   new VerticalPodAutoscaler(chart, sabnzbd);
-  new VerticalPodAutoscaler(chart, byparr);
 
   new HttpRoute(chart, "users", "discover.bulia.dev").match(seerrSvc, 5055);
   new HttpRoute(chart, "users", "watch.bulia.dev").match(jellyfinSvc, 8096);

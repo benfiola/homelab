@@ -179,17 +179,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "linstor-satellite",
     component("linstor-satellite", "piraeus-operator"),
   );
-  const mediarrByparr = svc("mediarr-byparr", pod("byparr", "mediarr"));
   const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
   const mediarrProfilarr = svc(
     "mediarr-profilarr",
     pod("profilarr", "mediarr"),
   );
   const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
-  const mediarrQbittorrent = svc(
-    "mediarr-qbittorrent",
-    pod("qbittorrent", "mediarr"),
-  );
   const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
   const mediarrSabnzbd = svc("mediarr-sabnzbd", pod("sabnzbd", "mediarr"));
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
@@ -410,7 +405,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiWrite, tcp(3100));
 
   // mediarr
-  mediarrByparr.to(cidrs("0.0.0.0/0"));
   mediarrJellyfin
     .to(dns("*.mirror.jellyfin.org"), tcp(443))
     .to(dns("repo.jellyfin.org"), tcp(443))
@@ -426,7 +420,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
   mediarrProwlarr
-    .to(mediarrByparr, tcp(8191))
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSabnzbd, tcp(8080))
     .to(mediarrSonarr, tcp(8989))
@@ -434,7 +427,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrRadarr
     .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrQbittorrent, tcp(8080))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
@@ -450,15 +442,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
   mediarrSonarr
     .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrQbittorrent, tcp(8080))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  mediarrQbittorrent
-    .to(dns("download.db-ip.com"), tcp(443))
-    // needs access to general VPNs (and VPN healthchecks)
-    .to(cidrs("0.0.0.0/0"), udp(51820))
-    .to(cidrs("0.0.0.0/0"), icmpv4(3));
   mediarrSabnzbd
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
