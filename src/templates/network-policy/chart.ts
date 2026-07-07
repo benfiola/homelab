@@ -460,7 +460,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
   mediarrSabnzbd
-    .to(dns("download.db-ip.com"), tcp(443))
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
