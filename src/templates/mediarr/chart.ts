@@ -46,6 +46,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
         #!/bin/bash
         set -e
         echo "initializing data volume"
+        mkdir -p /data/usenet/incomplete/movies
+        mkdir -p /data/usenet/incomplete/tv
+        mkdir -p /data/usenet/complete/movies
+        mkdir -p /data/usenet/complete/tv
         mkdir -p /data/torrents/movies
         mkdir -p /data/torrents/tv
         mkdir -p /data/media/movies
