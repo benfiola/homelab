@@ -430,28 +430,30 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSabnzbd, tcp(8080))
     .to(mediarrSonarr, tcp(8989))
-    // needs access to indexers
+    // needs access to all indexers
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrRadarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
     .to(mediarrSabnzbd, tcp(8080))
-    // needs access to usenet indexers and metadata
+    // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    // needs access to usenet indexers and metadata
-    .to(cidrs("0.0.0.0/0"), tcp(80, 443));
+    .to(dns("api.themoviedb.org"), tcp(443))
+    .to(dns("api.github.com"), tcp(443))
+    .to(dns("raw.githubusercontent.com"), tcp(443))
+    .to(dns("api.radarr.video"), tcp(443))
+    // rotten tomatoes ratings
+    .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
   mediarrSonarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrQbittorrent, tcp(8080))
     .to(mediarrSabnzbd, tcp(8080))
-    .to(dns("services.sonarr.tv"), tcp(443))
-    .to(dns("skyhook.sonarr.tv"), tcp(443))
-    .to(dns("artworks.thetvdb.com"), tcp(443))
-    .to(dns("thexem.info"), tcp(443));
+    // needs access to usenet indexers and metadata endpoints
+    .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrQbittorrent
     .to(dns("download.db-ip.com"), tcp(443))
     // needs access to general VPNs (and VPN healthchecks)
