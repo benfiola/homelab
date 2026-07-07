@@ -314,7 +314,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const jellyfin = new StatefulSet(chart, "jellyfin", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
-      config: { pvc: { size: "3Gi", storageClass: "standard" } },
+      config: { pvc: { size: "20Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
       init: { emptyDir: {} },
       scripts: { configMap: scripts.name },
