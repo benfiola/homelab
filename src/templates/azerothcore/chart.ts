@@ -38,6 +38,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             password: secret("user-bfiola-password"),
             gm_level: 3,
           },
+          {
+            username: "ahbot",
+            password: secret("user-ahbot-password"),
+            gm_level: 1,
+          },
         ],
       },
     ),
