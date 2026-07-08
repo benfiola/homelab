@@ -139,6 +139,9 @@ cameras:
       threshold: 40
       contour_area: 25
       improve_contrast: true
+detect:
+  stationary:
+    threshold: 10
 detectors:
   ov:
     type: openvino
