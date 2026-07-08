@@ -1,10 +1,6 @@
 cameras:
   doorbell_camera:
-    detect:
-      enabled: true
-    enabled: true
     ffmpeg:
-      input_args: preset-rtsp-restream
       inputs:
         - path: rtsp://localhost:8554/doorbell_camera_sub
           roles:
@@ -40,11 +36,7 @@ cameras:
       contour_area: 20
       improve_contrast: true
   front_yard_camera:
-    detect:
-      enabled: true
-    enabled: true
     ffmpeg:
-      input_args: preset-rtsp-restream
       inputs:
         - path: rtsp://localhost:8554/front_yard_camera_sub
           roles:
@@ -67,11 +59,7 @@ cameras:
       contour_area: 40
       improve_contrast: true
   garage_camera:
-    detect:
-      enabled: true
-    enabled: true
     ffmpeg:
-      input_args: preset-rtsp-restream
       inputs:
         - path: rtsp://localhost:8554/garage_camera_sub
           roles:
@@ -101,11 +89,7 @@ cameras:
       contour_area: 35
       improve_contrast: true
   porch_camera:
-    detect:
-      enabled: true
-    enabled: true
     ffmpeg:
-      input_args: preset-rtsp-restream
       inputs:
         - path: rtsp://localhost:8554/porch_camera_sub
           roles:
@@ -140,12 +124,16 @@ cameras:
       contour_area: 25
       improve_contrast: true
 detect:
+  enabled: true
   stationary:
     threshold: 10
 detectors:
   ov:
     type: openvino
     device: GPU
+enabled: true
+ffmpeg:
+  input_args: preset-rtsp-restream
 go2rtc:
   streams:
     doorbell_camera:
