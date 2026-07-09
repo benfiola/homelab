@@ -8,6 +8,7 @@ apps:
   - template: bucket-sync
   - template: cert-manager
   - template: cilium
+  - template: descheduler
   - template: envoy-gateway
   - template: dynamic-dns
   - template: external-dns
@@ -44,6 +45,7 @@ apps:
   - template: prometheus-node-exporter
   - template: prometheus-operator
   - template: pvc-restore
+  - template: reloader
   - template: router-policy-sync
   - template: single-player-tarkov
   - template: storage-class

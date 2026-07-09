@@ -69,6 +69,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     pod("hubble-relay", "cilium"),
   );
   const ciliumHubbleUi = svc("cilium-hubble-ui", pod("hubble-ui", "cilium"));
+  const descheduler = svc("descheduler", pod("descheduler", "descheduler"));
   const dynamicDns = svc("dynamic-dns", pod("dynamic-dns", "dynamic-dns"));
   const envoyGatewayCertgen = svc(
     "envoy-gateway-certgen",
@@ -209,6 +210,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     component("controller", "prometheus-operator"),
   );
   const pvcRestore = svc("pvc-restore", pod("pvc-restore", "pvc-restore"));
+  const reloader = svc("reloader", pod("reloader", "reloader"));
   const routerPolicySync = svc(
     "router-policy-sync",
     pod("router-policy-sync", "router-policy-sync"),
@@ -288,6 +290,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(ciliumHubbleRelay, tcp(4222));
   ciliumHubbleUi.to(ciliumHubbleRelay, tcp(4245)).to(kubeApiServer, tcp(6443));
   host.to(ciliumHubbleUi, tcp(8081));
+
+  // descheduler
+  descheduler.to(kubeApiServer, tcp(6443));
+  host.to(descheduler, tcp(10258));
 
   // dynamic-dns
   dynamicDns
@@ -512,6 +518,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // pvc-restore
   pvcRestore.to(kubeApiServer, tcp(6443));
   host.to(pvcRestore, tcp(8081));
+
+  // reloader
+  reloader.to(kubeApiServer, tcp(6443));
+  host.to(reloader, tcp(9090));
 
   // router-policy-sync
   routerPolicySync
