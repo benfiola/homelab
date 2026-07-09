@@ -1,6 +1,7 @@
 import {
   Chart,
   findApiObject,
+  getSecurityContext,
   Helm,
   Namespace,
   VerticalPodAutoscaler,
@@ -13,8 +14,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
+  const securityContext = getSecurityContext();
+
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     kind: "Deployment",
+    podSecurityContext: securityContext.pod,
+    securityContext: securityContext.container,
   });
 
   new VerticalPodAutoscaler(
