@@ -74,5 +74,11 @@ lovelace:
       icon: mdi:thermometer
       show_in_sidebar: true
       filename: dashboard-thermostat.yaml
+    dashboard-lights:
+      mode: yaml
+      title: Lights
+      icon: mdi:lightbulb-on
+      show_in_sidebar: true
+      filename: dashboard-lights.yaml
 mobile_app: {}
 zeroconf: {}
