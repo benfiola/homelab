@@ -1,0 +1,145 @@
+views:
+  - type: sections
+    path: ""
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+          - type: vertical-stack
+            cards:
+              - type: horizontal-stack
+                cards:
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: light.turn_off
+                      target:
+                        entity_id: light.living_room_living_room
+                      data: {}
+                    icon: mdi:brightness-1
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.living_room_living_room_bright_most_dim
+                      data: {}
+                    icon: mdi:brightness-2
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.living_room_living_room_bright_more_dim
+                      data: {}
+                    icon: mdi:brightness-5
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.living_room_living_room_bright_dim
+                      data: {}
+                    icon: mdi:brightness-6
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.living_room_living_room_bright
+                      data: {}
+                    icon: mdi:brightness-7
+                title: Living Room
+              - type: horizontal-stack
+                cards:
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: light.turn_off
+                      target:
+                        entity_id: light.office_office
+                      data: {}
+                    show_state: false
+                    icon: mdi:brightness-1
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.office_office_focus
+                      data: {}
+                    show_state: false
+                    icon: mdi:brightness-2
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.office_office_bright_2
+                      data: {}
+                    show_state: false
+                    icon: mdi:brightness-5
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.office_office_bright
+                      data: {}
+                    icon: mdi:brightness-7
+                title: Office
+              - type: horizontal-stack
+                cards:
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: light.turn_off
+                      target:
+                        device_id: 3565c55584a0ddc92b4a137ac64230a3
+                      data: {}
+                    icon: mdi:brightness-1
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.bedroom_2_bedroom_2_warm_dim
+                      data: {}
+                    icon: mdi:brightness-5
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: perform-action
+                      perform_action: scene.turn_on
+                      target:
+                        entity_id: scene.bedroom_2_bedroom_2_warm
+                      data: {}
+                    icon: mdi:brightness-7
+                title: Bedroom
+    max_columns: 4
+    title: Lights
+    cards: []
