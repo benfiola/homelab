@@ -1,4 +1,5 @@
-import dedent from "ts-dedent";
+import { readFile } from "fs/promises";
+import path from "path";
 import {
   ConfigMap,
   PersistentVolumeClaim,
@@ -40,62 +41,21 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
+  const scriptFiles = [
+    "init-data.sh",
+    "wait-for-data-init.sh",
+    "notify-vpn-forwarding-port.sh",
+    "prepare-install-jellyfin-theme.sh",
+  ];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
-    data: {
-      "init-data.sh": dedent(`
-        #!/bin/bash
-        set -e
-        echo "initializing data volume"
-        mkdir -p /data/usenet/incomplete/movies
-        mkdir -p /data/usenet/incomplete/tv
-        mkdir -p /data/usenet/complete/movies
-        mkdir -p /data/usenet/complete/tv
-        mkdir -p /data/torrents/movies
-        mkdir -p /data/torrents/tv
-        mkdir -p /data/media/movies
-        mkdir -p /data/media/tv
-        touch /data/.initialized
-        echo "data volume initialized"
-        sleep infinity
-      `),
-      "wait-for-data-init.sh": dedent(`
-        #!/bin/bash
-        set -e
-        file=/data/.initialized
-        max_wait=30
-        elapsed=0
-        while [ ! -f "\${file}" ]; do
-          if [ $elapsed -ge \${max_wait} ]; then
-            echo "\${file}: timeout after \${elapsed}s"
-            exit 1
-          fi
-          echo "[\${elapsed}s] \${file}: not found"
-          sleep 1
-          elapsed=$((elapsed + 1))
-        done
-        echo "\${file}: found"
-      `),
-      "notify-vpn-forwarding-port.sh": dedent(`
-        #!/bin/sh
-        set -e
-        direction="\${1}"
-        if [ "\${direction}" = "up" ]; then
-          port="\${2}"
-          interface="\${3}"
-          payload=$(printf '{"listen_port":%s,"current_network_interface":"%s","random_port":false,"upnp":false}' "\${port}" "\${interface}")
-        else
-          payload='{"listen_port":0,"current_network_interface":"lo"}'
-        fi
-        wget -O- -nv --retry-connrefused --post-data "json=\${payload}" http://127.0.0.1:8080/api/v2/app/setPreferences
-      `),
-      "prepare-install-jellyfin-theme.sh": dedent(`
-        #!/bin/sh
-        set -e
-        url="https://raw.githubusercontent.com/AumGupta/abyss-jellyfin/refs/tags/v1.2.1/scripts/docker/abyss-spotlight.sh"
-        curl -fsSL -o /custom-cont-init.d/install-theme.sh "\${url}"
-        chmod +x /custom-cont-init.d/install-theme.sh
-      `),
-    },
+    data: Object.fromEntries(
+      await Promise.all(
+        scriptFiles.map(async (f) => [
+          f,
+          (await readFile(path.join(__dirname, f))).toString(),
+        ]),
+      ),
+    ),
   });
 
   const toolbox = "ghcr.io/benfiola/homelab-images/toolbox:1.1.0";

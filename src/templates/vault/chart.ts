@@ -1,3 +1,5 @@
+import { readFile } from "fs/promises";
+import path from "path";
 import {
   Chart,
   findApiObject,
@@ -7,7 +9,6 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
-import { textblock } from "../../strings";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -60,26 +61,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         enabled: true,
         raft: {
           enabled: true,
-          config: textblock`
-            ui = true
-
-            listener "tcp" {
-              tls_disable = 1
-              address = "[::]:8200"
-              cluster_address = "[::]:8201"
-            }
-
-            storage "raft" {
-              path = "/vault/data"
-              retry_join {
-                leader_api_addr = "http://vault-0.vault-internal:8200"
-              }
-            }
-
-            service_registration "kubernetes" {}
-
-            disable_mlock = true
-          `,
+          config: (
+            await readFile(path.join(__dirname, "config.hcl"))
+          ).toString(),
         },
         replicas: 3,
       },

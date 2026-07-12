@@ -1,4 +1,5 @@
-import dedent from "ts-dedent";
+import { readFile } from "fs/promises";
+import path from "path";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
@@ -25,20 +26,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "mosquitto-config",
     },
     data: {
-      "mosquitto.conf": dedent`
-        listener 1883
-        plugin /usr/lib/mosquitto_persist_sqlite.so
-        persistence_location /mosquitto/data/
-        plugin /usr/lib/mosquitto_password_file.so
-        plugin_opt_password_file /auth/password_file
-        acl_file /mosquitto/config/acl.conf
-      `,
-      "acl.conf": dedent`
-        user home-assistant
-        topic readwrite #
-        user frigate
-        topic readwrite frigate/#
-      `,
+      "mosquitto.conf": (
+        await readFile(path.join(__dirname, "mosquitto.conf"))
+      ).toString(),
+      "acl.conf": (await readFile(path.join(__dirname, "acl.conf"))).toString(),
     },
   });
 
@@ -47,14 +38,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "mosquitto-scripts",
     },
     data: {
-      "setup-auth.sh": dedent`
-        #!/bin/sh
-        set -e
-        touch /auth/password_file
-        chmod 0700 /auth/password_file
-        /usr/bin/mosquitto_passwd -b /auth/password_file home-assistant "\${PASSWORD_HOME_ASSISTANT}"
-        /usr/bin/mosquitto_passwd -b /auth/password_file frigate "\${PASSWORD_FRIGATE}"
-      `,
+      "setup-auth.sh": (
+        await readFile(path.join(__dirname, "setup-auth.sh"))
+      ).toString(),
     },
   });
 
