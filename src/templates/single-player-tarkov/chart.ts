@@ -83,9 +83,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "raid-rev-web": 7829,
   });
 
-  new TcpRoute(chart, "users", "eft.bulia.dev", 6969, svc, 6969);
-  new TcpRoute(chart, "users", "eft.bulia.dev", 7828, svc, 7828);
-  new HttpRoute(chart, "users", "eft.bulia.dev").match(svc, 7829);
+  new TcpRoute(chart, "family", "eft.bulia.dev", 6969, svc, 6969);
+  new TcpRoute(chart, "family", "eft.bulia.dev", 7828, svc, 7828);
+  new HttpRoute(chart, "family", "eft.bulia.dev").match(svc, 7829);
 
   return chart;
 };

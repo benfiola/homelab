@@ -19,7 +19,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const staticIps: Record<(typeof gateways)[number], string> = {
-    users: "192.168.33.2",
+    family: "192.168.33.2",
     personal: "192.168.33.3",
     infrastructure: "192.168.33.4",
     public: "192.168.33.5",

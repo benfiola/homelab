@@ -129,7 +129,7 @@ ports:
       defaultVlanId: 1
 vlans:
   - id: 8
-    name: users
+    name: family
     members:
       - 6
       - 10

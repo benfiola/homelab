@@ -30,7 +30,7 @@ add_list network.@device[-1].ports='eth1'
 add network device
 set network.@device[-1]=device
 set network.@device[-1].type='bridge'
-set network.@device[-1].name='br-users'
+set network.@device[-1].name='br-family'
 set network.@device[-1].ports='br-trunk.8'
 add network device
 set network.@device[-1]=device
@@ -69,10 +69,10 @@ set network.@bridge-vlan[-1].vlan='88'
 add_list network.@bridge-vlan[-1].ports='eth1:t'
 
 # create network interfaces
-set network.users=interface
-set network.users.proto='none'
-set network.users.device='br-users'
-set network.users.multipath='off'
+set network.family=interface
+set network.family.proto='none'
+set network.family.device='br-family'
+set network.family.multipath='off'
 set network.personal=interface
 set network.personal.proto='none'
 set network.personal.device='br-personal'
@@ -162,28 +162,28 @@ set wireless.personal5g.ocv='0'
 set wireless.personal5g.network='personal'
 set wireless.personal5g.reassociation_deadline='20000'
 set wireless.personal5g.hidden='1'
-set wireless.users2g=wifi-iface
-set wireless.users2g.device='radio0'
-set wireless.users2g.mode='ap'
-set wireless.users2g.ssid='wifiwifiwifiwifi'
-set wireless.users2g.encryption='sae-mixed'
-set wireless.users2g.key='${secrets.wifi.users}'
-set wireless.users2g.ieee80211r='1'
-set wireless.users2g.ft_over_ds='0'
-set wireless.users2g.ocv='0'
-set wireless.users2g.network='users'
-set wireless.users2g.reassociation_deadline='20000'
-set wireless.users5g=wifi-iface
-set wireless.users5g.device='radio1'
-set wireless.users5g.mode='ap'
-set wireless.users5g.ssid='wifiwifiwifiwifi'
-set wireless.users5g.encryption='sae-mixed'
-set wireless.users5g.key='${secrets.wifi.users}'
-set wireless.users5g.ieee80211r='1'
-set wireless.users5g.ft_over_ds='0'
-set wireless.users5g.ocv='0'
-set wireless.users5g.network='users'
-set wireless.users5g.reassociation_deadline='20000'
+set wireless.family2g=wifi-iface
+set wireless.family2g.device='radio0'
+set wireless.family2g.mode='ap'
+set wireless.family2g.ssid='wifiwifiwifiwifi'
+set wireless.family2g.encryption='sae-mixed'
+set wireless.family2g.key='${secrets.wifi.family}'
+set wireless.family2g.ieee80211r='1'
+set wireless.family2g.ft_over_ds='0'
+set wireless.family2g.ocv='0'
+set wireless.family2g.network='family'
+set wireless.family2g.reassociation_deadline='20000'
+set wireless.family5g=wifi-iface
+set wireless.family5g.device='radio1'
+set wireless.family5g.mode='ap'
+set wireless.family5g.ssid='wifiwifiwifiwifi'
+set wireless.family5g.encryption='sae-mixed'
+set wireless.family5g.key='${secrets.wifi.family}'
+set wireless.family5g.ieee80211r='1'
+set wireless.family5g.ft_over_ds='0'
+set wireless.family5g.ocv='0'
+set wireless.family5g.network='family'
+set wireless.family5g.reassociation_deadline='20000'
 
 EOF
 

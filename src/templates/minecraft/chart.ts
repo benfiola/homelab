@@ -35,7 +35,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const svc = ss.createService({ game: 25565 });
 
-  new TcpRoute(chart, "users", "minecraft.bulia.dev", 25565, svc, 25565);
+  new TcpRoute(chart, "family", "minecraft.bulia.dev", 25565, svc, 25565);
 
   return chart;
 };

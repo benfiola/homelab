@@ -94,7 +94,7 @@ outputs:
   - file: wireguard.jfiola-iphone.conf
     template: network-wireguard.conf
     inputs:
-      privateKey: "${secrets.wireguard.devices.jfiolaIphone.users.private}"
+      privateKey: "${secrets.wireguard.devices.jfiolaIphone.family.private}"
       address: 192.168.9.2/32
-      publicKey: "${secrets.wireguard.interfaces.users.public}"
+      publicKey: "${secrets.wireguard.interfaces.family.public}"
       port: 13231

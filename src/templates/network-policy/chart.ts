@@ -244,7 +244,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const volsync = svc("volsync", pod("volsync", "volsync"));
   const volsyncMover = svc("volsync-mover", pod("volsync-mover", "*"));
   const gatewayPublic = svc("gateway-public", gateway("public"));
-  const gatewayUsers = svc("gateway-users", gateway("users"));
+  const gatewayFamily = svc("gateway-family", gateway("family"));
   const gatewayIot = svc("gateway-iot", gateway("iot"));
   const gatewayPersonal = svc("gateway-personal", gateway("personal"));
   const gatewayInfrastructure = svc(
@@ -603,7 +603,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   nodes.to(cidrs("162.159.200.1/32", "162.159.200.123/32"), udp(123));
 
   // gateways
-  gatewayUsers
+  gatewayFamily
     .to(azerothcoreServer, tcp(3724, 7878, 8085))
     .to(envoyGatewayController, tcp(18000))
     .to(homeAssistant, tcp(8123))

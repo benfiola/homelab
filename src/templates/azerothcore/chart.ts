@@ -190,9 +190,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new VerticalPodAutoscaler(chart, serverStatefulSet);
   new VerticalPodAutoscaler(chart, dbStatefulSet);
 
-  new TcpRoute(chart, "users", hostname, 3724, svc, 3724);
-  new TcpRoute(chart, "users", hostname, 8085, svc, 8085);
-  new TcpRoute(chart, "users", hostname, 7878, svc, 7878);
+  new TcpRoute(chart, "family", hostname, 3724, svc, 3724);
+  new TcpRoute(chart, "family", hostname, 8085, svc, 8085);
+  new TcpRoute(chart, "family", hostname, 7878, svc, 7878);
 
   return chart;
 };

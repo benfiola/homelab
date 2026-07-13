@@ -23,13 +23,13 @@
 /interface/bridge/port/add bridge=bridge interface=sfp-sfpplus1 frame-types=admit-only-vlan-tagged 
 
 # create wireguard interfaces
-/interface/wireguard/add name=wg-users listen-port=13231 mtu=1420 private-key="${secrets.wireguard.interfaces.users.private}"
+/interface/wireguard/add name=wg-family listen-port=13231 mtu=1420 private-key="${secrets.wireguard.interfaces.family.private}"
 /interface/wireguard/add name=wg-personal listen-port=13232 mtu=1420 private-key="${secrets.wireguard.interfaces.personal.private}"
 /interface/wireguard/add name=wg-infrastructure listen-port=13233 mtu=1420 private-key="${secrets.wireguard.interfaces.infrastructure.private}"
 /interface/wireguard/add name=wg-management listen-port=13234 mtu=1420 private-key="${secrets.wireguard.interfaces.management.private}"
 
 # create wireguard peers
-/interface/wireguard/peers/add allowed-address=192.168.9.2/32 interface=wg-users name=jfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.jfiolaIphone.users.public}"
+/interface/wireguard/peers/add allowed-address=192.168.9.2/32 interface=wg-family name=jfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.jfiolaIphone.family.public}"
 /interface/wireguard/peers/add allowed-address=192.168.17.2/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.personal.public}"
 /interface/wireguard/peers/add allowed-address=192.168.17.3/32 interface=wg-personal name=bfiola-work-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaWorkLaptop.personal.public}"
 /interface/wireguard/peers/add allowed-address=192.168.17.4/32 interface=wg-personal name=bfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaIphone.personal.public}"
@@ -41,16 +41,16 @@
 /interface/wireguard/peers/add allowed-address=192.168.89.4/32 interface=wg-management name=bfiola-work-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaWorkLaptop.management.public}"
 
 # create vlan interfaces
-/interface/vlan/add name=users interface=bridge vlan-id=8
+/interface/vlan/add name=family interface=bridge vlan-id=8
 /interface/vlan/add name=personal interface=bridge vlan-id=16
 /interface/vlan/add name=iot interface=bridge vlan-id=24
 /interface/vlan/add name=infrastructure interface=bridge vlan-id=32
 /interface/vlan/add name=management interface=bridge vlan-id=88
 
 # create interface lists
-/interface/list/add name=USERS
-/interface/list/member/add list=USERS interface=users
-/interface/list/member/add list=USERS interface=wg-users
+/interface/list/add name=FAMILY
+/interface/list/member/add list=FAMILY interface=family
+/interface/list/member/add list=FAMILY interface=wg-family
 /interface/list/add name=PERSONAL
 /interface/list/member/add list=PERSONAL interface=personal
 /interface/list/member/add list=PERSONAL interface=wg-personal
@@ -64,13 +64,13 @@
 /interface/list/member/add list=MANAGEMENT interface=wg-management
 /interface/list/add name=RESCUE
 /interface/list/member/add list=RESCUE interface=ether10
-/interface/list/add name=VLAN include=USERS,PERSONAL,IOT,INFRASTRUCTURE,MANAGEMENT
+/interface/list/add name=VLAN include=FAMILY,PERSONAL,IOT,INFRASTRUCTURE,MANAGEMENT
 /interface/list/add name=WAN
 /interface/list/member/add list=WAN interface=ether1
 
 # define interface networks
-/ip/address/add address=192.168.8.1/24 interface=users network=192.168.8.0
-/ip/address/add address=192.168.9.1/24 interface=wg-users network=192.168.9.0
+/ip/address/add address=192.168.8.1/24 interface=family network=192.168.8.0
+/ip/address/add address=192.168.9.1/24 interface=wg-family network=192.168.9.0
 /ip/address/add address=192.168.16.1/24 interface=personal network=192.168.16.0
 /ip/address/add address=192.168.17.1/24 interface=wg-personal network=192.168.17.0
 /ip/address/add address=192.168.24.1/24 interface=iot network=192.168.24.0
@@ -81,7 +81,7 @@
 /ip/address/add address=192.168.255.1/24 interface=ether10 network=192.168.255.0
 
 # create ip pools
-/ip/pool/add name=users ranges=192.168.8.2-192.168.8.254
+/ip/pool/add name=family ranges=192.168.8.2-192.168.8.254
 /ip/pool/add name=personal ranges=192.168.16.2-192.168.16.254
 /ip/pool/add name=iot ranges=192.168.24.2-192.168.24.254
 /ip/pool/add name=infrastructure ranges=192.168.32.2-192.168.32.254
@@ -89,7 +89,7 @@
 /ip/pool/add name=rescue ranges=192.168.255.2-192.168.255.254
 
 # create dhcp servers
-/ip/dhcp-server/add name=users address-pool=users interface=users lease-time=10m
+/ip/dhcp-server/add name=family address-pool=family interface=family lease-time=10m
 /ip/dhcp-server/add name=personal address-pool=personal interface=personal lease-time=10m
 /ip/dhcp-server/add name=iot address-pool=iot interface=iot lease-time=10m
 /ip/dhcp-server/add name=infrastructure address-pool=infrastructure interface=infrastructure lease-time=10m
@@ -97,7 +97,7 @@
 /ip/dhcp-server/add name=rescue address-pool=rescue interface=ether10 lease-time=10m
 
 # create dhcp server network
-/ip/dhcp-server/network/add comment=users address=192.168.8.0/24 dns-server=192.168.88.1 gateway=192.168.8.1 netmask=24
+/ip/dhcp-server/network/add comment=family address=192.168.8.0/24 dns-server=192.168.88.1 gateway=192.168.8.1 netmask=24
 /ip/dhcp-server/network/add comment=personal address=192.168.16.0/24 dns-server=192.168.88.1 gateway=192.168.16.1 netmask=24
 /ip/dhcp-server/network/add comment=iot address=192.168.24.0/24 dns-server=192.168.88.1 gateway=192.168.24.1 netmask=24
 /ip/dhcp-server/network/add comment=infrastructure address=192.168.32.0/23 dns-server=192.168.88.1 gateway=192.168.32.1 netmask=23
@@ -172,7 +172,7 @@
 /routing/bgp/connection/add instance=cluster.bulia.dev name=node-g.cluster.bulia.dev remote.address=192.168.32.8 local.role=ibgp templates=cluster.bulia.dev
 
 # configure mdns repeater
-/ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=users,personal,infrastructure,iot
+/ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot
 
 # configure firewall address lists
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="ring doorbell"
@@ -181,7 +181,7 @@
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.5 comment="ring chime (living room)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="echo studio"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="wiim pro"
-/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_USERS address=192.168.33.2/32 comment="cluster gateway (users)"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_FAMILY address=192.168.33.2/32 comment="cluster gateway (family)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE address=192.168.33.4/32 comment="cluster gateway (infrastructure)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PUBLIC address=192.168.33.5/32 comment="cluster gateway (public)"
@@ -212,13 +212,13 @@
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=MANAGEMENT out-interface-list=MANAGEMENT comment="accept management -> management"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=PERSONAL comment="accept personal -> personal"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_PERSONAL comment="accept personal -> infrastructure (personal ingress)"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_USERS comment="accept personal -> infrastructure (users ingress)"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_FAMILY comment="accept personal -> infrastructure (family ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=IOT comment="accept personal -> iot"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=WAN comment="accept personal -> wan"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=USERS comment="accept users -> users"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_USERS comment="accept users -> infrastructure (users ingress)"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=IOT comment="accept users -> iot"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=USERS out-interface-list=WAN comment="accept users -> wan"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=FAMILY out-interface-list=FAMILY comment="accept family -> family"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=FAMILY out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_FAMILY comment="accept family -> infrastructure (family ingress)"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=FAMILY out-interface-list=IOT comment="accept family -> iot"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=FAMILY out-interface-list=WAN comment="accept family -> wan"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=WAN connection-nat-state=dstnat comment="accept dstnat wan"
 
 /ip/firewall/filter/add chain=forward action=drop comment="drop unaccepted"

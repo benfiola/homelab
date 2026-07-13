@@ -38,10 +38,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
     udp3: [26902, "UDP"],
   });
 
-  new TcpRoute(chart, "users", "sdtd.bulia.dev", 26900, svc, 26900);
-  new UdpRoute(chart, "users", "sdtd.bulia.dev", 26900, svc, 26900);
-  new UdpRoute(chart, "users", "sdtd.bulia.dev", 26901, svc, 26901);
-  new UdpRoute(chart, "users", "sdtd.bulia.dev", 26902, svc, 26902);
+  new TcpRoute(chart, "family", "sdtd.bulia.dev", 26900, svc, 26900);
+  new UdpRoute(chart, "family", "sdtd.bulia.dev", 26900, svc, 26900);
+  new UdpRoute(chart, "family", "sdtd.bulia.dev", 26901, svc, 26901);
+  new UdpRoute(chart, "family", "sdtd.bulia.dev", 26902, svc, 26902);
 
   return chart;
 };
