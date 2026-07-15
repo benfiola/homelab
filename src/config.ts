@@ -259,6 +259,9 @@ const keyPairSchema = zod.object({
 });
 
 const networkSecretsSchema = zod.object({
+  router: zod.object({
+    users: zod.record(zod.string(), zod.string()),
+  }),
   wifi: zod.record(zod.string(), zod.string()),
   wireguard: zod.object({
     interfaces: zod.record(zod.string(), keyPairSchema),

@@ -45,6 +45,11 @@ set network.@device[-1].ports='br-trunk.24'
 add network device
 set network.@device[-1]=device
 set network.@device[-1].type='bridge'
+set network.@device[-1].name='br-friends'
+set network.@device[-1].ports='br-trunk.40'
+add network device
+set network.@device[-1]=device
+set network.@device[-1].type='bridge'
 set network.@device[-1].name='br-management'
 set network.@device[-1].ports='br-trunk.88'
 add network bridge-vlan
@@ -65,6 +70,11 @@ add_list network.@bridge-vlan[-1].ports='eth1:t'
 add network bridge-vlan
 set network.@bridge-vlan[-1]=bridge-vlan
 set network.@bridge-vlan[-1].device='br-trunk'
+set network.@bridge-vlan[-1].vlan='40'
+add_list network.@bridge-vlan[-1].ports='eth1:t'
+add network bridge-vlan
+set network.@bridge-vlan[-1]=bridge-vlan
+set network.@bridge-vlan[-1].device='br-trunk'
 set network.@bridge-vlan[-1].vlan='88'
 add_list network.@bridge-vlan[-1].ports='eth1:t'
 
@@ -73,6 +83,10 @@ set network.family=interface
 set network.family.proto='none'
 set network.family.device='br-family'
 set network.family.multipath='off'
+set network.friends=interface
+set network.friends.proto='none'
+set network.friends.device='br-friends'
+set network.friends.multipath='off'
 set network.personal=interface
 set network.personal.proto='none'
 set network.personal.device='br-personal'
@@ -165,7 +179,7 @@ set wireless.personal5g.hidden='1'
 set wireless.family2g=wifi-iface
 set wireless.family2g.device='radio0'
 set wireless.family2g.mode='ap'
-set wireless.family2g.ssid='wifiwifiwifiwifi'
+set wireless.family2g.ssid='wifiwifiwifiwifi-family'
 set wireless.family2g.encryption='sae-mixed'
 set wireless.family2g.key='${secrets.wifi.family}'
 set wireless.family2g.ieee80211r='1'
@@ -176,7 +190,7 @@ set wireless.family2g.reassociation_deadline='20000'
 set wireless.family5g=wifi-iface
 set wireless.family5g.device='radio1'
 set wireless.family5g.mode='ap'
-set wireless.family5g.ssid='wifiwifiwifiwifi'
+set wireless.family5g.ssid='wifiwifiwifiwifi-family'
 set wireless.family5g.encryption='sae-mixed'
 set wireless.family5g.key='${secrets.wifi.family}'
 set wireless.family5g.ieee80211r='1'
@@ -184,6 +198,28 @@ set wireless.family5g.ft_over_ds='0'
 set wireless.family5g.ocv='0'
 set wireless.family5g.network='family'
 set wireless.family5g.reassociation_deadline='20000'
+set wireless.friends2g=wifi-iface
+set wireless.friends2g.device='radio0'
+set wireless.friends2g.mode='ap'
+set wireless.friends2g.ssid='wifiwifiwifiwifi'
+set wireless.friends2g.encryption='sae-mixed'
+set wireless.friends2g.key='${secrets.wifi.friends}'
+set wireless.friends2g.ieee80211r='1'
+set wireless.friends2g.ft_over_ds='0'
+set wireless.friends2g.ocv='0'
+set wireless.friends2g.network='friends'
+set wireless.friends2g.reassociation_deadline='20000'
+set wireless.friends5g=wifi-iface
+set wireless.friends5g.device='radio1'
+set wireless.friends5g.mode='ap'
+set wireless.friends5g.ssid='wifiwifiwifiwifi'
+set wireless.friends5g.encryption='sae-mixed'
+set wireless.friends5g.key='${secrets.wifi.friends}'
+set wireless.friends5g.ieee80211r='1'
+set wireless.friends5g.ft_over_ds='0'
+set wireless.friends5g.ocv='0'
+set wireless.friends5g.network='friends'
+set wireless.friends5g.reassociation_deadline='20000'
 
 EOF
 

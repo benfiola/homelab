@@ -118,7 +118,7 @@ ports:
     enabled: true
     vlan:
       mode: strict
-      receive: untagged
+      receive: tagged
       defaultVlanId: 1
   - index: 18
     name: ""

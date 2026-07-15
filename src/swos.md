@@ -189,9 +189,9 @@ only the identity.
 | Field | Type | Description |
 |---|---|---|
 | `vlan` | number[] | VLAN mode per port (0–3, see below) |
-| `vlni` | number[] | VLAN receive mode per port (0=any, 1=untagged-only) |
+| `vlni` | number[] | 802.1Q acceptable frame types per port (0=any, 1=tagged-only, 2=untagged-only — see below) |
 | `dvid` | number[] | Default VLAN ID for untagged ingress frames |
-| `fvid` | number[] | Force VLAN ID bitmask (egress VLAN membership) |
+| `fvid` | number | Single scalar bitmask, not per-port. Purpose unconfirmed; read and preserved verbatim on every POST, never interpreted. |
 
 **VLAN mode values** (SwOS full — 4 values):
 
@@ -205,11 +205,19 @@ only the identity.
 > **CSS318/CSS326 note**: Factory default VLAN mode is `optional` (1), not
 > `disabled` (0). SwOS Lite uses only 3 modes (0=disabled, 1=optional, 2=strict).
 
-**POST**: send all four arrays together, preserving any fields you don't want
-to change:
+**`vlni` — acceptable frame types**:
+
+| Value | Name | Behaviour |
+|---|---|---|
+| 0 | any | Accept both tagged and untagged frames |
+| 1 | tagged | Accept only VLAN-tagged frames — used on trunk ports carrying multiple VLANs |
+| 2 | untagged | Accept only untagged frames — used on single-VLAN access ports |
+
+**POST**: send all four fields together, preserving any fields you don't want
+to change (`fvid` is a scalar, not an array):
 
 ```
-{vlan:[0x01,0x01,...],vlni:[0x00,0x00,...],dvid:[0x58,0x08,...],fvid:[0x00,0x00,...]}
+{vlan:[0x01,0x01,...],vlni:[0x02,0x01,...],dvid:[0x58,0x08,...],fvid:0x00004000}
 ```
 
 ---
@@ -308,11 +316,10 @@ per-port config option. Straightforward to add: same bitmask pattern as `en`.
 
 ### `fwd.b` — Force VLAN ID (`fvid`)
 
-`fvid` is a per-port array where each element is a bitmask controlling egress
-VLAN membership (which VLANs this port sends tagged frames for). It is read and
-preserved on every `fwd.b` POST but not exposed in the config schema. The
-semantics are more complex than the other VLAN fields and would benefit from
-live testing to confirm behaviour.
+`fvid` is a single scalar bitmask (not per-port, not an array). Its semantics
+are unconfirmed and it's not exposed in the config schema; `swos.ts` treats
+it as opaque (`unknown`), reading whatever the switch returns and echoing it
+back verbatim on `fwd.b` POST without assuming any shape.
 
 ### `vlan.b` — Per-VLAN advanced fields
 

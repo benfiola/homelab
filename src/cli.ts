@@ -5,7 +5,7 @@ import { writeFile } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
 import pino from "pino";
-import { exit, stdin } from "process";
+import { stdin } from "process";
 import * as actions from "./actions";
 import { LogFormat, TransportOpts } from "./cli-logger.mts";
 import { isSecret, Secret } from "./config";
@@ -448,10 +448,22 @@ const main = async () => {
   await program.parseAsync();
 };
 
+const serializeError = (error: unknown): unknown =>
+  error instanceof Error
+    ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        ...(error.cause !== undefined && {
+          cause: serializeError(error.cause),
+        }),
+      }
+    : error;
+
 const handleError = async (error: any) => {
   const suffix = randomString(8);
   const file = join("/tmp", `homelab-error.${suffix}.json`);
-  await writeFile(file, JSON.stringify(error, null, 2));
+  await writeFile(file, JSON.stringify(serializeError(error), null, 2));
 
   let message = (error as any)?.message;
   if (message === undefined) {
@@ -470,5 +482,8 @@ const handleError = async (error: any) => {
     await handleError(error);
     code = 1;
   }
-  exit(code);
+  // logger() writes to a worker-thread transport asynchronously; process.exit()
+  // would kill the worker before it flushes, dropping the just-logged error.
+  // Setting exitCode and returning lets node exit naturally once flushed.
+  process.exitCode = code;
 })();

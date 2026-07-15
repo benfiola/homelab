@@ -2,58 +2,43 @@
 title: Container Storage Interface (CSI)
 ---
 
-I use **Linstor** (via the Piraeus Datastore operator) for persistent storage. It provides the flexibility to use LVM block devices, supports snapshots and backups, and integrates cleanly with Kubernetes. Here's how I arrived at this choice.
+**Linstor** (via the Piraeus Datastore operator) is used for persistent storage. It supports LVM block devices, snapshots, and backups, and integrates cleanly with Kubernetes.
 
-## Decision Criteria
+## Requirements
 
-When evaluating CSI solutions, I prioritized:
+- **Flexibility with block devices**: support for LVM and logical volumes, not requiring entire block devices to be dedicated
+- **Operational simplicity**: easy to deploy, understand, and troubleshoot
+- **Backup and recovery**: native snapshot support for point-in-time backups
 
-- **Flexibility with block devices**: Support for LVM and logical volumes, not requiring entire block devices to be dedicated
-- **Operational simplicity**: Easy to deploy, understand, and troubleshoot
-- **Backup and recovery**: Native snapshot support for point-in-time backups
+## Timeline
 
-## The Journey
+### 1. Ceph + Rook
 
-### Initial Path: Ceph + Rook
+A common choice for distributed block storage, but it requires entire block devices to be dedicated to the cluster. Several nodes use SSDs as system partitions, so a solution that could work with slices of a block device was needed rather than one consuming entire devices. Ruled out for this reason.
 
-Ceph + Rook are popular choices for distributed block storage. However, they have a fundamental limitation: they require entire block devices to be dedicated to the cluster. My infrastructure uses SSDs as system partitions on several nodes, so I needed a solution that could work with slices of a block device rather than consuming entire devices.
+### 2. Longhorn
 
-This architectural mismatch disqualified Ceph + Rook immediately.
+Longhorn didn't require full block device dedication — it could work with partial allocations, which fit the infrastructure. Two issues came up during deployment:
 
-### Detour: Longhorn
+- **Troubleshooting**: community consensus is that Longhorn failures are difficult to debug, with limited observability into root causes.
+- **Resource constraints**: Longhorn's controller generates per-node workloads with no way to configure resource requests/limits. The relevant feature requests have been open for years. Unconstrained, these workloads could starve other applications on the cluster.
 
-Longhorn appealed because it didn't require full block device dedication—it could work with partial allocations, which aligned with my infrastructure.
+Ruled out due to the combination of opaque failures and uncontrollable resource consumption.
 
-However, two problems emerged during deployment:
+### 3. Linstor (Piraeus Datastore)
 
-**Difficult troubleshooting**: The consensus in the community is that Longhorn failures are painfully difficult to debug. When issues arise, there's limited observability into what's actually failing.
+Found while researching remaining options; had a reputation in the community for maturity, lean requirements, and straightforward support. Linstor is the distributed storage system; Piraeus Datastore is the Kubernetes operator that deploys it.
 
-**Resource constraints**: Longhorn's controller generates workloads on nodes, but there's no way to configure resource requests and limits for these workloads. Feature requests for this capability haven't been addressed in years. Without the ability to constrain resource utilization, Longhorn workloads could starve other applications on the cluster.
+- **Kubernetes-native state**: Piraeus Datastore stores Linstor's internal state in Kubernetes resources, queryable and manageable via standard Kubernetes APIs.
+- **LVM support**: Linstor supports LVM block devices and LVM thin pools, allowing logical volumes to be allocated from existing SSDs.
+- **Snapshot and backup**: integrates with Kubernetes' snapshot API and external-snapshotter. Combined with Volsync (a PVC backup/restore tool), backups can be derived from just-in-time snapshots without dedicating separate infrastructure.
+- **Deployment**: setting up the operator and supporting custom resources was straightforward. A small [bootstrap/provisioning controller](https://github.com/benfiola/homelab-images) runs as an initContainer for Linstor; otherwise it works out of the box.
 
-The combination of opaque failures and uncontrollable resource consumption made Longhorn unsuitable.
+Minor operational notes:
 
-### Final Choice: Linstor (Piraeus Datastore)
+- The Piraeus operator deployment is effectively a default installation — customization goes through Kustomize overlays rather than operator configuration options.
+- Linstor deploys to the same namespace as the operator, which is a minor organizational quirk rather than a functional issue.
 
-I discovered Linstor while researching CSI options. Someone in the community mentioned it was mature, had lean requirements, and was straightforward to support. Linstor is a distributed storage system, and Piraeus Datastore is the Kubernetes operator that deploys it.
+## Outcome
 
-What makes Linstor compelling:
-
-**Kubernetes-native state**: Piraeus Datastore stores Linstor's internal state in Kubernetes resources, so you can query and manage the storage cluster via standard Kubernetes APIs.
-
-**LVM support**: Critically, Linstor supports LVM block devices and LVM thin pools. This means I can allocate logical volumes from my SSDs and give them to Linstor—exactly the flexibility I needed.
-
-**Snapshot and backup capabilities**: Linstor integrates with Kubernetes' snapshot API and external-snapshotter. Combined with Volsync (a PVC backup/restore tool), I can derive backups from just-in-time snapshots. This provides robust recovery options without dedicating separate infrastructure.
-
-**Simple deployment**: Setting up both the operator and supporting custom resources was straightforward. I did create a simple [bootstrap/provisioning controller](https://github.com/benfiola/homelab-images) that runs as an initContainer for Linstor, but otherwise everything works out of the box.
-
-However, there are minor operational quirks worth noting:
-
-**Limited operator customization**: The Piraeus operator deployment is effectively a default installation. Customization must be handled via Kustomize overlays rather than through operator configuration options. This works, but it's a less elegant approach than some alternatives.
-
-**Namespace co-location**: Linstor deploys to the same namespace as the operator. While the cluster can be configured simply via CRDs, having both the operator and storage workloads in the same namespace feels slightly odd architecturally. It's not a dealbreaker, just a minor organizational quirk.
-
-These are minor considerations that don't outweigh Linstor's benefits for this use case.
-
-## Final Architecture
-
-**Linstor** via Piraeus Datastore provides distributed persistent storage that's flexible, observable, and integrated with Kubernetes. Its support for LVM and snapshots, combined with simple deployment and operation, makes it the right choice for this cluster.
+Linstor via Piraeus Datastore provides distributed persistent storage with LVM and snapshot support, Kubernetes-native state, and straightforward deployment.

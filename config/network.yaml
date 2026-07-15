@@ -1,9 +1,6 @@
 apiVersion: v1alpha1
 kind: HomelabNetworkConfig
 outputs:
-  - file: router.rsc
-    template: network-router.rsc
-
   - file: ap.office.sh
     template: network-ap.sh
     inputs:
@@ -18,6 +15,15 @@ outputs:
     template: network-ap.sh
     inputs:
       hostname: bedroom-2.ap
+
+  - file: router.rsc
+    template: network-router.rsc
+
+  - file: switch.core.yaml
+    template: network-switch.core.yaml
+
+  - file: switch.cluster.yaml
+    template: network-switch.cluster.yaml
 
   - file: wireguard.bfiola-desktop-infrastructure.conf
     template: network-wireguard.conf
@@ -97,4 +103,12 @@ outputs:
       privateKey: "${secrets.wireguard.devices.jfiolaIphone.family.private}"
       address: 192.168.9.2/32
       publicKey: "${secrets.wireguard.interfaces.family.public}"
+      port: 13231
+
+  - file: wireguard.ph.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.ph.friends.private}"
+      address: 192.168.41.2/32
+      publicKey: "${secrets.wireguard.interfaces.friends.public}"
       port: 13231

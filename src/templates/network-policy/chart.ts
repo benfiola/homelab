@@ -247,6 +247,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const gatewayFamily = svc("gateway-family", gateway("family"));
   const gatewayIot = svc("gateway-iot", gateway("iot"));
   const gatewayPersonal = svc("gateway-personal", gateway("personal"));
+  const gatewayFriends = svc("gateway-friends", gateway("friends"));
   const gatewayInfrastructure = svc(
     "gateway-infrastructure",
     gateway("infrastructure"),
@@ -604,22 +605,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // gateways
   gatewayFamily
-    .to(azerothcoreServer, tcp(3724, 7878, 8085))
     .to(envoyGatewayController, tcp(18000))
     .to(homeAssistant, tcp(8123))
-    .to(mediarrJellyfin, tcp(8096))
-    .to(mediarrSeerr, tcp(5055))
-    .to(minecraft, tcp(25565))
-    .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
     .from(
       cidrs(
         "192.168.8.0/24",
         "192.168.9.0/24",
         "192.168.16.0/24",
         "192.168.17.0/24",
-        "192.168.34.0/24",
       ),
-      tcp(3724, 6969, 7878, 8085, 10443, 25565),
+      tcp(10443),
     );
 
   gatewayIot
@@ -632,6 +627,25 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .from(
       cidrs("192.168.16.0/24", "192.168.17.0/24", "192.168.34.0/24"),
       tcp(8080, 10443),
+    );
+
+  gatewayFriends
+    .to(envoyGatewayController, tcp(18000))
+    .to(azerothcoreServer, tcp(3724, 7878, 8085))
+    .to(mediarrJellyfin, tcp(8096))
+    .to(mediarrSeerr, tcp(5055))
+    .to(minecraft, tcp(25565))
+    .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
+    .from(
+      cidrs(
+        "192.168.8.0/24",
+        "192.168.9.0/24",
+        "192.168.16.0/24",
+        "192.168.17.0/24",
+        "192.168.40.0/24",
+        "192.168.41.0/24",
+      ),
+      tcp(3724, 6969, 7878, 8085, 10443, 25565),
     );
 
   gatewayInfrastructure

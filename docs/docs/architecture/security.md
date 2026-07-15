@@ -8,7 +8,7 @@ This document outlines the security model for the homelab, which employs a layer
 
 Security is enforced across three layers:
 
-1. **Router firewall** - Controls inter-VLAN traffic and public ingress based on network segmentation
+1. **Router firewall** - Controls inter-VLAN traffic and public ingress based on a hierarchical VLAN trust model, with external access via WireGuard
 2. **In-cluster policies** - Network policies and host-level firewalling restrict pod-to-pod and pod-to-host communication
 3. **Host OS** - Talos Linux provides a minimal attack surface with reduced binary footprint
 
@@ -16,17 +16,24 @@ This defense-in-depth approach ensures that even if one layer is compromised, ot
 
 ## Router Firewall
 
-The network is split into VLANs as described in [Networking](./networking.md). The homelab occupies the `Infrastructure` VLAN, with access controlled via firewall rules:
+The network is split into VLANs, defined via the [networking configuration](/configuration/networking.md): `management`, `infrastructure`, `iot`, `personal`, `family`, and `friends`.
 
-- **Trusted VLAN** → Full access to Infrastructure VLAN
-- **General VLAN** → Access restricted to matched Gateway resources only
-- **Public traffic** → Ingress to cluster gateways only; traffic is DNAT'd to appropriate ingress points
+The cluster exposes one ingress Gateway per VLAN, plus a `public` Gateway for external/WAN traffic; each receives its own IP address. Rather than granting broad inter-VLAN access, firewall rules restrict each VLAN to its own Gateway plus the Gateways of any less-trusted VLANs beneath it:
 
-### Rule Management
+- `friends` → `friends` ingress only
+- `family` → `family` and `friends` ingress
+- `personal` → `personal`, `family`, and `friends` ingress
+- `infrastructure` → its own ingress, plus general access to the `iot` VLAN and the WAN
+- `iot` → its own ingress only, isolated from the other VLANs (a small allowlist of IoT devices are permitted outbound WAN access)
+- `management` → self-access only, used for administering network devices rather than reaching application traffic; it has no dedicated Gateway
 
-Firewall rules are kept in sync by a helper controller defined in the companion [homelab-images](https://github.com/benfiola/homelab-images) repository. This controller watches the cluster state and automatically updates router firewall rules, ensuring they remain synchronized with their matched Gateway resources.
+Public (WAN) traffic is only permitted to reach the cluster via DNAT to the `public` Gateway.
 
-The separation into a dedicated helper controller keeps this operational concern decoupled from the main infrastructure project.
+### External Access
+
+External access to the network is provided via WireGuard rather than a single flat VPN. Each peer is assigned to the VLAN matching its trust level (e.g. a peer in the `personal` WireGuard interface reaches the network the same as a device physically connected to the `personal` VLAN).
+
+These firewall rules are defined statically as part of the router's [generated configuration](/configuration/networking.md), rather than being reconciled at runtime against cluster state.
 
 ## In-Cluster Policies
 

@@ -137,10 +137,20 @@ const portConfigSchema = zod.object({
       mode: zod
         .enum(["disabled", "optional", "enabled", "strict"])
         .optional(),
-      /** Whether to accept tagged frames, untagged frames, or both */
-      receive: zod.enum(["any", "untagged"]).optional(),
+      /**
+       * 802.1Q acceptable frame types for this port's ingress filter:
+       * any: accept tagged and untagged frames
+       * tagged: accept only VLAN-tagged frames (trunk ports)
+       * untagged: accept only untagged frames (access ports)
+       */
+      receive: zod.enum(["any", "tagged", "untagged"]).optional(),
       /** VLAN ID assigned to untagged ingress frames */
       defaultVlanId: zod.number().int().min(1).max(4094).optional(),
+      /**
+       * Force all traffic on this port onto defaultVlanId, bypassing VLAN
+       * table matching entirely (e.g. useful for a rescue/recovery port).
+       */
+      forceVlanId: zod.boolean().optional(),
     })
     .optional(),
 });
@@ -169,6 +179,10 @@ type Config = zod.infer<typeof configSchema>;
 const VLAN_MODES = ["disabled", "optional", "enabled", "strict"] as const;
 type VlanMode = (typeof VLAN_MODES)[number];
 
+// 802.1Q acceptable frame types, indexed by raw vlni value.
+const RECEIVE_MODES = ["any", "tagged", "untagged"] as const;
+type ReceiveMode = (typeof RECEIVE_MODES)[number];
+
 // ── Apply ─────────────────────────────────────────────────────────────────────
 
 type LinkData = {
@@ -181,7 +195,8 @@ type FwdData = {
   vlan: number[];
   vlni: number[];
   dvid: number[];
-  fvid: number[];
+  /** Per-port bitmask (bit i = port i+1): "Force VLAN ID" enabled. */
+  fvid: number;
 };
 
 type VlanEntry = {
@@ -275,7 +290,7 @@ export async function applyConfig(
     const modes = [...fwdData.vlan];
     const receives = [...fwdData.vlni];
     const dvids = [...fwdData.dvid];
-    const fvids = [...fwdData.fvid];
+    let fvid = fwdData.fvid;
     let fwdChanged = false;
 
     for (const p of config.ports ?? []) {
@@ -294,10 +309,10 @@ export async function applyConfig(
       }
 
       if (p.vlan.receive !== undefined) {
-        const want = p.vlan.receive === "any" ? 0 : 1;
+        const want = RECEIVE_MODES.indexOf(p.vlan.receive as ReceiveMode);
         if (receives[i] !== want) {
           logger().info(
-            `  port[${p.index}].vlan.receive: ${receives[i] === 0 ? "any" : "untagged"} → ${p.vlan.receive}`,
+            `  port[${p.index}].vlan.receive: ${RECEIVE_MODES[receives[i]]} → ${p.vlan.receive}`,
           );
           receives[i] = want;
           fwdChanged = true;
@@ -314,6 +329,17 @@ export async function applyConfig(
         dvids[i] = p.vlan.defaultVlanId;
         fwdChanged = true;
       }
+
+      if (p.vlan.forceVlanId !== undefined) {
+        const cur = !!(fvid & (1 << i));
+        if (cur !== p.vlan.forceVlanId) {
+          logger().info(
+            `  port[${p.index}].vlan.forceVlanId: ${cur} → ${p.vlan.forceVlanId}`,
+          );
+          fvid = p.vlan.forceVlanId ? fvid | (1 << i) : fvid & ~(1 << i);
+          fwdChanged = true;
+        }
+      }
     }
 
     if (fwdChanged && !dryRun) {
@@ -321,7 +347,7 @@ export async function applyConfig(
         vlan: modes,
         vlni: receives,
         dvid: dvids,
-        fvid: fvids,
+        fvid,
       });
     }
   }
@@ -412,8 +438,9 @@ export async function dumpConfig(
       enabled: !!(linkData.en & (1 << i)),
       vlan: {
         mode: VLAN_MODES[fwdData.vlan[i]] ?? "optional",
-        receive: fwdData.vlni[i] === 0 ? "any" : "untagged",
+        receive: RECEIVE_MODES[fwdData.vlni[i]] ?? "untagged",
         defaultVlanId: fwdData.dvid[i],
+        forceVlanId: !!(fwdData.fvid & (1 << i)),
       },
     })),
 

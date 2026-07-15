@@ -347,8 +347,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new VerticalPodAutoscaler(chart, jellyfin);
   new VerticalPodAutoscaler(chart, sabnzbd);
 
-  new HttpRoute(chart, "family", "discover.bulia.dev").match(seerrSvc, 5055);
-  new HttpRoute(chart, "family", "watch.bulia.dev").match(jellyfinSvc, 8096);
+  new HttpRoute(chart, "friends", "discover.bulia.dev").match(seerrSvc, 5055);
+  new HttpRoute(chart, "friends", "watch.bulia.dev").match(jellyfinSvc, 8096);
 
   return chart;
 };
