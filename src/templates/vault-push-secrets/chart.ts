@@ -23,6 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     config: {
       bitwardenAccessTokenSecret: vaultSecret.name,
       bitwardenAccessTokenKey: "bitwarden-access-token",
+      bitwardenSecretId: "ec62ad56-d707-4bde-a312-b4880129d86f",
       vaultAddr: "http://vault-active.vault.svc:8200",
       vaultAuthMount: "kubernetes/",
       vaultAuthRole: "vault-push-secrets-workload",
