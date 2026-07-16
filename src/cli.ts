@@ -175,12 +175,11 @@ const pushSecret = (secret: Secret, opts: PushSecretOpts) => {
 
 interface PullSecretsOpts {
   configDir: string;
-  reuseKey: boolean;
 }
 
 const pullSecrets = (opts: PullSecretsOpts) =>
   withStatus("Pulling secrets...", () =>
-    actions.pullSecrets(opts.configDir, { skipKeyIfExists: opts.reuseKey }),
+    actions.pullSecrets(opts.configDir),
   );
 
 interface GenerateClientConfigOpts {
@@ -372,11 +371,6 @@ const main = async () => {
     .command("pull-secrets")
     .description("pulls secrets from remote storage")
     .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
-    .option(
-      "--reuse-key",
-      "skip fetching encryption key from bitwarden if it already exists locally",
-      false,
-    )
     .action(pullSecrets);
 
   program

@@ -126,8 +126,8 @@
 /ip/dhcp-client/add interface=ether1
 
 # assign static ips
-/ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=EC:0D:E4:C3:92:9C comment="echo studio"
-/ip/dhcp-server/lease/add address=192.168.24.7 server=iot mac-address=40:D9:5A:3E:62:20 comment="wiim pro"
+/ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=F8:5C:24:40:2F:4A comment="sonos (bedroom-2 right)"
+/ip/dhcp-server/lease/add address=192.168.24.7 server=iot mac-address=F8:5C:24:40:34:98 comment="sonos (bedroom-2 left)"
 /ip/dhcp-server/lease/add address=192.168.24.8 server=iot mac-address=A0:85:E3:E9:43:78 comment="3d printer"
 /ip/dhcp-server/lease/add address=192.168.24.9 server=iot mac-address=00:68:EB:75:E3:B8 comment="printer"
 /ip/dhcp-server/lease/add address=192.168.24.10 server=iot mac-address=24:48:45:4D:1C:00 comment="camera (front yard)"
@@ -189,8 +189,8 @@
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot
 
 # configure firewall address lists
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="echo studio"
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="wiim pro"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="sonos (bedroom-2 right)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="sonos (bedroom-2 left)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_FAMILY address=192.168.33.2/32 comment="cluster gateway (family)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE address=192.168.33.4/32 comment="cluster gateway (infrastructure)"

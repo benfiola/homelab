@@ -1,4 +1,4 @@
-AGE_VERSION ?= 1.3.1
+BWS_VERSION ?= 2.1.0
 CDK8S_VERSION ?= 2.203.1
 CILIUM_VERSION ?= 1.18.5
 CILIUMCLI_VERSION ?= 0.18.9
@@ -69,15 +69,16 @@ $(eval $(call tool-from-apt,bsdtar,libarchive-tools))
 $(eval $(call tool-from-apt,curl,curl))
 $(eval $(call tool-from-apt,git,git))
 $(eval $(call tool-from-apt,jsonnet,jsonnet))
-$(eval $(call tool-from-npm,bw,@bitwarden/cli))
 $(eval $(call tool-from-npm,cdk8s,cdk8s-cli))
 $(eval $(call tool-from-npm,tsx,tsx))
 $(eval $(call tool-from-apt,wg,wireguard-tools))
 
-age_arch := $(arch)
-age_url := https://github.com/FiloSottile/age/releases/download/v$(AGE_VERSION)/age-v$(AGE_VERSION)-linux-$(age_arch).tar.gz
-$(eval $(call tool-from-tar-gz,age,$(age_url),1))
-$(eval $(call tool-from-tar-gz,age-keygen,$(age_url),1))
+bws_arch := $(arch)
+ifeq ($(bws_arch),arm64)
+	bws_arch := aarch64
+endif
+bws_url := https://github.com/bitwarden/sdk-sm/releases/download/bws-v$(BWS_VERSION)/bws-$(bws_arch)-unknown-linux-gnu-$(BWS_VERSION).zip
+$(eval $(call tool-from-zip,bws,$(bws_url),0))
 
 ciliumcli_arch := $(arch)
 ciliumcli_url := https://github.com/cilium/cilium-cli/releases/download/v$(CILIUMCLI_VERSION)/cilium-linux-$(ciliumcli_arch).tar.gz
@@ -86,28 +87,6 @@ $(eval $(call tool-from-tar-gz,cilium,$(ciliumcli_url),0))
 flux_arch := $(arch)
 flux_url := https://github.com/fluxcd/flux2/releases/download/v$(FLUX_VERSION)/flux_$(FLUX_VERSION)_linux_$(flux_arch).tar.gz
 $(eval $(call tool-from-tar-gz,flux,$(flux_url), 0))
-
-gcloud_arch := $(arch)
-ifeq ($(gcloud_arch),arm64)
-	gcloud_arch := arm
-else ifeq ($(gcloud_arch),amd64)
-	gcloud_arch := x86_64
-endif
-gcloud_url := https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-$(gcloud_arch).tar.gz
-install-tools: install-tools__gcloud
-.PHONY: install-tools__gcloud
-install-tools__gcloud: $(bin)/gcloud
-$(bin)/gcloud: $(bin)/bsdtar $(bin)/curl | $(bin)
-	# clean temp paths
-	rm -rf $(bin)/.gcloud $(bin)/.archive.tar.gz && mkdir -p $(bin)/.gcloud
-	# download gcloud archive
-	curl -o $(bin)/.archive.tar.gz -fsSL $(gcloud_url)
-	# extract gcloud
-	bsdtar xvzf $(bin)/.archive.tar.gz -C $(bin)/.gcloud
-	# symlink gcloud
-	ln -sf $(bin)/.gcloud/google-cloud-sdk/bin/gcloud $(bin)/gcloud
-	# clean temp paths
-	rm -rf $(bin)/.archive.tar.gz
 
 helm_arch := $(arch)
 helm_url := https://get.helm.sh/helm-v$(HELM_VERSION)-linux-$(helm_arch).tar.gz

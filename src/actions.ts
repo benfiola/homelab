@@ -1,20 +1,10 @@
 import { App } from "cdk8s";
-import {
-  access,
-  glob,
-  mkdir,
-  readFile,
-  rename,
-  rm,
-  writeFile,
-} from "fs/promises";
-import path, { basename, dirname, join } from "path";
-import * as age from "./age";
+import { glob, mkdir, readFile, rename, rm, writeFile } from "fs/promises";
+import path, { dirname, join } from "path";
 import { waitFor } from "./async";
 import * as bitwarden from "./bitwarden";
 import * as config from "./config";
 import { exec } from "./exec";
-import * as gcloud from "./gcloud";
 import * as kubernetes from "./kubernetes";
 import { logger } from "./logger";
 import { renderTemplate, textblock } from "./strings";
@@ -186,78 +176,33 @@ const pushSecretsToStorage = async (
 ) => {
   const storageConfig = await config.getStorageConfig(configDir);
   const localPath = config.getSecretsPath(secret, configDir);
+  const secretContent = await readFile(localPath, "utf-8");
 
-  const name = basename(localPath);
-  const dest = `gs://${storageConfig.bucket}/${name}`;
-
-  await gcloud.login();
-
-  const tempy = await getTempy();
-  await tempy.temporaryFileTask(async (tempPath) => {
-    await age.encrypt(localPath, tempPath, storageConfig.publicKey);
-    await gcloud.copy(tempPath, dest);
-  });
+  await bitwarden.putSecret(storageConfig.projectUuid, secret, secretContent);
 };
 
 export const pushSecrets = async (secret: config.Secret, configDir: string) => {
-  if (secret === "storage") {
-    const storageConfig = await config.getStorageConfig(configDir);
-    throw new Error(
-      `storage key must be stored in Bitwarden manually (item id: ${storageConfig.privateKeyItemId})`,
-    );
-  } else if (secret === "apps") {
+  if (secret === "apps") {
     await pushAppsSecretsToVault(configDir);
   } else {
     await pushSecretsToStorage(secret, configDir);
   }
 };
 
-interface PullSecretsOpts {
-  skipKeyIfExists?: boolean;
-}
-
-export const pullSecrets = async (
-  configDir: string,
-  opts: PullSecretsOpts = {},
-) => {
-  const skipKeyIfExists = opts.skipKeyIfExists ?? false;
-
+export const pullSecrets = async (configDir: string) => {
   const storageConfig = await config.getStorageConfig(configDir);
 
-  const storageSecretsPath = config.getSecretsPath("storage", configDir);
+  const secrets = await bitwarden.listSecrets(storageConfig.projectUuid);
 
-  const keyExists = await access(storageSecretsPath).then(
-    () => true,
-    () => false,
-  );
-
-  if (!keyExists || !skipKeyIfExists) {
-    const encryptionKey = await bitwarden.getSecret(
-      storageConfig.privateKeyItemId,
-    );
-    await writeFile(
-      storageSecretsPath,
-      stringify({ privateKey: encryptionKey }),
-    );
-  }
-
-  const storageSecrets = await config.getStorageSecrets(configDir);
-
-  await gcloud.login();
-
-  const tempy = await getTempy();
-  const bucket = storageConfig.bucket;
   await Promise.all(
-    config.secrets
-      .filter((s) => s !== "storage")
-      .map(async (s) => {
-        const localPath = config.getSecretsPath(s, configDir);
-        const remotePath = `gs://${bucket}/${basename(localPath)}`;
-        await tempy.temporaryFileTask(async (tempPath) => {
-          await gcloud.copy(remotePath, tempPath);
-          await age.decrypt(tempPath, localPath, storageSecrets.privateKey);
-        });
-      }),
+    config.secrets.map(async (s) => {
+      const secret = secrets.find((sec) => sec.key === s);
+      if (!secret) {
+        throw new Error(`Secret '${s}' not found in Bitwarden Secrets Manager`);
+      }
+      const localPath = config.getSecretsPath(s, configDir);
+      await writeFile(localPath, secret.value);
+    }),
   );
 };
 
@@ -458,6 +403,15 @@ const initializeVault = async (configDir: string) => {
         await writeFile(file, vaultSecrets.unsealKey);
         for (let i = 0; i < numReplicas; i++) {
           const dest = `vault/vault-${i}:/vault/data/unseal-key`;
+          await kubernetes.cp(file, dest);
+        }
+      });
+
+      logger().info("Pushing root token to pods...");
+      await tempy.temporaryFileTask(async (file) => {
+        await writeFile(file, vaultSecrets.rootToken);
+        for (let i = 0; i < numReplicas; i++) {
+          const dest = `vault/vault-${i}:/vault/data/root-token`;
           await kubernetes.cp(file, dest);
         }
       });

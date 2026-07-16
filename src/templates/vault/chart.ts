@@ -40,13 +40,33 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               name: "VAULT_UNSEAL_KEY",
               value: "/vault/data/unseal-key",
             },
-            {
-              name: "VAULT_ADDR",
-              value: "http://127.0.0.1:8200",
-            },
           ],
           image: "ghcr.io/benfiola/homelab-images/vault-unseal:1.0.2",
           name: "vault-unseal",
+          securityContext: securityContext.container,
+          volumeMounts: [
+            {
+              name: "data",
+              mountPath: "/vault/data",
+              readOnly: true,
+            },
+          ],
+        },
+        {
+          env: [
+            {
+              name: "ROOT_TOKEN_PATH",
+              value: "/vault/data/root-token",
+            },
+          ],
+          image: "ghcr.io/benfiola/homelab-images/vault-auth-proxy:1.0.1",
+          name: "auth-proxy",
+          ports: [
+            {
+              containerPort: 8201,
+              name: "auth-proxy",
+            },
+          ],
           securityContext: securityContext.container,
           volumeMounts: [
             {

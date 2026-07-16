@@ -26,7 +26,7 @@
     }
   },
   "image": "ubuntu:latest",
-  "postCreateCommand": ".devcontainer/post-create.sh",
+  "postCreateCommand": ["/bin/bash", ".devcontainer/post-create.sh"],
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached"
   ]

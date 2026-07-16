@@ -215,9 +215,7 @@ export const getNetworkConfig = async (configDir: string) => {
 const storageConfigSchema = zod.object({
   apiVersion: zod.literal("v1alpha1"),
   kind: zod.literal("HomelabStorageConfig"),
-  bucket: zod.string(),
-  privateKeyItemId: zod.string(),
-  publicKey: zod.string(),
+  projectUuid: zod.string().uuid(),
 });
 
 export type StorageConfig = zod.infer<typeof storageConfigSchema>;
@@ -271,13 +269,6 @@ const networkSecretsSchema = zod.object({
 
 export const getNetworkSecrets = (configDir: string) =>
   loadYaml(networkSecretsSchema, getSecretsPath("network", configDir));
-
-const storageSecretsSchema = zod.object({
-  privateKey: zod.string(),
-});
-
-export const getStorageSecrets = (configDir: string) =>
-  loadYaml(storageSecretsSchema, getSecretsPath("storage", configDir));
 
 const vaultSecretsSchema = zod.object({
   rootToken: zod.string(),
