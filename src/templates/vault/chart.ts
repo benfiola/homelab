@@ -58,8 +58,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               name: "ROOT_TOKEN_PATH",
               value: "/vault/data/root-token",
             },
+            {
+              name: "LOG_LEVEL",
+              value: "debug",
+            },
           ],
-          image: "ghcr.io/benfiola/homelab-images/vault-auth-proxy:1.0.3",
+          image: "ghcr.io/benfiola/homelab-images/vault-auth-proxy:1.0.4",
           name: "auth-proxy",
           ports: [
             {
