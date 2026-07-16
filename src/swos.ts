@@ -223,12 +223,10 @@ export async function applyConfig(
 
   const client = new SwosClient(`http://${address}`, username, password);
 
-  const [linkData, fwdData, vlanData, sysData] = (await Promise.all([
-    client.get("link"),
-    client.get("fwd"),
-    client.get("vlan"),
-    client.get("sys"),
-  ])) as [LinkData, FwdData, VlanEntry[], SysData];
+  const linkData = (await client.get("link")) as LinkData;
+  const fwdData = (await client.get("fwd")) as FwdData;
+  const vlanData = (await client.get("vlan")) as VlanEntry[];
+  const sysData = (await client.get("sys")) as SysData;
 
   const numPorts = linkData.nm.length;
   logger().info(`Connected: ${address} (${numPorts} ports detected)`);
@@ -417,12 +415,10 @@ export async function dumpConfig(
 ) {
   const client = new SwosClient(`http://${address}`, username, password);
 
-  const [linkData, fwdData, vlanData, sysData] = (await Promise.all([
-    client.get("link"),
-    client.get("fwd"),
-    client.get("vlan"),
-    client.get("sys"),
-  ])) as [LinkData, FwdData, VlanEntry[], SysData];
+  const linkData = (await client.get("link")) as LinkData;
+  const fwdData = (await client.get("fwd")) as FwdData;
+  const vlanData = (await client.get("vlan")) as VlanEntry[];
+  const sysData = (await client.get("sys")) as SysData;
 
   const numPorts = linkData.nm.length;
   const names = linkData.nm.map(hexDecode);
