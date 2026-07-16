@@ -74,7 +74,9 @@ $(eval $(call tool-from-npm,tsx,tsx))
 $(eval $(call tool-from-apt,wg,wireguard-tools))
 
 bws_arch := $(arch)
-ifeq ($(bws_arch),arm64)
+ifeq ($(bws_arch),amd64)
+	bws_arch := x86_64
+else ifeq ($(bws_arch),arm64)
 	bws_arch := aarch64
 endif
 bws_url := https://github.com/bitwarden/sdk-sm/releases/download/bws-v$(BWS_VERSION)/bws-$(bws_arch)-unknown-linux-gnu-$(BWS_VERSION).zip
