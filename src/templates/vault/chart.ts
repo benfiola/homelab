@@ -63,7 +63,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           name: "auth-proxy",
           ports: [
             {
-              containerPort: 8201,
+              containerPort: 8100,
               name: "auth-proxy",
             },
           ],
