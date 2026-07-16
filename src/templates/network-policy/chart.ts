@@ -540,7 +540,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   vault.to(kubeApiServer, tcp(6443)).to(vault, tcp(8200, 8201));
 
   // vault-push-secrets
-  vaultPushSecrets.to(dns("*.googleapis.com"), tcp(443)).to(vault, tcp(8200));
+  vaultPushSecrets
+    .to(dns("identity.bitwarden.com"), tcp(443))
+    .to(vault, tcp(8200));
 
   // vault-secrets-operator
   vaultSecretsOperator.to(kubeApiServer, tcp(6443)).to(vault, tcp(8200));
