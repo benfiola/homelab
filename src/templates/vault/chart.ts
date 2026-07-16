@@ -59,7 +59,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               value: "/vault/data/root-token",
             },
           ],
-          image: "ghcr.io/benfiola/homelab-images/vault-auth-proxy:1.0.1",
+          image: "ghcr.io/benfiola/homelab-images/vault-auth-proxy:1.0.2",
           name: "auth-proxy",
           ports: [
             {
