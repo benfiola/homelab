@@ -7,7 +7,7 @@ export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
     {
       chart: "oci://ghcr.io/benfiola/homelab-images/charts/vault-push-secrets",
-      version: "1.0.8",
+      version: "1.0.9",
     },
     dir,
   );
