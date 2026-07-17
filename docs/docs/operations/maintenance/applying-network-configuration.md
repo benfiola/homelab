@@ -18,7 +18,7 @@ Apply generated configuration to networking devices. Because these devices don't
 1. Copy the rendered script to the device:
 
    ```bash
-   scp network-config/[script].rsc [user]@[router-address]:/script.rsc:
+   scp network-config/[script].rsc admin@[router-address]:/script.rsc:
    ```
 
 2. SSH into the router and reset its configuration, applying the script immediately on reboot:
@@ -27,7 +27,7 @@ Apply generated configuration to networking devices. Because these devices don't
    /system/reset-configuration no-defaults=yes run-after-reset=script.rsc
    ```
 
-3. Once the router is back online, log in and set the router password.
+3. Once the router is back online, log in as `admin` and set the router password.
 
 ## SwitchOS
 
@@ -35,7 +35,11 @@ Apply generated configuration to networking devices. Because these devices don't
    - Hold the reset button while powering the switch on, keeping it held until it boots to factory defaults
    - If the switch's web UI is already reachable, trigger a reset from there
 
-2. Once the switch is back online at its default address with default credentials, apply the rendered configuration:
+   :::tip
+   After the reset, connect directly to one of the switch's ports, then manually configure your network interface with a static IP of `192.168.1.2`, subnet `255.255.255.0`, and gateway/DNS server `192.168.1.1`. The switch should then be reachable at `admin@192.168.1.1`.
+   :::
+
+2. Once the switch is back online at its default address (`192.168.1.1`) with default credentials (`admin`, no password), apply the rendered configuration:
 
    ```bash
    homelab apply-swos network-config/switch.core.yaml --address [switch-address]
@@ -55,11 +59,19 @@ Apply generated configuration to networking devices. Because these devices don't
 
    The device reboots into a default, unconfigured state.
 
+   :::tip
+   After the reset, connect directly to one of the access point's LAN ports. It will be reachable at `root@192.168.1.1` with no password.
+   :::
+
 2. Once back online, copy the rendered script onto it:
 
    ```bash
-   scp network-config/ap.[name].sh root@[ap-address]:
+   scp -O network-config/ap.[name].sh root@[ap-address]:
    ```
+
+   :::tip
+   The `-O` flag forces the legacy SCP protocol, which copies over SSH directly. OpenWrt devices don't ship with `sftp-server`, so a plain `scp` (which defaults to SFTP) fails.
+   :::
 
 3. SSH into the access point and run the script:
 
@@ -67,4 +79,10 @@ Apply generated configuration to networking devices. Because these devices don't
    sh ap.[name].sh
    ```
 
+   :::tip
+   After applying the configuration, you'll likely need to re-connect the device via it's WAN 1 port.
+   :::
+
 4. Navigate to the device's web UI and set the admin password.
+
+5. Reboot the device
