@@ -15,24 +15,23 @@ Apply generated configuration to networking devices. Because these devices don't
 
 ## RouterOS
 
-1. Copy the rendered script to the router:
+1. Copy the rendered script to the device:
 
    ```bash
-   scp network-config/router.rsc [user]@[router-address]:
+   scp network-config/[script].rsc [user]@[router-address]:/script.rsc:
    ```
 
 2. SSH into the router and reset its configuration, applying the script immediately on reboot:
 
    ```
-   /system/reset-configuration no-defaults=yes run-after-reset=router.rsc
+   /system/reset-configuration no-defaults=yes run-after-reset=script.rsc
    ```
 
-3. Once the router is back online, log in and set the router user password(s) to match `router.users` in `config/secrets-network.yaml`.
+3. Once the router is back online, log in and set the router password.
 
 ## SwitchOS
 
 1. Factory-reset the switch using one of:
-
    - Hold the reset button while powering the switch on, keeping it held until it boots to factory defaults
    - If the switch's web UI is already reachable, trigger a reset from there
 
@@ -51,7 +50,7 @@ Apply generated configuration to networking devices. Because these devices don't
 1. SSH into the access point and reset it to factory defaults:
 
    ```bash
-   firstboot
+   firstboot && reboot
    ```
 
    The device reboots into a default, unconfigured state.

@@ -171,13 +171,31 @@ only the identity.
 | `en` | bitmask | Enabled ports |
 | `an` | bitmask | Auto-negotiation enabled ports |
 | `nm` | string[] | Port names (hex-encoded, one per port) |
+| `fctc` | bitmask | TX flow control enabled ports (writable config) |
+| `fctr` | bitmask | RX flow control enabled ports (writable config) |
+| `sfpr` | number[] | SFP rate select, one entry per port (0/1). Only meaningful for the ports in the SFP range (see `sfp`/`sfpo`) |
+| `sfp` | number | Number of SFP ports (read-only) |
+| `sfpo` | number | 0-based index of the first SFP port (read-only) |
 | `lnk` | bitmask | Link up (read-only) |
+| `dpx` | bitmask | Full duplex, currently observed (read-only) |
+| `dpxc` | bitmask | Duplex config — only meaningful when `an` is off for that port (not exposed — unconfirmed semantics) |
+| `spd` | number[] | Speed, currently observed/negotiated, one entry per port (read-only) |
+| `spdc` | number[] | Forced speed config — only meaningful when `an` is off for that port (not exposed — unconfirmed encoding) |
+| `tfct` | bitmask | TX flow control currently active (read-only status, subset of `lnk`) |
+| `rfct` | bitmask | RX flow control currently active (read-only status, subset of `lnk`) |
 | `prt` | number | Total port count (read-only) |
 
-**POST** (send all three together):
+`fctc`/`fctr` are the two independent per-port checkboxes shown in the SwOS UI
+("TX Flow Control" / "RX Flow Control"); `tfct`/`rfct` are the read-only
+column showing what's actually negotiated and are never written.
+
+**POST** (send all writable fields together — `en`, `an`, `nm`, `fctc`, `fctr`,
+`sfpr`, plus `dpxc`/`spdc` echoed back verbatim since their semantics are
+unconfirmed; omitting a writable field risks it being silently reset, as
+`vlan.b` does for `igmp`/`piso`/`lrn`/`mrr`):
 
 ```
-{en:0x01ff,an:0x01ff,nm:['506f727431','506f727432',...]}
+{en:0x01ff,an:0x01ff,nm:['506f727431','506f727432',...],fctc:0x01ff,fctr:0x0000,sfpr:[0x00,...,0x01,0x01],dpxc:0x01ff,spdc:[0x00,...]}
 ```
 
 ---
@@ -231,16 +249,21 @@ to change (`fvid` is a scalar, not an array):
 | `vid` | number | VLAN ID (1–4094) |
 | `mbr` | bitmask | Member ports |
 | `nm` | hex-string | VLAN name |
-| `igmp` | number | IGMP snooping (0=off) |
-| `piso` | number | Port isolation |
-| `lrn` | number | MAC learning |
-| `mrr` | number | Mirroring |
+| `igmp` | number | IGMP snooping: 0=off, 1=on — single toggle for the whole VLAN, **not** per-port |
+| `piso` | number | Port isolation: 0=off, 1=on — single toggle for the whole VLAN, **not** per-port |
+| `lrn` | number | MAC learning: 0=off, 1=on — single toggle for the whole VLAN, **not** per-port |
+| `mrr` | number | Mirroring: 0=off, 1=on — single toggle for the whole VLAN, **not** per-port |
 
-**POST**: send the complete desired VLAN table as an array. The switch replaces
-its VLAN table entirely — omitting a VLAN removes it.
+Confirmed by comparing a live dump across VLANs with differing `mbr` values:
+`igmp`/`piso`/`lrn`/`mrr` stayed identical regardless of membership, ruling out
+a per-port bitmask.
+
+**POST**: send the complete desired VLAN table as an array, including all
+seven fields per entry. The switch replaces its VLAN table entirely — omitting
+a VLAN removes it.
 
 ```
-[{vid:0x08,mbr:0x02000000,nm:'7573657273',igmp:0x00},{...}]
+[{vid:0x08,mbr:0x02000000,nm:'7573657273',igmp:0x00,piso:0x01,lrn:0x01,mrr:0x00},{...}]
 ```
 
 ---
@@ -261,11 +284,11 @@ its VLAN table entirely — omitting a VLAN removes it.
 
 ```
 GET /link.b
-← {en:0x03ffff,an:0x03ffff,nm:['506f727431','506f727432',...],lnk:0x03ffff,prt:0x12}
+← {en:0x03ffff,an:0x03ffff,nm:['506f727431','506f727432',...],fctc:0x03ffff,fctr:0x00,sfpr:[...],lnk:0x03ffff,prt:0x12}
 
 # "Port1" = 0x506f727431, change to "uplink" = 0x75706c696e6b
 POST /link.b
-→ {en:0x03ffff,an:0x03ffff,nm:['75706c696e6b','506f727432',...]}
+→ {en:0x03ffff,an:0x03ffff,nm:['75706c696e6b','506f727432',...],fctc:0x03ffff,fctr:0x00,sfpr:[...]}
 ```
 
 ---
@@ -308,11 +331,18 @@ must be managed outside this tool (DHCP reservation or web UI).
 `aci` restricts which source IPs are allowed to manage the switch. Structure
 unknown without live testing.
 
-### `link.b` — Auto-negotiation (`an`)
+### `link.b` — Forced speed/duplex (`spdc`, `dpxc`)
 
-`an` is a bitmask of ports with auto-negotiation enabled. It is currently read
-and round-tripped unchanged on every `link.b` POST but is not exposed as a
-per-port config option. Straightforward to add: same bitmask pattern as `en`.
+In the SwOS UI, turning off auto-negotiation (`an`) for a port unlocks manual
+"Speed" and "Full Duplex" selectors. These almost certainly write to `spdc`
+and `dpxc` respectively (paired with the read-only observed `spd`/`dpx`), but
+every port on the switch used to reverse-engineer this API has `an` enabled,
+so there's no live sample of what `spdc`/`dpxc` look like with a specific
+speed/duplex forced — the exact enum/bit values are unconfirmed. Both fields
+are read and round-tripped unchanged on every `link.b` POST but not exposed
+as config options. To implement: on a test port, disable auto-negotiation and
+try each speed/duplex combination in the UI, diffing `link.b` before/after
+each change.
 
 ### `fwd.b` — Force VLAN ID (`fvid`)
 
@@ -320,17 +350,6 @@ per-port config option. Straightforward to add: same bitmask pattern as `en`.
 are unconfirmed and it's not exposed in the config schema; `swos.ts` treats
 it as opaque (`unknown`), reading whatever the switch returns and echoing it
 back verbatim on `fwd.b` POST without assuming any shape.
-
-### `vlan.b` — Per-VLAN advanced fields
-
-The following fields appear in each VLAN entry but are hardcoded or ignored:
-
-| Field | Description | Current behaviour |
-|---|---|---|
-| `igmp` | IGMP snooping (0=off) | Always written as `0` |
-| `piso` | Port isolation | Not read or written |
-| `lrn` | MAC address learning | Not read or written |
-| `mrr` | Port mirroring | Not read or written |
 
 ### `lag.b` — Link aggregation (LACP)
 

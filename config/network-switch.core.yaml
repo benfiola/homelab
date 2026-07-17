@@ -4,6 +4,10 @@ ports:
   - index: 1
     name: hue-bridge
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -12,6 +16,10 @@ ports:
   - index: 2
     name: br1-1
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -20,6 +28,10 @@ ports:
   - index: 3
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -28,6 +40,10 @@ ports:
   - index: 4
     name: br1-2
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -36,6 +52,10 @@ ports:
   - index: 5
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -44,6 +64,10 @@ ports:
   - index: 6
     name: br2-1
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: tagged
@@ -52,6 +76,10 @@ ports:
   - index: 7
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -60,6 +88,10 @@ ports:
   - index: 8
     name: br2-2
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -68,6 +100,10 @@ ports:
   - index: 9
     name: cameras.switch
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -76,6 +112,10 @@ ports:
   - index: 10
     name: lr-1
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: tagged
@@ -84,6 +124,10 @@ ports:
   - index: 11
     name: office.ap
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: tagged
@@ -92,6 +136,10 @@ ports:
   - index: 12
     name: lr-2
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -100,6 +148,10 @@ ports:
   - index: 13
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -108,6 +160,10 @@ ports:
   - index: 14
     name: o-1
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -116,6 +172,10 @@ ports:
   - index: 15
     name: rescue
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -124,6 +184,10 @@ ports:
   - index: 16
     name: o-2
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
@@ -132,6 +196,11 @@ ports:
   - index: 17
     name: router
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
+    sfpRateSelect: true
     vlan:
       mode: strict
       receive: tagged
@@ -140,6 +209,11 @@ ports:
   - index: 18
     name: cluster.switch
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
+    sfpRateSelect: true
     vlan:
       mode: strict
       receive: tagged
@@ -147,13 +221,17 @@ ports:
       forceVlanId: false
 vlans:
   - id: 8
-    name: users
+    name: family
     members:
       - 6
       - 10
       - 11
       - 17
       - 18
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 16
     name: personal
     members:
@@ -162,6 +240,10 @@ vlans:
       - 11
       - 17
       - 18
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 24
     name: iot
     members:
@@ -171,6 +253,10 @@ vlans:
       - 11
       - 17
       - 18
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 32
     name: infrastructure
     members:
@@ -179,6 +265,10 @@ vlans:
       - 11
       - 17
       - 18
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 40
     name: friends
     members:
@@ -187,6 +277,10 @@ vlans:
       - 11
       - 17
       - 18
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 88
     name: management
     members:
@@ -196,3 +290,7 @@ vlans:
       - 15
       - 17
       - 18
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false

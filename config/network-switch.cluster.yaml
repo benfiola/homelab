@@ -4,148 +4,260 @@ ports:
   - index: 1
     name: node-a.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 2
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 3
     name: node-b.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 4
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 5
     name: node-c.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 6
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 7
     name: node-d.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 8
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 9
     name: node-e.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 10
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 11
     name: node-f.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 12
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 13
     name: node-g.cluster
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 32
+      forceVlanId: false
   - index: 14
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 15
     name: rescue
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 88
+      forceVlanId: true
   - index: 16
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
   - index: 17
     name: router
     enabled: true
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
+    sfpRateSelect: true
     vlan:
       mode: strict
       receive: tagged
       defaultVlanId: 1
+      forceVlanId: false
   - index: 18
     name: ""
     enabled: false
+    autoNegotiation: true
+    flowControl:
+      tx: true
+      rx: false
+    sfpRateSelect: true
     vlan:
       mode: strict
       receive: untagged
       defaultVlanId: 8
+      forceVlanId: false
 vlans:
   - id: 8
-    name: family
+    name: users
     members:
       - 17
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 16
     name: personal
     members:
       - 17
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 24
     name: iot
     members:
       - 17
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 32
     name: infrastructure
     members:
       - 17
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false
   - id: 88
     name: management
     members:
       - 15
       - 17
+    portIsolation: true
+    learning: true
+    mirror: false
+    igmpSnooping: false

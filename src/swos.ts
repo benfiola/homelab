@@ -54,6 +54,28 @@ function fromMask(mask: number, totalPorts: number): number[] {
 }
 
 /**
+ * Set/clear bit `i` in `mask` to match `desired`, logging the change. Returns
+ * `mask` unchanged if `desired` is undefined or already matches.
+ */
+function applyBit(
+  mask: number,
+  i: number,
+  desired: boolean | undefined,
+  label: string,
+): number {
+  if (desired === undefined) return mask;
+  const cur = !!(mask & (1 << i));
+  if (cur === desired) return mask;
+  logger().info(`  ${label}: ${cur} → ${desired}`);
+  return desired ? mask | (1 << i) : mask & ~(1 << i);
+}
+
+/** Resolve a VLAN-level flag: explicit config value if set, else the existing switch value. */
+function resolveFlag(desired: boolean | undefined, fallback: number): number {
+  return desired !== undefined ? (desired ? 1 : 0) : fallback;
+}
+
+/**
  * Format a value for the SwOS POST body.
  * - number  → even-length hex: 0x01ff
  * - string  → hex-encoded, single-quoted: '506f727431'
@@ -121,58 +143,89 @@ class SwosClient {
 
 // ── Config Schema ─────────────────────────────────────────────────────────────
 
-const portConfigSchema = zod.object({
-  /** 1-based port index */
-  index: zod.number().int().min(1),
-  name: zod.string().optional(),
-  enabled: zod.boolean().optional(),
-  vlan: zod
-    .object({
-      /**
-       * disabled: ignore all VLAN tags
-       * optional: use VLAN if tag present, else default
-       * enabled:  require a VLAN match
-       * strict:   drop frames not matching any VLAN
-       */
-      mode: zod
-        .enum(["disabled", "optional", "enabled", "strict"])
-        .optional(),
-      /**
-       * 802.1Q acceptable frame types for this port's ingress filter:
-       * any: accept tagged and untagged frames
-       * tagged: accept only VLAN-tagged frames (trunk ports)
-       * untagged: accept only untagged frames (access ports)
-       */
-      receive: zod.enum(["any", "tagged", "untagged"]).optional(),
-      /** VLAN ID assigned to untagged ingress frames */
-      defaultVlanId: zod.number().int().min(1).max(4094).optional(),
-      /**
-       * Force all traffic on this port onto defaultVlanId, bypassing VLAN
-       * table matching entirely (e.g. useful for a rescue/recovery port).
-       */
-      forceVlanId: zod.boolean().optional(),
-    })
-    .optional(),
-});
+// .strict() everywhere below: an unrecognized key is almost always either a
+// typo or a feature swos.ts doesn't implement (e.g. speed/duplex, cip, aci,
+// lag, snmp) — fail loudly rather than silently ignoring it.
 
-const vlanConfigSchema = zod.object({
-  id: zod.number().int().min(1).max(4094),
-  name: zod.string().default(""),
-  /** 1-based port indices that are members of this VLAN */
-  members: zod.array(zod.number().int().min(1)),
-});
+const portConfigSchema = zod
+  .object({
+    /** 1-based port index */
+    index: zod.number().int().min(1),
+    name: zod.string().optional(),
+    enabled: zod.boolean().optional(),
+    autoNegotiation: zod.boolean().optional(),
+    flowControl: zod
+      .object({
+        tx: zod.boolean().optional(),
+        rx: zod.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+    /** SFP rate select — only applicable to SFP ports (see sys/link SFP range) */
+    sfpRateSelect: zod.boolean().optional(),
+    vlan: zod
+      .object({
+        /**
+         * disabled: ignore all VLAN tags
+         * optional: use VLAN if tag present, else default
+         * enabled:  require a VLAN match
+         * strict:   drop frames not matching any VLAN
+         */
+        mode: zod
+          .enum(["disabled", "optional", "enabled", "strict"])
+          .optional(),
+        /**
+         * 802.1Q acceptable frame types for this port's ingress filter:
+         * any: accept tagged and untagged frames
+         * tagged: accept only VLAN-tagged frames (trunk ports)
+         * untagged: accept only untagged frames (access ports)
+         */
+        receive: zod.enum(["any", "tagged", "untagged"]).optional(),
+        /** VLAN ID assigned to untagged ingress frames */
+        defaultVlanId: zod.number().int().min(1).max(4094).optional(),
+        /**
+         * Force all traffic on this port onto defaultVlanId, bypassing VLAN
+         * table matching entirely (e.g. useful for a rescue/recovery port).
+         */
+        forceVlanId: zod.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
-const configSchema = zod.object({
-  system: zod
-    .object({
-      identity: zod.string().optional(),
-    })
-    .optional(),
-  ports: zod.array(portConfigSchema).optional(),
-  vlans: zod.array(vlanConfigSchema).optional(),
-});
+const vlanConfigSchema = zod
+  .object({
+    id: zod.number().int().min(1).max(4094),
+    name: zod.string().default(""),
+    /** 1-based port indices that are members of this VLAN */
+    members: zod.array(zod.number().int().min(1)),
+    /** Isolate member ports of this VLAN from each other */
+    portIsolation: zod.boolean().optional(),
+    /** MAC address learning enabled for this VLAN */
+    learning: zod.boolean().optional(),
+    /** Mirror this VLAN's traffic to the configured mirror-to port */
+    mirror: zod.boolean().optional(),
+    /** IGMP snooping enabled for this VLAN */
+    igmpSnooping: zod.boolean().optional(),
+  })
+  .strict();
+
+const configSchema = zod
+  .object({
+    system: zod
+      .object({
+        identity: zod.string().optional(),
+      })
+      .strict()
+      .optional(),
+    ports: zod.array(portConfigSchema).optional(),
+    vlans: zod.array(vlanConfigSchema).optional(),
+  })
+  .strict();
 
 type Config = zod.infer<typeof configSchema>;
+type PortConfig = zod.infer<typeof portConfigSchema>;
 
 // ── VLAN mode index mapping ───────────────────────────────────────────────────
 
@@ -188,7 +241,30 @@ type ReceiveMode = (typeof RECEIVE_MODES)[number];
 type LinkData = {
   nm: string[];
   en: number;
+  /** Auto-negotiation enabled, per-port bitmask */
   an: number;
+  /** TX flow control enabled, per-port bitmask */
+  fctc: number;
+  /** RX flow control enabled, per-port bitmask */
+  fctr: number;
+  /** SFP rate select, one entry per port (only meaningful for SFP ports) */
+  sfpr: number[];
+  /** Number of SFP ports */
+  sfp: number;
+  /** 0-based index of the first SFP port */
+  sfpo: number;
+  /**
+   * Forced duplex config, per-port bitmask — only meaningful when `an` is off
+   * for that port. Semantics unconfirmed; read and preserved verbatim on
+   * every POST, never interpreted.
+   */
+  dpxc: number;
+  /**
+   * Forced speed config, one entry per port — only meaningful when `an` is
+   * off for that port. Semantics unconfirmed; read and preserved verbatim on
+   * every POST, never interpreted.
+   */
+  spdc: number[];
 };
 
 type FwdData = {
@@ -203,13 +279,100 @@ type VlanEntry = {
   vid: number;
   mbr: number;
   nm: string;
+  /** IGMP snooping: 0=off, 1=on (single toggle for the whole VLAN, not per-port) */
   igmp: number;
+  /** Port isolation: 0=off, 1=on (single toggle for the whole VLAN, not per-port) */
+  piso: number;
+  /** MAC address learning: 0=off, 1=on (single toggle for the whole VLAN, not per-port) */
+  lrn: number;
+  /** Mirroring: 0=off, 1=on (single toggle for the whole VLAN, not per-port) */
+  mrr: number;
 };
 
 type SysData = {
   id: string;
   [key: string]: unknown;
 };
+
+/** Applies port names, enabled state, auto-negotiation, flow control, and SFP rate select. */
+async function applyPortLinkSettings(
+  client: SwosClient,
+  ports: PortConfig[] | undefined,
+  linkData: LinkData,
+  numPorts: number,
+  dryRun: boolean,
+): Promise<void> {
+  if (!ports) return;
+
+  const names = linkData.nm.map(hexDecode);
+  const newNames = [...names];
+  let newEnabled = linkData.en;
+  let newAn = linkData.an;
+  let newFctc = linkData.fctc;
+  let newFctr = linkData.fctr;
+  const newSfpr = [...linkData.sfpr];
+  let linkChanged = false;
+
+  const isSfpPort = (i: number) =>
+    i >= linkData.sfpo && i < linkData.sfpo + linkData.sfp;
+
+  for (const p of ports) {
+    const i = p.index - 1;
+    if (i >= numPorts)
+      throw new Error(`Port index ${p.index} exceeds switch port count ${numPorts}`);
+
+    if (p.name !== undefined && newNames[i] !== p.name) {
+      logger().info(`  port[${p.index}].name: "${newNames[i]}" → "${p.name}"`);
+      newNames[i] = p.name;
+      linkChanged = true;
+    }
+
+    const prevEnabled = newEnabled;
+    newEnabled = applyBit(newEnabled, i, p.enabled, `port[${p.index}].enabled`);
+    if (newEnabled !== prevEnabled) linkChanged = true;
+
+    const prevAn = newAn;
+    newAn = applyBit(newAn, i, p.autoNegotiation, `port[${p.index}].autoNegotiation`);
+    if (newAn !== prevAn) linkChanged = true;
+
+    const prevFctc = newFctc;
+    newFctc = applyBit(newFctc, i, p.flowControl?.tx, `port[${p.index}].flowControl.tx`);
+    if (newFctc !== prevFctc) linkChanged = true;
+
+    const prevFctr = newFctr;
+    newFctr = applyBit(newFctr, i, p.flowControl?.rx, `port[${p.index}].flowControl.rx`);
+    if (newFctr !== prevFctr) linkChanged = true;
+
+    if (p.sfpRateSelect !== undefined) {
+      if (!isSfpPort(i))
+        throw new Error(
+          `Port index ${p.index} is not an SFP port — sfpRateSelect only applies to SFP ports`,
+        );
+      const cur = !!newSfpr[i];
+      if (cur !== p.sfpRateSelect) {
+        logger().info(
+          `  port[${p.index}].sfpRateSelect: ${cur} → ${p.sfpRateSelect}`,
+        );
+        newSfpr[i] = p.sfpRateSelect ? 1 : 0;
+        linkChanged = true;
+      }
+    }
+  }
+
+  if (linkChanged && !dryRun) {
+    await client.post("link", {
+      en: newEnabled,
+      an: newAn,
+      nm: newNames,
+      fctc: newFctc,
+      fctr: newFctr,
+      sfpr: newSfpr,
+      // Unconfirmed semantics — echoed back verbatim so we never touch them.
+      dpxc: linkData.dpxc,
+      spdc: linkData.spdc,
+    });
+  }
+}
 
 export async function applyConfig(
   configPath: string,
@@ -244,44 +407,8 @@ export async function applyConfig(
     }
   }
 
-  // ── Port names + enabled ────────────────────────────────────────────────────
-  if (config.ports) {
-    const names = linkData.nm.map(hexDecode);
-    let newNames = [...names];
-    let newEnabled = linkData.en;
-    let linkChanged = false;
-
-    for (const p of config.ports) {
-      const i = p.index - 1;
-      if (i >= numPorts)
-        throw new Error(`Port index ${p.index} exceeds switch port count ${numPorts}`);
-
-      if (p.name !== undefined && newNames[i] !== p.name) {
-        logger().info(`  port[${p.index}].name: "${newNames[i]}" → "${p.name}"`);
-        newNames[i] = p.name;
-        linkChanged = true;
-      }
-
-      if (p.enabled !== undefined) {
-        const cur = !!(linkData.en & (1 << i));
-        if (cur !== p.enabled) {
-          logger().info(`  port[${p.index}].enabled: ${cur} → ${p.enabled}`);
-          newEnabled = p.enabled
-            ? newEnabled | (1 << i)
-            : newEnabled & ~(1 << i);
-          linkChanged = true;
-        }
-      }
-    }
-
-    if (linkChanged && !dryRun) {
-      await client.post("link", {
-        en: newEnabled,
-        an: linkData.an,
-        nm: newNames,
-      });
-    }
-  }
+  // ── Port names, enabled, auto-negotiation, flow control, SFP rate ───────────
+  await applyPortLinkSettings(client, config.ports, linkData, numPorts, dryRun);
 
   // ── Per-port VLAN settings ──────────────────────────────────────────────────
   if (config.ports?.some((p) => p.vlan)) {
@@ -328,16 +455,9 @@ export async function applyConfig(
         fwdChanged = true;
       }
 
-      if (p.vlan.forceVlanId !== undefined) {
-        const cur = !!(fvid & (1 << i));
-        if (cur !== p.vlan.forceVlanId) {
-          logger().info(
-            `  port[${p.index}].vlan.forceVlanId: ${cur} → ${p.vlan.forceVlanId}`,
-          );
-          fvid = p.vlan.forceVlanId ? fvid | (1 << i) : fvid & ~(1 << i);
-          fwdChanged = true;
-        }
-      }
+      const prevFvid = fvid;
+      fvid = applyBit(fvid, i, p.vlan.forceVlanId, `port[${p.index}].vlan.forceVlanId`);
+      if (fvid !== prevFvid) fwdChanged = true;
     }
 
     if (fwdChanged && !dryRun) {
@@ -352,12 +472,18 @@ export async function applyConfig(
 
   // ── VLAN table ──────────────────────────────────────────────────────────────
   if (config.vlans) {
-    const desiredVlans = config.vlans.map((v) => ({
-      vid: v.id,
-      mbr: toMask(v.members),
-      nm: v.name,
-      igmp: 0,
-    }));
+    const desiredVlans = config.vlans.map((v) => {
+      const existing = vlanData.find((e) => e.vid === v.id);
+      return {
+        vid: v.id,
+        mbr: toMask(v.members),
+        nm: v.name,
+        igmp: resolveFlag(v.igmpSnooping, existing?.igmp ?? 0),
+        piso: resolveFlag(v.portIsolation, existing?.piso ?? 0),
+        lrn: resolveFlag(v.learning, existing?.lrn ?? 1),
+        mrr: resolveFlag(v.mirror, existing?.mrr ?? 0),
+      };
+    });
 
     // Normalize both sides for comparison
     const normalize = (vs: typeof desiredVlans) =>
@@ -369,6 +495,9 @@ export async function applyConfig(
         mbr: v.mbr,
         nm: hexDecode(v.nm),
         igmp: v.igmp,
+        piso: v.piso,
+        lrn: v.lrn,
+        mrr: v.mrr,
       })),
     );
     const desiredNorm = normalize(desiredVlans);
@@ -397,6 +526,9 @@ export async function applyConfig(
             mbr: v.mbr,
             nm: v.nm,
             igmp: v.igmp,
+            piso: v.piso,
+            lrn: v.lrn,
+            mrr: v.mrr,
           })),
         );
       }
@@ -432,6 +564,14 @@ export async function dumpConfig(
       index: i + 1,
       name: names[i],
       enabled: !!(linkData.en & (1 << i)),
+      autoNegotiation: !!(linkData.an & (1 << i)),
+      flowControl: {
+        tx: !!(linkData.fctc & (1 << i)),
+        rx: !!(linkData.fctr & (1 << i)),
+      },
+      ...(i >= linkData.sfpo && i < linkData.sfpo + linkData.sfp
+        ? { sfpRateSelect: !!linkData.sfpr[i] }
+        : {}),
       vlan: {
         mode: VLAN_MODES[fwdData.vlan[i]] ?? "optional",
         receive: RECEIVE_MODES[fwdData.vlni[i]] ?? "untagged",
@@ -445,6 +585,10 @@ export async function dumpConfig(
         id: v.vid,
         name: hexDecode(v.nm),
         members: fromMask(v.mbr, numPorts),
+        portIsolation: !!v.piso,
+        learning: !!v.lrn,
+        mirror: !!v.mrr,
+        igmpSnooping: !!v.igmp,
       }))
       .sort((a, b) => a.id - b.id),
   };
