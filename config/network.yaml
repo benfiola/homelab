@@ -33,7 +33,8 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.infrastructure.public}"
       port: 13233
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.32.0/23
+        - 192.168.88.1/32
 
   - file: wireguard.bfiola-desktop-management.conf
     template: network-wireguard.conf
@@ -43,7 +44,7 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.management.public}"
       port: 13234
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.88.0/24
 
   - file: wireguard.bfiola-home-laptop-personal.conf
     template: network-wireguard.conf
@@ -53,7 +54,10 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.personal.public}"
       port: 13232
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.33.2/32
+        - 192.168.33.3/32
+        - 192.168.33.7/32
+        - 192.168.88.1/32
 
   - file: wireguard.bfiola-home-laptop-infrastructure.conf
     template: network-wireguard.conf
@@ -63,7 +67,8 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.infrastructure.public}"
       port: 13233
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.32.0/23
+        - 192.168.88.1/32
 
   - file: wireguard.bfiola-home-laptop-management.conf
     template: network-wireguard.conf
@@ -73,7 +78,7 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.management.public}"
       port: 13234
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.88.0/24
 
   - file: wireguard.bfiola-iphone.conf
     template: network-wireguard.conf
@@ -83,7 +88,10 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.personal.public}"
       port: 13232
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.33.2/32
+        - 192.168.33.3/32
+        - 192.168.33.7/32
+        - 192.168.88.1/32
 
   - file: wireguard.bfiola-work-laptop-personal.conf
     template: network-wireguard.conf
@@ -93,7 +101,10 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.personal.public}"
       port: 13232
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.33.2/32
+        - 192.168.33.3/32
+        - 192.168.33.7/32
+        - 192.168.88.1/32
 
   - file: wireguard.bfiola-work-laptop-infrastructure.conf
     template: network-wireguard.conf
@@ -103,7 +114,8 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.infrastructure.public}"
       port: 13233
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.32.0/23
+        - 192.168.88.1/32
 
   - file: wireguard.bfiola-work-laptop-management.conf
     template: network-wireguard.conf
@@ -113,7 +125,7 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.management.public}"
       port: 13234
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.88.0/24
 
   - file: wireguard.jfiola-iphone.conf
     template: network-wireguard.conf
@@ -123,7 +135,9 @@ outputs:
       publicKey: "${secrets.wireguard.interfaces.family.public}"
       port: 13231
       allowedIps:
-        - 192.168.0.0/16
+        - 192.168.33.2/32
+        - 192.168.33.7/32
+        - 192.168.88.1/32
 
   - file: wireguard.ph.conf
     template: network-wireguard.conf
