@@ -260,7 +260,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: "/config",
     },
   });
-  addWaitForDataInitContainer(radarr);
+  addWaitForDataInitContainer(radarr4k);
   radarr4k.createService({ web: 7878 });
 
   const prowlarr = new StatefulSet(chart, "prowlarr", {
