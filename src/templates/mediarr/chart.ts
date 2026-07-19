@@ -46,7 +46,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "wait-for-data-init.sh",
     "notify-vpn-forwarding-port.sh",
     "prepare-install-jellyfin-theme.sh",
-    "gluetun-iptables-post-rules.txt",
   ];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: Object.fromEntries(
@@ -101,12 +100,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   ) => {
     workload.addVolume("gt-tun", { hostPath: { path: "/dev/net/tun" } });
     workload.addVolume("gt-state", { emptyDir: {} });
-    workload.addVolume("gt-iptables", {
-      configMap: scripts.name,
-      items: [
-        { key: "gluetun-iptables-post-rules.txt", path: "post-rules.txt" },
-      ],
-    });
 
     const env: WorkloadEnv = {
       DNS_UPSTREAM_RESOLVER_TYPE: "plain",
@@ -128,12 +121,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
           key: "vpn-wireguard-private-key",
         },
       },
+      UP_COMMAND: "ip route change default dev tun0 advmss 1300 table 51820",
     };
 
     const volumeMounts: Record<string, string> = {
       "gt-tun": "/dev/net/tun",
       "gt-state": "/tmp/gluetun",
-      "gt-iptables": "/iptables",
     };
 
     if (opts.portForwarding) {
