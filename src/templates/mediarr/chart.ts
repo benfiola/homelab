@@ -58,6 +58,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
     ),
   });
 
+  const gluetunPostRules = new ConfigMap(chart, `${id}-gluetun-post-rules`, {
+    data: {
+      "post-rules.txt": "iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu",
+    },
+  });
+
   const toolbox = "ghcr.io/benfiola/homelab-images/toolbox:1.1.0";
   const sonarrImage = "lscr.io/linuxserver/sonarr:4.0.19";
   const radarrImage = "lscr.io/linuxserver/radarr:6.2.1";
@@ -100,6 +106,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   ) => {
     workload.addVolume("gt-tun", { hostPath: { path: "/dev/net/tun" } });
     workload.addVolume("gt-state", { emptyDir: {} });
+    workload.addVolume("gt-post-rules", { configMap: gluetunPostRules.name });
 
     const env: WorkloadEnv = {
       DNS_UPSTREAM_RESOLVER_TYPE: "plain",
@@ -125,6 +132,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     const volumeMounts: Record<string, string> = {
       "gt-tun": "/dev/net/tun",
       "gt-state": "/tmp/gluetun",
+      "gt-post-rules": "/iptables",
     };
 
     if (opts.portForwarding) {
