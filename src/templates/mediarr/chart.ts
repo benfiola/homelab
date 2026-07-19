@@ -46,6 +46,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "wait-for-data-init.sh",
     "notify-vpn-forwarding-port.sh",
     "prepare-install-jellyfin-theme.sh",
+    "gluetun-iptables-post-rules.txt",
   ];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: Object.fromEntries(
@@ -56,12 +57,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
         ]),
       ),
     ),
-  });
-
-  const gluetunPostRules = new ConfigMap(chart, `${id}-gluetun-post-rules`, {
-    data: {
-      "post-rules.txt": "iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu",
-    },
   });
 
   const toolbox = "ghcr.io/benfiola/homelab-images/toolbox:1.1.0";
@@ -106,7 +101,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
   ) => {
     workload.addVolume("gt-tun", { hostPath: { path: "/dev/net/tun" } });
     workload.addVolume("gt-state", { emptyDir: {} });
-    workload.addVolume("gt-post-rules", { configMap: gluetunPostRules.name });
+    workload.addVolume("gt-iptables", {
+      configMap: scripts.name,
+      items: [
+        { key: "gluetun-iptables-post-rules.txt", path: "post-rules.txt" },
+      ],
+    });
 
     const env: WorkloadEnv = {
       DNS_UPSTREAM_RESOLVER_TYPE: "plain",
@@ -121,6 +121,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       TZ: "America/Los_Angeles",
       VPN_SERVICE_PROVIDER: "protonvpn",
       VPN_TYPE: "wireguard",
+      WIREGUARD_MTU: "1360",
       WIREGUARD_PRIVATE_KEY: {
         secretKeyRef: {
           name: vaultSecret.name,
@@ -132,7 +133,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     const volumeMounts: Record<string, string> = {
       "gt-tun": "/dev/net/tun",
       "gt-state": "/tmp/gluetun",
-      "gt-post-rules": "/iptables",
+      "gt-iptables": "/iptables",
     };
 
     if (opts.portForwarding) {
