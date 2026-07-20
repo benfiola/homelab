@@ -878,8 +878,8 @@ type VolumeItem = { key: string; path?: string };
 export type WorkloadVolumes = Record<
   string,
   | { pvc: { size: string; storageClass: string } | { name: string } }
-  | { configMap: string; items?: VolumeItem[] }
-  | { secret: string; items?: VolumeItem[] }
+  | { configMap: string; items?: VolumeItem[]; defaultMode?: number }
+  | { secret: string; items?: VolumeItem[]; defaultMode?: number }
   | { emptyDir: { medium?: "Memory"; sizeLimit?: string } }
   | { hostPath: { path: string; type?: string } }
 >;
@@ -1030,6 +1030,7 @@ function volumesToInlineVolumes(
           configMap: {
             name: v.configMap,
             items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })),
+            ...(v.defaultMode !== undefined && { defaultMode: v.defaultMode }),
           },
         };
       if ("secret" in v)
@@ -1038,6 +1039,7 @@ function volumesToInlineVolumes(
           secret: {
             secretName: v.secret,
             items: v.items?.map((i) => ({ key: i.key, path: i.path ?? i.key })),
+            ...(v.defaultMode !== undefined && { defaultMode: v.defaultMode }),
           },
         };
       if ("pvc" in v && !isPvcTemplate(v.pvc))

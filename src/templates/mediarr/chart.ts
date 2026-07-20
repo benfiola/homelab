@@ -155,7 +155,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
+      scripts: { configMap: scripts.name, defaultMode: 0o755 },
     },
   });
   sonarr.addContainer("sonarr", sonarrImage, {
@@ -187,7 +187,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
+      scripts: { configMap: scripts.name, defaultMode: 0o755 },
     },
   });
   sonarr4k.addContainer("sonarr", sonarrImage, {
@@ -219,7 +219,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
+      scripts: { configMap: scripts.name, defaultMode: 0o755 },
     },
   });
   radarr.addContainer("radarr", radarrImage, {
@@ -251,7 +251,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name },
+      scripts: { configMap: scripts.name, defaultMode: 0o755 },
     },
   });
   radarr4k.addContainer("radarr", radarrImage, {
