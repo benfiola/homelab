@@ -191,11 +191,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const mediarrProwlarr = svc("mediarr-prowlarr", pod("prowlarr", "mediarr"));
   const mediarrRadarr = svc("mediarr-radarr", pod("radarr", "mediarr"));
-  const mediarrRadarr4k = svc("mediarr-radarr-4k", pod("radarr-4k", "mediarr"));
   const mediarrSabnzbd = svc("mediarr-sabnzbd", pod("sabnzbd", "mediarr"));
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
-  const mediarrSonarr4k = svc("mediarr-sonarr-4k", pod("sonarr-4k", "mediarr"));
 
   const piraeusOperator = svc(
     "piraeus-operator",
@@ -427,27 +425,21 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("raw.githubusercontent.com"), tcp(443));
   mediarrProfilarr
     .to(mediarrRadarr, tcp(7878))
-    .to(mediarrRadarr4k, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    .to(mediarrSonarr4k, tcp(8989))
     .to(dns("github.com"), tcp(443))
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
   mediarrMaintainerr
     .to(mediarrRadarr, tcp(7878))
-    .to(mediarrRadarr4k, tcp(7878))
     .to(mediarrSeerr, tcp(5055))
     .to(mediarrSonarr, tcp(8989))
-    .to(mediarrSonarr4k, tcp(8989))
     .to(mediarrJellyfin, tcp(8096))
     .to(dns("api.themoviedb.org"), tcp(443));
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
-    .to(mediarrRadarr4k, tcp(7878))
     .to(mediarrSabnzbd, tcp(8080))
     .to(mediarrSonarr, tcp(8989))
-    .to(mediarrSonarr4k, tcp(8989))
     // needs access to all indexers
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrRadarr
@@ -455,17 +447,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  mediarrRadarr4k
-    .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrSabnzbd, tcp(8080))
-    // needs access to usenet indexers and metadata endpoints
-    .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrRadarr, tcp(7878))
-    .to(mediarrRadarr4k, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
-    .to(mediarrSonarr4k, tcp(8989))
     .to(dns("api.themoviedb.org"), tcp(443))
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
@@ -473,11 +458,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     // rotten tomatoes ratings
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
   mediarrSonarr
-    .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrSabnzbd, tcp(8080))
-    // needs access to usenet indexers and metadata endpoints
-    .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  mediarrSonarr4k
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints

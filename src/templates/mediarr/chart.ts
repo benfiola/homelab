@@ -42,7 +42,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const scriptFiles = [
-    "add-jellyfin-tags.sh",
     "init-data.sh",
     "wait-for-data-init.sh",
     "notify-vpn-forwarding-port.sh",
@@ -60,8 +59,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const toolbox = "ghcr.io/benfiola/homelab-images/toolbox:1.1.0";
-  const sonarrImage = "lscr.io/linuxserver/sonarr:4.0.19";
-  const radarrImage = "lscr.io/linuxserver/radarr:6.2.1";
 
   const init = new Deployment(chart, "init-fs", {
     securityContext: { uid: 1000, gid: 1000 },
@@ -155,10 +152,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name, defaultMode: 0o755 },
     },
   });
-  sonarr.addContainer("sonarr", sonarrImage, {
+  sonarr.addContainer("sonarr", "lscr.io/linuxserver/sonarr:4.0.19", {
     containerPorts: {
       web: 8989,
     },
@@ -171,58 +167,23 @@ export const chart: TemplateChartFn = async (construct, id) => {
       SONARR__AUTH__METHOD: "Forms",
       SONARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
       SONARR__LOG__ANALYTICSENABLED: "False",
-      JELLYFIN_TAG: "sonarr",
     },
     volumeMounts: {
       data: "/data",
       config: "/config",
-      scripts: "/scripts",
     },
   });
   addWaitForDataInitContainer(sonarr);
   sonarr.createService({ web: 8989 });
-
-  const sonarr4k = new StatefulSet(chart, "sonarr-4k", {
-    securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
-    volumes: {
-      config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name, defaultMode: 0o755 },
-    },
-  });
-  sonarr4k.addContainer("sonarr", sonarrImage, {
-    containerPorts: {
-      web: 8989,
-    },
-    env: {
-      PUID: "1000",
-      PGID: "1000",
-      TZ: "America/Los_Angeles",
-      SONARR__APP__INSTANCENAME: "Sonarr",
-      SONARR__APP__LAUNCHBROWSER: "false",
-      SONARR__AUTH__METHOD: "Forms",
-      SONARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
-      SONARR__LOG__ANALYTICSENABLED: "False",
-      JELLYFIN_TAG: "sonarr-4k",
-    },
-    volumeMounts: {
-      data: "/data",
-      config: "/config",
-      scripts: "/scripts",
-    },
-  });
-  addWaitForDataInitContainer(sonarr4k);
-  sonarr4k.createService({ web: 8989 });
 
   const radarr = new StatefulSet(chart, "radarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name, defaultMode: 0o755 },
     },
   });
-  radarr.addContainer("radarr", radarrImage, {
+  radarr.addContainer("radarr", "lscr.io/linuxserver/radarr:6.2.1", {
     containerPorts: {
       web: 7878,
     },
@@ -235,48 +196,14 @@ export const chart: TemplateChartFn = async (construct, id) => {
       RADARR__AUTH__METHOD: "Forms",
       RADARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
       RADARR__LOG__ANALYTICSENABLED: "False",
-      JELLYFIN_TAG: "radarr",
     },
     volumeMounts: {
       data: "/data",
       config: "/config",
-      scripts: "/scripts",
     },
   });
   addWaitForDataInitContainer(radarr);
   radarr.createService({ web: 7878 });
-
-  const radarr4k = new StatefulSet(chart, "radarr-4k", {
-    securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
-    volumes: {
-      config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
-      scripts: { configMap: scripts.name, defaultMode: 0o755 },
-    },
-  });
-  radarr4k.addContainer("radarr", radarrImage, {
-    containerPorts: {
-      web: 7878,
-    },
-    env: {
-      PUID: "1000",
-      PGID: "1000",
-      TZ: "America/Los_Angeles",
-      RADARR__APP__INSTANCENAME: "Radarr",
-      RADARR__APP__LAUNCHBROWSER: "false",
-      RADARR__AUTH__METHOD: "Forms",
-      RADARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
-      RADARR__LOG__ANALYTICSENABLED: "False",
-      JELLYFIN_TAG: "radarr-4k",
-    },
-    volumeMounts: {
-      data: "/data",
-      config: "/config",
-      scripts: "/scripts",
-    },
-  });
-  addWaitForDataInitContainer(radarr4k);
-  radarr4k.createService({ web: 7878 });
 
   const prowlarr = new StatefulSet(chart, "prowlarr", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -439,9 +366,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   sabnzbd.createService({ web: 8080 });
 
   new VerticalPodAutoscaler(chart, sonarr);
-  new VerticalPodAutoscaler(chart, sonarr4k);
   new VerticalPodAutoscaler(chart, radarr);
-  new VerticalPodAutoscaler(chart, radarr4k);
   new VerticalPodAutoscaler(chart, prowlarr);
   new VerticalPodAutoscaler(chart, maintainerr);
   new VerticalPodAutoscaler(chart, seerr);
