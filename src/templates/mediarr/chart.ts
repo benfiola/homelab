@@ -42,6 +42,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
 
   const scriptFiles = [
+    "add-jellyfin-tags.sh",
     "init-data.sh",
     "wait-for-data-init.sh",
     "notify-vpn-forwarding-port.sh",
@@ -154,6 +155,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
     },
   });
   sonarr.addContainer("sonarr", sonarrImage, {
@@ -169,10 +171,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
       SONARR__AUTH__METHOD: "Forms",
       SONARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
       SONARR__LOG__ANALYTICSENABLED: "False",
+      JELLYFIN_TAG: "sonarr",
     },
     volumeMounts: {
       data: "/data",
       config: "/config",
+      scripts: "/scripts",
     },
   });
   addWaitForDataInitContainer(sonarr);
@@ -183,6 +187,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
     },
   });
   sonarr4k.addContainer("sonarr", sonarrImage, {
@@ -198,10 +203,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
       SONARR__AUTH__METHOD: "Forms",
       SONARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
       SONARR__LOG__ANALYTICSENABLED: "False",
+      JELLYFIN_TAG: "sonarr-4k",
     },
     volumeMounts: {
       data: "/data",
       config: "/config",
+      scripts: "/scripts",
     },
   });
   addWaitForDataInitContainer(sonarr4k);
@@ -212,6 +219,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
     },
   });
   radarr.addContainer("radarr", radarrImage, {
@@ -227,10 +235,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
       RADARR__AUTH__METHOD: "Forms",
       RADARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
       RADARR__LOG__ANALYTICSENABLED: "False",
+      JELLYFIN_TAG: "radarr",
     },
     volumeMounts: {
       data: "/data",
       config: "/config",
+      scripts: "/scripts",
     },
   });
   addWaitForDataInitContainer(radarr);
@@ -241,6 +251,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
+      scripts: { configMap: scripts.name },
     },
   });
   radarr4k.addContainer("radarr", radarrImage, {
@@ -256,10 +267,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
       RADARR__AUTH__METHOD: "Forms",
       RADARR__AUTH__REQUIRED: "DisabledForLocalAddresses",
       RADARR__LOG__ANALYTICSENABLED: "False",
+      JELLYFIN_TAG: "radarr-4k",
     },
     volumeMounts: {
       data: "/data",
       config: "/config",
+      scripts: "/scripts",
     },
   });
   addWaitForDataInitContainer(radarr4k);
