@@ -321,7 +321,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
     },
   });
-  seerr.addContainer("seerr", "ghcr.io/benfiola/homelab-images/seerr:1.2.0", {
+  seerr.addContainer("seerr", "ghcr.io/benfiola/homelab-images/seerr:1.2.1", {
     containerPorts: {
       web: 5055,
     },
