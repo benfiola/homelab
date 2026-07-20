@@ -36,4 +36,3 @@ cat > "$NFO_PATH" <<EOF
   <tag>${NFO_TAG_VALUE}</tag>
 </${ROOT_TAG}>
 EOF
-fi
