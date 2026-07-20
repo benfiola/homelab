@@ -440,7 +440,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrSeerr, tcp(5055))
     .to(mediarrSonarr, tcp(8989))
     .to(mediarrSonarr4k, tcp(8989))
-    .to(mediarrJellyfin, tcp(8096));
+    .to(mediarrJellyfin, tcp(8096))
+    .to(dns("api.themoviedb.org"), tcp(443));
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrRadarr4k, tcp(7878))
