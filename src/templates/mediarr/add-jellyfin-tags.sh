@@ -33,6 +33,6 @@ NFO_PATH="${FILE_PATH%.*}.nfo"
 cat > "$NFO_PATH" <<EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <${ROOT_TAG}>
-  <tag>${NFO_TAG_VALUE}</tag>
+  <tag>${JELLYFIN_TAG}</tag>env
 </${ROOT_TAG}>
 EOF
