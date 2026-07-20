@@ -181,6 +181,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     component("linstor-satellite", "piraeus-operator"),
   );
   const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
+  const mediarrMaintainerr = svc(
+    "mediarr-maintainerr",
+    pod("maintainerr", "mediarr"),
+  );
   const mediarrProfilarr = svc(
     "mediarr-profilarr",
     pod("profilarr", "mediarr"),
@@ -430,6 +434,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
+  mediarrMaintainerr
+    .to(mediarrRadarr, tcp(7878))
+    .to(mediarrRadarr4k, tcp(7878))
+    .to(mediarrSeerr, tcp(5055))
+    .to(mediarrSonarr, tcp(8989))
+    .to(mediarrSonarr4k, tcp(8989))
+    .to(mediarrJellyfin, tcp(8096));
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrRadarr4k, tcp(7878))

@@ -316,6 +316,28 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   );
 
+  const maintainerr = new StatefulSet(chart, "maintainerr", {
+    securityContext: { uid: 1000, gid: 1000 },
+    volumes: {
+      config: { pvc: { size: "1Gi", storageClass: "standard" } },
+    },
+  });
+  maintainerr.addContainer(
+    "maintainerr",
+    "ghcr.io/maintainerr/maintainerr:3.18.0",
+    {
+      containerPorts: {
+        web: 6246,
+      },
+      env: {
+        TZ: "America/Los_Angeles",
+      },
+      volumeMounts: {
+        config: "/opt/data",
+      },
+    },
+  );
+
   const seerr = new StatefulSet(chart, "seerr", {
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
@@ -408,6 +430,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new VerticalPodAutoscaler(chart, radarr);
   new VerticalPodAutoscaler(chart, radarr4k);
   new VerticalPodAutoscaler(chart, prowlarr);
+  new VerticalPodAutoscaler(chart, maintainerr);
   new VerticalPodAutoscaler(chart, seerr);
   new VerticalPodAutoscaler(chart, jellyfin);
   new VerticalPodAutoscaler(chart, sabnzbd);
