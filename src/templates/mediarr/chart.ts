@@ -41,12 +41,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  const scriptFiles = [
-    "init-data.sh",
-    "wait-for-data-init.sh",
-    "notify-vpn-forwarding-port.sh",
-    "prepare-install-jellyfin-theme.sh",
-  ];
+  const scriptFiles = ["init-data.sh", "wait-for-data-init.sh"];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: Object.fromEntries(
       await Promise.all(
@@ -296,21 +291,41 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   const seerrSvc = seerr.createService({ web: 5055 });
 
+  const loudnorm = new StatefulSet(chart, "loudnorm", {
+    volumes: {
+      config: { pvc: { size: "1Gi", storageClass: "standard" } },
+      data: { pvc: { name: "data" } },
+    },
+  });
+  loudnorm.addContainer(
+    "loudnorm",
+    "ghcr.io/benfiola/homelab-images/loudnorm:1.0.0",
+    {
+      containerPorts: {
+        web: 8080,
+      },
+      env: {
+        MEDIA_DIRS: "/data/media",
+        CONFIG_DIR: "/config",
+        REPROCESS_SALT: "1",
+        AUDIO_BACKUP_DIR: "/data/loudnorm",
+        WEBOOK_TOKEN: {
+          secretKeyRef: { name: vaultSecret.name, key: "loudnorm-token" },
+        },
+      },
+      volumeMounts: {
+        data: "/data",
+        config: "/config",
+      },
+    },
+  );
+  loudnorm.createService({ web: 8080 });
+
   const jellyfin = new StatefulSet(chart, "jellyfin", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "20Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
-      init: { emptyDir: {} },
-      scripts: { configMap: scripts.name },
-    },
-  });
-  jellyfin.addInitContainer("prepare-install-jellyfin-theme", toolbox, {
-    cmd: ["bash"],
-    args: ["/scripts/prepare-install-jellyfin-theme.sh"],
-    volumeMounts: {
-      scripts: "/scripts",
-      init: "/custom-cont-init.d",
     },
   });
   jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
@@ -329,7 +344,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumeMounts: {
       config: "/config",
       data: "/data",
-      init: "/custom-cont-init.d",
     },
   });
   addWaitForDataInitContainer(jellyfin);
