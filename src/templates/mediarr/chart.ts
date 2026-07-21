@@ -292,6 +292,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const seerrSvc = seerr.createService({ web: 5055 });
 
   const loudnorm = new StatefulSet(chart, "loudnorm", {
+    securityContext: { uid: 1000, gid: 1000 },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
       data: { pvc: { name: "data" } },
