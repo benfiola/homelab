@@ -181,7 +181,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     component("linstor-satellite", "piraeus-operator"),
   );
   const mediarrJellyfin = svc("mediarr-jellyfin", pod("jellyfin", "mediarr"));
-  const mediarrLoudnorm = svc("mediarr-loudnorm", pod("loudnorm", "mediarr"));
   const mediarrMaintainerr = svc(
     "mediarr-maintainerr",
     pod("maintainerr", "mediarr"),
@@ -444,7 +443,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     // needs access to all indexers
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   mediarrRadarr
-    .to(mediarrLoudnorm, tcp(8080))
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
@@ -460,7 +458,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     // rotten tomatoes ratings
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
   mediarrSonarr
-    .to(mediarrLoudnorm, tcp(8080))
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints

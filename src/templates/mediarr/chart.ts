@@ -291,37 +291,6 @@ export const chart: TemplateChartFn = async (construct, id) => {
   });
   const seerrSvc = seerr.createService({ web: 5055 });
 
-  const loudnorm = new StatefulSet(chart, "loudnorm", {
-    securityContext: { uid: 1000, gid: 1000 },
-    volumes: {
-      config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
-    },
-  });
-  loudnorm.addContainer(
-    "loudnorm",
-    "ghcr.io/benfiola/homelab-images/loudnorm:1.0.0",
-    {
-      containerPorts: {
-        web: 8080,
-      },
-      env: {
-        MEDIA_DIRS: "/data/media",
-        CONFIG_DIR: "/config",
-        REPROCESS_SALT: "1",
-        AUDIO_BACKUP_DIR: "/data/loudnorm",
-        WEBOOK_TOKEN: {
-          secretKeyRef: { name: vaultSecret.name, key: "loudnorm-token" },
-        },
-      },
-      volumeMounts: {
-        data: "/data",
-        config: "/config",
-      },
-    },
-  );
-  loudnorm.createService({ web: 8080 });
-
   const jellyfin = new StatefulSet(chart, "jellyfin", {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
