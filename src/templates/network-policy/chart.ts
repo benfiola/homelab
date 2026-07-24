@@ -421,6 +421,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("repo.jellyfin.org"), tcp(443))
     .to(dns("api.themoviedb.org"), tcp(443))
     .to(dns("image.tmdb.org"), tcp(443))
+    .to(dns("m.media-amazon.com"), tcp(443))
     .to(dns("www.omdbapi.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443));
   mediarrProfilarr
