@@ -115,7 +115,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
         },
       },
       VPN_UP_COMMAND:
-        "ip route change default dev tun0 advmss 1300 table 51820",
+        "/bin/sh -ex -c 'ip route change default dev tun0 advmss 1300 table 51820'",
     };
 
     const volumeMounts: Record<string, string> = {
