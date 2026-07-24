@@ -19,6 +19,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     controller: {
+      kubeRbacProxy: {
+        resources: {
+          requests: { cpu: "5m", memory: "64Mi" },
+          limits: null,
+        },
+      },
+      manager: {
+        resources: {
+          requests: { cpu: "10m", memory: "64Mi" },
+          limits: null,
+        },
+      },
       podSecurityContext: securityContext.pod,
       securityContext: securityContext.container,
     },

@@ -13,7 +13,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    "kube-rbac-proxy-resources": {
+      requests: { cpu: "5m", memory: "64Mi" },
+      limits: null,
+    },
+    resources: {
+      requests: { cpu: "100m", memory: "64Mi" },
+      limits: null,
+    },
+  });
 
   new VerticalPodAutoscaler(
     chart,

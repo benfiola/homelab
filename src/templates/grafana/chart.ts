@@ -1,5 +1,8 @@
 import { URL } from "url";
-import { Grafana } from "../../../assets/grafana-operator/grafana.integreatly.org";
+import {
+  Grafana,
+  GrafanaSpecDeploymentSpecTemplateSpecContainersResourcesRequests as ContainerRequests,
+} from "../../../assets/grafana-operator/grafana.integreatly.org";
 import {
   ClusterRole,
   ClusterRoleBinding,
@@ -128,6 +131,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               containers: [
                 {
                   name: "grafana",
+                  resources: {
+                    requests: {
+                      cpu: ContainerRequests.fromString("100m"),
+                      memory: ContainerRequests.fromString("256Mi"),
+                    },
+                    limits: null,
+                  },
                   env: [
                     {
                       name: "GF_SECURITY_ADMIN_USER",

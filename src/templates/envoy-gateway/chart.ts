@@ -32,6 +32,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
       deployment: {
+        envoyGateway: {
+          resources: {
+            requests: { cpu: "100m", memory: "256Mi" },
+            limits: null,
+          },
+        },
         pod: {
           labels: {
             "app.kubernetes.io/component": "controller",

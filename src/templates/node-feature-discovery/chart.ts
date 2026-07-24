@@ -14,12 +14,19 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new Namespace(chart, { privileged: true });
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    master: {
+      resources: { limits: null },
+    },
     worker: {
       config: {
         core: {
           labelSources: ["kernel", "pci"],
         },
       },
+      resources: { limits: null },
+    },
+    gc: {
+      resources: { limits: null },
     },
   });
 

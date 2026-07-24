@@ -472,9 +472,9 @@ const createPrometheusRules = async (chart: Chart, monitoringConfig: any) => {
               },
               annotations: {
                 summary:
-                  "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} was OOMKilled",
+                  "Pod {{ $labels.namespace }}/{{ $labels.pod }} was OOMKilled",
                 description:
-                  "Pod {{ $labels.exported_namespace }}/{{ $labels.exported_pod }} in container {{ $labels.exported_container }} was OOMKilled in the last 1 minute.",
+                  "Pod {{ $labels.namespace }}/{{ $labels.pod }} in container {{ $labels.container }} was OOMKilled in the last 1 minute.",
               },
             },
           ],

@@ -369,8 +369,36 @@ export class Helm extends BaseHelm {
       releaseName,
       values,
     });
+
+    // because we use flux to apply manifests, the helm lifecycle isn't respected.
+    // remove *-delete hooks to avoid potential cleanup everytime a manifest is re-applied.
+    removeDeleteHooks(this);
   }
 }
+
+const deleteHookTypes = ["pre-delete", "post-delete"];
+
+const removeDeleteHooks = (scope: Construct) => {
+  for (const obj of scope.node.findAll()) {
+    if (!ApiObject.isApiObject(obj)) {
+      continue;
+    }
+
+    const hookAnnotation: string | undefined = (obj as any).props?.metadata
+      ?.annotations?.["helm.sh/hook"];
+    if (!hookAnnotation) {
+      continue;
+    }
+
+    const hookTypes = hookAnnotation.split(",").map((h) => h.trim());
+    if (!hookTypes.every((h) => deleteHookTypes.includes(h))) {
+      continue;
+    }
+
+    const parent = obj.node.scope;
+    parent?.node.tryRemoveChild(obj.node.id);
+  }
+};
 
 export const gateways = [
   "public",

@@ -5,6 +5,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -20,6 +21,38 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           pairs: {
             "app.kubernetes.io/name": "piraeus-operator",
           },
+        },
+      ],
+      patches: [
+        {
+          target: { kind: "Deployment", name: "piraeus-operator-controller-manager" },
+          patch: stringify({
+            apiVersion: "apps/v1",
+            kind: "Deployment",
+            metadata: { name: "piraeus-operator-controller-manager" },
+            spec: {
+              template: {
+                spec: {
+                  containers: [{ name: "manager", resources: { limits: null } }],
+                },
+              },
+            },
+          }),
+        },
+        {
+          target: { kind: "Deployment", name: "piraeus-operator-gencert" },
+          patch: stringify({
+            apiVersion: "apps/v1",
+            kind: "Deployment",
+            metadata: { name: "piraeus-operator-gencert" },
+            spec: {
+              template: {
+                spec: {
+                  containers: [{ name: "gencert", resources: { limits: null } }],
+                },
+              },
+            },
+          }),
         },
       ],
     },

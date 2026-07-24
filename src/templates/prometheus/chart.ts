@@ -6,6 +6,8 @@ import {
 import {
   PrometheusSpecAlertingAlertmanagersPort as AlertmanagerPort,
   Prometheus,
+  PrometheusSpecContainersResourcesRequests as ContainerRequests,
+  PrometheusSpecInitContainersResourcesRequests as InitContainerRequests,
   PrometheusSpecStorageVolumeClaimTemplateSpecResourcesRequests as Storage,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
 import { Chart, Namespace, VerticalPodAutoscaler } from "../../cdk8s";
@@ -85,6 +87,30 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           },
         ],
       },
+      containers: [
+        {
+          name: "config-reloader",
+          resources: {
+            requests: {
+              cpu: ContainerRequests.fromString("25m"),
+              memory: ContainerRequests.fromString("128Mi"),
+            },
+            limits: null,
+          },
+        },
+      ],
+      initContainers: [
+        {
+          name: "init-config-reloader",
+          resources: {
+            requests: {
+              cpu: InitContainerRequests.fromString("10m"),
+              memory: InitContainerRequests.fromString("64Mi"),
+            },
+            limits: null,
+          },
+        },
+      ],
       evaluationInterval: "30s",
       podMonitorNamespaceSelector: {},
       podMonitorSelector: {},

@@ -131,6 +131,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     minio: {
       enabled: false,
     },
+    resultsCache: {
+      resources: { requests: { memory: "128Mi" }, limits: null },
+    },
+    chunksCache: {
+      resources: { requests: { memory: "3072Mi" }, limits: null },
+    },
     read: {
       extraArgs,
       extraEnv,

@@ -14,7 +14,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"));
+  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
+    resources: {
+      requests: { cpu: "100m", memory: "128Mi" },
+      limits: null,
+    },
+  });
 
   const deployment = findApiObject(chart, {
     apiVersion: "apps/v1",

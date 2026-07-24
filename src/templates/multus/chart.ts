@@ -6,6 +6,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -23,6 +24,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           pairs: {
             "app.kubernetes.io/name": "multus",
           },
+        },
+      ],
+      patches: [
+        {
+          target: { kind: "DaemonSet", name: "kube-multus-ds" },
+          patch: stringify({
+            apiVersion: "apps/v1",
+            kind: "DaemonSet",
+            metadata: { name: "kube-multus-ds" },
+            spec: {
+              template: {
+                spec: {
+                  containers: [
+                    {
+                      name: "kube-multus",
+                      resources: {
+                        requests: { memory: "256Mi" },
+                        limits: { cpu: null, memory: "400Mi" },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }),
         },
       ],
     },
@@ -80,8 +106,4 @@ const patchForTalos = async (obj: Kustomization) => {
     "-t",
     "thick",
   ];
-
-  // Increase memory limit from 50Mi to 150Mi
-  spec.containers[0].resources.requests.memory = "150Mi";
-  spec.containers[0].resources.limits.memory = "150Mi";
 };

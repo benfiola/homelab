@@ -20,6 +20,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     kind: "Deployment",
     podSecurityContext: securityContext.pod,
     securityContext: securityContext.container,
+    resources: {
+      requests: { cpu: "25m", memory: "256Mi" },
+      limits: null,
+    },
   });
 
   new VerticalPodAutoscaler(

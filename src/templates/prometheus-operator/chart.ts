@@ -6,6 +6,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -17,6 +18,31 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     dynamic: {
       namespace: chart.namespace,
       resources: [context.getAsset("manifest.yaml")],
+      patches: [
+        {
+          target: { kind: "Deployment", name: "prometheus-operator" },
+          patch: stringify({
+            apiVersion: "apps/v1",
+            kind: "Deployment",
+            metadata: { name: "prometheus-operator" },
+            spec: {
+              template: {
+                spec: {
+                  containers: [
+                    {
+                      name: "prometheus-operator",
+                      resources: {
+                        requests: { cpu: "100m", memory: "128Mi" },
+                        limits: null,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }),
+        },
+      ],
     },
   });
   await patchEndpointSlicesSupport(kustomization);

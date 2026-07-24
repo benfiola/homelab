@@ -2,6 +2,8 @@ import { Namespace } from "../../../assets/kubernetes/k8s";
 import {
   Alertmanager,
   AlertmanagerConfig,
+  AlertmanagerSpecContainersResourcesRequests as ContainerRequests,
+  AlertmanagerSpecInitContainersResourcesRequests as InitContainerRequests,
   AlertmanagerSpecStorageVolumeClaimTemplateSpecResourcesRequests as Requests,
   AlertmanagerConfigSpecRouteMatchersMatchType as RouteMatchType,
   AlertmanagerConfigSpecInhibitRulesSourceMatchMatchType as SourceMatchType,
@@ -145,7 +147,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       containers: [
         { name: "alertmanager", securityContext: securityContext.container },
-        { name: "config-reloader", securityContext: securityContext.container },
+        {
+          name: "config-reloader",
+          securityContext: securityContext.container,
+          resources: {
+            requests: {
+              cpu: ContainerRequests.fromString("25m"),
+              memory: ContainerRequests.fromString("128Mi"),
+            },
+            limits: null,
+          },
+        },
       ],
       // replicas must be set for autoscaling
       replicas: 1,
@@ -154,6 +166,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         {
           name: "init-config-reloader",
           securityContext: securityContext.container,
+          resources: {
+            requests: {
+              cpu: InitContainerRequests.fromString("10m"),
+              memory: InitContainerRequests.fromString("64Mi"),
+            },
+            limits: null,
+          },
         },
       ],
       storage: {
