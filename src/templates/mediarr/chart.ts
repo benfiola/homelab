@@ -41,7 +41,11 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  const scriptFiles = ["init-data.sh", "wait-for-data-init.sh"];
+  const scriptFiles = [
+    "init-data.sh",
+    "wait-for-data-init.sh",
+    "mss-clamp.sh",
+  ];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: Object.fromEntries(
       await Promise.all(
@@ -139,6 +143,20 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
       env,
       volumeMounts,
+    });
+
+    workload.addVolume("mss-clamp-scripts", { configMap: scripts.name });
+    workload.addContainer("mss-clamp", "ghcr.io/qdm12/gluetun:v3.41.1", {
+      securityContext: {
+        uid: 0,
+        gid: 0,
+        caps: ["NET_ADMIN"],
+      },
+      cmd: ["/bin/sh"],
+      args: ["/scripts/mss-clamp.sh"],
+      volumeMounts: {
+        "mss-clamp-scripts": "/scripts",
+      },
     });
   };
 
