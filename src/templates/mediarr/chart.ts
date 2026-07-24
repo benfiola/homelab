@@ -108,14 +108,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
       VPN_SERVICE_PROVIDER: "protonvpn",
       VPN_TYPE: "wireguard",
       WIREGUARD_MTU: "1360",
+      WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL: "5s",
       WIREGUARD_PRIVATE_KEY: {
         secretKeyRef: {
           name: vaultSecret.name,
           key: "vpn-wireguard-private-key",
         },
       },
-      VPN_UP_COMMAND:
-        "/bin/sh -ex -c 'ip route change default dev tun0 advmss 1300 table 51820'",
     };
 
     const volumeMounts: Record<string, string> = {
