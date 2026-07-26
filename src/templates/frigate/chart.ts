@@ -56,7 +56,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   statefulSet.addContainer(
     "frigate",
-    "ghcr.io/benfiola/homelab-images/frigate:1.0.0",
+    "ghcr.io/benfiola/homelab-images/frigate:1.0.1",
     {
       containerPorts: {
         "http-insecure": 5000,
