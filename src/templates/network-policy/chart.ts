@@ -1,6 +1,7 @@
 import { Chart } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import {
+  assetsServer as _assetsServer,
   controlPlane as _controlPlane,
   health as _health,
   host as _host,
@@ -8,7 +9,6 @@ import {
   kubeDns as _kubeDns,
   nodes as _nodes,
   pods as _pods,
-  assetsServer,
   cidrs,
   component,
   dns,
@@ -38,7 +38,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // application services
   const alertmanager = svc("alertmanager", pod("alertmanager", "alertmanager"));
   const alloy = svc("alloy", pod("alloy", "alloy"));
-  const assetsServer = svc("assets-server", assetsServer("*"));
+  const assetsServer = svc("assets-server", _assetsServer("*"));
   const azerothcoreServer = svc(
     "azerothcore-server",
     pod("server", "azerothcore"),
@@ -46,7 +46,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const azerothcoreDb = svc("azerothcore-db", pod("db", "azerothcore"));
   const azerothcoreAssetsServer = svc(
     "azerothcore-assets-server",
-    assetsServer("azerothcore"),
+    _assetsServer("azerothcore"),
   );
   const bucketSync = svc("bucket-sync", pod("bucket-sync", "bucket-sync"));
   const bucketSyncJob = svc("bucket-sync-job", pod("bucket-sync-job", "*"));
@@ -159,7 +159,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const minecraft = svc("minecraft", pod("minecraft", "minecraft"));
   const minecraftAssetsServer = svc(
     "minecraft-assets-server",
-    assetsServer("minecraft"),
+    _assetsServer("minecraft"),
   );
   const mosquitto = svc("mosquitto", pod("mosquitto", "mosquitto"));
   const nodeFeatureDiscovery = svc(
@@ -231,7 +231,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const singlePlayerTarkovAssetsServer = svc(
     "single-player-tarkov-assets-server",
-    assetsServer("single-player-tarkov"),
+    _assetsServer("single-player-tarkov"),
   );
   const tunnel = svc("tunnel", pod("tunnel", "tunnel"));
   const vault = svc("vault", pod("vault", "vault"));
@@ -354,9 +354,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(fluxSourceController, tcp(9090, 9440));
 
   // frigate
-  frigate
-    .to(mosquitto, tcp(1883))
-    .to(dns("*.camera.bulia.dev"), tcp(554));
+  frigate.to(mosquitto, tcp(1883)).to(dns("*.camera.bulia.dev"), tcp(554));
 
   host.to(frigate, tcp(5000));
 
