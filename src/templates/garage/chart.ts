@@ -37,6 +37,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         enabled: true,
       },
       containerSecurityContext: securityContext.container,
+      image: "dxflrs/garage:v2.2.0",
       podLabels: {
         "app.kubernetes.io/name": "garage",
       },
