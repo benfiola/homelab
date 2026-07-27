@@ -1,6 +1,7 @@
 import {
+  AssetsServer,
+  AssetsServerAuth,
   Chart,
-  getAssetsServerUrl,
   HttpRoute,
   Namespace,
   StatefulSet,
@@ -12,6 +13,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
   new Namespace(chart);
 
+  const hostname = "eft.bulia.dev";
+  const assetsServerAuth = new AssetsServerAuth(chart);
+  const assetsServer = new AssetsServer(chart, assetsServerAuth);
+
   const mods = [
     "BackendURLRewriter-1.0.0.zip",
     "DynamicMaps-1.0.5.zip",
@@ -21,7 +26,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "ShowMeTheMoney-2.7.0.7z",
     "StatTrack-2.0.0.7z",
     "UIFixes-5.3.7.zip",
-  ].map((m) => getAssetsServerUrl(`single-player-tarkov/${m}`));
+  ].map((m) => assetsServer.url(m));
 
   const configPatches = {
     // immediate return of insurance items
@@ -83,9 +88,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "raid-rev-web": 7829,
   });
 
-  new TcpRoute(chart, "friends", "eft.bulia.dev", 6969, svc, 6969);
-  new TcpRoute(chart, "friends", "eft.bulia.dev", 7828, svc, 7828);
-  new HttpRoute(chart, "friends", "eft.bulia.dev").match(svc, 7829);
+  new TcpRoute(chart, "friends", hostname, 6969, svc, 6969);
+  new TcpRoute(chart, "friends", hostname, 7828, svc, 7828);
+  new HttpRoute(chart, "friends", hostname).match(svc, 7829);
+  new HttpRoute(chart, "friends", `assets.${hostname}`).match(
+    assetsServer.service,
+    8080,
+  );
 
   return chart;
 };

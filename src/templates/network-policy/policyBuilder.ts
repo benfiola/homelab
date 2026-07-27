@@ -11,6 +11,11 @@ type PortRange = [number, number];
 type Portish = PortRange | Port;
 
 const selectors = {
+  assetsServer: (namespace: string) => ({
+    type: "assetsServer" as const,
+    category: "subject" as const,
+    namespace,
+  }),
   nodes: () => ({
     type: "nodes" as const,
     category: "subject" as const,
@@ -94,6 +99,7 @@ const selectors = {
 };
 
 export const {
+  assetsServer,
   nodes,
   pods,
   cidrs,
@@ -176,6 +182,20 @@ const buildEndpointSelector = (
   switch (selector.type) {
     case "pods":
       return [{}];
+    case "assetsServer": {
+      const ns =
+        selector.namespace === "*"
+          ? {}
+          : { "k8s:io.kubernetes.pod.namespace": selector.namespace };
+      return [
+        {
+          matchLabels: {
+            ...ns,
+            "k8s:app.kubernetes.io/name": "assets-server",
+          },
+        },
+      ];
+    }
     case "pod": {
       const ns =
         selector.namespace === "*"

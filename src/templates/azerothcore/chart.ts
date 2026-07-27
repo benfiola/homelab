@@ -1,6 +1,8 @@
 import {
+  AssetsServer,
+  AssetsServerAuth,
   Chart,
-  getAssetsServerUrl,
+  HttpRoute,
   Namespace,
   StatefulSet,
   TcpRoute,
@@ -48,6 +50,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     ),
   }));
 
+  const assetsServerAuth = new AssetsServerAuth(chart);
+  const assetsServer = new AssetsServer(chart, assetsServerAuth);
+
   const dbStatefulSet = new StatefulSet(chart, "db", {
     volumes: {
       "db-data": {
@@ -93,7 +98,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   serverStatefulSet.addInitContainer("init", image, {
     env: {
-      AC_GAME_DATA_URL: getAssetsServerUrl("azerothcore/game-data-v19.zip"),
+      AC_GAME_DATA_URL: assetsServer.url("game-data-v19.zip"),
       AC_LOGIN_DATABASE_INFO: {
         secretKeyRef: { name: secrets.name, key: "db-info-login" },
       },
@@ -193,6 +198,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new TcpRoute(chart, "friends", hostname, 3724, svc, 3724);
   new TcpRoute(chart, "friends", hostname, 8085, svc, 8085);
   new TcpRoute(chart, "friends", hostname, 7878, svc, 7878);
+  new HttpRoute(chart, "friends", `assets.${hostname}`).match(
+    assetsServer.service,
+    8080,
+  );
 
   return chart;
 };

@@ -8,6 +8,7 @@ import {
   kubeDns as _kubeDns,
   nodes as _nodes,
   pods as _pods,
+  assetsServer,
   cidrs,
   component,
   dns,
@@ -37,15 +38,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // application services
   const alertmanager = svc("alertmanager", pod("alertmanager", "alertmanager"));
   const alloy = svc("alloy", pod("alloy", "alloy"));
-  const assetsServer = svc(
-    "assets-server",
-    pod("bucket-server-assets-server", "assets-server"),
-  );
+  const assetsServer = svc("assets-server", assetsServer("*"));
   const azerothcoreServer = svc(
     "azerothcore-server",
     pod("server", "azerothcore"),
   );
   const azerothcoreDb = svc("azerothcore-db", pod("db", "azerothcore"));
+  const azerothcoreAssetsServer = svc(
+    "azerothcore-assets-server",
+    assetsServer("azerothcore"),
+  );
   const bucketSync = svc("bucket-sync", pod("bucket-sync", "bucket-sync"));
   const bucketSyncJob = svc("bucket-sync-job", pod("bucket-sync-job", "*"));
   const certManagerCainjector = svc(
@@ -155,6 +157,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     pod("metrics-server", "metrics-server"),
   );
   const minecraft = svc("minecraft", pod("minecraft", "minecraft"));
+  const minecraftAssetsServer = svc(
+    "minecraft-assets-server",
+    assetsServer("minecraft"),
+  );
   const mosquitto = svc("mosquitto", pod("mosquitto", "mosquitto"));
   const nodeFeatureDiscovery = svc(
     "node-feature-discovery",
@@ -223,6 +229,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "single-player-tarkov",
     pod("single-player-tarkov", "single-player-tarkov"),
   );
+  const singlePlayerTarkovAssetsServer = svc(
+    "single-player-tarkov-assets-server",
+    assetsServer("single-player-tarkov"),
+  );
   const tunnel = svc("tunnel", pod("tunnel", "tunnel"));
   const vault = svc("vault", pod("vault", "vault"));
   const vaultPushSecrets = svc(
@@ -269,7 +279,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   assetsServer.to(garage, tcp(3900));
 
   // azerothcore
-  azerothcoreServer.to(assetsServer, tcp(8080)).to(azerothcoreDb, tcp(3306));
+  azerothcoreServer
+    .to(azerothcoreAssetsServer, tcp(8080))
+    .to(azerothcoreDb, tcp(3306));
 
   // bucket-sync
   bucketSync.to(kubeApiServer, tcp(6443));
@@ -344,7 +356,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // frigate
   frigate
     .to(mosquitto, tcp(1883))
-    .to(assetsServer, tcp(8080))
     .to(dns("*.camera.bulia.dev"), tcp(554));
 
   host.to(frigate, tcp(5000));
@@ -475,7 +486,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // minecraft
   minecraft
-    .to(assetsServer, tcp(8080))
+    .to(minecraftAssetsServer, tcp(8080))
     .to(dns("launchermeta.mojang.com"), tcp(443))
     .to(dns("api.minecraftservices.com"), tcp(443))
     .to(dns("sessionserver.mojang.com"), tcp(443))
@@ -543,7 +554,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // single-player-tarkov
   singlePlayerTarkov
-    .to(assetsServer, tcp(8080))
+    .to(singlePlayerTarkovAssetsServer, tcp(8080))
     .to(dns("github.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
 
@@ -645,10 +656,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   gatewayFriends
     .to(envoyGatewayController, tcp(18000))
     .to(azerothcoreServer, tcp(3724, 7878, 8085))
+    .to(azerothcoreAssetsServer, tcp(8080))
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSeerr, tcp(5055))
     .to(minecraft, tcp(25565))
+    .to(minecraftAssetsServer, tcp(8080))
     .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
+    .to(singlePlayerTarkovAssetsServer, tcp(8080))
     .from(
       cidrs(
         "192.168.8.0/24",

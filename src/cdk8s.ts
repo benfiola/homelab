@@ -1445,10 +1445,32 @@ export class DaemonSet extends BaseDaemonSet {
   }
 }
 
-export class BucketServer extends Deployment {
-  constructor(construct: Chart, bucket: GarageBucket, key: GarageKey) {
-    super(construct, `bucket-server-${bucket.name}`, {});
-    this.addContainer("rclone", "rclone/rclone:1.73.1", {
+interface BucketServerOpts {
+  name?: string;
+}
+
+export class BucketServer extends Construct {
+  private readonly deployment: Deployment;
+  private readonly namespace: string;
+  readonly service: Service;
+
+  constructor(
+    construct: Chart,
+    bucket: GarageBucket,
+    key: GarageKey,
+    opts: BucketServerOpts = {},
+  ) {
+    if (construct.namespace === undefined) {
+      throw new Error(`chart namespace undefined`);
+    }
+
+    const name = opts.name ?? `bucket-server-${bucket.name}`;
+    const id = `${construct.node.id}-bucket-server-${name}`;
+    super(construct, id);
+    this.namespace = construct.namespace;
+
+    this.deployment = new Deployment(construct, name, {});
+    this.deployment.addContainer("rclone", "rclone/rclone:1.73.1", {
       containerPorts: { http: 8080 },
       args: ["serve", "http", `source:${bucket.name}`, "--addr=:8080"],
       env: {
@@ -1464,9 +1486,60 @@ export class BucketServer extends Deployment {
         RCLONE_CONFIG_SOURCE_REGION: "garage",
       },
     });
+    this.service = this.deployment.createService({ http: 8080 });
+    new VerticalPodAutoscaler(construct, this.deployment);
+  }
+
+  url(path: string): string {
+    return `http://${this.deployment.name}.${this.namespace}.svc:8080/${path}`;
   }
 }
 
-export const getAssetsServerUrl = (path: string) => {
-  return `http://bucket-server-assets-server.assets-server.svc:8080/${path}`;
-};
+export class AssetsServerAuth extends VaultAuth {
+  constructor(construct: Construct) {
+    super(construct, {
+      role: "assets-server",
+      serviceAccount: "assets-server-vault-secrets-operator",
+    });
+  }
+}
+
+export class AssetsServer extends Construct {
+  private readonly bucketServer: BucketServer;
+  readonly service: Service;
+
+  constructor(chart: Chart, auth: AssetsServerAuth) {
+    const name = `${chart.node.id}-assets`;
+    super(chart, name);
+
+    const secret = new VaultStaticSecret(chart, auth, {
+      name: "assets-server",
+      path: "assets-server",
+    });
+
+    const key = new GarageKey(chart, "garage", name);
+    const readKey = new GarageKey(chart, "garage", `${name}-read`);
+    const bucket = new GarageBucket(chart, "garage", name, [key], {
+      roKeys: [readKey],
+    });
+
+    new BucketSyncPolicy(
+      chart,
+      {
+        name: `homelab-assets-698966/${chart.node.id}`,
+        secret: secret.name,
+        credentialsKey: "google-cloud-credentials-file",
+      },
+      { key, bucket },
+    );
+
+    this.bucketServer = new BucketServer(chart, bucket, readKey, {
+      name: "assets-server",
+    });
+    this.service = this.bucketServer.service;
+  }
+
+  url(path: string): string {
+    return this.bucketServer.url(path);
+  }
+}

@@ -1,6 +1,8 @@
 import {
+  AssetsServer,
+  AssetsServerAuth,
   Chart,
-  getAssetsServerUrl,
+  HttpRoute,
   Namespace,
   StatefulSet,
   TcpRoute,
@@ -11,6 +13,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
   const chart = new Chart(construct, id, { namespace: id });
   new Namespace(chart);
+
+  const hostname = "minecraft.bulia.dev";
+  const assetsServerAuth = new AssetsServerAuth(chart);
+  const assetsServer = new AssetsServer(chart, assetsServerAuth);
 
   const ss = new StatefulSet(chart, "minecraft", {
     securityContext: { uid: 1000, gid: 1000 },
@@ -25,7 +31,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     env: {
       EULA: "true",
       VERSION: "1.21.11",
-      MODPACK: getAssetsServerUrl("minecraft/mods.zip"),
+      MODPACK: assetsServer.url("mods.zip"),
       TYPE: "FABRIC",
     },
     volumeMounts: {
@@ -35,7 +41,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const svc = ss.createService({ game: 25565 });
 
-  new TcpRoute(chart, "friends", "minecraft.bulia.dev", 25565, svc, 25565);
+  new TcpRoute(chart, "friends", hostname, 25565, svc, 25565);
+  new HttpRoute(chart, "friends", `assets.${hostname}`).match(
+    assetsServer.service,
+    8080,
+  );
 
   return chart;
 };
