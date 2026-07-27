@@ -50,7 +50,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       securityContext: securityContext.pod,
       storage: {
         data: {
-          size: StorageSize.fromString("100Gi"),
+          size: StorageSize.fromString("300Gi"),
           storageClassName: "standard",
         },
         metadata: {
