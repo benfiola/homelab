@@ -126,6 +126,7 @@
 /ip/dhcp-client/add interface=ether1
 
 # assign static ips
+/ip/dhcp-server/lease/add address=192.168.24.2 server=iot mac-address=D4:0A:DC:DB:A9:0E comment="projector"
 /ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=F8:5C:24:40:2F:4A comment="sonos (bedroom-2 right)"
 /ip/dhcp-server/lease/add address=192.168.24.7 server=iot mac-address=F8:5C:24:40:34:98 comment="sonos (bedroom-2 left)"
 /ip/dhcp-server/lease/add address=192.168.24.8 server=iot mac-address=A0:85:E3:E9:43:78 comment="3d printer"
@@ -189,8 +190,10 @@
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot
 
 # configure firewall address lists
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="projector"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="sonos (bedroom-2 right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="sonos (bedroom-2 left)"
+/ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.2 comment="projector"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_FAMILY address=192.168.33.2/32 comment="cluster gateway (family)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE address=192.168.33.4/32 comment="cluster gateway (infrastructure)"
@@ -219,6 +222,8 @@
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=WAN comment="accept infrastructure -> wan"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=IOT comment="accept iot -> iot"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_WAN out-interface-list=WAN comment="accept iot (allow wan) -> wan"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=FAMILY comment="accept iot (allow intanet) -> family"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=PERSONAL comment="accept iot (allow intanet) -> personal"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_IOT comment="accept iot -> infrastructure (iot ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=MANAGEMENT out-interface-list=MANAGEMENT comment="accept management -> management"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=PERSONAL comment="accept personal -> personal"
