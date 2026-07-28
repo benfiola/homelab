@@ -51,7 +51,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   }));
 
   const assetsServerAuth = new AssetsServerAuth(chart);
-  const assetsServer = new AssetsServer(chart, assetsServerAuth);
+  const assetsServer = new AssetsServer(chart, assetsServerAuth, {
+    syncTimeout: "20m",
+  });
 
   const dbStatefulSet = new StatefulSet(chart, "db", {
     volumes: {

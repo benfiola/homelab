@@ -820,7 +820,9 @@ export class GarageBucket extends BaseGarageBucket {
   }
 }
 
-interface BucketSyncPolicyOpts {}
+interface BucketSyncPolicyOpts {
+  syncTimeout?: string;
+}
 
 interface GcsSource {
   name: string;
@@ -892,6 +894,7 @@ export class BucketSyncPolicy extends Construct {
         jobLabels: {
           "app.kubernetes.io/name": "bucket-sync-job",
         },
+        timeout: opts.syncTimeout,
       },
     });
   }
@@ -1519,11 +1522,19 @@ export class AssetsServerAuth extends VaultAuth {
   }
 }
 
+interface AssetsServerOpts {
+  syncTimeout?: string;
+}
+
 export class AssetsServer extends Construct {
   private readonly bucketServer: BucketServer;
   readonly service: Service;
 
-  constructor(chart: Chart, auth: AssetsServerAuth) {
+  constructor(
+    chart: Chart,
+    auth: AssetsServerAuth,
+    opts: AssetsServerOpts = {},
+  ) {
     const name = `${chart.node.id}-assets`;
     super(chart, name);
 
@@ -1546,6 +1557,7 @@ export class AssetsServer extends Construct {
         credentialsKey: "google-cloud-credentials-file",
       },
       { key, bucket },
+      { syncTimeout: opts.syncTimeout },
     );
 
     this.bucketServer = new BucketServer(chart, bucket, readKey, {

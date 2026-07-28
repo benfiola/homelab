@@ -15,7 +15,9 @@ export const chart: TemplateChartFn = async (construct, id) => {
 
   const hostname = "eft.bulia.dev";
   const assetsServerAuth = new AssetsServerAuth(chart);
-  const assetsServer = new AssetsServer(chart, assetsServerAuth);
+  const assetsServer = new AssetsServer(chart, assetsServerAuth, {
+    syncTimeout: "40m",
+  });
 
   const mods = [
     "BackendURLRewriter-1.0.0.zip",
