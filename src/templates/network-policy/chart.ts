@@ -653,7 +653,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   gatewayFriends
     .to(envoyGatewayController, tcp(18000))
-    .to(azerothcoreServer, tcp(3724, 7878, 8085))
+    .to(azerothcoreServer, tcp(3724, 7878, 8080, 8085))
     .to(azerothcoreAssetsServer, tcp(8080))
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSeerr, tcp(5055))

@@ -8,7 +8,7 @@ import {
   TcpRoute,
   VaultAuth,
   VaultDynamicSecret,
-  VerticalPodAutoscaler,
+  VerticalPodAutoscaler
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 import { options, stringify } from "../../yaml";
@@ -19,7 +19,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.3.2";
+  const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.4.1";
   const hostname = "wow.bulia.dev";
   const dbHost = "db.azerothcore.svc";
   const dbPort = 3306;
@@ -129,7 +129,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       AC_LOGIN_DATABASE_INFO: {
         secretKeyRef: { name: secrets.name, key: "db-info-login" },
       },
-      AC_DISABLE_INTERACTIVE: "1",
     },
   });
 
@@ -152,7 +151,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       AC_PLAYERBOTS_DATABASE_INFO: {
         secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
       },
-      AC_DISABLE_INTERACTIVE: "1",
 
       // see: https://www.azerothcore.org/wiki/config-overrides-with-env-var
       // see: https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Configuration#recommended-config
@@ -188,18 +186,32 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
-  const svc = serverStatefulSet.createService({
+  serverStatefulSet.addContainer("web", image, {
+    args: ["web"],
+    env: {
+      AC_WEB_SOAP_ADDRESS: "localhost:7878",
+      AC_LOGIN_DATABASE_INFO: {
+        secretKeyRef: { name: secrets.name, key: "db-info-login" },
+      },
+    }
+  })
+
+  const serverSvc = serverStatefulSet.createService({
     auth: 3724,
     world: 8085,
     soap: 7878,
+    web: 8080
   });
 
   new VerticalPodAutoscaler(chart, serverStatefulSet);
   new VerticalPodAutoscaler(chart, dbStatefulSet);
 
-  new TcpRoute(chart, "friends", hostname, 3724, svc, 3724);
-  new TcpRoute(chart, "friends", hostname, 8085, svc, 8085);
-  new TcpRoute(chart, "friends", hostname, 7878, svc, 7878);
+  new TcpRoute(chart, "friends", hostname, 3724, serverSvc, 3724);
+  new TcpRoute(chart, "friends", hostname, 8085, serverSvc, 8085);
+  new TcpRoute(chart, "friends", hostname, 7878, serverSvc, 7878);
+  new HttpRoute(chart, "friends", `accounts.${hostname}`).match(
+    serverSvc, 8080
+  )
   new HttpRoute(chart, "friends", `assets.${hostname}`).match(
     assetsServer.service,
     8080,
