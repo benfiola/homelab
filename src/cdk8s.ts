@@ -148,6 +148,17 @@ export const findApiObject = (obj: Construct, target: FindTarget) => {
   );
 };
 
+export const getChart = (construct: Construct): BaseChart => {
+  let current: Construct | undefined = construct;
+  while (current) {
+    if (current instanceof BaseChart) {
+      return current;
+    }
+    current = current.node.scope;
+  }
+  throw new Error(`could not find chart`);
+};
+
 export const getField = (obj: ApiObject, field: string) => {
   const data = obj.toJson();
   const value = get(data, field);
@@ -179,7 +190,8 @@ interface NamespaceOpts {
 }
 
 export class Namespace extends BaseNamespace {
-  constructor(chart: BaseChart, opts: NamespaceOpts = {}) {
+  constructor(construct: Construct, opts: NamespaceOpts = {}) {
+    const chart = getChart(construct);
     if (chart.namespace === undefined) {
       throw new Error(`chart namespace undefined`);
     }
@@ -189,7 +201,7 @@ export class Namespace extends BaseNamespace {
       labels["pod-security.kubernetes.io/enforce"] = "privileged";
     }
 
-    super(chart, `${chart.node.id}-namespace`, {
+    super(construct, `${chart.node.id}-namespace`, {
       metadata: {
         name: chart.namespace,
         labels,
@@ -314,8 +326,8 @@ export class VaultDynamicSecret extends Construct {
     }
 
     const secret = new BaseVaultDynamicSecret(
-      construct,
-      `${id}-vault-static-secret`,
+      this,
+      `${id}-vault-dynamic-secret`,
       {
         metadata: {
           name,
@@ -641,17 +653,18 @@ interface VolsyncBackupOpts {
 
 export class VolsyncBackup extends Construct {
   constructor(
-    chart: Chart,
+    construct: Construct,
     auth: VolsyncAuth,
     pvc: string,
     opts: VolsyncBackupOpts = {},
   ) {
+    const chart = getChart(construct);
     const id = `${chart.node.id}-volsync-backup-${pvc}`;
-    super(chart, id);
+    super(construct, id);
 
     const namespace = chart.namespace;
     const vaultSecret = new VaultDynamicSecret(
-      chart,
+      this,
       auth,
       (secretRef) => ({
         GOOGLE_PROJECT_ID: "998272529872",
@@ -667,7 +680,7 @@ export class VolsyncBackup extends Construct {
       },
     );
 
-    new ReplicationSource(chart, `replications-source-${pvc}`, {
+    new ReplicationSource(this, `replications-source-${pvc}`, {
       metadata: { name: pvc },
       spec: {
         restic: {
@@ -712,13 +725,14 @@ export class GarageKey extends Construct {
   readonly secretAccessKeyKey: string;
 
   constructor(
-    chart: Chart,
+    construct: Construct,
     clusterName: GarageClusterName,
     name: string,
     opts: GarageKeyOpts = {},
   ) {
+    const chart = getChart(construct);
     const id = `${chart.node.id}-garage-key-${clusterName}-${name}`;
-    super(chart, id);
+    super(construct, id);
 
     let importKey: GarageImportKey | undefined = undefined;
     let secretTemplate: GarageSecretTemplate | undefined = undefined;
@@ -855,7 +869,7 @@ export class BucketSyncPolicy extends Construct {
       valueFrom: { secretKeyRef: { name: secret, key: field } },
     });
 
-    new BaseBucketSyncPolicy(construct, `${id}-bucket-sync-policy`, {
+    new BaseBucketSyncPolicy(this, `${id}-bucket-sync-policy`, {
       metadata: {
         name: destination.bucket.name,
       },
@@ -1226,7 +1240,8 @@ export class StatefulSet extends BaseStatefulSet {
   private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
-  constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
+  constructor(construct: Construct, name: string, opts: WorkloadOpts = {}) {
+    const chart = getChart(construct);
     const id = `${chart.node.id}-statefulset-${name}`;
     const podSecCtxOpts = opts.securityContext ?? {};
     const secCtx = getSecurityContext(podSecCtxOpts);
@@ -1234,7 +1249,7 @@ export class StatefulSet extends BaseStatefulSet {
     const containers: any[] = [];
     const initContainers: any[] = [];
     const volumes = volumesToInlineVolumes(opts.volumes) ?? [];
-    super(chart, id, {
+    super(construct, id, {
       metadata: { name },
       spec: {
         selector: { matchLabels: selector },
@@ -1311,7 +1326,8 @@ export class Deployment extends BaseDeployment {
   private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
-  constructor(chart: Chart, name: string, opts: DeploymentOpts = {}) {
+  constructor(construct: Construct, name: string, opts: DeploymentOpts = {}) {
+    const chart = getChart(construct);
     ensureNoPvcTemplateVolumes(opts.volumes);
     const id = `${chart.node.id}-deployment-${name}`;
     const podSecCtxOpts = opts.securityContext ?? {};
@@ -1320,7 +1336,7 @@ export class Deployment extends BaseDeployment {
     const containers: any[] = [];
     const initContainers: any[] = [];
     const volumes = volumesToInlineVolumes(opts.volumes) ?? [];
-    super(chart, id, {
+    super(construct, id, {
       metadata: { name },
       spec: {
         replicas: opts.replicas ?? 1,
@@ -1390,7 +1406,8 @@ export class DaemonSet extends BaseDaemonSet {
   private readonly _podSecCtxOpts: GetSecurityContextOpts;
   private readonly _selector: Record<string, string>;
 
-  constructor(chart: Chart, name: string, opts: WorkloadOpts = {}) {
+  constructor(construct: Construct, name: string, opts: WorkloadOpts = {}) {
+    const chart = getChart(construct);
     ensureNoPvcTemplateVolumes(opts.volumes);
     const id = `${chart.node.id}-daemonset-${name}`;
     const podSecCtxOpts = opts.securityContext ?? {};
@@ -1399,7 +1416,7 @@ export class DaemonSet extends BaseDaemonSet {
     const containers: any[] = [];
     const initContainers: any[] = [];
     const volumes = volumesToInlineVolumes(opts.volumes) ?? [];
-    super(chart, id, {
+    super(construct, id, {
       metadata: { name },
       spec: {
         selector: { matchLabels: selector },
@@ -1473,21 +1490,22 @@ export class BucketServer extends Construct {
   readonly service: Service;
 
   constructor(
-    construct: Chart,
+    construct: Construct,
     bucket: GarageBucket,
     key: GarageKey,
     opts: BucketServerOpts = {},
   ) {
-    if (construct.namespace === undefined) {
+    const chart = getChart(construct);
+    if (chart.namespace === undefined) {
       throw new Error(`chart namespace undefined`);
     }
 
     const name = opts.name ?? `bucket-server-${bucket.name}`;
-    const id = `${construct.node.id}-bucket-server-${name}`;
+    const id = `${chart.node.id}-bucket-server-${name}`;
     super(construct, id);
-    this.namespace = construct.namespace;
+    this.namespace = chart.namespace;
 
-    this.deployment = new Deployment(construct, name, {});
+    this.deployment = new Deployment(this, name, {});
     this.deployment.addContainer("rclone", "rclone/rclone:1.73.1", {
       containerPorts: { http: 8080 },
       args: ["serve", "http", `source:${bucket.name}`, "--addr=:8080"],
@@ -1505,7 +1523,7 @@ export class BucketServer extends Construct {
       },
     });
     this.service = this.deployment.createService({ http: 8080 });
-    new VerticalPodAutoscaler(construct, this.deployment);
+    new VerticalPodAutoscaler(this, this.deployment);
   }
 
   url(path: string): string {
@@ -1531,26 +1549,27 @@ export class AssetsServer extends Construct {
   readonly service: Service;
 
   constructor(
-    chart: Chart,
+    construct: Construct,
     auth: AssetsServerAuth,
     opts: AssetsServerOpts = {},
   ) {
+    const chart = getChart(construct);
     const name = `${chart.node.id}-assets`;
-    super(chart, name);
+    super(construct, name);
 
-    const secret = new VaultStaticSecret(chart, auth, {
+    const secret = new VaultStaticSecret(this, auth, {
       name: "assets-server",
       path: "assets-server",
     });
 
-    const key = new GarageKey(chart, "garage", name);
-    const readKey = new GarageKey(chart, "garage", `${name}-read`);
-    const bucket = new GarageBucket(chart, "garage", name, [key], {
+    const key = new GarageKey(this, "garage", name);
+    const readKey = new GarageKey(this, "garage", `${name}-read`);
+    const bucket = new GarageBucket(this, "garage", name, [key], {
       roKeys: [readKey],
     });
 
     new BucketSyncPolicy(
-      chart,
+      this,
       {
         name: `homelab-assets-698966/${chart.node.id}`,
         secret: secret.name,
@@ -1560,7 +1579,7 @@ export class AssetsServer extends Construct {
       { syncTimeout: opts.syncTimeout },
     );
 
-    this.bucketServer = new BucketServer(chart, bucket, readKey, {
+    this.bucketServer = new BucketServer(this, bucket, readKey, {
       name: "assets-server",
     });
     this.service = this.bucketServer.service;
