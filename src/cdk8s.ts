@@ -459,21 +459,36 @@ export class HttpRoute extends BaseHttpRoute {
     });
   }
 
-  match(to: RouteTarget, port: number, path: string = "/") {
+  match(
+    to: RouteTarget,
+    port: number,
+    ...matches: {
+      path?: string;
+      pathType?: "Exact" | "PathPrefix" | "RegularExpression";
+      timeout?: string;
+    }[]
+  ) {
     const props = (this as any).props;
     const spec = (props.spec = props.spec ?? {});
     const rules = (spec.rules = spec.rules ?? []);
-    rules.push({
-      backendRefs: [
-        {
-          apiVersion: to.apiVersion,
-          kind: to.kind,
-          name: to.name,
-          port,
-        },
-      ],
-      matches: [{ path: { type: "PathPrefix", value: path } }],
-    });
+    for (const {
+      path = "/",
+      pathType = "PathPrefix",
+      timeout,
+    } of matches.length ? matches : [{}]) {
+      rules.push({
+        backendRefs: [
+          {
+            apiVersion: to.apiVersion,
+            kind: to.kind,
+            name: to.name,
+            port,
+          },
+        ],
+        matches: [{ path: { type: pathType, value: path } }],
+        ...(timeout ? { timeouts: { request: timeout } } : {}),
+      });
+    }
     return this;
   }
 }

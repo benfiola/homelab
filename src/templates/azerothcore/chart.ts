@@ -201,6 +201,12 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new HttpRoute(chart, "friends", `assets.${hostname}`).match(
     assetsServer.service,
     8080,
+    {},
+    {
+      path: "^/client-.*\\.zip$",
+      pathType: "RegularExpression",
+      timeout: "0s",
+    },
   );
 
   return chart;

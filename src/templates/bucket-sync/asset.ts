@@ -9,7 +9,7 @@ export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
     {
       chart: "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync",
-      version: "1.0.10",
+      version: "1.1.0",
     },
     dir,
   );

@@ -120,6 +120,11 @@ export interface BucketSyncSpec {
    * @schema BucketSyncSpec#sourceEnv
    */
   readonly sourceEnv?: BucketSyncSpecSourceEnv[];
+
+  /**
+   * @schema BucketSyncSpec#timeout
+   */
+  readonly timeout?: string;
 }
 
 /**
@@ -135,6 +140,7 @@ export function toJson_BucketSyncSpec(obj: BucketSyncSpec | undefined): Record<s
     'policy': obj.policy,
     'source': obj.source,
     'sourceEnv': obj.sourceEnv?.map(y => toJson_BucketSyncSpecSourceEnv(y)),
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1010,6 +1016,11 @@ export interface BucketSyncPolicySpec {
    * @schema BucketSyncPolicySpec#syncHistoryLimit
    */
   readonly syncHistoryLimit?: number;
+
+  /**
+   * @schema BucketSyncPolicySpec#timeout
+   */
+  readonly timeout?: string;
 }
 
 /**
@@ -1026,6 +1037,7 @@ export function toJson_BucketSyncPolicySpec(obj: BucketSyncPolicySpec | undefine
     'source': obj.source,
     'sourceEnv': obj.sourceEnv?.map(y => toJson_BucketSyncPolicySpecSourceEnv(y)),
     'syncHistoryLimit': obj.syncHistoryLimit,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});

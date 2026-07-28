@@ -94,6 +94,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new HttpRoute(chart, "friends", `assets.${hostname}`).match(
     assetsServer.service,
     8080,
+    {},
+    {
+      path: "^/spt-.*\\.squashfs$",
+      pathType: "RegularExpression",
+      timeout: "0s",
+    },
   );
 
   return chart;
