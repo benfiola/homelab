@@ -669,7 +669,7 @@ export class VolsyncBackup extends Construct {
       (secretRef) => ({
         B2_ACCOUNT_ID: secretRef("backblaze-application-key-id"),
         B2_APPLICATION_KEY: secretRef("backblaze-application-key"),
-        RESTIC_REPOSITORY: `b2://homelab-volsync-697438/${namespace}/${pvc}`,
+        RESTIC_REPOSITORY: `b2:homelab-volsync-697438:/${namespace}/${pvc}`,
         RESTIC_PASSWORD: secretRef("restic-password"),
       }),
       {
