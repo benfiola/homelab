@@ -286,8 +286,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // bucket-sync
   bucketSync.to(kubeApiServer, tcp(6443));
   host.to(bucketSync, tcp(8081));
-  bucketSyncJob.to(garage, tcp(3900));
-  bucketSyncJob.to(dns("*.googleapis.com"), tcp(443));
+  bucketSyncJob
+    .to(garage, tcp(3900))
+    .to(dns("*.googleapis.com"), tcp(443))
+    .to(dns("api.backblazeb2.com"), tcp(443));
 
   // cert-manager
   certManagerCainjector.to(kubeApiServer, tcp(6443));
