@@ -288,7 +288,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(bucketSync, tcp(8081));
   bucketSyncJob
     .to(garage, tcp(3900))
-    .to(dns("*.googleapis.com"), tcp(443))
     .to(dns("*.backblazeb2.com"), tcp(443))
     .to(dns("*.backblaze.com"), tcp(443));
 
@@ -583,7 +582,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // volsync
   volsync.to(kubeApiServer, tcp(6443));
   host.to(volsync, tcp(8081));
-  volsyncMover.to(dns("*.googleapis.com"), tcp(443));
+  volsyncMover
+    .to(dns("*.backblazeb2.com"), tcp(443))
+    .to(dns("*.backblaze.com"), tcp(443));
 
   // general - bgp
   nodes

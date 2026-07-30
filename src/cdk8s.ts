@@ -667,11 +667,9 @@ export class VolsyncBackup extends Construct {
       this,
       auth,
       (secretRef) => ({
-        GOOGLE_PROJECT_ID: "998272529872",
-        GOOGLE_APPLICATION_CREDENTIALS: secretRef(
-          "google-cloud-credentials-file",
-        ),
-        RESTIC_REPOSITORY: `gs:homelab-volsync-697438:/${namespace}/${pvc}`,
+        B2_ACCOUNT_ID: secretRef("backblaze-application-key-id"),
+        B2_APPLICATION_KEY: secretRef("backblaze-application-key"),
+        RESTIC_REPOSITORY: `b2://homelab-volsync-697438/${namespace}/${pvc}`,
         RESTIC_PASSWORD: secretRef("restic-password"),
       }),
       {
