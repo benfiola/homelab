@@ -885,13 +885,12 @@ export class BucketSyncPolicy extends Construct {
       spec: {
         source,
         sourceEnv: [
-          fromLiteral("TYPE", "googlecloudstorage"),
-          fromSecret(
-            "SERVICE_ACCOUNT_CREDENTIALS",
-            secret.name,
-            "google-cloud-credentials-file",
-          ),
+          fromLiteral("TYPE", "b2"),
+          fromSecret("ACCOUNT", secret.name, "backblaze-application-key-id"),
+          fromSecret("KEY", secret.name, "backblaze-application-key"),
         ],
+        sourceEncryptionKey: fromSecret("", secret.name, "encryption-key")
+          .valueFrom,
         destination: destination.bucket.name,
         destinationEnv: [
           fromLiteral("TYPE", "s3"),
