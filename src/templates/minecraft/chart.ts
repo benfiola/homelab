@@ -1,6 +1,6 @@
 import {
   AssetsServer,
-  AssetsServerAuth,
+  BucketSyncAuth,
   Chart,
   HttpRoute,
   Namespace,
@@ -15,8 +15,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new Namespace(chart);
 
   const hostname = "minecraft.bulia.dev";
-  const assetsServerAuth = new AssetsServerAuth(chart);
-  const assetsServer = new AssetsServer(chart, assetsServerAuth);
+  const bucketSyncAuth = new BucketSyncAuth(chart);
+  const assetsServer = new AssetsServer(chart, bucketSyncAuth);
 
   const ss = new StatefulSet(chart, "minecraft", {
     securityContext: { uid: 1000, gid: 1000 },

@@ -1,6 +1,6 @@
 import {
   AssetsServer,
-  AssetsServerAuth,
+  BucketSyncAuth,
   Chart,
   HttpRoute,
   Namespace,
@@ -14,8 +14,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
   new Namespace(chart);
 
   const hostname = "eft.bulia.dev";
-  const assetsServerAuth = new AssetsServerAuth(chart);
-  const assetsServer = new AssetsServer(chart, assetsServerAuth, {
+  const bucketSyncAuth = new BucketSyncAuth(chart);
+  const assetsServer = new AssetsServer(chart, bucketSyncAuth, {
     syncTimeout: "40m",
   });
 

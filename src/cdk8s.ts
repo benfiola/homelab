@@ -834,14 +834,17 @@ export class GarageBucket extends BaseGarageBucket {
   }
 }
 
-interface BucketSyncPolicyOpts {
-  syncTimeout?: string;
+export class BucketSyncAuth extends VaultAuth {
+  constructor(construct: Construct) {
+    super(construct, {
+      role: "bucket-sync",
+      serviceAccount: "bucket-sync-vault-secrets-operator",
+    });
+  }
 }
 
-interface GcsSource {
-  name: string;
-  secret: string;
-  credentialsKey: string;
+interface BucketSyncPolicyOpts {
+  syncTimeout?: string;
 }
 
 interface GarageDestination {
@@ -852,7 +855,8 @@ interface GarageDestination {
 export class BucketSyncPolicy extends Construct {
   constructor(
     construct: Construct,
-    source: GcsSource,
+    auth: BucketSyncAuth,
+    source: string,
     destination: GarageDestination,
     opts: BucketSyncPolicyOpts = {},
   ) {
@@ -869,18 +873,23 @@ export class BucketSyncPolicy extends Construct {
       valueFrom: { secretKeyRef: { name: secret, key: field } },
     });
 
+    const secret = new VaultStaticSecret(this, auth, {
+      name: `bucket-sync-${destination.bucket.name}`,
+      path: "bucket-sync",
+    });
+
     new BaseBucketSyncPolicy(this, `${id}-bucket-sync-policy`, {
       metadata: {
         name: destination.bucket.name,
       },
       spec: {
-        source: source.name,
+        source,
         sourceEnv: [
           fromLiteral("TYPE", "googlecloudstorage"),
           fromSecret(
             "SERVICE_ACCOUNT_CREDENTIALS",
-            source.secret,
-            source.credentialsKey,
+            secret.name,
+            "google-cloud-credentials-file",
           ),
         ],
         destination: destination.bucket.name,
@@ -1531,15 +1540,6 @@ export class BucketServer extends Construct {
   }
 }
 
-export class AssetsServerAuth extends VaultAuth {
-  constructor(construct: Construct) {
-    super(construct, {
-      role: "assets-server",
-      serviceAccount: "assets-server-vault-secrets-operator",
-    });
-  }
-}
-
 interface AssetsServerOpts {
   syncTimeout?: string;
 }
@@ -1550,17 +1550,12 @@ export class AssetsServer extends Construct {
 
   constructor(
     construct: Construct,
-    auth: AssetsServerAuth,
+    auth: BucketSyncAuth,
     opts: AssetsServerOpts = {},
   ) {
     const chart = getChart(construct);
     const name = `${chart.node.id}-assets`;
     super(construct, name);
-
-    const secret = new VaultStaticSecret(this, auth, {
-      name: "assets-server",
-      path: "assets-server",
-    });
 
     const key = new GarageKey(this, "garage", name);
     const readKey = new GarageKey(this, "garage", `${name}-read`);
@@ -1570,11 +1565,8 @@ export class AssetsServer extends Construct {
 
     new BucketSyncPolicy(
       this,
-      {
-        name: `homelab-assets-698966/${chart.node.id}`,
-        secret: secret.name,
-        credentialsKey: "google-cloud-credentials-file",
-      },
+      auth,
+      `homelab-assets-698966/${chart.node.id}`,
       { key, bucket },
       { syncTimeout: opts.syncTimeout },
     );

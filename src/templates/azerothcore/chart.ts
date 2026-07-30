@@ -1,6 +1,6 @@
 import {
   AssetsServer,
-  AssetsServerAuth,
+  BucketSyncAuth,
   Chart,
   HttpRoute,
   Namespace,
@@ -50,8 +50,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     ),
   }));
 
-  const assetsServerAuth = new AssetsServerAuth(chart);
-  const assetsServer = new AssetsServer(chart, assetsServerAuth, {
+  const bucketSyncAuth = new BucketSyncAuth(chart);
+  const assetsServer = new AssetsServer(chart, bucketSyncAuth, {
     syncTimeout: "20m",
   });
 
