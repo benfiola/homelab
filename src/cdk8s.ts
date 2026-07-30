@@ -648,7 +648,7 @@ export class VolsyncAuth extends VaultAuth {
 }
 
 interface VolsyncBackupOpts {
-  securityContext?: PodSecurityContext;
+  securityContext?: GetSecurityContextOpts;
 }
 
 export class VolsyncBackup extends Construct {
@@ -678,6 +678,8 @@ export class VolsyncBackup extends Construct {
       },
     );
 
+    const securityContext = getSecurityContext(opts.securityContext);
+
     new ReplicationSource(this, `replications-source-${pvc}`, {
       metadata: { name: pvc },
       spec: {
@@ -686,7 +688,7 @@ export class VolsyncBackup extends Construct {
           moverPodLabels: {
             "app.kubernetes.io/name": "volsync-mover",
           },
-          moverSecurityContext: opts.securityContext,
+          moverSecurityContext: securityContext.pod,
           pruneIntervalDays: 1,
           repository: vaultSecret.name,
           retain: {
