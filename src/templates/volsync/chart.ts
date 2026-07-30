@@ -4,6 +4,7 @@ import {
 } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
+  Deployment,
   findApiObject,
   Helm,
   Namespace,
@@ -44,6 +45,23 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   });
+  const deployment = new Deployment(chart, "testing", {
+    volumes: {
+      test: { pvc: { name: pvc.name } },
+    },
+  });
+  deployment.addContainer(
+    "testing",
+    "ghcr.io/benfiola/homelab-images/toolbox:1.1.0",
+    {
+      cmd: ["bash", "-c"],
+      args: ["sleep infinity"],
+      volumeMounts: {
+        test: "/data",
+      },
+    },
+  );
+
   const vsAuth = new VolsyncAuth(chart);
   new VolsyncBackup(chart, vsAuth, pvc.name);
 
