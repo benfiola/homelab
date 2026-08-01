@@ -217,7 +217,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     8080,
     {},
     {
-      path: "^/client-.*\\.zip$",
+      path: "^/wow-.*\\.squashfs$",
       pathType: "RegularExpression",
       timeout: "0s",
     },
