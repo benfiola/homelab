@@ -127,6 +127,8 @@
 
 # assign static ips
 /ip/dhcp-server/lease/add address=192.168.24.2 server=iot mac-address=D4:0A:DC:DB:A9:0E comment="projector"
+/ip/dhcp-server/lease/add address=192.168.24.3 server=iot mac-address=80:4A:F2:B2:19:E2 comment="sonos (play right)"
+/ip/dhcp-server/lease/add address=192.168.24.4 server=iot mac-address=80:4A:F2:B2:19:64 comment="sonos (play left)"
 /ip/dhcp-server/lease/add address=192.168.24.6 server=iot mac-address=F8:5C:24:40:2F:4A comment="sonos (bedroom-2 right)"
 /ip/dhcp-server/lease/add address=192.168.24.7 server=iot mac-address=F8:5C:24:40:34:98 comment="sonos (bedroom-2 left)"
 /ip/dhcp-server/lease/add address=192.168.24.8 server=iot mac-address=A0:85:E3:E9:43:78 comment="3d printer"
@@ -191,6 +193,8 @@
 
 # configure firewall address lists
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="projector"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.3 comment="sonos (play right)"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.4 comment="sonos (play left)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="sonos (bedroom-2 right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="sonos (bedroom-2 left)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.2 comment="projector"
