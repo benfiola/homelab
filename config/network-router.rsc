@@ -230,6 +230,7 @@
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_WAN out-interface-list=WAN comment="accept iot (allow wan) -> wan"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=FAMILY comment="accept iot (allow intranet) -> family"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=PERSONAL comment="accept iot (allow intranet) -> personal"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_FRIENDS comment="accept iot (allow intranet) -> infrastructure (friends ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_IOT comment="accept iot -> infrastructure (iot ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=MANAGEMENT out-interface-list=MANAGEMENT comment="accept management -> management"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=PERSONAL comment="accept personal -> personal"
