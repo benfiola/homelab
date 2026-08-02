@@ -673,6 +673,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.17.0/24",
         "192.168.40.0/24",
         "192.168.41.0/24",
+        // iot + iot_allow_intranet (projector)
+        "192.168.24.2/32",
       ),
       tcp(3724, 6969, 7878, 8085, 10443, 25565),
     );
