@@ -499,8 +499,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // palworld
   palworld
+    .to(dns("*.steamcontent.com"), tcp(443))
     .to(dns("api.steampowered.com"), tcp(443))
-    .to(dns("*.steamserver.net"), tcp(443));
+    .to(dns("*.steamserver.net"), tcp(443, [27015, 27060]));
 
   // piraeus-operator
   host.to(linstorAffinityController, tcp(8000));
