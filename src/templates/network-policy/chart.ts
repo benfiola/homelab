@@ -497,6 +497,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   nodeFeatureDiscovery.to(kubeApiServer, tcp(6443));
   host.to(nodeFeatureDiscovery, tcp(8080));
 
+  // palworld
+  palworld.to(dns("api.steampowered.com"), tcp(443));
+
   // piraeus-operator
   host.to(linstorAffinityController, tcp(8000));
   linstorAffinityController
