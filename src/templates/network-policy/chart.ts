@@ -200,7 +200,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const mediarrSabnzbd = svc("mediarr-sabnzbd", pod("sabnzbd", "mediarr"));
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
-
+  const palworld = svc("palworld", pod("palworld", "palworld"));
   const piraeusOperator = svc(
     "piraeus-operator",
     component("piraeus-operator", "piraeus-operator"),
@@ -663,6 +663,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrSeerr, tcp(5055))
     .to(minecraft, tcp(25565))
     .to(minecraftAssetsServer, tcp(8080))
+    .to(palworld, udp(8211))
     .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
     .to(singlePlayerTarkovAssetsServer, tcp(8080))
     .from(
@@ -676,7 +677,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         // iot + iot_allow_intranet (projector)
         "192.168.24.2/32",
       ),
-      tcp(3724, 6969, 7878, 8085, 10443, 25565),
+      tcp(3724, 6969, 7878, 8085, 8211, 10443, 25565),
     );
 
   gatewayInfrastructure
