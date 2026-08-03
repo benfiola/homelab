@@ -669,7 +669,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(mediarrSeerr, tcp(5055))
     .to(minecraft, tcp(25565))
     .to(minecraftAssetsServer, tcp(8080))
-    .to(palworld, udp(8211))
+    .to(palworld, udp(8211), tcp(8080))
     .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
     .to(singlePlayerTarkovAssetsServer, tcp(8080))
     .from(
