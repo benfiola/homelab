@@ -38,6 +38,7 @@ apps:
   - template: multus-network
   - template: network-policy
   - template: node-feature-discovery
+  - template: palworld
   - template: piraeus-operator
   - template: postfix
   - template: prometheus
