@@ -2,7 +2,7 @@ apiVersion: v1alpha1
 kind: HomelabClusterConfig
 endpoint: cluster.bulia.dev
 hardware:
-  tc:
+  rb:
     disks:
       SYSTEM:
         device: /dev/nvme0n1
@@ -19,8 +19,17 @@ hardware:
           systemExtensions:
             officialExtensions:
               - siderolabs/drbd
-              - siderolabs/i915
-    image: factory.talos.dev/metal-installer/322dbdfae3877a291f8977311656b2267aacfe7c15a483f56904d65050814a0c:v1.13.3
+              - siderolabs/nvidia-container-toolkit-lts
+              - siderolabs/nvidia-open-gpu-kernel-modules-lts
+    image: factory.talos.dev/metal-installer/79770bff8ecabad8e2f0bc8ef58f121a41af55e31e4e4ec2b3b0d1d00b10cb1d:v1.13.3
+    machineConfig:
+      machine:
+        kernel:
+          modules:
+            - name: nvidia
+            - name: nvidia_uvm
+            - name: nvidia_drm
+            - name: nvidia_modeset
   rpi4:
     disks:
       SYSTEM:
@@ -53,6 +62,25 @@ hardware:
               dtoverlay=disable-bt
               dtoverlay=disable-wifi
     image: factory.talos.dev/metal-installer/cc039b3437c81179de3cf77be1094d619b88a7044144b2d7153ed14104900272:v1.13.3
+  tc:
+    disks:
+      SYSTEM:
+        device: /dev/nvme0n1
+      EPHEMERAL:
+        device: /dev/nvme0n1
+        size: 200GiB
+      linstor:
+        device: /dev/nvme0n1
+        size: 1600GiB
+    imageConfig:
+      filename: metal-amd64.iso
+      schematic:
+        customization:
+          systemExtensions:
+            officialExtensions:
+              - siderolabs/drbd
+              - siderolabs/i915
+    image: factory.talos.dev/metal-installer/322dbdfae3877a291f8977311656b2267aacfe7c15a483f56904d65050814a0c:v1.13.3
 kubernetes: 1.36.1
 name: homelab
 ---
@@ -170,3 +198,10 @@ hardware: tc
 hostname: node-g.cluster.bulia.dev
 role: worker
 interface: eno2
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: rb
+hostname: node-h.cluster.bulia.dev
+role: worker
+interface: enp60s0u1

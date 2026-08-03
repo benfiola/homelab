@@ -130,11 +130,12 @@ role: worker
 
 Each hardware type (e.g., `rpi4`, `tc`) defines storage volumes and image customization for that hardware:
 
-| Field         | Type   | Required | Description                                                                |
-| ------------- | ------ | -------- | -------------------------------------------------------------------------- |
-| `image`       | string | ✓        | Talos OS image URI (generated via image factory or direct image reference) |
-| `disks`       | object | ✓        | Volume definitions by name (e.g., `SYSTEM`, `EPHEMERAL`, `linstor`)        |
-| `imageConfig` | object | ✓        | Image factory configuration for generating customized Talos images         |
+| Field           | Type   | Required | Description                                                                            |
+| --------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
+| `image`         | string | ✓        | Talos OS image URI (generated via image factory or direct image reference)               |
+| `disks`         | object | ✓        | Volume definitions by name (e.g., `SYSTEM`, `EPHEMERAL`, `linstor`)                       |
+| `imageConfig`   | object | ✓        | Image factory configuration for generating customized Talos images                       |
+| `machineConfig` | object |          | Talos machine configuration applied only to nodes of this hardware type (merged after base config, before per-node settings; e.g., hardware-specific kernel modules) |
 
 ### Disk/Volume Definition
 

@@ -145,6 +145,7 @@
 /ip/dhcp-server/lease/add address=192.168.32.6 server=infrastructure mac-address=88:A4:C2:A0:B5:BB comment="node-e.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.7 server=infrastructure mac-address=F8:75:A4:FE:1F:E9 comment="node-f.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.8 server=infrastructure mac-address=00:2B:67:D6:40:6B comment="node-g.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.9 server=infrastructure mac-address=00:E0:4C:68:05:7B comment="node-h.cluster"
 /ip/dhcp-server/lease/add address=192.168.88.2 server=management mac-address=F4:1E:57:F8:8F:89 comment="core.switch"
 /ip/dhcp-server/lease/add address=192.168.88.3 server=management mac-address=F4:1E:57:F8:96:77 comment="cluster.switch"
 /ip/dhcp-server/lease/add address=192.168.88.4 server=management mac-address=94:83:C4:AB:04:1F comment="office.ap"
@@ -165,6 +166,7 @@
 /ip/dns/static/add name=node-e.cluster.bulia.dev address=192.168.32.6 ttl=10m
 /ip/dns/static/add name=node-f.cluster.bulia.dev address=192.168.32.7 ttl=10m
 /ip/dns/static/add name=node-g.cluster.bulia.dev address=192.168.32.8 ttl=10m
+/ip/dns/static/add name=node-h.cluster.bulia.dev address=192.168.32.9 ttl=10m
 /ip/dns/static/add name=cluster.bulia.dev cname=node-d.cluster.bulia.dev type=CNAME ttl=10m
 /ip/dns/static/add name=core.switch.bulia.dev address=192.168.88.2 ttl=10m
 /ip/dns/static/add name=cluster.switch.bulia.dev address=192.168.88.3 ttl=10m
@@ -188,6 +190,7 @@
 /routing/bgp/connection/add instance=cluster.bulia.dev name=node-e.cluster.bulia.dev remote.address=192.168.32.6 local.role=ibgp templates=cluster.bulia.dev
 /routing/bgp/connection/add instance=cluster.bulia.dev name=node-f.cluster.bulia.dev remote.address=192.168.32.7 local.role=ibgp templates=cluster.bulia.dev
 /routing/bgp/connection/add instance=cluster.bulia.dev name=node-g.cluster.bulia.dev remote.address=192.168.32.8 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.bulia.dev name=node-h.cluster.bulia.dev remote.address=192.168.32.9 local.role=ibgp templates=cluster.bulia.dev
 
 # configure mdns repeater
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot

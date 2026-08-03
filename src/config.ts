@@ -12,7 +12,11 @@ const loadYaml = async <T>(
   return schema.parseAsync(parse(raw));
 };
 
-const hardwareNameSchema = zod.union([zod.literal("rpi4"), zod.literal("tc")]);
+const hardwareNameSchema = zod.union([
+  zod.literal("rb"),
+  zod.literal("rpi4"),
+  zod.literal("tc"),
+]);
 
 export type HardwareName = zod.infer<typeof hardwareNameSchema>;
 
@@ -49,6 +53,7 @@ const hardwareConfigSchema = zod.object({
     filename: zod.string(),
     schematic: imageSchematicSchema,
   }),
+  machineConfig: zod.record(zod.string(), zod.any()).optional(),
 });
 
 const clusterConfigSchema = zod.object({

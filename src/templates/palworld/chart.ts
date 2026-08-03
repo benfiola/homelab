@@ -16,7 +16,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart);
 
-  const image = "ghcr.io/benfiola/homelab-images/palworld:1.0.1";
+  const image = "ghcr.io/benfiola/homelab-images/palworld:1.1.0";
   const hostname = "palworld.bulia.dev";
 
   const vaultAuth = new VaultAuth(chart);

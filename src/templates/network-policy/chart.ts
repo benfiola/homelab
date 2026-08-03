@@ -166,6 +166,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "node-feature-discovery",
     pod("node-feature-discovery", "node-feature-discovery"),
   );
+  const nvidiaGpuOperator = svc(
+    "nvidia-gpu-operator",
+    pod("gpu-operator", "nvidia-gpu-operator"),
+  );
   const linstorAffinityController = svc(
     "linstor-affinity-controller",
     component("linstor-affinity-controller", "piraeus-operator"),
@@ -496,6 +500,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // node-feature-discovery
   nodeFeatureDiscovery.to(kubeApiServer, tcp(6443));
   host.to(nodeFeatureDiscovery, tcp(8080));
+
+  // nvidia-gpu-operator
+  nvidiaGpuOperator.to(kubeApiServer, tcp(6443));
+  host.to(nvidiaGpuOperator, tcp(8081));
 
   // palworld
   palworld

@@ -249,8 +249,14 @@ export const getSystemConfig = async (
     },
   );
   const derivedConfigs = buildDerivedConfigs();
+  const hardwareConfigs = hardware.machineConfig ? [hardware.machineConfig] : [];
 
-  const result = identityMerge(genConfigs, baseConfigs, derivedConfigs);
+  const result = identityMerge(
+    genConfigs,
+    baseConfigs,
+    hardwareConfigs,
+    derivedConfigs,
+  );
   return result;
 };
 
