@@ -70,7 +70,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "-ngl",
         "99",
         "--ctx-size",
-        "8192",
+        "16384",
         "--host",
         "0.0.0.0",
         "--port",
