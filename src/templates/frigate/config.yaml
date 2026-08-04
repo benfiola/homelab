@@ -211,6 +211,7 @@ record:
 review:
   genai:
     enabled: true
+    image_source: recordings
 semantic_search:
   enabled: false
 telemetry:
