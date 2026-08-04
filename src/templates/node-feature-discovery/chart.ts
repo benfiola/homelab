@@ -20,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     worker: {
       config: {
         core: {
-          labelSources: ["kernel", "pci"],
+          labelSources: ["kernel", "pci", "system"],
         },
       },
       resources: { limits: null },
