@@ -27,6 +27,7 @@ apps:
   - template: intel-device-plugins-operator
   - template: kube-state-metrics
   - template: linstor
+  - template: llama-cpp
   - template: loki
   - template: mdns-reflector
   - template: mediarr
