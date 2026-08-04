@@ -516,7 +516,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   linstorAffinityController
     .to(kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
-  host.to(linstorController, tcp(3370));
+  nodes.to(linstorController, tcp(3370));
   linstorController
     .to(kubeApiServer, tcp(6443))
     .to(linstorSatellite, tcp(3366));
