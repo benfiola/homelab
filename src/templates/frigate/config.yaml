@@ -207,6 +207,9 @@ record:
     retain:
       days: 1
       mode: all
+review:
+  genai:
+    enabled: true
 semantic_search:
   enabled: false
 telemetry:
