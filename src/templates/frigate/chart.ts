@@ -44,6 +44,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     volumes: {
       config: { pvc: { storageClass: "replicated", size: "1Gi" } },
       configmap: { configMap: config.name },
+      data: { pvc: { storageClass: "standard", size: "500Gi" } },
       shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
     },
   });
@@ -101,6 +102,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       volumeMounts: {
         config: "/config",
         shm: "/dev/shm",
+        data: "/media/frigate",
       },
       liveness: {
         http: { path: "/api/", port: 5000 },
