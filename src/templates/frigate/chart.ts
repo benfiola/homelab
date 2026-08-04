@@ -92,6 +92,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
             key: "mqtt-password",
           },
         },
+        TZ: "America/Los_Angeles",
       },
       resources: {
         limits: { "gpu.intel.com/i915": "1" },
