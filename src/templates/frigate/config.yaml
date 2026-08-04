@@ -137,6 +137,12 @@ detectors:
     device: GPU
 ffmpeg:
   input_args: preset-rtsp-restream
+genai:
+  provider: openai
+  base_url: http://llama-cpp.llama-cpp.svc:8080/v1
+  model: model
+  provider_options:
+    context_size: 8192
 go2rtc:
   streams:
     doorbell_camera:
