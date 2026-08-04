@@ -41,6 +41,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       scripts: { configMap: scripts.name },
     },
+    nodeSelector: {
+      "nvidia.com/gpu.present": "true",
+    },
   });
   ss.addInitContainer(
     "download-model",
