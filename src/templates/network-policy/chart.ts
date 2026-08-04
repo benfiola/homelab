@@ -9,6 +9,7 @@ import {
   kubeDns as _kubeDns,
   nodes as _nodes,
   pods as _pods,
+  app,
   cidrs,
   component,
   dns,
@@ -166,9 +167,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "node-feature-discovery",
     pod("node-feature-discovery", "node-feature-discovery"),
   );
+  const nvidiaGpuFeatureDiscovery = svc(
+    "nvidia-gpu-feature-discovery",
+    app("gpu-feature-discovery", "nvidia-gpu-operator"),
+  );
   const nvidiaGpuOperator = svc(
     "nvidia-gpu-operator",
-    pod("gpu-operator", "nvidia-gpu-operator"),
+    app("gpu-operator", "nvidia-gpu-operator"),
+  );
+  const nvidiaOperatorValidator = svc(
+    "nvidia-operator-validator",
+    app("nvidia-operator-validator", "nvidia-gpu-operator"),
   );
   const linstorAffinityController = svc(
     "linstor-affinity-controller",
@@ -502,8 +511,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(nodeFeatureDiscovery, tcp(8080));
 
   // nvidia-gpu-operator
+  nvidiaGpuFeatureDiscovery.to(kubeApiServer, tcp(6443));
   nvidiaGpuOperator.to(kubeApiServer, tcp(6443));
   host.to(nvidiaGpuOperator, tcp(8081));
+  nvidiaOperatorValidator.to(kubeApiServer, tcp(6443));
 
   // palworld
   palworld

@@ -63,6 +63,7 @@ interface NodeFlowSubject {
 }
 
 interface PodFlowSubject {
+  app?: string;
   component?: string;
   gateway?: string;
   k8sApp?: string;
@@ -116,6 +117,7 @@ const getFlowSubject = (
       type: "pod",
       namespace,
 
+      app: labelMap["k8s:app"],
       component: labelMap["k8s:app.kubernetes.io/component"],
       k8sApp: labelMap["k8s:k8s-app"],
       gateway: labelMap["k8s:gateway.envoyproxy.io/owning-gateway-name"],
