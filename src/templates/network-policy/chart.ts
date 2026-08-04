@@ -141,6 +141,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "kube-state-metrics",
     component("metrics", "kube-state-metrics"),
   );
+  const llamaCppAssetsServer = svc(
+    "llama-cpp-assets-server",
+    _assetsServer("llama-cpp"),
+  );
+  const llamaCppServer = svc("llama-cpp", pod("llama-cpp", "llama-cpp"));
   const lokiBackend = svc("loki-backend", component("backend", "loki"));
   const lokiGateway = svc("loki-gateway", component("gateway", "loki"));
   const lokiMemcachedChunksCache = svc(
@@ -418,6 +423,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(kubeApiServer, tcp(6443))
     .to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
   pods.to(kubeDns, tcp(53), udp(53), dnsWildcard());
+
+  // llama-cpp
+  llamaCppServer.to(llamaCppAssetsServer, tcp(8080));
 
   // loki
   lokiBackend
