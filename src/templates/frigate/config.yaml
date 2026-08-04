@@ -139,6 +139,7 @@ ffmpeg:
   input_args: preset-rtsp-restream
 genai:
   provider: openai
+  api_key: api-key
   base_url: http://llama-cpp.llama-cpp.svc:8080/v1
   model: model
   provider_options:
