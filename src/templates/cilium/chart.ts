@@ -90,7 +90,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     k8sServicePort: 7445,
     kubeProxyReplacement: true,
     labels:
-      "kubernetes\\.io/hostname k8s-app node-role\\.kubernetes\\.io/control-plane gateway\\.envoyproxy\\.io/owning-gateway-name",
+      "kubernetes\\.io/hostname k8s-app app node-role\\.kubernetes\\.io/control-plane gateway\\.envoyproxy\\.io/owning-gateway-name",
     loadBalancer: {
       mode: "dsr",
       dsrDispatch: "geneve",
