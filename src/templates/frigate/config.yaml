@@ -140,9 +140,9 @@ ffmpeg:
 genai:
   provider: openai
   api_key: api-key
-  base_url: http://llama-cpp.llama-cpp.svc:8080/v1
   model: model
   provider_options:
+    base_url: http://llama-cpp.llama-cpp.svc:8080/v1
     context_size: 8192
 go2rtc:
   streams:
