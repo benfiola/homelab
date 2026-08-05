@@ -79,6 +79,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "16384",
         "--image-min-tokens",
         "1024",
+        "--parallel",
+        "1",
         "--host",
         "0.0.0.0",
         "--port",
