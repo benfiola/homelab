@@ -77,6 +77,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "q8_0",
         "--ctx-size",
         "16384",
+        "--image-min-tokens",
+        "1024",
         "--host",
         "0.0.0.0",
         "--port",
