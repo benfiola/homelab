@@ -20,9 +20,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const assetsServer = new AssetsServer(chart, bucketSyncAuth);
 
   const models: Record<string, string> = {
-    [assetsServer.url("Qwen3VL-4B-Instruct-Q4_K_M.gguf")]: "/data/model.gguf",
-    [assetsServer.url("mmproj-Qwen3VL-4B-Instruct-Q8_0.gguf")]:
-      "/data/vision.gguf",
+    [assetsServer.url("Qwen3-VL-8B-Instruct-Q4_K_M.gguf")]: "/data/model.gguf",
+    [assetsServer.url("Qwen3-VL-8B-Instruct-mmproj-F16.gguf")]:
+      "/data/mmproj.gguf",
   };
 
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
@@ -63,12 +63,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     {
       containerPorts: { web: 8080 },
       args: [
-        "-m",
+        "--model",
         "/data/model.gguf",
         "--mmproj",
-        "/data/vision.gguf",
-        "-ngl",
+        "/data/mmproj.gguf",
+        "--n-gpu-layers",
         "99",
+        "--flash-attn",
+        "on",
+        "--cache-type-k",
+        "q8_0",
+        "--cache-type-v",
+        "q8_0",
         "--ctx-size",
         "16384",
         "--host",
