@@ -1,0 +1,27 @@
+toggle_scene:
+  alias: Toggle Scene
+  fields:
+    zone_entity:
+      description: The light entity representing the zone/group
+      example: light.living_room_zone
+      selector:
+        entity:
+          domain: light
+    scene_entity:
+      description: The scene to activate when the zone is off
+      example: scene.living_room_evening
+      selector:
+        entity:
+          domain: scene
+  sequence:
+    - if:
+        - condition: template
+          value_template: "{{ is_state(zone_entity, 'off') }}"
+      then:
+        - action: scene.turn_on
+          target:
+            entity_id: "{{ scene_entity }}"
+      else:
+        - action: light.turn_off
+          target:
+            entity_id: "{{ zone_entity }}"
