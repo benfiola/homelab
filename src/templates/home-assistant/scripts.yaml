@@ -1,5 +1,5 @@
 toggle_scene:
-  alias: Toggle Scene
+  alias: Toggle scene
   fields:
     zone_entity:
       description: The light entity representing the zone/group

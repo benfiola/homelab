@@ -1,3 +1,6 @@
+frontend:
+  extra_module_url:
+    - /local/lovelace-card-mod/card-mod.js
 http:
   use_x_forwarded_for: true
   trusted_proxies:
@@ -12,6 +15,15 @@ ingress:
     ui_mode: toolbar
     parent: frigate
     url: http://frigate.frigate.svc:5000
+light_group_dimmer:
+  delay: 1
+  groups:
+    - name: living_room_dimmer_group
+      entities:
+        - light.living_room_entryway
+        - light.living_room_floor_lamp
+        - light.living_room_tracklight_1
+        - light.living_room_tracklight_2
 logger:
   default: info
 lovelace:
