@@ -7,8 +7,8 @@
 /user/group/add name="api" policy=read,write,api,rest-api,!local,!telnet,!ssh,!ftp,!reboot,!policy,!test,!winbox,!password,!web,!sniff,!sensitive,!romon
 
 # create users
-/user/add name="external-dns" group="api" password="${secrets.router.users.externalDns}"
-/user/add name="router-policy-sync" group="api" password="${secrets.router.users.routerPolicySync}"
+/user/add name="external-dns" group="api" password="{{ secrets.router.users.externalDns }}"
+/user/add name="router-policy-sync" group="api" password="{{ secrets.router.users.routerPolicySync }}"
 
 # create bridge interfaces
 /interface/bridge/add name=bridge admin-mac=78:9A:18:16:98:00 auto-mac=no protocol-mode=none pvid=999 vlan-filtering=yes
@@ -30,28 +30,28 @@
 /interface/bridge/port/add bridge=bridge interface=sfp-sfpplus1 frame-types=admit-only-vlan-tagged 
 
 # create wireguard interfaces
-/interface/wireguard/add name=wg-family listen-port=13231 mtu=1420 private-key="${secrets.wireguard.interfaces.family.private}"
-/interface/wireguard/add name=wg-personal listen-port=13232 mtu=1420 private-key="${secrets.wireguard.interfaces.personal.private}"
-/interface/wireguard/add name=wg-infrastructure listen-port=13233 mtu=1420 private-key="${secrets.wireguard.interfaces.infrastructure.private}"
-/interface/wireguard/add name=wg-management listen-port=13234 mtu=1420 private-key="${secrets.wireguard.interfaces.management.private}"
-/interface/wireguard/add name=wg-friends listen-port=13235 mtu=1420 private-key="${secrets.wireguard.interfaces.friends.private}"
+/interface/wireguard/add name=wg-family listen-port=13231 mtu=1420 private-key="{{ secrets.wireguard.interfaces.family.private }}"
+/interface/wireguard/add name=wg-personal listen-port=13232 mtu=1420 private-key="{{ secrets.wireguard.interfaces.personal.private }}"
+/interface/wireguard/add name=wg-infrastructure listen-port=13233 mtu=1420 private-key="{{ secrets.wireguard.interfaces.infrastructure.private }}"
+/interface/wireguard/add name=wg-management listen-port=13234 mtu=1420 private-key="{{ secrets.wireguard.interfaces.management.private }}"
+/interface/wireguard/add name=wg-friends listen-port=13235 mtu=1420 private-key="{{ secrets.wireguard.interfaces.friends.private }}"
 
 # create wireguard peers
-/interface/wireguard/peers/add allowed-address=192.168.9.2/32 interface=wg-family name=jfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.jfiolaIphone.family.public}"
-/interface/wireguard/peers/add allowed-address=192.168.17.2/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.personal.public}"
-/interface/wireguard/peers/add allowed-address=192.168.17.3/32 interface=wg-personal name=bfiola-work-laptop-personal persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaWorkLaptop.personal.public}"
-/interface/wireguard/peers/add allowed-address=192.168.17.4/32 interface=wg-personal name=bfiola-iphone persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaIphone.personal.public}"
-/interface/wireguard/peers/add allowed-address=192.168.34.2/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.public}"
-/interface/wireguard/peers/add allowed-address=192.168.34.3/32 interface=wg-infrastructure name=bfiola-desktop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaDesktop.infrastructure.public}"
-/interface/wireguard/peers/add allowed-address=192.168.34.4/32 interface=wg-infrastructure name=bfiola-work-laptop-infrastructure persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaWorkLaptop.infrastructure.public}"
-/interface/wireguard/peers/add allowed-address=192.168.41.2/32 interface=wg-friends name=ph persistent-keepalive=25s public-key="${secrets.wireguard.devices.ph.friends.public}"
-/interface/wireguard/peers/add allowed-address=192.168.41.3/32 interface=wg-friends name=cam persistent-keepalive=25s public-key="${secrets.wireguard.devices.cam.friends.public}"
-/interface/wireguard/peers/add allowed-address=192.168.41.4/32 interface=wg-friends name=james persistent-keepalive=25s public-key="${secrets.wireguard.devices.james.friends.public}"
-/interface/wireguard/peers/add allowed-address=192.168.41.5/32 interface=wg-friends name=tristan persistent-keepalive=25s public-key="${secrets.wireguard.devices.tristan.friends.public}"
-/interface/wireguard/peers/add allowed-address=192.168.41.6/32 interface=wg-friends name=rj persistent-keepalive=25s public-key="${secrets.wireguard.devices.rj.friends.public}"
-/interface/wireguard/peers/add allowed-address=192.168.89.2/32 interface=wg-management name=bfiola-home-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaHomeLaptop.management.public}"
-/interface/wireguard/peers/add allowed-address=192.168.89.3/32 interface=wg-management name=bfiola-desktop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaDesktop.management.public}"
-/interface/wireguard/peers/add allowed-address=192.168.89.4/32 interface=wg-management name=bfiola-work-laptop-management persistent-keepalive=25s public-key="${secrets.wireguard.devices.bfiolaWorkLaptop.management.public}"
+/interface/wireguard/peers/add allowed-address=192.168.9.2/32 interface=wg-family name=jfiola-iphone persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.jfiolaIphone.family.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.17.2/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaHomeLaptop.personal.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.17.3/32 interface=wg-personal name=bfiola-work-laptop-personal persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaWorkLaptop.personal.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.17.4/32 interface=wg-personal name=bfiola-iphone persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaIphone.personal.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.34.2/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.34.3/32 interface=wg-infrastructure name=bfiola-desktop-infrastructure persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaDesktop.infrastructure.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.34.4/32 interface=wg-infrastructure name=bfiola-work-laptop-infrastructure persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaWorkLaptop.infrastructure.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.41.2/32 interface=wg-friends name=ph persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.ph.friends.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.41.3/32 interface=wg-friends name=cam persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.cam.friends.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.41.4/32 interface=wg-friends name=james persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.james.friends.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.41.5/32 interface=wg-friends name=tristan persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.tristan.friends.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.41.6/32 interface=wg-friends name=rj persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.rj.friends.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.89.2/32 interface=wg-management name=bfiola-home-laptop-management persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaHomeLaptop.management.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.89.3/32 interface=wg-management name=bfiola-desktop-management persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaDesktop.management.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.89.4/32 interface=wg-management name=bfiola-work-laptop-management persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaWorkLaptop.management.public }}"
 
 # create vlan interfaces
 /interface/vlan/add name=family interface=bridge vlan-id=8

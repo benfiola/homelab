@@ -8,12 +8,12 @@ Configuration for networking devices (routers, switches, access points, VPN peer
 
 `config/network.yaml` declares a list of `outputs`. Each output pairs a template file with a rendered destination file, and optionally supplies `inputs` — arbitrary key/value data scoped to that single output. This allows the same template to be reused multiple times with different inputs (e.g. rendering the same access point template once per physical device, each with a different hostname).
 
-Templates are plain text files — RouterOS scripts, shell scripts, YAML, or anything else a target device accepts — containing `${...}` placeholders evaluated as JavaScript template literals. Two objects are available inside a template:
+Templates are plain text files — RouterOS scripts, shell scripts, YAML, or anything else a target device accepts — rendered with [Nunjucks](https://mozilla.github.io/nunjucks/). Values are interpolated with `{{ expr }}` (not arbitrary JS — method calls like `.join(", ")` become filters, e.g. `{{ inputs.allowedIps | join(", ") }}`). Two objects are available inside a template:
 
 - `secrets` — values loaded from `config/secrets-network.yaml`, available to every template
 - `inputs` — the per-output `inputs` map defined for that template in `network.yaml`
 
-Accessing a field that isn't defined on `secrets` or `inputs` raises an error at render time instead of silently emitting `undefined`, which catches typos or missing values early.
+Rendering with an undefined field (e.g. a typo in a `secrets`/`inputs` path) raises an error instead of silently emitting an empty string, which catches typos or missing values early.
 
 `network.yaml` itself is rendered the same way before being parsed, with `secrets` available (but not `inputs`, since output-level inputs aren't known until the outputs are parsed). This lets secret values be composed directly into an output's `inputs`, not just into the templates they feed.
 
