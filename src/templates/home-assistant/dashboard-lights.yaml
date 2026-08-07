@@ -22,6 +22,8 @@ views:
                         zone_entity: light.living_room_tracklight_2
                     icon: mdi:track-light
                     entity: light.living_room_tracklight_2
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -34,6 +36,8 @@ views:
                         scene_entity: scene.living_room_tracklight_1_bright
                     icon: mdi:track-light
                     entity: light.living_room_tracklight_1
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -46,6 +50,8 @@ views:
                         scene_entity: scene.living_room_floor_lamp_bright
                     icon: mdi:floor-lamp
                     entity: light.living_room_floor_lamp
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -58,7 +64,24 @@ views:
                         scene_entity: scene.living_room_entryway_bright
                     icon: mdi:ceiling-light
                     entity: light.living_room_entryway
+                    hold_action:
+                      action: none
                 title: Living Room
+              - type: tile
+                entity: light.living_room_dimmer_group
+                features:
+                  - type: light-brightness
+                features_position: bottom
+                card_mod:
+                  style:
+                    ha-tile-container $: |
+                      .content {
+                        display: none !important;
+                      }
+                    ha-card: |
+                      hui-card-features {
+                        padding: var(--ha-space-3) var(--ha-space-3) var(--ha-space-3) var(--ha-space-3) !important;
+                      }
               - type: horizontal-stack
                 cards:
                   - show_name: false
@@ -72,6 +95,8 @@ views:
                       data: {}
                     show_state: false
                     icon: mdi:brightness-1
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -83,6 +108,8 @@ views:
                       data: {}
                     show_state: false
                     icon: mdi:brightness-2
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -94,6 +121,8 @@ views:
                       data: {}
                     show_state: false
                     icon: mdi:brightness-5
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -104,6 +133,8 @@ views:
                         entity_id: scene.office_office_bright
                       data: {}
                     icon: mdi:brightness-7
+                    hold_action:
+                      action: none
                 title: Office
               - type: horizontal-stack
                 cards:
@@ -117,6 +148,8 @@ views:
                         device_id: 3565c55584a0ddc92b4a137ac64230a3
                       data: {}
                     icon: mdi:brightness-1
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -127,6 +160,8 @@ views:
                         entity_id: scene.bedroom_2_bedroom_2_warm_dim
                       data: {}
                     icon: mdi:brightness-5
+                    hold_action:
+                      action: none
                   - show_name: false
                     show_icon: true
                     type: button
@@ -137,6 +172,8 @@ views:
                         entity_id: scene.bedroom_2_bedroom_2_warm
                       data: {}
                     icon: mdi:brightness-7
+                    hold_action:
+                      action: none
                 title: Bedroom
     max_columns: 4
     title: Lights
