@@ -149,3 +149,47 @@ outputs:
       allowedIps:
         - 192.168.33.7/32
         - 192.168.88.1/32
+
+  - file: wireguard.cam.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.cam.friends.private}"
+      address: 192.168.41.3/32
+      publicKey: "${secrets.wireguard.interfaces.friends.public}"
+      port: 13235
+      allowedIps:
+        - 192.168.33.7/32
+        - 192.168.88.1/32
+
+  - file: wireguard.james.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.james.friends.private}"
+      address: 192.168.41.4/32
+      publicKey: "${secrets.wireguard.interfaces.friends.public}"
+      port: 13235
+      allowedIps:
+        - 192.168.33.7/32
+        - 192.168.88.1/32
+
+  - file: wireguard.tristan.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.tristan.friends.private}"
+      address: 192.168.41.5/32
+      publicKey: "${secrets.wireguard.interfaces.friends.public}"
+      port: 13235
+      allowedIps:
+        - 192.168.33.7/32
+        - 192.168.88.1/32
+
+  - file: wireguard.rj.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "${secrets.wireguard.devices.rj.friends.private}"
+      address: 192.168.41.6/32
+      publicKey: "${secrets.wireguard.interfaces.friends.public}"
+      port: 13235
+      allowedIps:
+        - 192.168.33.7/32
+        - 192.168.88.1/32
