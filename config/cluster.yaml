@@ -1,6 +1,6 @@
 apiVersion: v1alpha1
 kind: HomelabClusterConfig
-endpoint: cluster.bulia.dev
+endpoint: cluster.fiola.dev
 hardware:
   rb:
     disks:
@@ -153,55 +153,55 @@ addresses:
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
-hostname: node-a.cluster.bulia.dev
+hostname: node-a.cluster.fiola.dev
 role: worker
 interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
-hostname: node-b.cluster.bulia.dev
+hostname: node-b.cluster.fiola.dev
 role: worker
 interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rpi4
-hostname: node-c.cluster.bulia.dev
+hostname: node-c.cluster.fiola.dev
 role: worker
 interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-d.cluster.bulia.dev
+hostname: node-d.cluster.fiola.dev
 role: controlplane
 interface: eno1
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-e.cluster.bulia.dev
+hostname: node-e.cluster.fiola.dev
 role: worker
 interface: eno2
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-f.cluster.bulia.dev
+hostname: node-f.cluster.fiola.dev
 role: worker
 interface: eno2
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-g.cluster.bulia.dev
+hostname: node-g.cluster.fiola.dev
 role: worker
 interface: eno2
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: rb
-hostname: node-h.cluster.bulia.dev
+hostname: node-h.cluster.fiola.dev
 role: worker
 interface: enp60s0u1

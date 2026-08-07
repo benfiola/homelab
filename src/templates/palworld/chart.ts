@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new Namespace(chart);
 
   const image = "ghcr.io/benfiola/homelab-images/palworld:1.1.0";
-  const hostname = "palworld.bulia.dev";
+  const hostname = "palworld.fiola.dev";
 
   const vaultAuth = new VaultAuth(chart);
 
@@ -47,7 +47,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           key: "admin-password",
         },
       },
-      SERVER_NAME: "palworld.bulia.dev",
+      SERVER_NAME: "palworld.fiola.dev",
       TZ: "America/Los_Angeles",
       UPDATE_CHECK_INTERVAL: "15m",
     },

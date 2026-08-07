@@ -157,44 +157,44 @@
 /ip/dhcp-server/lease/add address=192.168.88.6 server=management mac-address=94:83:C4:AA:F9:1B comment="living-room.ap"
 
 # assign dns
-/ip/dns/static/add name=3d-printer.bulia.dev address=192.168.24.8 ttl=10m
-/ip/dns/static/add name=printer.bulia.dev address=192.168.24.9 ttl=10m
-/ip/dns/static/add name=front-yard.camera.bulia.dev address=192.168.24.10 ttl=10m
-/ip/dns/static/add name=garage.camera.bulia.dev address=192.168.24.11 ttl=10m
-/ip/dns/static/add name=porch.camera.bulia.dev address=192.168.24.12 ttl=10m
-/ip/dns/static/add name=doorbell.camera.bulia.dev address=192.168.24.13 ttl=10m
-/ip/dns/static/add name=node-a.cluster.bulia.dev address=192.168.32.2 ttl=10m
-/ip/dns/static/add name=node-b.cluster.bulia.dev address=192.168.32.3 ttl=10m
-/ip/dns/static/add name=node-c.cluster.bulia.dev address=192.168.32.4 ttl=10m
-/ip/dns/static/add name=node-d.cluster.bulia.dev address=192.168.32.5 ttl=10m
-/ip/dns/static/add name=node-e.cluster.bulia.dev address=192.168.32.6 ttl=10m
-/ip/dns/static/add name=node-f.cluster.bulia.dev address=192.168.32.7 ttl=10m
-/ip/dns/static/add name=node-g.cluster.bulia.dev address=192.168.32.8 ttl=10m
-/ip/dns/static/add name=node-h.cluster.bulia.dev address=192.168.32.9 ttl=10m
-/ip/dns/static/add name=cluster.bulia.dev cname=node-d.cluster.bulia.dev type=CNAME ttl=10m
-/ip/dns/static/add name=core.switch.bulia.dev address=192.168.88.2 ttl=10m
-/ip/dns/static/add name=cluster.switch.bulia.dev address=192.168.88.3 ttl=10m
-/ip/dns/static/add name=office.ap.bulia.dev address=192.168.88.4 ttl=10m
-/ip/dns/static/add name=living-room.ap.bulia.dev address=192.168.88.6 ttl=10m
-/ip/dns/static/add name=bedroom-2.ap.bulia.dev address=192.168.88.5 ttl=10m
+/ip/dns/static/add name=3d-printer.fiola.dev address=192.168.24.8 ttl=10m
+/ip/dns/static/add name=printer.fiola.dev address=192.168.24.9 ttl=10m
+/ip/dns/static/add name=front-yard.camera.fiola.dev address=192.168.24.10 ttl=10m
+/ip/dns/static/add name=garage.camera.fiola.dev address=192.168.24.11 ttl=10m
+/ip/dns/static/add name=porch.camera.fiola.dev address=192.168.24.12 ttl=10m
+/ip/dns/static/add name=doorbell.camera.fiola.dev address=192.168.24.13 ttl=10m
+/ip/dns/static/add name=node-a.cluster.fiola.dev address=192.168.32.2 ttl=10m
+/ip/dns/static/add name=node-b.cluster.fiola.dev address=192.168.32.3 ttl=10m
+/ip/dns/static/add name=node-c.cluster.fiola.dev address=192.168.32.4 ttl=10m
+/ip/dns/static/add name=node-d.cluster.fiola.dev address=192.168.32.5 ttl=10m
+/ip/dns/static/add name=node-e.cluster.fiola.dev address=192.168.32.6 ttl=10m
+/ip/dns/static/add name=node-f.cluster.fiola.dev address=192.168.32.7 ttl=10m
+/ip/dns/static/add name=node-g.cluster.fiola.dev address=192.168.32.8 ttl=10m
+/ip/dns/static/add name=node-h.cluster.fiola.dev address=192.168.32.9 ttl=10m
+/ip/dns/static/add name=cluster.fiola.dev cname=node-d.cluster.fiola.dev type=CNAME ttl=10m
+/ip/dns/static/add name=core.switch.fiola.dev address=192.168.88.2 ttl=10m
+/ip/dns/static/add name=cluster.switch.fiola.dev address=192.168.88.3 ttl=10m
+/ip/dns/static/add name=office.ap.fiola.dev address=192.168.88.4 ttl=10m
+/ip/dns/static/add name=living-room.ap.fiola.dev address=192.168.88.6 ttl=10m
+/ip/dns/static/add name=bedroom-2.ap.fiola.dev address=192.168.88.5 ttl=10m
 
 # create bgp template
 # NOTE: this appears to be automatically created
 /routing/bgp/template/remove [find name=default]
-/routing/bgp/template/add name=cluster.bulia.dev afi=ip as=64512 routing-table=main
+/routing/bgp/template/add name=cluster.fiola.dev afi=ip as=64512 routing-table=main
 
 # create bgp instance
-/routing/bgp/instance/add name=cluster.bulia.dev as=64512 router-id=main
+/routing/bgp/instance/add name=cluster.fiola.dev as=64512 router-id=main
 
 # create bgp connections
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-a.cluster.bulia.dev remote.address=192.168.32.2 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-b.cluster.bulia.dev remote.address=192.168.32.3 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-c.cluster.bulia.dev remote.address=192.168.32.4 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-d.cluster.bulia.dev remote.address=192.168.32.5 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-e.cluster.bulia.dev remote.address=192.168.32.6 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-f.cluster.bulia.dev remote.address=192.168.32.7 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-g.cluster.bulia.dev remote.address=192.168.32.8 local.role=ibgp templates=cluster.bulia.dev
-/routing/bgp/connection/add instance=cluster.bulia.dev name=node-h.cluster.bulia.dev remote.address=192.168.32.9 local.role=ibgp templates=cluster.bulia.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-a.cluster.fiola.dev remote.address=192.168.32.2 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-b.cluster.fiola.dev remote.address=192.168.32.3 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-c.cluster.fiola.dev remote.address=192.168.32.4 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-d.cluster.fiola.dev remote.address=192.168.32.5 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-e.cluster.fiola.dev remote.address=192.168.32.6 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-f.cluster.fiola.dev remote.address=192.168.32.7 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-g.cluster.fiola.dev remote.address=192.168.32.8 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster.fiola.dev name=node-h.cluster.fiola.dev remote.address=192.168.32.9 local.role=ibgp templates=cluster.fiola.dev
 
 # configure mdns repeater
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot

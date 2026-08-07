@@ -5,9 +5,9 @@ import {
 } from "../../../assets/kubernetes/k8s";
 import {
   PrometheusSpecAlertingAlertmanagersPort as AlertmanagerPort,
-  Prometheus,
   PrometheusSpecContainersResourcesRequests as ContainerRequests,
   PrometheusSpecInitContainersResourcesRequests as InitContainerRequests,
+  Prometheus,
   PrometheusSpecStorageVolumeClaimTemplateSpecResourcesRequests as Storage,
 } from "../../../assets/prometheus-operator/monitoring.coreos.com";
 import { Chart, Namespace, VerticalPodAutoscaler } from "../../cdk8s";
@@ -124,7 +124,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           relabelings: [
             {
               targetLabel: "cluster",
-              replacement: "cluster.bulia.dev",
+              replacement: "cluster.fiola.dev",
             },
           ],
         },

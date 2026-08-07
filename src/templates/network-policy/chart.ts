@@ -351,7 +351,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(externalDnsCloudflare, tcp(7979, 8080));
   externalDnsMikrotik
     .to(kubeApiServer, tcp(6443))
-    .to(dns("router.bulia.dev"), tcp(80));
+    .to(dns("router.fiola.dev"), tcp(80));
   host.to(externalDnsMikrotik, tcp(7979, 8080));
 
   // external-snapshotter
@@ -377,7 +377,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   frigate
     .to(llamaCppServer, tcp(8080))
     .to(mosquitto, tcp(1883))
-    .to(dns("*.camera.bulia.dev"), tcp(554));
+    .to(dns("*.camera.fiola.dev"), tcp(554));
 
   host.to(frigate, tcp(5000));
 
@@ -585,7 +585,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // router-policy-sync
   routerPolicySync
     .to(kubeApiServer, tcp(6443))
-    .to(dns("router.bulia.dev"), tcp(80));
+    .to(dns("router.fiola.dev"), tcp(80));
   host.to(routerPolicySync, tcp(8081));
 
   // single-player-tarkov

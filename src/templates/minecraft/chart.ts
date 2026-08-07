@@ -14,7 +14,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const chart = new Chart(construct, id, { namespace: id });
   new Namespace(chart);
 
-  const hostname = "minecraft.bulia.dev";
+  const hostname = "minecraft.fiola.dev";
   const bucketSyncAuth = new BucketSyncAuth(chart);
   const assetsServer = new AssetsServer(chart, bucketSyncAuth);
 

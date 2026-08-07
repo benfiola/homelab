@@ -40,7 +40,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       general: {
         ALLOW_EMPTY_SENDER_DOMAINS: "true",
         RELAYHOST: "[smtp.mailgun.org]:587",
-        RELAYHOST_USERNAME: "noreply@cluster.bulia.dev",
+        RELAYHOST_USERNAME: "noreply@cluster.fiola.dev",
       },
     },
     existingSecret: vaultSecret.name,

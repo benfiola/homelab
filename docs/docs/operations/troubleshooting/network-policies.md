@@ -10,7 +10,7 @@ Some flows are only established during pod startup. If you're not seeing expecte
 
 ## Hubble UI
 
-Hubble UI provides per-namespace visibility into pod traffic (ingress/egress). It's available at [cilium.bulia.dev](https://cilium.bulia.dev).
+Hubble UI provides per-namespace visibility into pod traffic (ingress/egress). It's available at [cilium.fiola.dev](https://cilium.fiola.dev).
 
 **Limitations:**
 

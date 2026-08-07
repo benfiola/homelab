@@ -1,7 +1,7 @@
 import { URL } from "url";
 import {
-  Grafana,
   GrafanaSpecDeploymentSpecTemplateSpecContainersResourcesRequests as ContainerRequests,
+  Grafana,
 } from "../../../assets/grafana-operator/grafana.integreatly.org";
 import {
   ClusterRole,
@@ -101,7 +101,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const securityContext = getSecurityContext();
 
-  const externalUrl = new URL("https://metrics.bulia.dev");
+  const externalUrl = new URL("https://metrics.fiola.dev");
   new Grafana(chart, `${id}-grafana`, {
     metadata: { name: "grafana", labels: { instance: id } },
     spec: {

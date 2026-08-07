@@ -119,7 +119,7 @@ role: worker
 | Field             | Type   | Required | Description                                                                     |
 | ----------------- | ------ | -------- | ------------------------------------------------------------------------------- |
 | `name`            | string | ✓        | Cluster name identifier                                                         |
-| `endpoint`        | string | ✓        | Kubernetes API endpoint (FQDN or IP with port, e.g., `cluster.bulia.dev`)       |
+| `endpoint`        | string | ✓        | Kubernetes API endpoint (FQDN or IP with port, e.g., `cluster.fiola.dev`)       |
 | `kubernetes`      | string | ✓        | Kubernetes version to deploy (e.g., `1.34.2`)                                   |
 | `baseTalosConfig` | object | ✓        | Talos OS configuration applied cluster-wide (merged with generated node config) |
 | `hardware`        | object | ✓        | Hardware type definitions by name (e.g., `rpi4`, `tc`)                          |

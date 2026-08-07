@@ -20,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new Namespace(chart);
 
   const image = "ghcr.io/benfiola/homelab-images/azerothcore:1.5.0";
-  const hostname = "wow.bulia.dev";
+  const hostname = "wow.fiola.dev";
   const dbHost = "db.azerothcore.svc";
   const dbPort = 3306;
 
@@ -113,7 +113,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       AC_PLAYERBOTS_DATABASE_INFO: {
         secretKeyRef: { name: secrets.name, key: "db-info-playerbots" },
       },
-      AC_REALMLIST_ADDRESS: "wow.bulia.dev",
+      AC_REALMLIST_ADDRESS: "wow.fiola.dev",
     },
     args: ["init"],
     volumeMounts: {

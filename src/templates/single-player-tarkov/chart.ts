@@ -13,7 +13,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const chart = new Chart(construct, id, { namespace: id });
   new Namespace(chart);
 
-  const hostname = "eft.bulia.dev";
+  const hostname = "eft.fiola.dev";
   const bucketSyncAuth = new BucketSyncAuth(chart);
   const assetsServer = new AssetsServer(chart, bucketSyncAuth, {
     syncTimeout: "40m",

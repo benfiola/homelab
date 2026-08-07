@@ -122,7 +122,11 @@ const applySystemConfig = async (opts: ApplySystemConfigOpts) => {
       insecure: opts.insecure,
       nodes: opts.nodes,
     });
-    console.log(stringify(...Object.values(systemConfigs)));
+    for (const node of Object.keys(systemConfigs)) {
+      const systemConfig = systemConfigs[node];
+      console.log(`---\n# node: ${node}`);
+      console.log(stringify(...Object.values(systemConfig)));
+    }
     return;
   }
 
@@ -178,9 +182,7 @@ interface PullSecretsOpts {
 }
 
 const pullSecrets = (opts: PullSecretsOpts) =>
-  withStatus("Pulling secrets...", () =>
-    actions.pullSecrets(opts.configDir),
-  );
+  withStatus("Pulling secrets...", () => actions.pullSecrets(opts.configDir));
 
 interface GenerateClientConfigOpts {
   configDir: string;

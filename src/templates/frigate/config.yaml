@@ -147,21 +147,21 @@ genai:
 go2rtc:
   streams:
     doorbell_camera:
-      - rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_main
+      - rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.fiola.dev:554/h265Preview_01_main
     doorbell_camera_sub:
-      - rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.bulia.dev:554/h265Preview_01_sub
+      - rtsp://admin:{FRIGATE_CAMERA_DOORBELL_PASSWORD}@doorbell.camera.fiola.dev:554/h265Preview_01_sub
     front_yard_camera:
-      - rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/101
+      - rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.fiola.dev:554/Streaming/channels/101
     front_yard_camera_sub:
-      - rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.bulia.dev:554/Streaming/channels/102
+      - rtsp://admin:{FRIGATE_CAMERA_FRONT_YARD_PASSWORD}@front-yard.camera.fiola.dev:554/Streaming/channels/102
     garage_camera:
-      - rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/101
+      - rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.fiola.dev:554/Streaming/channels/101
     garage_camera_sub:
-      - rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.bulia.dev:554/Streaming/channels/102
+      - rtsp://admin:{FRIGATE_CAMERA_GARAGE_PASSWORD}@garage.camera.fiola.dev:554/Streaming/channels/102
     porch_camera:
-      - rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/101
+      - rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.fiola.dev:554/Streaming/channels/101
     porch_camera_sub:
-      - rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.bulia.dev:554/Streaming/channels/102
+      - rtsp://admin:{FRIGATE_CAMERA_PORCH_PASSWORD}@porch.camera.fiola.dev:554/Streaming/channels/102
     candidates:
       - 10.244.0.0/16
 model:

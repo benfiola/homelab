@@ -249,7 +249,9 @@ export const getSystemConfig = async (
     },
   );
   const derivedConfigs = buildDerivedConfigs();
-  const hardwareConfigs = hardware.machineConfig ? [hardware.machineConfig] : [];
+  const hardwareConfigs = hardware.machineConfig
+    ? [hardware.machineConfig]
+    : [];
 
   const result = identityMerge(
     genConfigs,

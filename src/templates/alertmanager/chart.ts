@@ -92,17 +92,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       receivers: [
         { name: "null" },
         {
-          name: "noreply@cluster.bulia.dev",
+          name: "noreply@cluster.fiola.dev",
           emailConfigs: [
             {
               headers: [
                 {
                   key: "Subject",
                   value:
-                    "[ALERT] cluster.bulia.dev: {{ len .Alerts }} active alerts",
+                    "[ALERT] cluster.fiola.dev: {{ len .Alerts }} active alerts",
                 },
               ],
-              from: "noreply@cluster.bulia.dev",
+              from: "noreply@cluster.fiola.dev",
               smarthost: "postfix-mail-headless.postfix.svc:587",
               tlsConfig: {
                 insecureSkipVerify: true,
@@ -117,7 +117,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         groupWait: "30s",
         groupInterval: "5m",
         repeatInterval: "12h",
-        receiver: "noreply@cluster.bulia.dev",
+        receiver: "noreply@cluster.fiola.dev",
         routes: [
           {
             receiver: "null",
