@@ -16,7 +16,6 @@ If you're starting from scratch, you'll need to make sure that the following con
 
 - [Cluster and nodes](/configuration/cluster-and-node.md)
 - [Flux](/configuration/flux.md)
-- [Storage](/configuration/storage.md)
 
 Then, you'll need to generate Talos secrets:
 
