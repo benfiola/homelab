@@ -282,17 +282,13 @@ const vaultSecretsSchema = zod.object({
 
 export type VaultSecrets = zod.infer<typeof vaultSecretsSchema>;
 
-export const getVaultSecrets = (configDir: string) =>
-  loadYaml(vaultSecretsSchema, getSecretsPath("vault", configDir));
+export const getVaultSecretsPath = (configDir: string) =>
+  join(configDir, "secrets-vault.yaml");
 
-export const secrets = [
-  "apps",
-  "flux",
-  "network",
-  "storage",
-  "vault",
-  "talos",
-] as const;
+export const getVaultSecrets = (configDir: string) =>
+  loadYaml(vaultSecretsSchema, getVaultSecretsPath(configDir));
+
+export const secrets = ["apps", "flux", "network", "talos"] as const;
 export type Secret = (typeof secrets)[number];
 
 export const isSecret = (v: any): v is Secret => {

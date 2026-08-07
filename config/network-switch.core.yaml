@@ -223,9 +223,14 @@ vlans:
   - id: 8
     name: family
     members:
+      - 2
+      - 4
       - 6
+      - 8
       - 10
       - 11
+      - 12
+      - 16
       - 17
       - 18
     portIsolation: true
@@ -238,6 +243,7 @@ vlans:
       - 6
       - 10
       - 11
+      - 14
       - 17
       - 18
     portIsolation: true
@@ -247,6 +253,7 @@ vlans:
   - id: 24
     name: iot
     members:
+      - 1
       - 6
       - 9
       - 10

@@ -8,7 +8,7 @@ Vault is the source-of-truth for application secrets managed through the Vault U
 
 During normal operation, secrets are managed directly through the Vault UI. However, when the Vault is being initialized:
 
-- The vault generates its own root credentials. These are saved to `secrets-vault.yaml` and are pushed to remote storage.
+- The vault generates its own root credentials. These are written directly to each vault pod's persistent volume (`/vault/data/root-token`, `/vault/data/unseal-key`) and are never pushed to remote storage.
 - If `secrets-apps.yaml` exists, its application secrets can be pushed to the vault as a time-saving measure.
 
 ## Schema
@@ -17,7 +17,7 @@ During normal operation, secrets are managed directly through the Vault UI. Howe
 
 **File**: `config/secrets-vault.yaml`
 
-Contains the credentials generated during vault initialization. These are saved to enable vault access after cluster resets without requiring re-initialization.
+A local-only backup of the credentials generated during vault initialization. This file is never synced to remote storage; it exists purely as a recovery mechanism so that if a vault pod is missing its credential files (e.g. after losing its volume) while vault is already initialized, bootstrapping can restore them without needing to re-initialize the vault - which is not possible once it's initialized, and would otherwise leave that pod permanently locked out. Bootstrapping only reads/writes this file when it detects a pod missing its credential files; it's left untouched otherwise.
 
 | Field       | Type   | Required | Description                                        |
 | ----------- | ------ | -------- | -------------------------------------------------- |

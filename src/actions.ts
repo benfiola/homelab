@@ -1,10 +1,11 @@
 import { App } from "cdk8s";
+import { existsSync } from "fs";
 import { glob, mkdir, readFile, rename, rm, writeFile } from "fs/promises";
 import path, { dirname, join } from "path";
 import { waitFor } from "./async";
 import * as bitwarden from "./bitwarden";
 import * as config from "./config";
-import { exec } from "./exec";
+import { exec, ExecError } from "./exec";
 import * as kubernetes from "./kubernetes";
 import { logger } from "./logger";
 import { renderTemplate, textblock } from "./strings";
@@ -101,9 +102,43 @@ export const bootstrap = async (
   await initializeVault(configDir);
 };
 
+const getVaultCredentials = async (
+  configDir: string,
+): Promise<config.VaultSecrets> => {
+  if (existsSync(config.getVaultSecretsPath(configDir))) {
+    return config.getVaultSecrets(configDir);
+  }
+
+  const readPodFile = async (file: string) => {
+    try {
+      return await kubernetes.exec("vault", "pods/vault-0", [
+        "cat",
+        `/vault/data/${file}`,
+      ]);
+    } catch (e) {
+      if (!(e instanceof ExecError)) {
+        throw e;
+      }
+      return undefined;
+    }
+  };
+
+  const [rootToken, unsealKey] = await Promise.all([
+    readPodFile("root-token"),
+    readPodFile("unseal-key"),
+  ]);
+  if (!rootToken || !unsealKey) {
+    throw new Error(
+      "vault credentials not found on disk or on vault-0 - has vault been bootstrapped?",
+    );
+  }
+
+  return { rootToken, unsealKey };
+};
+
 const pushAppsSecretsToVault = async (configDir: string) => {
   const appsSecrets = await config.getAppsSecrets(configDir);
-  const vaultSecrets = await config.getVaultSecrets(configDir);
+  const vaultSecrets = await getVaultCredentials(configDir);
 
   await kubernetes.portForward(
     "vault",
@@ -381,40 +416,74 @@ const initializeVault = async (configDir: string) => {
     async ([port]) => {
       const client = new Vault(`http://localhost:${port}`);
 
-      const status = await client.getStatus();
+      const podHasFile = async (i: number, file: string) => {
+        try {
+          await kubernetes.exec("vault", `pods/vault-${i}`, [
+            "cat",
+            `/vault/data/${file}`,
+          ]);
+          return true;
+        } catch (e) {
+          if (!(e instanceof ExecError)) {
+            throw e;
+          }
+          return false;
+        }
+      };
 
-      if (!status.initialized) {
-        logger().info("Initializing...");
-        const secrets = await client.init();
-
-        logger().info("Writing local vault secrets file...");
-        const secretsPath = config.getSecretsPath("vault", configDir);
-        await writeFile(secretsPath, stringify(secrets));
-
-        logger().info("Pushing vault secrets file to cloud...");
-        await pushSecrets("vault", configDir);
+      logger().info("Checking pod credential files...");
+      const missingPods: number[] = [];
+      for (let i = 0; i < numReplicas; i++) {
+        const hasRootToken = await podHasFile(i, "root-token");
+        const hasUnsealKey = await podHasFile(i, "unseal-key");
+        if (!hasRootToken || !hasUnsealKey) {
+          missingPods.push(i);
+        }
       }
 
-      const vaultSecrets = await config.getVaultSecrets(configDir);
+      let vaultSecrets: config.VaultSecrets;
+      if (missingPods.length === 0) {
+        logger().info("All pods already have credentials...");
+        vaultSecrets = await getVaultCredentials(configDir);
+      } else {
+        const secretsPath = config.getVaultSecretsPath(configDir);
+        const status = await client.getStatus();
+
+        if (!status.initialized) {
+          logger().info("Initializing...");
+          vaultSecrets = await client.init();
+
+          logger().info("Writing local vault secrets backup...");
+          await writeFile(secretsPath, stringify(vaultSecrets));
+        } else if (existsSync(secretsPath)) {
+          logger().info("Recovering vault secrets from local backup...");
+          vaultSecrets = await config.getVaultSecrets(configDir);
+        } else {
+          throw new Error(
+            `vault is initialized but pod(s) [${missingPods.join(", ")}] are missing their credential files and no local backup exists at ${secretsPath} - manual recovery required`,
+          );
+        }
+
+        logger().info("Pushing unseal key to pods missing it...");
+        await tempy.temporaryFileTask(async (file) => {
+          await writeFile(file, vaultSecrets.unsealKey);
+          for (const i of missingPods) {
+            const dest = `vault/vault-${i}:/vault/data/unseal-key`;
+            await kubernetes.cp(file, dest);
+          }
+        });
+
+        logger().info("Pushing root token to pods missing it...");
+        await tempy.temporaryFileTask(async (file) => {
+          await writeFile(file, vaultSecrets.rootToken);
+          for (const i of missingPods) {
+            const dest = `vault/vault-${i}:/vault/data/root-token`;
+            await kubernetes.cp(file, dest);
+          }
+        });
+      }
+
       client.token = vaultSecrets.rootToken;
-
-      logger().info("Pushing unseal key to pods...");
-      await tempy.temporaryFileTask(async (file) => {
-        await writeFile(file, vaultSecrets.unsealKey);
-        for (let i = 0; i < numReplicas; i++) {
-          const dest = `vault/vault-${i}:/vault/data/unseal-key`;
-          await kubernetes.cp(file, dest);
-        }
-      });
-
-      logger().info("Pushing root token to pods...");
-      await tempy.temporaryFileTask(async (file) => {
-        await writeFile(file, vaultSecrets.rootToken);
-        for (let i = 0; i < numReplicas; i++) {
-          const dest = `vault/vault-${i}:/vault/data/root-token`;
-          await kubernetes.cp(file, dest);
-        }
-      });
 
       logger().info("Wait for unseal...");
       await waitFor(async () => {
