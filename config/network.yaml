@@ -28,7 +28,6 @@ outputs:
   - file: wireguard.bfiola-desktop-infrastructure.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaDesktop.infrastructure.private }}"
       address: 192.168.34.3/32
       publicKey: "{{ secrets.wireguard.interfaces.infrastructure.public }}"
@@ -40,7 +39,6 @@ outputs:
   - file: wireguard.bfiola-desktop-management.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaDesktop.management.private }}"
       address: 192.168.89.3/32
       publicKey: "{{ secrets.wireguard.interfaces.management.public }}"
@@ -51,7 +49,6 @@ outputs:
   - file: wireguard.bfiola-home-laptop-personal.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaHomeLaptop.personal.private }}"
       address: 192.168.17.2/32
       publicKey: "{{ secrets.wireguard.interfaces.personal.public }}"
@@ -65,7 +62,6 @@ outputs:
   - file: wireguard.bfiola-home-laptop-infrastructure.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.private }}"
       address: 192.168.34.2/32
       publicKey: "{{ secrets.wireguard.interfaces.infrastructure.public }}"
@@ -77,7 +73,6 @@ outputs:
   - file: wireguard.bfiola-home-laptop-management.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaHomeLaptop.management.private }}"
       address: 192.168.89.2/32
       publicKey: "{{ secrets.wireguard.interfaces.management.public }}"
@@ -88,7 +83,6 @@ outputs:
   - file: wireguard.bfiola-iphone.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaIphone.personal.private }}"
       address: 192.168.17.4/32
       publicKey: "{{ secrets.wireguard.interfaces.personal.public }}"
@@ -102,7 +96,6 @@ outputs:
   - file: wireguard.bfiola-work-laptop-personal.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaWorkLaptop.personal.private }}"
       address: 192.168.17.3/32
       publicKey: "{{ secrets.wireguard.interfaces.personal.public }}"
@@ -116,7 +109,6 @@ outputs:
   - file: wireguard.bfiola-work-laptop-infrastructure.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaWorkLaptop.infrastructure.private }}"
       address: 192.168.34.4/32
       publicKey: "{{ secrets.wireguard.interfaces.infrastructure.public }}"
@@ -128,7 +120,6 @@ outputs:
   - file: wireguard.bfiola-work-laptop-management.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.bfiolaWorkLaptop.management.private }}"
       address: 192.168.89.4/32
       publicKey: "{{ secrets.wireguard.interfaces.management.public }}"
@@ -139,7 +130,6 @@ outputs:
   - file: wireguard.jfiola-iphone.conf
     template: network-wireguard.conf
     inputs:
-      dns: true
       privateKey: "{{ secrets.wireguard.devices.jfiolaIphone.family.private }}"
       address: 192.168.9.2/32
       publicKey: "{{ secrets.wireguard.interfaces.family.public }}"
@@ -158,7 +148,6 @@ outputs:
       port: 13235
       allowedIps:
         - 192.168.33.7/32
-        - 192.168.88.1/32
 
   - file: wireguard.cam.conf
     template: network-wireguard.conf
@@ -169,7 +158,6 @@ outputs:
       port: 13235
       allowedIps:
         - 192.168.33.7/32
-        - 192.168.88.1/32
 
   - file: wireguard.james.conf
     template: network-wireguard.conf
@@ -180,7 +168,6 @@ outputs:
       port: 13235
       allowedIps:
         - 192.168.33.7/32
-        - 192.168.88.1/32
 
   - file: wireguard.tristan.conf
     template: network-wireguard.conf
@@ -191,7 +178,6 @@ outputs:
       port: 13235
       allowedIps:
         - 192.168.33.7/32
-        - 192.168.88.1/32
 
   - file: wireguard.rj.conf
     template: network-wireguard.conf
@@ -202,4 +188,3 @@ outputs:
       port: 13235
       allowedIps:
         - 192.168.33.7/32
-        - 192.168.88.1/32
