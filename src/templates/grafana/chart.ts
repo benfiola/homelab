@@ -136,7 +136,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
                       cpu: ContainerRequests.fromString("100m"),
                       memory: ContainerRequests.fromString("256Mi"),
                     },
-                    limits: null,
+                    limits: null as any,
                   },
                   env: [
                     {
@@ -220,6 +220,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new HttpRoute(chart, "infrastructure", externalUrl.hostname).match(
     {
+      apiVersion: "v1",
       name: "grafana-service",
       kind: "Service",
     },

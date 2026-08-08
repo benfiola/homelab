@@ -8,7 +8,7 @@ This document outlines the security model for the homelab, which employs a layer
 
 Security is enforced across three layers:
 
-1. **Router firewall** - Controls inter-VLAN traffic and public ingress based on a hierarchical VLAN trust model, with external access via WireGuard
+1. **Router firewall** - Controls inter-VLAN traffic based on a hierarchical VLAN trust model; all external access is via WireGuard
 2. **In-cluster policies** - Network policies and host-level firewalling restrict pod-to-pod and pod-to-host communication
 3. **Host OS** - Talos Linux provides a minimal attack surface with reduced binary footprint
 
@@ -18,16 +18,14 @@ This defense-in-depth approach ensures that even if one layer is compromised, ot
 
 The network is split into VLANs, defined via the [networking configuration](/configuration/networking.md): `management`, `infrastructure`, `iot`, `personal`, `family`, and `friends`.
 
-The cluster exposes one ingress Gateway per VLAN, plus a `public` Gateway for external/WAN traffic; each receives its own IP address. Rather than granting broad inter-VLAN access, firewall rules restrict each VLAN to its own Gateway plus the Gateways of any less-trusted VLANs beneath it:
+The cluster exposes one ingress Gateway per VLAN, each receiving its own IP address. Rather than granting broad inter-VLAN access, firewall rules restrict each VLAN to its own Gateway plus the Gateways of any less-trusted VLANs beneath it:
 
 - `friends` → `friends` ingress only
 - `family` → `family` and `friends` ingress
 - `personal` → `personal`, `family`, and `friends` ingress
 - `infrastructure` → its own ingress, plus general access to the `iot` VLAN and the WAN
-- `iot` → its own ingress only, isolated from the other VLANs (a small allowlist of IoT devices are permitted outbound WAN access)
+- `iot` → isolated from the other VLANs, with no ingress into the cluster (a small allowlist of IoT devices are permitted outbound WAN access)
 - `management` → self-access only, used for administering network devices rather than reaching application traffic; it has no dedicated Gateway
-
-Public (WAN) traffic is only permitted to reach the cluster via DNAT to the `public` Gateway.
 
 ### External Access
 

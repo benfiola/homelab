@@ -15,6 +15,7 @@ import {
   findApiObject,
   getField,
   getSecurityContext,
+  GrpcRoute,
   Helm,
   Namespace,
   VerticalPodAutoscaler,
@@ -274,6 +275,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       kind: "Deployment",
       name: "hubble-ui",
     }),
+  );
+
+  new GrpcRoute(chart, "infrastructure", "flows.fiola.dev", {
+    timeout: "0s",
+  }).match(
+    findApiObject(chart, {
+      apiVersion: "v1",
+      kind: "Service",
+      name: "hubble-relay",
+    }),
+    80,
   );
 
   return chart;

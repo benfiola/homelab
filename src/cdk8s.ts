@@ -8,6 +8,7 @@ import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
 import { get } from "lodash";
 import { BucketSyncPolicy as BaseBucketSyncPolicy } from "../assets/bucket-sync/bucket-sync.homelab-images.benfiola.com";
+import { BackendTrafficPolicy } from "../assets/envoy-gateway/gateway.envoyproxy.io";
 import {
   GarageBucket as BaseGarageBucket,
   GarageKey as BaseGarageKey,
@@ -15,6 +16,7 @@ import {
   GarageKeySpecSecretTemplate as GarageSecretTemplate,
 } from "../assets/garage-operator/garage.rajsingh.info";
 import {
+  GrpcRoute as BaseGrpcRoute,
   HttpRoute as BaseHttpRoute,
   TcpRoute as BaseTcpRoute,
   UdpRoute as BaseUdpRoute,
@@ -413,11 +415,9 @@ const removeDeleteHooks = (scope: Construct) => {
 };
 
 export const gateways = [
-  "public",
   "family",
   "personal",
   "infrastructure",
-  "iot",
   "friends",
 ] as const;
 export type Gateway = (typeof gateways)[number];
@@ -430,13 +430,15 @@ const knownAnnotations = {
 type Annotations = typeof knownAnnotations;
 type Annotation = Annotations[keyof Annotations];
 
-const gatewayAnnotations: Record<Gateway, Annotation> = {
-  family: knownAnnotations.useMikrotik,
-  personal: knownAnnotations.useMikrotik,
-  infrastructure: knownAnnotations.useMikrotik,
-  public: knownAnnotations.useCloudflare,
-  iot: knownAnnotations.useMikrotik,
-  friends: knownAnnotations.useMikrotik,
+const gatewayAnnotations: Record<Gateway, Annotation[]> = {
+  family: [knownAnnotations.useMikrotik],
+  personal: [knownAnnotations.useMikrotik],
+  infrastructure: [knownAnnotations.useMikrotik],
+  friends: [knownAnnotations.useMikrotik, knownAnnotations.useCloudflare],
+};
+
+const getGatewayAnnotations = (gateway: Gateway): Record<string, string> => {
+  return Object.fromEntries(gatewayAnnotations[gateway].map((a) => [a, ""]));
 };
 
 interface RouteTarget {
@@ -450,7 +452,7 @@ export class HttpRoute extends BaseHttpRoute {
     const id = `${construct}-http-route-${hostname}`;
 
     const annotations: Record<string, string> = {
-      [`${gatewayAnnotations[gateway]}`]: "",
+      ...getGatewayAnnotations(gateway),
     };
 
     super(construct, id, {
@@ -519,7 +521,7 @@ export class TcpRoute extends BaseTcpRoute {
 
     const annotations: Record<string, string> = {
       [`${knownAnnotations.hostname}`]: hostname,
-      [`${gatewayAnnotations[gateway]}`]: "",
+      ...getGatewayAnnotations(gateway),
     };
 
     super(construct, id, {
@@ -566,7 +568,7 @@ export class UdpRoute extends BaseUdpRoute {
 
     const annotations: Record<string, string> = {
       [`${knownAnnotations.hostname}`]: hostname,
-      [`${gatewayAnnotations[gateway]}`]: "",
+      ...getGatewayAnnotations(gateway),
     };
 
     super(construct, id, {
@@ -596,6 +598,98 @@ export class UdpRoute extends BaseUdpRoute {
         ],
       },
     });
+  }
+}
+
+interface GrpcRouteOpts {
+  timeout?: string;
+}
+
+export class GrpcRoute extends BaseGrpcRoute {
+  constructor(
+    construct: Construct,
+    gateway: Gateway,
+    hostname: string,
+    opts: GrpcRouteOpts = {},
+  ) {
+    const id = `${construct}-grpc-route-${hostname}`;
+
+    const annotations: Record<string, string> = {
+      ...getGatewayAnnotations(gateway),
+    };
+
+    super(construct, id, {
+      metadata: {
+        name: hostname,
+        annotations,
+      },
+      spec: {
+        hostnames: [hostname],
+        parentRefs: [
+          {
+            name: gateway,
+            namespace: "gateway",
+            sectionName: hostname,
+          },
+        ],
+      },
+    });
+
+    if (opts.timeout) {
+      new BackendTrafficPolicy(construct, `${id}-backend-traffic-policy`, {
+        metadata: {
+          name: hostname,
+        },
+        spec: {
+          targetRefs: [
+            {
+              group: "gateway.networking.k8s.io",
+              kind: "GRPCRoute",
+              name: hostname,
+            },
+          ],
+          timeout: {
+            http: {
+              maxStreamDuration: opts.timeout,
+              requestTimeout: opts.timeout,
+            },
+          },
+        },
+      });
+    }
+  }
+
+  match(
+    to: RouteTarget,
+    port: number,
+    ...matches: {
+      service?: string;
+      method?: string;
+      type?: "Exact" | "RegularExpression";
+    }[]
+  ) {
+    const props = (this as any).props;
+    const spec = (props.spec = props.spec ?? {});
+    const rules = (spec.rules = spec.rules ?? []);
+    for (const { service, method, type } of matches.length
+      ? matches
+      : [{}]) {
+      const hasMethodMatch = service !== undefined || method !== undefined;
+      rules.push({
+        backendRefs: [
+          {
+            apiVersion: to.apiVersion,
+            kind: to.kind,
+            name: to.name,
+            port,
+          },
+        ],
+        ...(hasMethodMatch
+          ? { matches: [{ method: { service, method, type } }] }
+          : {}),
+      });
+    }
+    return this;
   }
 }
 

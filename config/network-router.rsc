@@ -210,8 +210,6 @@
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_FAMILY address=192.168.33.2/32 comment="cluster gateway (family)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE address=192.168.33.4/32 comment="cluster gateway (infrastructure)"
-/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PUBLIC address=192.168.33.5/32 comment="cluster gateway (public)"
-/ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_IOT address=192.168.33.6/32 comment="cluster gateway (iot)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_FRIENDS address=192.168.33.7/32 comment="cluster gateway (friends)"
 
 # configure firewall
@@ -238,7 +236,6 @@
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=FAMILY comment="accept iot (allow intranet) -> family"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=PERSONAL comment="accept iot (allow intranet) -> personal"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_FRIENDS comment="accept iot (allow intranet) -> infrastructure (friends ingress)"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_IOT comment="accept iot -> infrastructure (iot ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=MANAGEMENT out-interface-list=MANAGEMENT comment="accept management -> management"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=PERSONAL comment="accept personal -> personal"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=PERSONAL out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_PERSONAL comment="accept personal -> infrastructure (personal ingress)"

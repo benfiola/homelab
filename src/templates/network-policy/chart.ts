@@ -275,9 +275,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const volsync = svc("volsync", pod("volsync", "volsync"));
   const volsyncMover = svc("volsync-mover", pod("volsync-mover", "*"));
-  const gatewayPublic = svc("gateway-public", gateway("public"));
   const gatewayFamily = svc("gateway-family", gateway("family"));
-  const gatewayIot = svc("gateway-iot", gateway("iot"));
   const gatewayPersonal = svc("gateway-personal", gateway("personal"));
   const gatewayFriends = svc("gateway-friends", gateway("friends"));
   const gatewayInfrastructure = svc(
@@ -679,10 +677,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       tcp(10443),
     );
 
-  gatewayIot
-    .to(envoyGatewayController, tcp(18000))
-    .from(cidrs("192.168.24.0/24"), tcp(10443));
-
   gatewayPersonal
     .to(envoyGatewayController, tcp(18000))
     .to(tunnel, tcp(8080, 8081))
@@ -719,16 +713,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   gatewayInfrastructure
     .to(envoyGatewayController, tcp(18000))
-    .to(alertmanager, tcp(9093))
-    .to(ciliumHubbleUi, tcp(8081))
+    .to(ciliumHubbleRelay, tcp(4245))
     .to(grafana, tcp(3000))
-    .to(prometheus, tcp(9090))
     .to(vault, tcp(8200))
     .from(cidrs("192.168.34.0/24"), tcp(10443));
-
-  gatewayPublic
-    .to(envoyGatewayController, tcp(18000))
-    .from(cidrs("198.51.100.1/32"), tcp(10443));
 
   serviceRegistry.finalize();
   return chart;
