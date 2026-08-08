@@ -528,7 +528,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // palworld
   palworld
     .to(dns("steampipe.akamaized.net"), tcp(443))
-    .to(dns("*.steamcontent.com"), tcp(443))
+    .to(
+      dns(
+        "*.steamcontent.com",
+        "*.*.steamcontent.com",
+        "*.*.*.steamcontent.com",
+      ),
+      tcp(443),
+    )
     .to(dns("api.steampowered.com"), tcp(443))
     .to(dns("*.steamserver.net"), tcp(443, [27015, 27060]));
 
