@@ -128,7 +128,7 @@ interface: eno1
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-e.cluster.fiola.dev
+hostname: chihuahua.cluster.fiola.dev
 role: worker
 interface: eno2
 ---
