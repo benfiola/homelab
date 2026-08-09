@@ -22,35 +22,7 @@ homelab generate-talos-images [version]
 
 Follow the instructions for your hardware type below.
 
-### Raspberry PI 4 (`rpi4`)
-
-#### Update the EEPROM (one time only)
-
-:::info
-This step only needs to be performed once per Raspberry Pi. If you've already updated the EEPROM, skip to [Image the SD card](#image-the-sd-card).
-:::
-
-1. Connect the SD card to your computer
-2. Download the [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
-3. Launch Raspberry Pi Imager and select:
-   - `Misc utility images` → `Bootloader` → `USB Boot`
-4. Write to the SD card device
-5. Insert the SD card into the Raspberry Pi
-6. Wait for the status LED to blink green (indicates successful EEPROM update)
-
-#### Image the SD card
-
-1. Connect the SD card to your computer
-2. Identify the SD card block device using `lsblk`
-3. Write the raw image:
-   ```bash
-   sudo dd if=[raw-image] of=/dev/[sd-card] bs=4M
-   ```
-4. Insert the SD card into the Raspberry Pi
-5. Power on the Raspberry Pi
-6. Wait for Talos Linux to boot
-
-### Thinkcentre (`tc`)
+### Thinkcentre (`tc`) and Razer Blade (`rb`)
 
 :::tip Ventoy
 Consider formatting a USB drive with [Ventoy](https://www.ventoy.net/en/index.html) to boot multiple ISO images from a single device.

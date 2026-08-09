@@ -122,19 +122,19 @@ role: worker
 | `endpoint`        | string | ✓        | Kubernetes API endpoint (FQDN or IP with port, e.g., `cluster.fiola.dev`)       |
 | `kubernetes`      | string | ✓        | Kubernetes version to deploy (e.g., `1.34.2`)                                   |
 | `baseTalosConfig` | object | ✓        | Talos OS configuration applied cluster-wide (merged with generated node config) |
-| `hardware`        | object | ✓        | Hardware type definitions by name (e.g., `rpi4`, `tc`)                          |
+| `hardware`        | object | ✓        | Hardware type definitions by name (e.g., `rb`, `tc`)                            |
 
 ### Hardware Definition
 
 **Location**: `config/cluster.yaml` → `hardware[name]`
 
-Each hardware type (e.g., `rpi4`, `tc`) defines storage volumes and image customization for that hardware:
+Each hardware type (e.g., `rb`, `tc`) defines storage volumes and image customization for that hardware:
 
-| Field           | Type   | Required | Description                                                                            |
-| --------------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
-| `image`         | string | ✓        | Talos OS image URI (generated via image factory or direct image reference)               |
-| `disks`         | object | ✓        | Volume definitions by name (e.g., `SYSTEM`, `EPHEMERAL`, `linstor`)                       |
-| `imageConfig`   | object | ✓        | Image factory configuration for generating customized Talos images                       |
+| Field           | Type   | Required | Description                                                                                                                                                          |
+| --------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `image`         | string | ✓        | Talos OS image URI (generated via image factory or direct image reference)                                                                                           |
+| `disks`         | object | ✓        | Volume definitions by name (e.g., `SYSTEM`, `EPHEMERAL`, `linstor`)                                                                                                  |
+| `imageConfig`   | object | ✓        | Image factory configuration for generating customized Talos images                                                                                                   |
 | `machineConfig` | object |          | Talos machine configuration applied only to nodes of this hardware type (merged after base config, before per-node settings; e.g., hardware-specific kernel modules) |
 
 ### Disk/Volume Definition

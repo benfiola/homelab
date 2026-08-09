@@ -30,38 +30,6 @@ hardware:
             - name: nvidia_uvm
             - name: nvidia_drm
             - name: nvidia_modeset
-  rpi4:
-    disks:
-      SYSTEM:
-        device: /dev/mmcblk0
-      EPHEMERAL:
-        device: /dev/sda
-        size: 200GiB
-      linstor:
-        device: /dev/sda
-        size: 700GiB
-    imageConfig:
-      filename: metal-arm64.raw.xz
-      schematic:
-        customization:
-          systemExtensions:
-            officialExtensions:
-              - siderolabs/drbd
-        overlay:
-          image: siderolabs/sbc-raspberrypi
-          name: rpi_generic
-          options:
-            configTxt: |
-              gpu_mem=32
-              hdmi_force_hotplug:0=1
-              hdmi_force_hotplug:1=1
-              kernel=u-boot.bin
-              arm_64bit=1
-              arm_boost=1
-              enable_uart=1
-              dtoverlay=disable-bt
-              dtoverlay=disable-wifi
-    image: factory.talos.dev/metal-installer/cc039b3437c81179de3cf77be1094d619b88a7044144b2d7153ed14104900272:v1.13.3
   tc:
     disks:
       SYSTEM:
@@ -149,27 +117,6 @@ links: []
 up: true
 addresses:
   - address: 169.254.254.1/24
----
-apiVersion: v1alpha1
-kind: HomelabNodeConfig
-hardware: rpi4
-hostname: node-a.cluster.fiola.dev
-role: worker
-interface: end0
----
-apiVersion: v1alpha1
-kind: HomelabNodeConfig
-hardware: rpi4
-hostname: node-b.cluster.fiola.dev
-role: worker
-interface: end0
----
-apiVersion: v1alpha1
-kind: HomelabNodeConfig
-hardware: rpi4
-hostname: node-c.cluster.fiola.dev
-role: worker
-interface: end0
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig

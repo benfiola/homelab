@@ -142,9 +142,6 @@
 /ip/dhcp-server/lease/add address=192.168.24.11 server=iot mac-address=24:48:45:4D:1B:C2 comment="camera (garage)"
 /ip/dhcp-server/lease/add address=192.168.24.12 server=iot mac-address=54:8C:81:DE:3D:C8 comment="camera (porch)"
 /ip/dhcp-server/lease/add address=192.168.24.13 server=iot mac-address=EC:71:DB:2F:D2:68 comment="camera (doorbell)"
-/ip/dhcp-server/lease/add address=192.168.32.2 server=infrastructure mac-address=DC:A6:32:E8:02:E2 comment="node-a.cluster"
-/ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=DC:A6:32:C1:49:6F comment="node-b.cluster"
-/ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=DC:A6:32:E8:02:B3 comment="node-c.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.5 server=infrastructure mac-address=38:F3:AB:E0:C5:DD comment="node-d.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.6 server=infrastructure mac-address=88:A4:C2:A0:B5:BB comment="node-e.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.7 server=infrastructure mac-address=F8:75:A4:FE:1F:E9 comment="node-f.cluster"
@@ -163,9 +160,6 @@
 /ip/dns/static/add name=garage.camera.fiola.dev address=192.168.24.11 ttl=10m
 /ip/dns/static/add name=porch.camera.fiola.dev address=192.168.24.12 ttl=10m
 /ip/dns/static/add name=doorbell.camera.fiola.dev address=192.168.24.13 ttl=10m
-/ip/dns/static/add name=node-a.cluster.fiola.dev address=192.168.32.2 ttl=10m
-/ip/dns/static/add name=node-b.cluster.fiola.dev address=192.168.32.3 ttl=10m
-/ip/dns/static/add name=node-c.cluster.fiola.dev address=192.168.32.4 ttl=10m
 /ip/dns/static/add name=node-d.cluster.fiola.dev address=192.168.32.5 ttl=10m
 /ip/dns/static/add name=node-e.cluster.fiola.dev address=192.168.32.6 ttl=10m
 /ip/dns/static/add name=node-f.cluster.fiola.dev address=192.168.32.7 ttl=10m
@@ -187,9 +181,6 @@
 /routing/bgp/instance/add name=cluster.fiola.dev as=64512 router-id=main
 
 # create bgp connections
-/routing/bgp/connection/add instance=cluster.fiola.dev name=node-a.cluster.fiola.dev remote.address=192.168.32.2 local.role=ibgp templates=cluster.fiola.dev
-/routing/bgp/connection/add instance=cluster.fiola.dev name=node-b.cluster.fiola.dev remote.address=192.168.32.3 local.role=ibgp templates=cluster.fiola.dev
-/routing/bgp/connection/add instance=cluster.fiola.dev name=node-c.cluster.fiola.dev remote.address=192.168.32.4 local.role=ibgp templates=cluster.fiola.dev
 /routing/bgp/connection/add instance=cluster.fiola.dev name=node-d.cluster.fiola.dev remote.address=192.168.32.5 local.role=ibgp templates=cluster.fiola.dev
 /routing/bgp/connection/add instance=cluster.fiola.dev name=node-e.cluster.fiola.dev remote.address=192.168.32.6 local.role=ibgp templates=cluster.fiola.dev
 /routing/bgp/connection/add instance=cluster.fiola.dev name=node-f.cluster.fiola.dev remote.address=192.168.32.7 local.role=ibgp templates=cluster.fiola.dev

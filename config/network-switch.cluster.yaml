@@ -2,8 +2,8 @@ system:
   identity: cluster.switch
 ports:
   - index: 1
-    name: node-a.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -11,7 +11,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 2
     name: ""
@@ -26,8 +26,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 3
-    name: node-b.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -35,7 +35,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 4
     name: ""
@@ -50,8 +50,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 5
-    name: node-c.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -59,7 +59,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 6
     name: ""
@@ -247,9 +247,6 @@ vlans:
   - id: 32
     name: infrastructure
     members:
-      - 1
-      - 3
-      - 5
       - 7
       - 9
       - 11
