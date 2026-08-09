@@ -122,7 +122,7 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 11
-    name: node-f.cluster
+    name: husky.cluster
     enabled: true
     autoNegotiation: true
     flowControl:

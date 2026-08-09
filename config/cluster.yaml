@@ -135,7 +135,7 @@ interface: eno2
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-f.cluster.fiola.dev
+hostname: husky.cluster.fiola.dev
 role: worker
 interface: eno2
 ---
