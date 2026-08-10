@@ -142,7 +142,7 @@ interface: eno2
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-g.cluster.fiola.dev
+hostname: malamute.cluster.fiola.dev
 role: worker
 interface: eno2
 ---
