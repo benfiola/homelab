@@ -121,7 +121,7 @@ addresses:
 apiVersion: v1alpha1
 kind: HomelabNodeConfig
 hardware: tc
-hostname: node-d.cluster.fiola.dev
+hostname: samoyed.cluster.fiola.dev
 role: controlplane
 interface: eno1
 ---
