@@ -182,8 +182,8 @@ ports:
       defaultVlanId: 88
       forceVlanId: true
   - index: 16
-    name: node-h.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -191,7 +191,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 17
     name: router
