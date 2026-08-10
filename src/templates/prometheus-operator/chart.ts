@@ -46,6 +46,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
   await patchEndpointSlicesSupport(kustomization);
+  await patchLimits(kustomization);
 
   new VerticalPodAutoscaler(
     chart,
@@ -90,4 +91,21 @@ const patchEndpointSlicesSupport = async (obj: Kustomization) => {
       array[index] = "--kubelet-endpointslice=true";
     }
   });
+};
+
+const patchLimits = async (obj: Kustomization) => {
+  const parent = obj.node.scope;
+  if (!parent) {
+    throw new Error(`node ${obj.node.id} has no parent`);
+  }
+  const id = parent.node.id;
+
+  const resource = obj.node.findChild(`${id}-deployment-prometheus-operator`);
+  const args: string[] = (resource as any).props.spec.template.spec
+    .containers[0].args;
+
+  args.push(
+    "--config-reloader-cpu-limit=0",
+    "--config-reloader-memory-limit=0",
+  );
 };
