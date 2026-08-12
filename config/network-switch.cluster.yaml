@@ -2,8 +2,8 @@ system:
   identity: cluster.switch
 ports:
   - index: 1
-    name: ""
-    enabled: false
+    name: samoyed.cluster
+    enabled: true
     autoNegotiation: true
     flowControl:
       tx: true
@@ -11,7 +11,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 8
+      defaultVlanId: 32
       forceVlanId: false
   - index: 2
     name: ""
@@ -74,8 +74,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 7
-    name: samoyed.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -83,7 +83,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 8
     name: ""
@@ -247,7 +247,7 @@ vlans:
   - id: 32
     name: infrastructure
     members:
-      - 7
+      - 1
       - 9
       - 11
       - 13
