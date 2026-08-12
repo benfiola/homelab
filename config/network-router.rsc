@@ -173,21 +173,25 @@
 # create bgp template
 # NOTE: this appears to be automatically created
 /routing/bgp/template/remove [find name=default]
-/routing/bgp/template/add name=cluster.fiola.dev afi=ip as=64512 routing-table=main
+/routing/bgp/template/add name=cluster afi=ip as=64512 routing-table=main
 
 # create bgp instance
-/routing/bgp/instance/add name=cluster.fiola.dev as=64512 router-id=main
+/routing/bgp/instance/add name=cluster as=64512 router-id=main
 
 # create bgp connections
-/routing/bgp/connection/add instance=cluster.fiola.dev name=husky.cluster.fiola.dev remote.address=192.168.32.2 local.role=ibgp templates=cluster.fiola.dev
-/routing/bgp/connection/add instance=cluster.fiola.dev name=chihuahua.cluster.fiola.dev remote.address=192.168.32.3 local.role=ibgp templates=cluster.fiola.dev
-/routing/bgp/connection/add instance=cluster.fiola.dev name=malamute.cluster.fiola.dev remote.address=192.168.32.4 local.role=ibgp templates=cluster.fiola.dev
-/routing/bgp/connection/add instance=cluster.fiola.dev name=samoyed.cluster.fiola.dev remote.address=192.168.32.5 local.role=ibgp templates=cluster.fiola.dev
+/routing/bgp/connection/add instance=cluster name=husky.cluster remote.address=192.168.32.2 local.role=ibgp templates=cluster
+/routing/bgp/connection/add instance=cluster name=chihuahua.cluster remote.address=192.168.32.3 local.role=ibgp templates=cluster
+/routing/bgp/connection/add instance=cluster name=malamute.cluster remote.address=192.168.32.4 local.role=ibgp templates=cluster
+/routing/bgp/connection/add instance=cluster name=samoyed.cluster remote.address=192.168.32.5 local.role=ibgp templates=cluster
 
 # configure mdns repeater
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot
 
 # configure firewall address lists
+/ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.2 comment="husky.cluster"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.3 comment="chihuahua.cluster"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.4 comment="malamute.cluster"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.5 comment="samoyed.cluster"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="projector"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.3 comment="sonos (play right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.4 comment="sonos (play left)"
@@ -218,7 +222,7 @@
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=INFRASTRUCTURE comment="accept infrastructure -> infrastructure"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=INFRASTRUCTURE dst-address-list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE comment="accept infrastructure -> infrastructure (infrastructure ingress)"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=IOT comment="accept infrastructure -> iot"
-/ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE out-interface-list=WAN comment="accept infrastructure -> wan"
+/ip/firewall/filter/add chain=forward action=accept in-interface-list=INFRASTRUCTURE src-address-list=INFRASTRUCTURE_ALLOW_WAN out-interface-list=WAN comment="accept infrastructure (allow wan) -> wan"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT out-interface-list=IOT comment="accept iot -> iot"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_WAN out-interface-list=WAN comment="accept iot (allow wan) -> wan"
 /ip/firewall/filter/add chain=forward action=accept in-interface-list=IOT src-address-list=IOT_ALLOW_INTRANET out-interface-list=FAMILY comment="accept iot (allow intranet) -> family"
