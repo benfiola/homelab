@@ -98,8 +98,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 9
-    name: ""
-    enabled: false
+    name: shiba.cluster
+    enabled: true
     autoNegotiation: true
     flowControl:
       tx: true
@@ -107,7 +107,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 8
+      defaultVlanId: 32
       forceVlanId: false
   - index: 10
     name: ""
@@ -251,6 +251,7 @@ vlans:
       - 3
       - 5
       - 7
+      - 9
       - 17
     portIsolation: true
     learning: true
