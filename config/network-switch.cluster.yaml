@@ -74,8 +74,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 7
-    name: ""
-    enabled: false
+    name: malamute.cluster
+    enabled: true
     autoNegotiation: true
     flowControl:
       tx: true
@@ -83,7 +83,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 8
+      defaultVlanId: 32
       forceVlanId: false
   - index: 8
     name: ""
@@ -146,8 +146,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 13
-    name: malamute.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -155,7 +155,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 14
     name: ""
@@ -250,7 +250,7 @@ vlans:
       - 1
       - 3
       - 5
-      - 13
+      - 7
       - 17
     portIsolation: true
     learning: true
