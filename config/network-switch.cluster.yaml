@@ -50,8 +50,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 5
-    name: ""
-    enabled: false
+    name: husky.cluster
+    enabled: true
     autoNegotiation: true
     flowControl:
       tx: true
@@ -59,7 +59,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 8
+      defaultVlanId: 32
       forceVlanId: false
   - index: 6
     name: ""
@@ -122,8 +122,8 @@ ports:
       defaultVlanId: 8
       forceVlanId: false
   - index: 11
-    name: husky.cluster
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -131,7 +131,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 12
     name: ""
@@ -249,9 +249,8 @@ vlans:
     members:
       - 1
       - 3
-      - 11
+      - 5
       - 13
-      - 16
       - 17
     portIsolation: true
     learning: true
