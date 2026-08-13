@@ -146,6 +146,7 @@
 /ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=88:A4:C2:A0:B5:BB comment="chihuahua.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=00:2B:67:D6:40:6B comment="malamute.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.5 server=infrastructure mac-address=38:F3:AB:E0:C5:DD comment="samoyed.cluster"
+/ip/dhcp-server/lease/add address=192.168.32.6 server=infrastructure mac-address=38:05:25:34:71:80 comment="shiba.cluster"
 /ip/dhcp-server/lease/add address=192.168.88.2 server=management mac-address=F4:1E:57:F8:8F:89 comment="core.switch"
 /ip/dhcp-server/lease/add address=192.168.88.3 server=management mac-address=F4:1E:57:F8:96:77 comment="cluster.switch"
 /ip/dhcp-server/lease/add address=192.168.88.4 server=management mac-address=94:83:C4:AB:04:1F comment="office.ap"
@@ -159,10 +160,11 @@
 /ip/dns/static/add name=garage.camera.fiola.dev address=192.168.24.11 ttl=10m
 /ip/dns/static/add name=porch.camera.fiola.dev address=192.168.24.12 ttl=10m
 /ip/dns/static/add name=doorbell.camera.fiola.dev address=192.168.24.13 ttl=10m
-/ip/dns/static/add name=samoyed.cluster.fiola.dev address=192.168.32.5 ttl=10m
-/ip/dns/static/add name=chihuahua.cluster.fiola.dev address=192.168.32.3 ttl=10m
 /ip/dns/static/add name=husky.cluster.fiola.dev address=192.168.32.2 ttl=10m
+/ip/dns/static/add name=chihuahua.cluster.fiola.dev address=192.168.32.3 ttl=10m
 /ip/dns/static/add name=malamute.cluster.fiola.dev address=192.168.32.4 ttl=10m
+/ip/dns/static/add name=samoyed.cluster.fiola.dev address=192.168.32.5 ttl=10m
+/ip/dns/static/add name=shiba.cluster.fiola.dev address=192.168.32.6 ttl=10m
 /ip/dns/static/add name=cluster.fiola.dev cname=samoyed.cluster.fiola.dev type=CNAME ttl=10m
 /ip/dns/static/add name=core.switch.fiola.dev address=192.168.88.2 ttl=10m
 /ip/dns/static/add name=cluster.switch.fiola.dev address=192.168.88.3 ttl=10m
@@ -183,6 +185,7 @@
 /routing/bgp/connection/add instance=cluster name=chihuahua.cluster remote.address=192.168.32.3 local.role=ibgp templates=cluster
 /routing/bgp/connection/add instance=cluster name=malamute.cluster remote.address=192.168.32.4 local.role=ibgp templates=cluster
 /routing/bgp/connection/add instance=cluster name=samoyed.cluster remote.address=192.168.32.5 local.role=ibgp templates=cluster
+/routing/bgp/connection/add instance=cluster name=shiba.cluster remote.address=192.168.32.6 local.role=ibgp templates=cluster
 
 # configure mdns repeater
 /ip/dns/set allow-remote-requests=yes cache-max-ttl=1d mdns-repeat-ifaces=family,personal,infrastructure,iot
@@ -192,6 +195,7 @@
 /ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.3 comment="chihuahua.cluster"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.4 comment="malamute.cluster"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.5 comment="samoyed.cluster"
+/ip/firewall/address-list/add list=INFRASTRUCTURE_ALLOW_WAN address=192.168.32.6 comment="shiba.cluster"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.2 comment="projector"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.3 comment="sonos (play right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.4 comment="sonos (play left)"

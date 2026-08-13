@@ -2,7 +2,7 @@ apiVersion: v1alpha1
 kind: HomelabClusterConfig
 endpoint: cluster.fiola.dev
 hardware:
-  x1p:
+  axp:
     disks:
       SYSTEM:
         device: /dev/nvme0n1
@@ -145,3 +145,10 @@ hardware: tc
 hostname: malamute.cluster.fiola.dev
 role: worker
 interface: eno2
+---
+apiVersion: v1alpha1
+kind: HomelabNodeConfig
+hardware: axp
+hostname: shiba.cluster.fiola.dev
+role: worker
+interface: enp196s0
