@@ -37,7 +37,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: {
       data: {
-        pvc: { size: "10Gi", storageClass: "standard" },
+        emptyDir: {},
       },
       scripts: { configMap: scripts.name },
     },
