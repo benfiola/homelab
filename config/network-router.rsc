@@ -161,6 +161,7 @@
 /ip/dns/static/add name=garage.camera.fiola.dev address=192.168.24.11 ttl=10m
 /ip/dns/static/add name=porch.camera.fiola.dev address=192.168.24.12 ttl=10m
 /ip/dns/static/add name=doorbell.camera.fiola.dev address=192.168.24.13 ttl=10m
+/ip/dns/static/add name=bedroom-2.speaker.fiola.dev address=192.168.88.14 ttl=10m
 /ip/dns/static/add name=husky.cluster.fiola.dev address=192.168.32.2 ttl=10m
 /ip/dns/static/add name=chihuahua.cluster.fiola.dev address=192.168.32.3 ttl=10m
 /ip/dns/static/add name=malamute.cluster.fiola.dev address=192.168.32.4 ttl=10m
