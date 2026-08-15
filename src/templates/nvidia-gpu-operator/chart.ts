@@ -1,3 +1,4 @@
+import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   findApiObject,
@@ -6,6 +7,7 @@ import {
   VerticalPodAutoscaler,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
+import { stringify } from "../../yaml";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
   const id = context.name;
@@ -13,9 +15,38 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
+  const config = new ConfigMap(chart, `${id}-config-map`, {
+    metadata: {
+      name: "config",
+    },
+    data: {
+      "config.yaml": stringify({
+        version: "v1",
+        flags: {
+          migStrategy: "none",
+        },
+        sharing: {
+          timeSlicing: {
+            resources: [
+              {
+                name: "nvidia.com/gpu",
+                replicas: 127,
+              },
+            ],
+          },
+        },
+      }),
+    },
+  });
+
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     dcgmExporter: {
       enabled: false,
+    },
+    devicePlugin: {
+      config: {
+        name: config.name,
+      },
     },
     driver: {
       enabled: false,
