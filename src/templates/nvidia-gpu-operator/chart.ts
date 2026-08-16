@@ -20,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       name: "user-config",
     },
     data: {
-      "config.yaml": stringify({
+      "any": stringify({
         version: "v1",
         flags: {
           migStrategy: "none",
@@ -46,6 +46,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     devicePlugin: {
       config: {
         name: config.name,
+        default: "any",
       },
     },
     driver: {
