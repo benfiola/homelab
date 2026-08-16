@@ -19,12 +19,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const bucketSyncAuth = new BucketSyncAuth(chart);
   const assetsServer = new AssetsServer(chart, bucketSyncAuth);
 
-  const models: Record<string, string> = {
-    [assetsServer.url("Qwen3-VL-8B-Instruct-Q4_K_M.gguf")]: "/data/model.gguf",
-    [assetsServer.url("Qwen3-VL-8B-Instruct-mmproj-F16.gguf")]:
-      "/data/mmproj.gguf",
-  };
-
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: {
       "download-models.sh": (
@@ -32,6 +26,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       ).toString(),
     },
   });
+
+  const files = {
+    model: "Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+    mmproj: "Qwen3-VL-8B-Instruct-mmproj-F16.gguf",
+  } as const;
 
   const ss = new StatefulSet(chart, "llama-cpp", {
     securityContext: { uid: 1000, gid: 1000 },
@@ -49,8 +48,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "download-model",
     "ghcr.io/benfiola/homelab-images/toolbox:1.1.0",
     {
-      cmd: ["bash"],
-      args: ["/scripts/download-models.sh", ...Object.entries(models).flat()],
+      args: [
+        "bash",
+        "/scripts/download-models.sh",
+        assetsServer.url("llama-cpp"),
+        "/data",
+        files.model,
+        files.mmproj,
+      ],
       volumeMounts: {
         data: "/data",
         scripts: "/scripts",
@@ -64,9 +69,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       containerPorts: { web: 8080 },
       args: [
         "--model",
-        "/data/model.gguf",
+        `/data/${files.model}`,
         "--mmproj",
-        "/data/mmproj.gguf",
+        `/data/${files.mmproj}`,
         "--n-gpu-layers",
         "99",
         "--flash-attn",

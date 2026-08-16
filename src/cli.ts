@@ -269,6 +269,14 @@ const upgradeTalos = async (opts: UpgradeTalosOpts) => {
   });
 };
 
+interface RcloneAssetsOpts {
+  configDir: string;
+}
+
+const rcloneAssets = async (opts: RcloneAssetsOpts, cmd: Command) => {
+  await actions.manageAssets(opts.configDir, cmd.args);
+};
+
 const configureLogger = async (logFormat: LogFormat, logLevel: LogLevel) => {
   const loggerOpts: pino.LoggerOptions<LogLevel> = {
     level: logLevel,
@@ -440,6 +448,15 @@ const main = async () => {
         await swos.dumpConfig(address, opts.username, opts.password);
       },
     );
+
+  program
+    .command("rclone-assets")
+    .description("manage remote encrypted bucket assets via rclone")
+    .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
+    .allowExcessArguments()
+    .allowUnknownOption()
+    .passThroughOptions()
+    .action(rcloneAssets);
 
   await program.parseAsync();
 };

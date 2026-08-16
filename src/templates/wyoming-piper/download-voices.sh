@@ -30,8 +30,7 @@ for file in "$@"; do
   fi
 
   echo "  Downloading ${file}..."
-  mkdir -p "$(dirname "${dest}")"
-  curl -fSL --retry 3 --retry-delay 5 -o "${dest}" "${ASSET_SERVER}/${file}"
+  curl -fSL "${ASSET_SERVER}/${file}" -o "${dest}"
 done
 
 echo "Download complete"

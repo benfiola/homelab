@@ -57,4 +57,6 @@ apps:
   - template: vault-secrets-operator
   - template: vertical-pod-autoscaler
   - template: volsync
+  - template: wyoming-piper
+  - template: wyoming-whisper
   - template: volume-snapshot-api

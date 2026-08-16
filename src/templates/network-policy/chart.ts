@@ -275,6 +275,22 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const volsync = svc("volsync", pod("volsync", "volsync"));
   const volsyncMover = svc("volsync-mover", pod("volsync-mover", "*"));
+  const wyomingPiper = svc(
+    "wyoming-piper",
+    pod("wyoming-piper", "wyoming-piper"),
+  );
+  const wyomingPiperAssetsServer = svc(
+    "wyoming-piper-assets-server",
+    _assetsServer("wyoming-piper"),
+  );
+  const wyomingWhisper = svc(
+    "wyoming-whisper",
+    pod("wyoming-whisper", "wyoming-whisper"),
+  );
+  const wyomingWhisperAssetsServer = svc(
+    "wyoming-whisper-assets-server",
+    _assetsServer("wyoming-whisper"),
+  );
   const gatewayFamily = svc("gateway-family", gateway("family"));
   const gatewayPersonal = svc("gateway-personal", gateway("personal"));
   const gatewayFriends = svc("gateway-friends", gateway("friends"));
@@ -406,6 +422,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(cidrs("192.168.24.0/24"))
     .to(frigate, tcp(5000, 8554, 8555), udp(8555))
     .to(mosquitto, tcp(1883))
+    .to(wyomingPiper, tcp(10200))
+    .to(wyomingWhisper, tcp(10300))
     .to(dns("mobile-apps.home-assistant.io"), tcp(443));
 
   // intel-device-plugins-operator
@@ -627,6 +645,13 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   volsyncMover
     .to(dns("*.backblazeb2.com"), tcp(443))
     .to(dns("*.backblaze.com"), tcp(443));
+
+  // wyoming-piper
+  wyomingPiper.to(wyomingPiperAssetsServer, tcp(8080));
+
+  // wyoming-whisper
+  wyomingWhisper.to(homeAssistant, tcp(8123));
+  wyomingWhisper.to(wyomingWhisperAssetsServer, tcp(8080));
 
   // general - bgp
   nodes

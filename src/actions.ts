@@ -716,3 +716,45 @@ export const upgradeTalos = async (
     await talosctl(configDir, command);
   }
 };
+
+export const manageAssets = async (configDir: string, args: string[] = []) => {
+  const appSecrets = await config.getAppsSecrets(configDir);
+  const bucketSecrets = appSecrets.secrets["bucket-sync"];
+
+  if (!bucketSecrets) {
+    throw new Error(
+      'bucket-sync secrets not found in config/secrets-apps.yaml. Run "homelab pull-secrets" to refresh.',
+    );
+  }
+
+  const backblazeKeyId = bucketSecrets["backblaze-application-key-id"];
+  const backblazeKey = bucketSecrets["backblaze-application-key"];
+  const encryptionKey = bucketSecrets["encryption-key"];
+
+  if (!backblazeKeyId || !backblazeKey || !encryptionKey) {
+    throw new Error(
+      "bucket-sync secrets incomplete. Required: backblaze-application-key-id, backblaze-application-key, encryption-key",
+    );
+  }
+
+  const obscuredKey = await exec(["rclone", "obscure", encryptionKey]);
+
+  const env = {
+    ...process.env,
+    RCLONE_CONFIG: "/dev/null",
+    RCLONE_CONFIG_B2_TYPE: "b2",
+    RCLONE_CONFIG_B2_ACCOUNT: backblazeKeyId,
+    RCLONE_CONFIG_B2_KEY: backblazeKey,
+    RCLONE_CONFIG_B2_HARD_DELETE: "false",
+    RCLONE_CONFIG_ASSETS_TYPE: "crypt",
+    RCLONE_CONFIG_ASSETS_REMOTE: "b2:/homelab-assets-698966/",
+    RCLONE_CONFIG_ASSETS_PASSWORD: obscuredKey,
+    RCLONE_CONFIG_ASSETS_DIRECTORY_NAME_ENCRYPTION: "false",
+  };
+
+  if (args.length === 0) {
+    args = ["ls", "assets:/"];
+  }
+
+  await exec(["rclone", ...args], { env, output: "inherit" });
+};
