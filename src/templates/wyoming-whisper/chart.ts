@@ -25,7 +25,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   deployment.addContainer(
     "wyoming-whisper",
-    "docker.io/rhasspy/wyoming-whisper:3.6.0",
+    "ghcr.io/benfiola/homelab-images/wyoming-whisper:1.0.0",
     {
       args: [
         "--hass-token=$(HASS_TOKEN)",
