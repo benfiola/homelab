@@ -34,10 +34,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const files = {
-    modelArchive: "faster-whisper-base-int8.tar.gz",
+    cacheArchive: "huggingface-cache.tar.gz",
   } as const;
-
-  const modelDir = path.basename(files.modelArchive, ".tar.gz");
 
   const deployment = new Deployment(chart, "wyoming-whisper", {
     volumes: {
@@ -55,7 +53,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "/scripts/download-model.sh",
         assetsServer.url(),
         "/data",
-        files.modelArchive,
+        files.cacheArchive,
       ],
       volumeMounts: {
         models: "/data",
@@ -71,7 +69,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       args: [
         "--hass-token=$(HASS_TOKEN)",
         "--hass-api=http://home-assistant.home-assistant.svc:8123",
-        `--model=/data/${modelDir}`,
+        "--model=rhasspy/faster-whisper-base-int8",
         "--language=en",
         "--uri=tcp://0.0.0.0:10300",
         "--data-dir=/data",
@@ -80,6 +78,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       ],
       containerPorts: { wyoming: 10300 },
       env: {
+        HF_HOME: "/data",
         HASS_TOKEN: {
           secretKeyRef: { name: vaultSecret.name, key: "hass-token" },
         },
