@@ -291,10 +291,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "wyoming-whisper",
     pod("wyoming-whisper", "wyoming-whisper"),
   );
-  const wyomingWhisperAssetsServer = svc(
-    "wyoming-whisper-assets-server",
-    _assetsServer("wyoming-whisper"),
-  );
   const gatewayFamily = svc("gateway-family", gateway("family"));
   const gatewayPersonal = svc("gateway-personal", gateway("personal"));
   const gatewayFriends = svc("gateway-friends", gateway("friends"));
@@ -659,8 +655,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   wyomingPiper.to(wyomingPiperAssetsServer, tcp(8080));
 
   // wyoming-whisper
-  wyomingWhisper.to(homeAssistant, tcp(8123));
-  wyomingWhisper.to(wyomingWhisperAssetsServer, tcp(8080));
+  wyomingWhisper
+    .to(homeAssistant, tcp(8123))
+    .to(dns("huggingface.co"), tcp(443));
 
   // general - bgp
   nodes
