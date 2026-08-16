@@ -26,7 +26,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         stream: [8097, "TCP"],
       },
       volumeMounts: {
-        data: "/config",
+        data: "/data",
       },
     },
   );
