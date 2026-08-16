@@ -172,6 +172,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "node-feature-discovery",
     pod("node-feature-discovery", "node-feature-discovery"),
   );
+  const nvidiaDevicePlugin = svc(
+    "nvidia-device-plugin",
+    app("nvidia-device-plugin-daemonset", "nvidia-gpu-operator"),
+  );
   const nvidiaGpuFeatureDiscovery = svc(
     "nvidia-gpu-feature-discovery",
     app("gpu-feature-discovery", "nvidia-gpu-operator"),
@@ -457,7 +461,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiGateway, tcp(8080));
   host.to(lokiMemcachedChunksCache, tcp(9150, 11211));
   host.to(lokiMemcachedResultsCache, tcp(9150, 11211));
-  lokiRead.to(lokiBackend, tcp(7946, 9095)).to(lokiWrite, tcp(7946, 9095));
+  lokiRead
+    .to(lokiBackend, tcp(7946, 9095))
+    .to(lokiMemcachedResultsCache, tcp(11211))
+    .to(lokiWrite, tcp(7946, 9095));
   host.to(lokiRead, tcp(3100));
   lokiWrite
     .to(garage, tcp(3900))
@@ -538,6 +545,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(nodeFeatureDiscovery, tcp(8080));
 
   // nvidia-gpu-operator
+  nvidiaDevicePlugin.to(kubeApiServer, tcp(6443));
   nvidiaGpuFeatureDiscovery.to(kubeApiServer, tcp(6443));
   nvidiaGpuOperator.to(kubeApiServer, tcp(6443));
   host.to(nvidiaGpuOperator, tcp(8081));
@@ -593,7 +601,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(alertmanager, tcp(9093))
     .to(nodes, tcp(9100, 10250, 10257, 10259))
     .to(kubeApiServer, tcp(6443))
-    .to(kubeStateMetrics, tcp(8080));
+    .to(kubeStateMetrics, tcp(8080))
+    .to(nvidiaGpuOperator, tcp(8080));
 
   // prometheus-operator
   prometheusOperator.to(kubeApiServer, tcp(6443));
