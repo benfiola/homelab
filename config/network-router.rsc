@@ -8,7 +8,6 @@
 
 # create users
 /user/add name="external-dns" group="api" password="{{ secrets.router.users.externalDns }}"
-/user/add name="router-policy-sync" group="api" password="{{ secrets.router.users.routerPolicySync }}"
 
 # create bridge interfaces
 /interface/bridge/add name=bridge admin-mac=78:9A:18:16:98:00 auto-mac=no protocol-mode=none pvid=999 vlan-filtering=yes
@@ -221,7 +220,6 @@
 /ip/firewall/filter/add chain=input action=accept in-interface-list=VLAN dst-port=53,67,5353 protocol=udp comment="accept vlan -> dns,dhcp,mdns (udp)"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=VLAN dst-port=53 protocol=tcp comment="accept vlan -> dns (tcp)"
 /ip/firewall/filter/add chain=input action=accept in-interface-list=INFRASTRUCTURE proto=tcp dst-port=80 comment="accept infrastructure -> http"
-/ip/firewall/filter/add chain=input action=passthrough comment=router-policy-sync::marker disabled=yes
 /ip/firewall/filter/add chain=input action=drop comment="drop unaccepted"
 /ip/firewall/filter/add chain=forward action=fasttrack connection-state=established,related comment="fasttrack established,related"
 /ip/firewall/filter/add chain=forward action=accept connection-state=established,related comment="accept established,related"

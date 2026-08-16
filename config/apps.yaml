@@ -48,7 +48,6 @@ apps:
   - template: prometheus-operator
   - template: pvc-restore
   - template: reloader
-  - template: router-policy-sync
   - template: single-player-tarkov
   - template: storage-class
   - template: tunnel

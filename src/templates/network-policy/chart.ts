@@ -243,10 +243,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const pvcRestore = svc("pvc-restore", pod("pvc-restore", "pvc-restore"));
   const reloader = svc("reloader", pod("reloader", "reloader"));
-  const routerPolicySync = svc(
-    "router-policy-sync",
-    pod("router-policy-sync", "router-policy-sync"),
-  );
   const singlePlayerTarkov = svc(
     "single-player-tarkov",
     pod("single-player-tarkov", "single-player-tarkov"),
@@ -612,12 +608,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // reloader
   reloader.to(kubeApiServer, tcp(6443));
   host.to(reloader, tcp(9090));
-
-  // router-policy-sync
-  routerPolicySync
-    .to(kubeApiServer, tcp(6443))
-    .to(dns("router.fiola.dev"), tcp(80));
-  host.to(routerPolicySync, tcp(8081));
 
   // single-player-tarkov
   singlePlayerTarkov
