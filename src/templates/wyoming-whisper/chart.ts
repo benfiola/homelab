@@ -19,7 +19,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const deployment = new Deployment(chart, "wyoming-whisper", {
     volumes: {
-      models: { emptyDir: {} },
+      cache: { emptyDir: {} },
+      data: { emptyDir: {} },
     },
   });
   deployment.addContainer(
@@ -50,7 +51,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
       volumeMounts: {
-        models: "/data",
+        cache: "/.cache",
+        data: "/data",
       },
     },
   );
