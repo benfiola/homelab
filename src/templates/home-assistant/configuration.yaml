@@ -11,6 +11,11 @@ ingress:
     ui_mode: toolbar
     parent: frigate
     url: http://frigate.frigate.svc:5000
+  music:
+    ui_mode: toolbar
+    title: Music
+    icon: mdi:music
+    url: http://music-assisant.music-assistant.svc:8095
 light_group_dimmer:
   delay: 1
   groups:
