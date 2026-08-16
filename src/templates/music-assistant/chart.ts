@@ -1,0 +1,38 @@
+import {
+  Chart,
+  Namespace,
+  StatefulSet,
+  VerticalPodAutoscaler,
+} from "../../cdk8s";
+import { TemplateChartFn } from "../../context";
+
+export const chart: TemplateChartFn = async (construct, _, context) => {
+  const id = context.name;
+  const chart = new Chart(construct, id);
+
+  new Namespace(chart);
+
+  const statefulSet = new StatefulSet(chart, "music-assistant", {
+    volumes: {
+      data: { pvc: { size: "10Gi", storageClass: "standard" } },
+    },
+  });
+  statefulSet.addContainer(
+    "music-assistant",
+    "ghcr.io/music-assistant/server:2.9.13",
+    {
+      containerPorts: {
+        ui: [8095, "TCP"],
+        stream: [8097, "TCP"],
+      },
+      volumeMounts: {
+        data: "/config",
+      },
+    },
+  );
+  statefulSet.createService({ ui: 8095, stream: 8097 });
+
+  new VerticalPodAutoscaler(chart, statefulSet);
+
+  return chart;
+};
