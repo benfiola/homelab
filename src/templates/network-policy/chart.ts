@@ -458,6 +458,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(lokiMemcachedChunksCache, tcp(9150, 11211));
   host.to(lokiMemcachedResultsCache, tcp(9150, 11211));
   lokiRead
+    .to(garage, tcp(3900))
     .to(lokiBackend, tcp(7946, 9095))
     .to(lokiMemcachedResultsCache, tcp(11211))
     .to(lokiWrite, tcp(7946, 9095));
