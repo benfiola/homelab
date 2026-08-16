@@ -658,6 +658,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // wyoming-whisper
   wyomingWhisper
     .to(homeAssistant, tcp(8123))
+    .to(dns("us.aws.cdn.hf.co"), tcp(443))
     .to(dns("cas-server.xethub.hf.co"), tcp(443))
     .to(dns("huggingface.co"), tcp(443));
 
