@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const config = new ConfigMap(chart, `${id}-config-map`, {
     metadata: {
-      name: "config",
+      name: "user-config",
     },
     data: {
       "config.yaml": stringify({
