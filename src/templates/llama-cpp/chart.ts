@@ -51,7 +51,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       args: [
         "bash",
         "/scripts/download-models.sh",
-        assetsServer.url("llama-cpp"),
+        assetsServer.url(),
         "/data",
         files.model,
         files.mmproj,

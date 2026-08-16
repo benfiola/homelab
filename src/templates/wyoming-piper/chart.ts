@@ -49,7 +49,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       args: [
         "bash",
         "/scripts/download-voices.sh",
-        assetsServer.url("wyoming-piper"),
+        assetsServer.url(),
         "/data",
         files.onnx,
         files.json,
@@ -66,7 +66,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "docker.io/rhasspy/wyoming-piper:2.4.2",
     {
       args: [
-        `--voice=${files.onnx.split(".")[0]}`,
+        `--voice=${modelName}`,
         "--uri=tcp://0.0.0.0:10200",
         "--data-dir=/data",
         "--use-cuda",

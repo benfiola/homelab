@@ -53,7 +53,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       args: [
         "bash",
         "/scripts/download-model.sh",
-        assetsServer.url("wyoming-whisper"),
+        assetsServer.url(),
         "/data",
         files.modelArchive,
       ],

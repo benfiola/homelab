@@ -671,9 +671,7 @@ export class GrpcRoute extends BaseGrpcRoute {
     const props = (this as any).props;
     const spec = (props.spec = props.spec ?? {});
     const rules = (spec.rules = spec.rules ?? []);
-    for (const { service, method, type } of matches.length
-      ? matches
-      : [{}]) {
+    for (const { service, method, type } of matches.length ? matches : [{}]) {
       const hasMethodMatch = service !== undefined || method !== undefined;
       rules.push({
         backendRefs: [
@@ -1628,8 +1626,8 @@ export class BucketServer extends Construct {
     new VerticalPodAutoscaler(this, this.deployment);
   }
 
-  url(path: string): string {
-    return `http://${this.deployment.name}.${this.namespace}.svc:8080/${path}`;
+  url(): string {
+    return `http://${this.deployment.name}.${this.namespace}.svc:8080`;
   }
 }
 
@@ -1670,7 +1668,7 @@ export class AssetsServer extends Construct {
     this.service = this.bucketServer.service;
   }
 
-  url(path: string): string {
-    return this.bucketServer.url(path);
+  url(): string {
+    return this.bucketServer.url();
   }
 }
