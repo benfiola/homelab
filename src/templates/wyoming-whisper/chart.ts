@@ -51,7 +51,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         },
       },
       volumeMounts: {
-        cache: "/.cache",
+        cache: "/nonexistent/.cache",
         data: "/data",
       },
     },
