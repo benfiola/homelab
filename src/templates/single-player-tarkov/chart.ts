@@ -28,7 +28,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     "ShowMeTheMoney-2.7.0.7z",
     "StatTrack-2.0.0.7z",
     "UIFixes-5.3.7.zip",
-  ].map((m) => assetsServer.url(m));
+  ].map((m) => `${assetsServer.url()}/${m}`);
 
   const configPatches = {
     // immediate return of insurance items

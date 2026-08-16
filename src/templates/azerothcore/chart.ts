@@ -49,6 +49,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     ),
   }));
+  const files = {
+    gameData: "game-data-v19.zip",
+  } as const;
 
   const bucketSyncAuth = new BucketSyncAuth(chart);
   const assetsServer = new AssetsServer(chart, bucketSyncAuth, {
@@ -100,7 +103,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   serverStatefulSet.addInitContainer("init", image, {
     env: {
-      AC_GAME_DATA_URL: assetsServer.url("game-data-v19.zip"),
+      AC_GAME_DATA_URL: `${assetsServer.url()}/${files.gameData}`,
       AC_LOGIN_DATABASE_INFO: {
         secretKeyRef: { name: secrets.name, key: "db-info-login" },
       },

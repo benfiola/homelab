@@ -18,6 +18,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const bucketSyncAuth = new BucketSyncAuth(chart);
   const assetsServer = new AssetsServer(chart, bucketSyncAuth);
 
+  const files = {
+    mods: `mods.zip`,
+  } as const;
+
   const ss = new StatefulSet(chart, "minecraft", {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: {
@@ -31,7 +35,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     env: {
       EULA: "true",
       VERSION: "1.21.11",
-      MODPACK: assetsServer.url("mods.zip"),
+      MODPACK: `${assetsServer.url()}/${files.mods}`,
       TYPE: "FABRIC",
     },
     volumeMounts: {
