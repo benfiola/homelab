@@ -1,5 +1,6 @@
 import {
   Chart,
+  HttpRoute,
   Namespace,
   StatefulSet,
   VerticalPodAutoscaler,
@@ -33,7 +34,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   );
-  statefulSet.createService({ ui: 8095, stream: 8097 });
+  const service = statefulSet.createService({ ui: 8095, stream: 8097 });
+
+  new HttpRoute(chart, "family", "listen.fiola.dev").match(service, 8095);
+  new HttpRoute(chart, "family", "stream.listen.fiola.dev").match(
+    service,
+    8097,
+    { timeout: "0s" },
+  );
 
   new VerticalPodAutoscaler(chart, statefulSet);
 
