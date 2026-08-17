@@ -712,6 +712,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   gatewayFamily
     .to(envoyGatewayController, tcp(18000))
     .to(homeAssistant, tcp(8123))
+    .to(musicAssistant, tcp(8095, 8097))
     .from(
       cidrs(
         "192.168.8.0/24",
@@ -723,7 +724,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         // iot + iot_allow_intranet (bedroom-2.speaker)
         "192.168.24.14/32",
       ),
-      tcp(10443),
+      tcp(8097, 10443),
     );
 
   gatewayPersonal
