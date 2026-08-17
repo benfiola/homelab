@@ -16,6 +16,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     volumes: {
       data: { pvc: { size: "10Gi", storageClass: "standard" } },
     },
+    podAnnotations: {
+      "k8s.v1.cni.cncf.io/networks": "multus-network/mdns@mdns0",
+    },
   });
   statefulSet.addContainer(
     "music-assistant",
