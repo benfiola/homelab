@@ -15,7 +15,7 @@ ingress:
     ui_mode: toolbar
     title: Music
     icon: mdi:music
-    url: http://music-assisant.music-assistant.svc:8095
+    url: http://music-assistant.music-assistant.svc:8095
 light_group_dimmer:
   delay: 1
   groups:
@@ -26,7 +26,7 @@ light_group_dimmer:
         - light.living_room_tracklight_1
         - light.living_room_tracklight_2
 logger:
-  default: debug
+  default: info
 lovelace:
   resource_mode: yaml
   dashboards:
