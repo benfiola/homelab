@@ -540,7 +540,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("maven.fabricmc.net"), tcp(443));
 
   // music-assistant
-  musicAssistant.to(dns("auth.tidal.com"), tcp(443));
+  musicAssistant
+    .to(dns("api.tidal.com"), tcp(443))
+    .to(dns("auth.tidal.com"), tcp(443));
 
   // node-feature-discovery
   nodeFeatureDiscovery.to(kubeApiServer, tcp(6443));
