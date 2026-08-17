@@ -541,6 +541,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // music-assistant
   musicAssistant
+    .to(dns("tidal.com"), tcp(443))
     .to(dns("api.tidal.com"), tcp(443))
     .to(dns("auth.tidal.com"), tcp(443));
 
