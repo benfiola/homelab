@@ -37,7 +37,6 @@ apps:
   - template: mosquitto
   - template: multus
   - template: multus-network
-  - template: music-assistant
   - template: network-policy
   - template: node-feature-discovery
   - template: nvidia-gpu-operator
