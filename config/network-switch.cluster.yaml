@@ -14,7 +14,7 @@ ports:
       defaultVlanId: 32
       forceVlanId: false
   - index: 2
-    name: nas-1
+    name: b.nas
     enabled: true
     autoNegotiation: true
     flowControl:
@@ -207,7 +207,7 @@ ports:
       defaultVlanId: 1
       forceVlanId: false
   - index: 18
-    name: nas-2
+    name: b.nas
     enabled: true
     autoNegotiation: true
     flowControl:
