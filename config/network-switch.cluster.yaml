@@ -14,8 +14,8 @@ ports:
       defaultVlanId: 32
       forceVlanId: false
   - index: 2
-    name: b.nas
-    enabled: true
+    name: ""
+    enabled: false
     autoNegotiation: true
     flowControl:
       tx: true
@@ -23,7 +23,7 @@ ports:
     vlan:
       mode: strict
       receive: untagged
-      defaultVlanId: 32
+      defaultVlanId: 8
       forceVlanId: false
   - index: 3
     name: chihua...cluster
@@ -207,7 +207,7 @@ ports:
       defaultVlanId: 1
       forceVlanId: false
   - index: 18
-    name: b.nas
+    name: nas
     enabled: true
     autoNegotiation: true
     flowControl:
@@ -248,7 +248,6 @@ vlans:
     name: infrastructure
     members:
       - 1
-      - 2
       - 3
       - 5
       - 7

@@ -147,7 +147,7 @@
 /ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=00:2B:67:D6:40:6B comment="malamute.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.5 server=infrastructure mac-address=38:F3:AB:E0:C5:DD comment="samoyed.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.6 server=infrastructure mac-address=38:05:25:34:71:80 comment="shiba.cluster"
-/ip/dhcp-server/lease/add address=192.168.32.7 server=infrastructure mac-address=6C:1F:F7:29:D5:E7 comment="nas"
+/ip/dhcp-server/lease/add address=192.168.32.7 server=infrastructure mac-address=6C:1F:F7:29:D5:E6 comment="nas"
 /ip/dhcp-server/lease/add address=192.168.88.2 server=management mac-address=F4:1E:57:F8:8F:89 comment="core.switch"
 /ip/dhcp-server/lease/add address=192.168.88.3 server=management mac-address=F4:1E:57:F8:96:77 comment="cluster.switch"
 /ip/dhcp-server/lease/add address=192.168.88.4 server=management mac-address=94:83:C4:AB:04:1F comment="office.ap"
