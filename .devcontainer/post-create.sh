@@ -21,4 +21,4 @@ echo 'export BWS_ACCESS_TOKEN=$(cat ~/.config/bws/access-token)' >> ~/.bashrc
 
 homelab pull-secrets
 homelab generate-client-config
-homelab talosctl -n d kubeconfig
+homelab talosctl -n samoyed kubeconfig

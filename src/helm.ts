@@ -40,6 +40,32 @@ export const pull = async (chartRef: PullChartRef, output: string) => {
   return chartPath;
 };
 
+interface PackChartOpts {
+  chart: string;
+  version: string;
+}
+
+export const pack = async (chartOpts: PackChartOpts, output: string) => {
+  const command = [
+    "helm",
+    "package",
+    chartOpts.chart,
+    `--destination=${output}`,
+    `--version=${chartOpts.version}`,
+  ];
+
+  await exec(command);
+
+  const chartName = extractChartName(chartOpts.chart);
+  const chartFile = `${chartName}-${chartOpts.version}.tgz`;
+  const chartPath = join(output, chartFile);
+  if (!existsSync(chartPath)) {
+    throw new Error(`packaged chart not found ${chartPath}`);
+  }
+
+  return chartPath;
+};
+
 interface TemplateOpts {
   helmFlags?: string[];
   chart: string;
