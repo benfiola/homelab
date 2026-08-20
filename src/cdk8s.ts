@@ -220,7 +220,7 @@ export class NasVolume extends Construct {
 
   constructor(construct: Construct, name: string) {
     const server = "nas.fiola.dev";
-    const share = `/${name}`;
+    const share = `/volume1/${name}`;
     const accessModes = ["ReadWriteMany"];
     const mountOptions = ["vers=3"];
     const storage = Quantity.fromString("1Gi");
