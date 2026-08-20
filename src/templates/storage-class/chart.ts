@@ -30,5 +30,17 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
   });
 
+  new StorageClass(chart, `${id}-storage-class-nas`, {
+    metadata: { name: `nas` },
+    provisioner: "nfs.csi.k8s.io",
+    allowVolumeExpansion: true,
+    mountOptions: ["vers=3"],
+    volumeBindingMode: "WaitForFirstConsumer",
+    parameters: {
+      server: "nas.fiola.dev",
+      share: "/pvcs",
+    },
+  });
+
   return chart;
 };

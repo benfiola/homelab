@@ -26,6 +26,9 @@ import {
   Deployment as BaseDeployment,
   Namespace as BaseNamespace,
   StatefulSet as BaseStatefulSet,
+  PersistentVolume,
+  PersistentVolumeClaim,
+  Quantity,
   Service,
   ServiceAccount,
 } from "../assets/kubernetes/k8s";
@@ -209,6 +212,48 @@ export class Namespace extends BaseNamespace {
         labels,
       },
     });
+  }
+}
+
+export class NasVolume extends Construct {
+  readonly name: string;
+
+  constructor(construct: Construct, name: string) {
+    const server = "nas.fiola.dev";
+    const share = `/${name}`;
+    const accessModes = ["ReadWriteMany"];
+    const mountOptions = ["vers=3"];
+    const storage = Quantity.fromString("1Gi");
+
+    const id = `${construct.node.id}-nas-volume-${name}`;
+    super(construct, id);
+
+    const pv = new PersistentVolume(this, `${id}-pv`, {
+      metadata: { name },
+      spec: {
+        accessModes,
+        capacity: { storage },
+        csi: {
+          driver: "nfs.csi.k8s.io",
+          volumeHandle: `${server}${share}`,
+          volumeAttributes: { server, share },
+        },
+        mountOptions,
+        persistentVolumeReclaimPolicy: "Retain",
+      },
+    });
+
+    new PersistentVolumeClaim(this, `${id}-pvc`, {
+      metadata: { name },
+      spec: {
+        accessModes,
+        storageClassName: "",
+        volumeName: pv.name,
+        resources: { requests: { storage } },
+      },
+    });
+
+    this.name = name;
   }
 }
 

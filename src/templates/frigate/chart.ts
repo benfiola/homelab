@@ -4,6 +4,7 @@ import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   Namespace,
+  NasVolume,
   StatefulSet,
   VaultAuth,
   VaultStaticSecret,
@@ -31,6 +32,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "config.yml": (await readFile(configFile)).toString(),
     },
   });
+
+  const nvr = new NasVolume(chart, "nvr");
 
   const statefulSet = new StatefulSet(chart, "frigate", {
     nodeSelector: {
