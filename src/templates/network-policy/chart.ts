@@ -725,6 +725,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.17.0/24",
         // iot + iot_allow_intranet (projector)
         "192.168.24.2/32",
+        // iot + iot_allow_intranet (sonos (bedroom-2 right))
+        "192.168.24.6/32",
+        // iot + iot_allow_intranet (sonos (bedroom-2 left))
+        "192.168.24.7/32",
         // iot + iot_allow_intranet (bedroom-2.speaker)
         "192.168.24.14/32",
       ),
@@ -760,6 +764,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.41.0/24",
         // iot + iot_allow_intranet (projector)
         "192.168.24.2/32",
+        // iot + iot_allow_intranet (sonos (bedroom-2 right))
+        "192.168.24.6/32",
+        // iot + iot_allow_intranet (sonos (bedroom-2 left))
+        "192.168.24.7/32",
         // iot + iot_allow_intranet (bedroom-2.speaker)
         "192.168.24.14/32",
       ),
