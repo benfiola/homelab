@@ -47,7 +47,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     volumes: {
       config: { pvc: { storageClass: "replicated", size: "1Gi" } },
       configmap: { configMap: config.name },
-      data: { pvc: { storageClass: "standard", size: "500Gi" } },
+      data: { pvc: { name: nvr.name } },
       shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
     },
   });
