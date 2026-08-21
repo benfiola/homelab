@@ -1,10 +1,6 @@
 import { readFile } from "fs/promises";
 import path from "path";
-import {
-  ConfigMap,
-  PersistentVolumeClaim,
-  Quantity,
-} from "../../../assets/kubernetes/k8s";
+import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
   Deployment,
@@ -27,22 +23,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const vaultAuth = new VaultAuth(chart);
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
-  const newData = new NasVolume(chart, "media");
-
-  const data = new PersistentVolumeClaim(chart, "pvc-data", {
-    metadata: {
-      name: "data",
-    },
-    spec: {
-      accessModes: ["ReadWriteMany"],
-      storageClassName: "standard",
-      resources: {
-        requests: {
-          storage: Quantity.fromString("1000Gi"),
-        },
-      },
-    },
-  });
+  const data = new NasVolume(chart, "media");
 
   const scriptFiles = ["init-data.sh", "wait-for-data-init.sh", "mss-clamp.sh"];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
