@@ -10,6 +10,7 @@ import {
   Deployment,
   HttpRoute,
   Namespace,
+  NasVolume,
   StatefulSet,
   VaultAuth,
   VaultStaticSecret,
@@ -26,6 +27,8 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const vaultAuth = new VaultAuth(chart);
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
+  const newData = new NasVolume(chart, "media");
+
   const data = new PersistentVolumeClaim(chart, "pvc-data", {
     metadata: {
       name: "data",
@@ -41,11 +44,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     },
   });
 
-  const scriptFiles = [
-    "init-data.sh",
-    "wait-for-data-init.sh",
-    "mss-clamp.sh",
-  ];
+  const scriptFiles = ["init-data.sh", "wait-for-data-init.sh", "mss-clamp.sh"];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: Object.fromEntries(
       await Promise.all(
