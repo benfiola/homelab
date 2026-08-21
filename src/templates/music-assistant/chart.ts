@@ -31,7 +31,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         stream: [8097, "TCP"],
       },
       env: {
-        MASS_BASE_URL: "https://stream.listen.fiola.dev",
+        MASS_BASE_URL: "http://stream.listen.fiola.dev:8097",
       },
       volumeMounts: {
         data: "/data",

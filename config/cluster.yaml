@@ -116,7 +116,7 @@ name: mdns0
 links: []
 up: true
 addresses:
-  - address: 169.254.254.1/24
+  - address: 192.168.254.1/24
 ---
 apiVersion: v1alpha1
 kind: HomelabNodeConfig

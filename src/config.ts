@@ -12,7 +12,7 @@ const loadYaml = async <T>(
   return schema.parseAsync(parse(raw));
 };
 
-const hardwareNameSchema = zod.union([zod.literal("rb"), zod.literal("tc")]);
+const hardwareNameSchema = zod.union([zod.literal("axp"), zod.literal("tc")]);
 
 export type HardwareName = zod.infer<typeof hardwareNameSchema>;
 
