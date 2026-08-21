@@ -700,7 +700,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   nodes.to(nodes, tcp(10250));
 
   // general - nas
-  nodes.to(dns("nas.fiola.dev"), tcp(111, 2049));
+  nodes.to(cidrs("192.168.32.7/32"), tcp(111, 2049));
 
   // general - talos
   nodes.to(nodes, tcp(50000));
