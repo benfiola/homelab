@@ -544,7 +544,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(cidrs("192.168.24.0/24"))
     .to(gatewayFamily, tcp(8097))
     .to(dns("tidal.com"), tcp(443))
-    .to(dns("*.tidal.com"), tcp(443));
+    .to(dns("*.tidal.com"), tcp(443))
+    .to(dns("*.*.tidal.com"), tcp(443));
 
   // node-feature-discovery
   nodeFeatureDiscovery.to(kubeApiServer, tcp(6443));
