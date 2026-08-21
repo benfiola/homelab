@@ -24,7 +24,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
           isGateway: true,
           ipam: {
             type: "host-local",
-            subnet: "169.254.254.0/24",
+            subnet: "192.168.254.0/24",
           },
         }),
       },
