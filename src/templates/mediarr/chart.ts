@@ -42,7 +42,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   const init = new Deployment(chart, "init-fs", {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: {
-      data: { pvc: { name: "data" } },
+      data: { pvc: { name: data.name } },
       scripts: { configMap: scripts.name },
     },
   });
@@ -144,7 +144,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
+      data: { pvc: { name: data.name } },
     },
   });
   sonarr.addContainer("sonarr", "lscr.io/linuxserver/sonarr:4.0.19", {
@@ -173,7 +173,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
+      data: { pvc: { name: data.name } },
     },
   });
   radarr.addContainer("radarr", "lscr.io/linuxserver/radarr:6.2.1", {
@@ -293,7 +293,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "20Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
+      data: { pvc: { name: data.name } },
     },
   });
   jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
@@ -321,7 +321,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     volumes: {
       config: { pvc: { size: "1Gi", storageClass: "standard" } },
-      data: { pvc: { name: "data" } },
+      data: { pvc: { name: data.name } },
     },
     dnsConfig: {
       ndots: 1,
