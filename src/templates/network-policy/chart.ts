@@ -699,6 +699,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // general - kubelet
   nodes.to(nodes, tcp(10250));
 
+  // general - nas
+  nodes.to(dns("nas.fiola.dev"), tcp(111, 2049));
+
   // general - talos
   nodes.to(nodes, tcp(50000));
   controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(50000));

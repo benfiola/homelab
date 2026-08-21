@@ -34,11 +34,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     metadata: { name: `nas` },
     provisioner: "nfs.csi.k8s.io",
     allowVolumeExpansion: true,
-    mountOptions: ["vers=3"],
+    mountOptions: ["nfsvers=4.1"],
     volumeBindingMode: "WaitForFirstConsumer",
     parameters: {
       server: "nas.fiola.dev",
-      share: "/pvcs",
+      share: "/mnt/data/pvcs",
     },
   });
 
