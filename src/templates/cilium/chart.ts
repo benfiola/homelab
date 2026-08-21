@@ -1,5 +1,10 @@
 import { Include } from "cdk8s";
 import {
+  Certificate,
+  Issuer,
+  CertificateSpecPrivateKeyRotationPolicy as PrivateKeyRotationPolicy,
+} from "../../../assets/cert-manager/cert-manager.io";
+import {
   CiliumBgpAdvertisementSpecAdvertisementsServiceAddresses as Addresses,
   CiliumBgpAdvertisementSpecAdvertisementsAdvertisementType as AdvertisementType,
   CiliumBgpPeerConfigSpecFamiliesAfi as AFI,
@@ -33,6 +38,37 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new Namespace(chart, { privileged: true });
 
   const securityContext = getSecurityContext();
+
+  const ca = new Certificate(chart, `${id}-certificate`, {
+    metadata: {
+      name: "ca",
+    },
+    spec: {
+      isCa: true,
+      commonName: "Cilium CA",
+      secretName: "ca-certs",
+      duration: "87600h",
+      privateKey: {
+        rotationPolicy: PrivateKeyRotationPolicy.NEVER,
+      },
+      issuerRef: {
+        name: "self-signed",
+        kind: "ClusterIssuer",
+        group: "cert-manager.io",
+      },
+    },
+  });
+
+  new Issuer(chart, `${id}-issuer`, {
+    metadata: {
+      name: ca.name,
+    },
+    spec: {
+      ca: {
+        secretName: getField(ca, "spec.secretName"),
+      },
+    },
+  });
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     bgpControlPlane: {
@@ -72,6 +108,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         enabled: true,
         podSecurityContext: securityContext.pod,
         securityContext: securityContext.container,
+      },
+      tls: {
+        auto: {
+          method: "certmanager",
+          certManagerIssuerRef: {
+            group: "cert-manager.io",
+            kind: "Issuer",
+            name: ca.name,
+          },
+        },
       },
       ui: {
         enabled: true,
