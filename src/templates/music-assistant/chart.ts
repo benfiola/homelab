@@ -24,11 +24,14 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   statefulSet.addContainer(
     "music-assistant",
-    "ghcr.io/music-assistant/server:2.9.13",
+    "ghcr.io/benfiola/homelab-images/music-assistant:1.0.0",
     {
       containerPorts: {
         ui: [8095, "TCP"],
         stream: [8097, "TCP"],
+      },
+      env: {
+        MASS_BASE_URL: "https://stream.listen.fiola.dev",
       },
       volumeMounts: {
         data: "/data",
