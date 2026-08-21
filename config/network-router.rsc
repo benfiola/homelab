@@ -207,6 +207,8 @@
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="sonos (bedroom-2 left)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.14 comment="bedroom-2.speaker"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.2 comment="projector"
+/ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.3 comment="sonos (play right)"
+/ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.4 comment="sonos (play left)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.6 comment="sonos (bedroom-2 right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.7 comment="sonos (bedroom-2 left)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.14 comment="bedroom-2.speaker"
