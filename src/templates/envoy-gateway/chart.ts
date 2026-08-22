@@ -29,6 +29,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
               "app.kubernetes.io/component": "certgen",
             },
           },
+          ttlSecondsAfterFinished: null,
         },
       },
       deployment: {
