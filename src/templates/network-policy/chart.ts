@@ -701,6 +701,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // general - kubelet
   nodes.to(nodes, tcp(10250));
 
+  // general - mdns
+  nodes
+    .to(cidrs("224.0.0.251/32"), udp(5353))
+    .from(cidrs("224.0.0.251/32"), udp(5353));
+
   // general - nas
   nodes.to(cidrs("192.168.32.7/32"), tcp(111, 2049));
 
