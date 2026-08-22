@@ -7,7 +7,7 @@ export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
     {
       chart: "oci://ghcr.io/benfiola/homelab-images/charts/mdns-reflector",
-      version: "2.0.4",
+      version: "2.0.5",
     },
     dir,
   );
