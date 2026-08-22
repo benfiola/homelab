@@ -14,9 +14,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new Namespace(chart, { privileged: true });
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
-    config: {
-      destInterfaces: "mdns0",
-    },
     daemonSet: {
       hostNetwork: true,
     },
