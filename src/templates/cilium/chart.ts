@@ -89,9 +89,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     cni: {
       exclusive: false,
     },
-    envoy: {
-      xdsMode: "split",
-    },
     hostFirewall: {
       enabled: true,
     },
