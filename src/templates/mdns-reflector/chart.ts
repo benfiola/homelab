@@ -17,7 +17,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
   daemonSet.addContainer(
     id,
-    "ghcr.io/benfiola/homelab-images/mdns-reflector:3.0.0",
+    "ghcr.io/benfiola/homelab-images/mdns-reflector:3.0.1",
     {
       securityContext: { uid: 0, gid: 0 },
     },
