@@ -138,6 +138,13 @@ export interface CiliumBgpAdvertisementSpecAdvertisements {
   readonly attributes?: CiliumBgpAdvertisementSpecAdvertisementsAttributes;
 
   /**
+   * Interface defines configuration options for the "Interface" advertisementType.
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisements#interface
+   */
+  readonly interface?: CiliumBgpAdvertisementSpecAdvertisementsInterface;
+
+  /**
    * Selector is a label selector to select objects of the type specified by AdvertisementType.
    * For the PodCIDR AdvertisementType it is not applicable. For other advertisement types,
    * if not specified, no objects of the type specified by AdvertisementType are selected for advertisement.
@@ -147,7 +154,7 @@ export interface CiliumBgpAdvertisementSpecAdvertisements {
   readonly selector?: CiliumBgpAdvertisementSpecAdvertisementsSelector;
 
   /**
-   * Service defines configuration options for advertisementType service.
+   * Service defines configuration options for the "Service" advertisementType.
    *
    * @schema CiliumBgpAdvertisementSpecAdvertisements#service
    */
@@ -163,6 +170,7 @@ export function toJson_CiliumBgpAdvertisementSpecAdvertisements(obj: CiliumBgpAd
   const result = {
     'advertisementType': obj.advertisementType,
     'attributes': toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributes(obj.attributes),
+    'interface': toJson_CiliumBgpAdvertisementSpecAdvertisementsInterface(obj.interface),
     'selector': toJson_CiliumBgpAdvertisementSpecAdvertisementsSelector(obj.selector),
     'service': toJson_CiliumBgpAdvertisementSpecAdvertisementsService(obj.service),
   };
@@ -183,6 +191,8 @@ export enum CiliumBgpAdvertisementSpecAdvertisementsAdvertisementType {
   CILIUM_POD_IP_POOL = "CiliumPodIPPool",
   /** Service */
   SERVICE = "Service",
+  /** Interface */
+  INTERFACE = "Interface",
 }
 
 /**
@@ -218,6 +228,35 @@ export function toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributes(obj: C
   const result = {
     'communities': toJson_CiliumBgpAdvertisementSpecAdvertisementsAttributesCommunities(obj.communities),
     'localPreference': obj.localPreference,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Interface defines configuration options for the "Interface" advertisementType.
+ *
+ * @schema CiliumBgpAdvertisementSpecAdvertisementsInterface
+ */
+export interface CiliumBgpAdvertisementSpecAdvertisementsInterface {
+  /**
+   * Name of local interface of whose IP addresses will be advertised via BGP.
+   * Each IP address applied on the interface is advertised as a /32 prefix (for IPv4) or a /128 prefix (for IPv6).
+   *
+   * @schema CiliumBgpAdvertisementSpecAdvertisementsInterface#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'CiliumBgpAdvertisementSpecAdvertisementsInterface' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumBgpAdvertisementSpecAdvertisementsInterface(obj: CiliumBgpAdvertisementSpecAdvertisementsInterface | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -265,7 +304,7 @@ export function toJson_CiliumBgpAdvertisementSpecAdvertisementsSelector(obj: Cil
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Service defines configuration options for advertisementType service.
+ * Service defines configuration options for the "Service" advertisementType.
  *
  * @schema CiliumBgpAdvertisementSpecAdvertisementsService
  */
@@ -1329,7 +1368,7 @@ export interface CiliumBgpClusterConfigSpecBgpInstancesPeersAutoDiscovery {
    *
    * @schema CiliumBgpClusterConfigSpecBgpInstancesPeersAutoDiscovery#mode
    */
-  readonly mode: string;
+  readonly mode: CiliumBgpClusterConfigSpecBgpInstancesPeersAutoDiscoveryMode;
 }
 
 /**
@@ -1421,6 +1460,16 @@ export function toJson_CiliumBgpClusterConfigSpecBgpInstancesPeersAutoDiscoveryD
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * mode is the mode of the auto-discovery.
+ *
+ * @schema CiliumBgpClusterConfigSpecBgpInstancesPeersAutoDiscoveryMode
+ */
+export enum CiliumBgpClusterConfigSpecBgpInstancesPeersAutoDiscoveryMode {
+  /** DefaultGateway */
+  DEFAULT_GATEWAY = "DefaultGateway",
+}
 
 /**
  * addressFamily is the address family of the default gateway.
@@ -2099,7 +2148,7 @@ export interface CiliumBgpNodeConfigSpecBgpInstancesPeersAutoDiscovery {
    *
    * @schema CiliumBgpNodeConfigSpecBgpInstancesPeersAutoDiscovery#mode
    */
-  readonly mode: string;
+  readonly mode: CiliumBgpNodeConfigSpecBgpInstancesPeersAutoDiscoveryMode;
 }
 
 /**
@@ -2174,6 +2223,16 @@ export function toJson_CiliumBgpNodeConfigSpecBgpInstancesPeersAutoDiscoveryDefa
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * mode is the mode of the auto-discovery.
+ *
+ * @schema CiliumBgpNodeConfigSpecBgpInstancesPeersAutoDiscoveryMode
+ */
+export enum CiliumBgpNodeConfigSpecBgpInstancesPeersAutoDiscoveryMode {
+  /** DefaultGateway */
+  DEFAULT_GATEWAY = "DefaultGateway",
+}
 
 /**
  * addressFamily is the address family of the default gateway.
@@ -3119,9 +3178,6 @@ export interface CiliumBgpPeerConfigSpecFamilies {
    *
    * If not specified, no advertisements are sent for this family.
    *
-   * This field is ignored in CiliumBGPNeighbor which is used in CiliumBGPPeeringPolicy.
-   * Use CiliumBGPPeeringPolicy advertisement options instead.
-   *
    * @schema CiliumBgpPeerConfigSpecFamilies#advertisements
    */
   readonly advertisements?: CiliumBgpPeerConfigSpecFamiliesAdvertisements;
@@ -3269,6 +3325,18 @@ export interface CiliumBgpPeerConfigSpecTransport {
    * @schema CiliumBgpPeerConfigSpecTransport#peerPort
    */
   readonly peerPort?: number;
+
+  /**
+   * SourceInterface is the name of a local interface, which IP address will be used
+   * as the source IP address for the BGP session. The interface must not have more than one
+   * non-loopback, non-multicast and non-link-local-IPv6 address per address family.
+   *
+   * If not specified, or if the provided interface is not found or missing a usable IP address,
+   * the source IP address will be auto-detected based on the egress interface.
+   *
+   * @schema CiliumBgpPeerConfigSpecTransport#sourceInterface
+   */
+  readonly sourceInterface?: string;
 }
 
 /**
@@ -3279,6 +3347,7 @@ export function toJson_CiliumBgpPeerConfigSpecTransport(obj: CiliumBgpPeerConfig
   if (obj === undefined) { return undefined; }
   const result = {
     'peerPort': obj.peerPort,
+    'sourceInterface': obj.sourceInterface,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3289,9 +3358,6 @@ export function toJson_CiliumBgpPeerConfigSpecTransport(obj: CiliumBgpPeerConfig
  * Advertisements selects group of BGP Advertisement(s) to advertise for this family.
  *
  * If not specified, no advertisements are sent for this family.
- *
- * This field is ignored in CiliumBGPNeighbor which is used in CiliumBGPPeeringPolicy.
- * Use CiliumBGPPeeringPolicy advertisement options instead.
  *
  * @schema CiliumBgpPeerConfigSpecFamiliesAdvertisements
  */
@@ -3633,9 +3699,6 @@ export interface CiliumBgpPeerConfigV2Alpha1SpecFamilies {
    *
    * If not specified, no advertisements are sent for this family.
    *
-   * This field is ignored in CiliumBGPNeighbor which is used in CiliumBGPPeeringPolicy.
-   * Use CiliumBGPPeeringPolicy advertisement options instead.
-   *
    * @schema CiliumBgpPeerConfigV2Alpha1SpecFamilies#advertisements
    */
   readonly advertisements?: CiliumBgpPeerConfigV2Alpha1SpecFamiliesAdvertisements;
@@ -3818,9 +3881,6 @@ export function toJson_CiliumBgpPeerConfigV2Alpha1SpecTransport(obj: CiliumBgpPe
  *
  * If not specified, no advertisements are sent for this family.
  *
- * This field is ignored in CiliumBGPNeighbor which is used in CiliumBGPPeeringPolicy.
- * Use CiliumBGPPeeringPolicy advertisement options instead.
- *
  * @schema CiliumBgpPeerConfigV2Alpha1SpecFamiliesAdvertisements
  */
 export interface CiliumBgpPeerConfigV2Alpha1SpecFamiliesAdvertisements {
@@ -3968,1112 +4028,6 @@ export function toJson_CiliumBgpPeerConfigV2Alpha1SpecFamiliesAdvertisementsMatc
  * @schema CiliumBgpPeerConfigV2Alpha1SpecFamiliesAdvertisementsMatchExpressionsOperator
  */
 export enum CiliumBgpPeerConfigV2Alpha1SpecFamiliesAdvertisementsMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-
-/**
- * CiliumBGPPeeringPolicy is a Kubernetes third-party resource for instructing
-Cilium's BGP control plane to create virtual BGP routers.
- *
- * @schema CiliumBGPPeeringPolicy
- */
-export class CiliumBgpPeeringPolicy extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "CiliumBGPPeeringPolicy"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'cilium.io/v2alpha1',
-    kind: 'CiliumBGPPeeringPolicy',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "CiliumBGPPeeringPolicy".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: CiliumBgpPeeringPolicyProps): any {
-    return {
-      ...CiliumBgpPeeringPolicy.GVK,
-      ...toJson_CiliumBgpPeeringPolicyProps(props),
-    };
-  }
-
-  /**
-   * Defines a "CiliumBGPPeeringPolicy" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: CiliumBgpPeeringPolicyProps) {
-    super(scope, id, {
-      ...CiliumBgpPeeringPolicy.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public override toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...CiliumBgpPeeringPolicy.GVK,
-      ...toJson_CiliumBgpPeeringPolicyProps(resolved),
-    };
-  }
-}
-
-/**
- * CiliumBGPPeeringPolicy is a Kubernetes third-party resource for instructing
- * Cilium's BGP control plane to create virtual BGP routers.
- *
- * @schema CiliumBGPPeeringPolicy
- */
-export interface CiliumBgpPeeringPolicyProps {
-  /**
-   * @schema CiliumBGPPeeringPolicy#metadata
-   */
-  readonly metadata: ApiObjectMetadata;
-
-  /**
-   * Spec is a human readable description of a BGP peering policy
-   *
-   * @schema CiliumBGPPeeringPolicy#spec
-   */
-  readonly spec?: CiliumBgpPeeringPolicySpec;
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicyProps' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicyProps(obj: CiliumBgpPeeringPolicyProps | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': obj.metadata,
-    'spec': toJson_CiliumBgpPeeringPolicySpec(obj.spec),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Spec is a human readable description of a BGP peering policy
- *
- * @schema CiliumBgpPeeringPolicySpec
- */
-export interface CiliumBgpPeeringPolicySpec {
-  /**
-   * NodeSelector selects a group of nodes where this BGP Peering
-   * Policy applies.
-   *
-   * If empty / nil this policy applies to all nodes.
-   *
-   * @schema CiliumBgpPeeringPolicySpec#nodeSelector
-   */
-  readonly nodeSelector?: CiliumBgpPeeringPolicySpecNodeSelector;
-
-  /**
-   * A list of CiliumBGPVirtualRouter(s) which instructs
-   * the BGP control plane how to instantiate virtual BGP routers.
-   *
-   * @schema CiliumBgpPeeringPolicySpec#virtualRouters
-   */
-  readonly virtualRouters: CiliumBgpPeeringPolicySpecVirtualRouters[];
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpec' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpec(obj: CiliumBgpPeeringPolicySpec | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'nodeSelector': toJson_CiliumBgpPeeringPolicySpecNodeSelector(obj.nodeSelector),
-    'virtualRouters': obj.virtualRouters?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRouters(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * NodeSelector selects a group of nodes where this BGP Peering
- * Policy applies.
- *
- * If empty / nil this policy applies to all nodes.
- *
- * @schema CiliumBgpPeeringPolicySpecNodeSelector
- */
-export interface CiliumBgpPeeringPolicySpecNodeSelector {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecNodeSelector#matchExpressions
-   */
-  readonly matchExpressions?: CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecNodeSelector#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecNodeSelector' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecNodeSelector(obj: CiliumBgpPeeringPolicySpecNodeSelector | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * CiliumBGPVirtualRouter defines a discrete BGP virtual router configuration.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRouters
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRouters {
-  /**
-   * ExportPodCIDR determines whether to export the Node's private CIDR block
-   * to the configured neighbors.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#exportPodCIDR
-   */
-  readonly exportPodCidr?: boolean;
-
-  /**
-   * LocalASN is the ASN of this virtual router.
-   * Supports extended 32bit ASNs
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#localASN
-   */
-  readonly localAsn: number;
-
-  /**
-   * Neighbors is a list of neighboring BGP peers for this virtual router
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#neighbors
-   */
-  readonly neighbors: CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors[];
-
-  /**
-   * PodIPPoolSelector selects CiliumPodIPPools based on labels. The virtual
-   * router will announce allocated CIDRs of matching CiliumPodIPPools.
-   *
-   * If empty / nil no CiliumPodIPPools will be announced.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#podIPPoolSelector
-   */
-  readonly podIpPoolSelector?: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector;
-
-  /**
-   * ServiceAdvertisements selects a group of BGP Advertisement(s) to advertise
-   * for the selected services.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#serviceAdvertisements
-   */
-  readonly serviceAdvertisements?: CiliumBgpPeeringPolicySpecVirtualRoutersServiceAdvertisements[];
-
-  /**
-   * ServiceSelector selects a group of load balancer services which this
-   * virtual router will announce. The loadBalancerClass for a service must
-   * be nil or specify a class supported by Cilium, e.g. "io.cilium/bgp-control-plane".
-   * Refer to the following document for additional details regarding load balancer
-   * classes:
-   *
-   * https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
-   *
-   * If empty / nil no services will be announced.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRouters#serviceSelector
-   */
-  readonly serviceSelector?: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector;
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRouters' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRouters(obj: CiliumBgpPeeringPolicySpecVirtualRouters | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'exportPodCIDR': obj.exportPodCidr,
-    'localASN': obj.localAsn,
-    'neighbors': obj.neighbors?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors(y)),
-    'podIPPoolSelector': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector(obj.podIpPoolSelector),
-    'serviceAdvertisements': obj.serviceAdvertisements?.map(y => y),
-    'serviceSelector': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector(obj.serviceSelector),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions
- */
-export interface CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions#operator
-   */
-  readonly operator: CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * CiliumBGPNeighbor is a neighboring peer for use in a
- * CiliumBGPVirtualRouter configuration.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors {
-  /**
-   * AdvertisedPathAttributes can be used to apply additional path attributes
-   * to selected routes when advertising them to the peer.
-   * If empty / nil, no additional path attributes are advertised.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#advertisedPathAttributes
-   */
-  readonly advertisedPathAttributes?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes[];
-
-  /**
-   * AuthSecretRef is the name of the secret to use to fetch a TCP
-   * authentication password for this peer.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#authSecretRef
-   */
-  readonly authSecretRef?: string;
-
-  /**
-   * ConnectRetryTimeSeconds defines the initial value for the BGP ConnectRetryTimer (RFC 4271, Section 8).
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#connectRetryTimeSeconds
-   */
-  readonly connectRetryTimeSeconds?: number;
-
-  /**
-   * EBGPMultihopTTL controls the multi-hop feature for eBGP peers.
-   * Its value defines the Time To Live (TTL) value used in BGP packets sent to the neighbor.
-   * The value 1 implies that eBGP multi-hop feature is disabled (only a single hop is allowed).
-   * This field is ignored for iBGP peers.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#eBGPMultihopTTL
-   */
-  readonly eBgpMultihopTtl?: number;
-
-  /**
-   * Families, if provided, defines a set of AFI/SAFIs the speaker will
-   * negotiate with it's peer.
-   *
-   * If this slice is not provided the default families of IPv6 and IPv4 will
-   * be provided.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#families
-   */
-  readonly families?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies[];
-
-  /**
-   * GracefulRestart defines graceful restart parameters which are negotiated
-   * with this neighbor. If empty / nil, the graceful restart capability is disabled.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#gracefulRestart
-   */
-  readonly gracefulRestart?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart;
-
-  /**
-   * HoldTimeSeconds defines the initial value for the BGP HoldTimer (RFC 4271, Section 4.2).
-   * Updating this value will cause a session reset.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#holdTimeSeconds
-   */
-  readonly holdTimeSeconds?: number;
-
-  /**
-   * KeepaliveTimeSeconds defines the initial value for the BGP KeepaliveTimer (RFC 4271, Section 8).
-   * It can not be larger than HoldTimeSeconds. Updating this value will cause a session reset.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#keepAliveTimeSeconds
-   */
-  readonly keepAliveTimeSeconds?: number;
-
-  /**
-   * PeerASN is the ASN of the peer BGP router.
-   * Supports extended 32bit ASNs
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#peerASN
-   */
-  readonly peerAsn: number;
-
-  /**
-   * PeerAddress is the IP address of the peer.
-   * This must be in CIDR notation and use a /32 to express
-   * a single host.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#peerAddress
-   */
-  readonly peerAddress: string;
-
-  /**
-   * PeerPort is the TCP port of the peer. 1-65535 is the range of
-   * valid port numbers that can be specified. If unset, defaults to 179.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors#peerPort
-   */
-  readonly peerPort?: number;
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighbors | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'advertisedPathAttributes': obj.advertisedPathAttributes?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes(y)),
-    'authSecretRef': obj.authSecretRef,
-    'connectRetryTimeSeconds': obj.connectRetryTimeSeconds,
-    'eBGPMultihopTTL': obj.eBgpMultihopTtl,
-    'families': obj.families?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies(y)),
-    'gracefulRestart': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart(obj.gracefulRestart),
-    'holdTimeSeconds': obj.holdTimeSeconds,
-    'keepAliveTimeSeconds': obj.keepAliveTimeSeconds,
-    'peerASN': obj.peerAsn,
-    'peerAddress': obj.peerAddress,
-    'peerPort': obj.peerPort,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * PodIPPoolSelector selects CiliumPodIPPools based on labels. The virtual
- * router will announce allocated CIDRs of matching CiliumPodIPPools.
- *
- * If empty / nil no CiliumPodIPPools will be announced.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector#matchExpressions
-   */
-  readonly matchExpressions?: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector(obj: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelector | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * BGPServiceAddressType defines type of service address to be advertised.
- *
- * Note list of supported service addresses is not exhaustive and can be extended in the future.
- * Consumer of this API should be able to handle unknown values.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceAdvertisements
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersServiceAdvertisements {
-  /** LoadBalancerIP */
-  LOAD_BALANCER_IP = "LoadBalancerIP",
-  /** ClusterIP */
-  CLUSTER_IP = "ClusterIP",
-  /** ExternalIP */
-  EXTERNAL_IP = "ExternalIP",
-}
-
-/**
- * ServiceSelector selects a group of load balancer services which this
- * virtual router will announce. The loadBalancerClass for a service must
- * be nil or specify a class supported by Cilium, e.g. "io.cilium/bgp-control-plane".
- * Refer to the following document for additional details regarding load balancer
- * classes:
- *
- * https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class
- *
- * If empty / nil no services will be announced.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector#matchExpressions
-   */
-  readonly matchExpressions?: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector(obj: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelector | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressionsOperator
- */
-export enum CiliumBgpPeeringPolicySpecNodeSelectorMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * CiliumBGPPathAttributes can be used to apply additional path attributes
- * to matched routes when advertising them to a BGP peer.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes {
-  /**
-   * Communities defines a set of community values advertised in the supported BGP Communities path attributes.
-   * If nil / not set, no BGP Communities path attribute will be advertised.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#communities
-   */
-  readonly communities?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities;
-
-  /**
-   * LocalPreference defines the preference value advertised in the BGP Local Preference path attribute.
-   * As Local Preference is only valid for iBGP peers, this value will be ignored for eBGP peers
-   * (no Local Preference path attribute will be advertised).
-   * If nil / not set, the default Local Preference of 100 will be advertised in
-   * the Local Preference path attribute for iBGP peers.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#localPreference
-   */
-  readonly localPreference?: number;
-
-  /**
-   * Selector selects a group of objects of the SelectorType
-   * resulting into routes that will be announced with the configured Attributes.
-   * If nil / not set, all objects of the SelectorType are selected.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#selector
-   */
-  readonly selector?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector;
-
-  /**
-   * SelectorType defines the object type on which the Selector applies:
-   * - For "PodCIDR" the Selector matches k8s CiliumNode resources
-   * (path attributes apply to routes announced for PodCIDRs of selected CiliumNodes.
-   * Only affects routes of cluster scope / Kubernetes IPAM CIDRs, not Multi-Pool IPAM CIDRs.
-   * - For "CiliumLoadBalancerIPPool" the Selector matches CiliumLoadBalancerIPPool custom resources
-   * (path attributes apply to routes announced for selected CiliumLoadBalancerIPPools).
-   * - For "CiliumPodIPPool" the Selector matches CiliumPodIPPool custom resources
-   * (path attributes apply to routes announced for allocated CIDRs of selected CiliumPodIPPools).
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes#selectorType
-   */
-  readonly selectorType: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorType;
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributes | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'communities': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities(obj.communities),
-    'localPreference': obj.localPreference,
-    'selector': toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector(obj.selector),
-    'selectorType': obj.selectorType,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * CiliumBGPFamily represents a AFI/SAFI address family pair.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies {
-  /**
-   * Afi is the Address Family Identifier (AFI) of the family.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies#afi
-   */
-  readonly afi: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesAfi;
-
-  /**
-   * Safi is the Subsequent Address Family Identifier (SAFI) of the family.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies#safi
-   */
-  readonly safi: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesSafi;
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamilies | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'afi': obj.afi,
-    'safi': obj.safi,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * GracefulRestart defines graceful restart parameters which are negotiated
- * with this neighbor. If empty / nil, the graceful restart capability is disabled.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart {
-  /**
-   * Enabled flag, when set enables graceful restart capability.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart#enabled
-   */
-  readonly enabled: boolean;
-
-  /**
-   * RestartTimeSeconds is the estimated time it will take for the BGP
-   * session to be re-established with peer after a restart.
-   * After this period, peer will remove stale routes. This is
-   * described RFC 4724 section 4.2.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart#restartTimeSeconds
-   */
-  readonly restartTimeSeconds?: number;
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsGracefulRestart | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'enabled': obj.enabled,
-    'restartTimeSeconds': obj.restartTimeSeconds,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions#operator
-   */
-  readonly operator: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions#operator
-   */
-  readonly operator: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Communities defines a set of community values advertised in the supported BGP Communities path attributes.
- * If nil / not set, no BGP Communities path attribute will be advertised.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities {
-  /**
-   * Large holds a list of the BGP Large Communities Attribute (RFC 8092) values.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities#large
-   */
-  readonly large?: string[];
-
-  /**
-   * Standard holds a list of "standard" 32-bit BGP Communities Attribute (RFC 1997) values defined as numeric values.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities#standard
-   */
-  readonly standard?: string[];
-
-  /**
-   * WellKnown holds a list "standard" 32-bit BGP Communities Attribute (RFC 1997) values defined as
-   * well-known string aliases to their numeric values.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities#wellKnown
-   */
-  readonly wellKnown?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunitiesWellKnown[];
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunities | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'large': obj.large?.map(y => y),
-    'standard': obj.standard?.map(y => y),
-    'wellKnown': obj.wellKnown?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Selector selects a group of objects of the SelectorType
- * resulting into routes that will be announced with the configured Attributes.
- * If nil / not set, all objects of the SelectorType are selected.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector#matchExpressions
-   */
-  readonly matchExpressions?: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelector | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * SelectorType defines the object type on which the Selector applies:
- * - For "PodCIDR" the Selector matches k8s CiliumNode resources
- * (path attributes apply to routes announced for PodCIDRs of selected CiliumNodes.
- * Only affects routes of cluster scope / Kubernetes IPAM CIDRs, not Multi-Pool IPAM CIDRs.
- * - For "CiliumLoadBalancerIPPool" the Selector matches CiliumLoadBalancerIPPool custom resources
- * (path attributes apply to routes announced for selected CiliumLoadBalancerIPPools).
- * - For "CiliumPodIPPool" the Selector matches CiliumPodIPPool custom resources
- * (path attributes apply to routes announced for allocated CIDRs of selected CiliumPodIPPools).
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorType
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorType {
-  /** PodCIDR */
-  POD_CIDR = "PodCIDR",
-  /** CiliumLoadBalancerIPPool */
-  CILIUM_LOAD_BALANCER_IP_POOL = "CiliumLoadBalancerIPPool",
-  /** CiliumPodIPPool */
-  CILIUM_POD_IP_POOL = "CiliumPodIPPool",
-}
-
-/**
- * Afi is the Address Family Identifier (AFI) of the family.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesAfi
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesAfi {
-  /** ipv4 */
-  IPV4 = "ipv4",
-  /** ipv6 */
-  IPV6 = "ipv6",
-  /** l2vpn */
-  L2VPN = "l2vpn",
-  /** ls */
-  LS = "ls",
-  /** opaque */
-  OPAQUE = "opaque",
-}
-
-/**
- * Safi is the Subsequent Address Family Identifier (SAFI) of the family.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesSafi
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsFamiliesSafi {
-  /** unicast */
-  UNICAST = "unicast",
-  /** multicast */
-  MULTICAST = "multicast",
-  /** mpls_label */
-  MPLS_UNDERSCORE_LABEL = "mpls_label",
-  /** encapsulation */
-  ENCAPSULATION = "encapsulation",
-  /** vpls */
-  VPLS = "vpls",
-  /** evpn */
-  EVPN = "evpn",
-  /** ls */
-  LS = "ls",
-  /** sr_policy */
-  SR_UNDERSCORE_POLICY = "sr_policy",
-  /** mup */
-  MUP = "mup",
-  /** mpls_vpn */
-  MPLS_UNDERSCORE_VPN = "mpls_vpn",
-  /** mpls_vpn_multicast */
-  MPLS_UNDERSCORE_VPN_UNDERSCORE_MULTICAST = "mpls_vpn_multicast",
-  /** route_target_constraints */
-  ROUTE_UNDERSCORE_TARGET_UNDERSCORE_CONSTRAINTS = "route_target_constraints",
-  /** flowspec_unicast */
-  FLOWSPEC_UNDERSCORE_UNICAST = "flowspec_unicast",
-  /** flowspec_vpn */
-  FLOWSPEC_UNDERSCORE_VPN = "flowspec_vpn",
-  /** key_value */
-  KEY_UNDERSCORE_VALUE = "key_value",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressionsOperator
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersPodIpPoolSelectorMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressionsOperator
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersServiceSelectorMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * BGPWellKnownCommunity type represents a value of the "standard" 32-bit BGP Communities Attribute (RFC 1997)
- * as a well-known string alias to its numeric value. Allowed values and their mapping to the numeric values:
- *
- * internet                   = 0x00000000 (0:0)
- * planned-shut               = 0xffff0000 (65535:0)
- * accept-own                 = 0xffff0001 (65535:1)
- * route-filter-translated-v4 = 0xffff0002 (65535:2)
- * route-filter-v4            = 0xffff0003 (65535:3)
- * route-filter-translated-v6 = 0xffff0004 (65535:4)
- * route-filter-v6            = 0xffff0005 (65535:5)
- * llgr-stale                 = 0xffff0006 (65535:6)
- * no-llgr                    = 0xffff0007 (65535:7)
- * blackhole                  = 0xffff029a (65535:666)
- * no-export                  = 0xffffff01	(65535:65281)
- * no-advertise               = 0xffffff02 (65535:65282)
- * no-export-subconfed        = 0xffffff03 (65535:65283)
- * no-peer                    = 0xffffff04 (65535:65284)
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunitiesWellKnown
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesCommunitiesWellKnown {
-  /** internet */
-  INTERNET = "internet",
-  /** planned-shut */
-  PLANNED_HYPHEN_SHUT = "planned-shut",
-  /** accept-own */
-  ACCEPT_HYPHEN_OWN = "accept-own",
-  /** route-filter-translated-v4 */
-  ROUTE_HYPHEN_FILTER_HYPHEN_TRANSLATED_HYPHEN_V4 = "route-filter-translated-v4",
-  /** route-filter-v4 */
-  ROUTE_HYPHEN_FILTER_HYPHEN_V4 = "route-filter-v4",
-  /** route-filter-translated-v6 */
-  ROUTE_HYPHEN_FILTER_HYPHEN_TRANSLATED_HYPHEN_V6 = "route-filter-translated-v6",
-  /** route-filter-v6 */
-  ROUTE_HYPHEN_FILTER_HYPHEN_V6 = "route-filter-v6",
-  /** llgr-stale */
-  LLGR_HYPHEN_STALE = "llgr-stale",
-  /** no-llgr */
-  NO_HYPHEN_LLGR = "no-llgr",
-  /** blackhole */
-  BLACKHOLE = "blackhole",
-  /** no-export */
-  NO_HYPHEN_EXPORT = "no-export",
-  /** no-advertise */
-  NO_HYPHEN_ADVERTISE = "no-advertise",
-  /** no-export-subconfed */
-  NO_HYPHEN_EXPORT_HYPHEN_SUBCONFED = "no-export-subconfed",
-  /** no-peer */
-  NO_HYPHEN_PEER = "no-peer",
-}
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions
- */
-export interface CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions#operator
-   */
-  readonly operator: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions(obj: CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressionsOperator
- */
-export enum CiliumBgpPeeringPolicySpecVirtualRoutersNeighborsAdvertisedPathAttributesSelectorMatchExpressionsOperator {
   /** In */
   IN = "In",
   /** NotIn */
@@ -6061,9 +5015,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecs(obj: CiliumClusterwid
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -6134,6 +5086,11 @@ export interface CiliumClusterwideNetworkPolicySpecEgress {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgress#toEndpoints
    */
   readonly toEndpoints?: CiliumClusterwideNetworkPolicySpecEgressToEndpoints[];
@@ -6141,7 +5098,7 @@ export interface CiliumClusterwideNetworkPolicySpecEgress {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgress#toEntities
@@ -6168,9 +5125,10 @@ export interface CiliumClusterwideNetworkPolicySpecEgress {
   readonly toFqdNs?: CiliumClusterwideNetworkPolicySpecEgressToFqdNs[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -6204,19 +5162,11 @@ export interface CiliumClusterwideNetworkPolicySpecEgress {
   readonly toPorts?: CiliumClusterwideNetworkPolicySpecEgressToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgress#toRequires
    */
-  readonly toRequires?: CiliumClusterwideNetworkPolicySpecEgressToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -6245,7 +5195,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgress(obj: CiliumClust
     'toGroups': obj.toGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToServices(y)),
   };
   // filter undefined values
@@ -6262,9 +5212,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgress(obj: CiliumClust
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -6328,6 +5276,11 @@ export interface CiliumClusterwideNetworkPolicySpecEgressDeny {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDeny#toEndpoints
    */
   readonly toEndpoints?: CiliumClusterwideNetworkPolicySpecEgressDenyToEndpoints[];
@@ -6335,7 +5288,7 @@ export interface CiliumClusterwideNetworkPolicySpecEgressDeny {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDeny#toEntities
@@ -6343,9 +5296,10 @@ export interface CiliumClusterwideNetworkPolicySpecEgressDeny {
   readonly toEntities?: CiliumClusterwideNetworkPolicySpecEgressDenyToEntities[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -6379,19 +5333,11 @@ export interface CiliumClusterwideNetworkPolicySpecEgressDeny {
   readonly toPorts?: CiliumClusterwideNetworkPolicySpecEgressDenyToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDeny#toRequires
    */
-  readonly toRequires?: CiliumClusterwideNetworkPolicySpecEgressDenyToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -6418,7 +5364,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressDeny(obj: CiliumC
     'toGroups': obj.toGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToServices(y)),
   };
   // filter undefined values
@@ -6527,9 +5473,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEndpointSelector(obj: C
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -6589,6 +5533,11 @@ export interface CiliumClusterwideNetworkPolicySpecIngress {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngress#fromEndpoints
    */
   readonly fromEndpoints?: CiliumClusterwideNetworkPolicySpecIngressFromEndpoints[];
@@ -6596,7 +5545,7 @@ export interface CiliumClusterwideNetworkPolicySpecIngress {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngress#fromEntities
@@ -6604,12 +5553,13 @@ export interface CiliumClusterwideNetworkPolicySpecIngress {
   readonly fromEntities?: CiliumClusterwideNetworkPolicySpecIngressFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -6628,18 +5578,11 @@ export interface CiliumClusterwideNetworkPolicySpecIngress {
   readonly fromNodes?: CiliumClusterwideNetworkPolicySpecIngressFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngress#fromRequires
    */
-  readonly fromRequires?: CiliumClusterwideNetworkPolicySpecIngressFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -6682,7 +5625,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngress(obj: CiliumClus
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressToPorts(y)),
   };
@@ -6700,9 +5643,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngress(obj: CiliumClus
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet, FromGroups and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -6755,6 +5696,11 @@ export interface CiliumClusterwideNetworkPolicySpecIngressDeny {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDeny#fromEndpoints
    */
   readonly fromEndpoints?: CiliumClusterwideNetworkPolicySpecIngressDenyFromEndpoints[];
@@ -6762,7 +5708,7 @@ export interface CiliumClusterwideNetworkPolicySpecIngressDeny {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDeny#fromEntities
@@ -6770,12 +5716,13 @@ export interface CiliumClusterwideNetworkPolicySpecIngressDeny {
   readonly fromEntities?: CiliumClusterwideNetworkPolicySpecIngressDenyFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -6794,18 +5741,11 @@ export interface CiliumClusterwideNetworkPolicySpecIngressDeny {
   readonly fromNodes?: CiliumClusterwideNetworkPolicySpecIngressDenyFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDeny#fromRequires
    */
-  readonly fromRequires?: CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -6847,7 +5787,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressDeny(obj: Cilium
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyToPorts(y)),
   };
@@ -6857,7 +5797,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressDeny(obj: Cilium
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Label is the Cilium's representation of a container label.
+ * Label is Cilium's representation of a label.
  *
  * @schema CiliumClusterwideNetworkPolicySpecLabels
  */
@@ -6868,7 +5808,7 @@ export interface CiliumClusterwideNetworkPolicySpecLabels {
   readonly key: string;
 
   /**
-   * Source can be one of the above values (e.g.: LabelSourceContainer).
+   * Source can be one of the above values (e.g.: LabelSourceK8s).
    *
    * @schema CiliumClusterwideNetworkPolicySpecLabels#source
    */
@@ -6974,9 +5914,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecNodeSelector(obj: Ciliu
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -7047,6 +5985,11 @@ export interface CiliumClusterwideNetworkPolicySpecsEgress {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgress#toEndpoints
    */
   readonly toEndpoints?: CiliumClusterwideNetworkPolicySpecsEgressToEndpoints[];
@@ -7054,7 +5997,7 @@ export interface CiliumClusterwideNetworkPolicySpecsEgress {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgress#toEntities
@@ -7081,9 +6024,10 @@ export interface CiliumClusterwideNetworkPolicySpecsEgress {
   readonly toFqdNs?: CiliumClusterwideNetworkPolicySpecsEgressToFqdNs[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -7117,19 +6061,11 @@ export interface CiliumClusterwideNetworkPolicySpecsEgress {
   readonly toPorts?: CiliumClusterwideNetworkPolicySpecsEgressToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgress#toRequires
    */
-  readonly toRequires?: CiliumClusterwideNetworkPolicySpecsEgressToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -7158,7 +6094,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgress(obj: CiliumClus
     'toGroups': obj.toGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToServices(y)),
   };
   // filter undefined values
@@ -7175,9 +6111,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgress(obj: CiliumClus
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -7241,6 +6175,11 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressDeny {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDeny#toEndpoints
    */
   readonly toEndpoints?: CiliumClusterwideNetworkPolicySpecsEgressDenyToEndpoints[];
@@ -7248,7 +6187,7 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressDeny {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDeny#toEntities
@@ -7256,9 +6195,10 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressDeny {
   readonly toEntities?: CiliumClusterwideNetworkPolicySpecsEgressDenyToEntities[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -7292,19 +6232,11 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressDeny {
   readonly toPorts?: CiliumClusterwideNetworkPolicySpecsEgressDenyToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDeny#toRequires
    */
-  readonly toRequires?: CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -7331,7 +6263,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressDeny(obj: Cilium
     'toGroups': obj.toGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToServices(y)),
   };
   // filter undefined values
@@ -7440,9 +6372,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEndpointSelector(obj: 
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -7502,6 +6432,11 @@ export interface CiliumClusterwideNetworkPolicySpecsIngress {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngress#fromEndpoints
    */
   readonly fromEndpoints?: CiliumClusterwideNetworkPolicySpecsIngressFromEndpoints[];
@@ -7509,7 +6444,7 @@ export interface CiliumClusterwideNetworkPolicySpecsIngress {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngress#fromEntities
@@ -7517,12 +6452,13 @@ export interface CiliumClusterwideNetworkPolicySpecsIngress {
   readonly fromEntities?: CiliumClusterwideNetworkPolicySpecsIngressFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -7541,18 +6477,11 @@ export interface CiliumClusterwideNetworkPolicySpecsIngress {
   readonly fromNodes?: CiliumClusterwideNetworkPolicySpecsIngressFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngress#fromRequires
    */
-  readonly fromRequires?: CiliumClusterwideNetworkPolicySpecsIngressFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -7595,7 +6524,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngress(obj: CiliumClu
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressToPorts(y)),
   };
@@ -7613,9 +6542,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngress(obj: CiliumClu
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet, FromGroups and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -7668,6 +6595,11 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressDeny {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDeny#fromEndpoints
    */
   readonly fromEndpoints?: CiliumClusterwideNetworkPolicySpecsIngressDenyFromEndpoints[];
@@ -7675,7 +6607,7 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressDeny {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDeny#fromEntities
@@ -7683,12 +6615,13 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressDeny {
   readonly fromEntities?: CiliumClusterwideNetworkPolicySpecsIngressDenyFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -7707,18 +6640,11 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressDeny {
   readonly fromNodes?: CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDeny#fromRequires
    */
-  readonly fromRequires?: CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -7760,7 +6686,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDeny(obj: Ciliu
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyToPorts(y)),
   };
@@ -7770,7 +6696,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDeny(obj: Ciliu
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Label is the Cilium's representation of a container label.
+ * Label is Cilium's representation of a label.
  *
  * @schema CiliumClusterwideNetworkPolicySpecsLabels
  */
@@ -7781,7 +6707,7 @@ export interface CiliumClusterwideNetworkPolicySpecsLabels {
   readonly key: string;
 
   /**
-   * Source can be one of the above values (e.g.: LabelSourceContainer).
+   * Source can be one of the above values (e.g.: LabelSourceK8s).
    *
    * @schema CiliumClusterwideNetworkPolicySpecsLabels#source
    */
@@ -8049,6 +6975,8 @@ export enum CiliumClusterwideNetworkPolicySpecEgressToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -8086,17 +7014,19 @@ export interface CiliumClusterwideNetworkPolicySpecEgressToFqdNs {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToFqdNs#matchPattern
    */
@@ -8119,8 +7049,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToFqdNs(obj: Cili
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecEgressToGroups
  */
@@ -8263,44 +7192,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPorts(obj: Cili
     'rules': toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRules(obj.rules),
     'serverNames': obj.serverNames?.map(y => y),
     'terminatingTLS': toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsTerminatingTls(obj.terminatingTls),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressToRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecEgressToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecEgressToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecEgressToRequires(obj: CiliumClusterwideNetworkPolicySpecEgressToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -8489,6 +7380,8 @@ export enum CiliumClusterwideNetworkPolicySpecEgressDenyToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -8508,8 +7401,7 @@ export enum CiliumClusterwideNetworkPolicySpecEgressDenyToEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToGroups
  */
@@ -8598,44 +7490,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToPorts(obj: 
   if (obj === undefined) { return undefined; }
   const result = {
     'ports': obj.ports?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToPortsPorts(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecEgressDenyToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecEgressDenyToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToRequires(obj: CiliumClusterwideNetworkPolicySpecEgressDenyToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -8873,6 +7727,8 @@ export enum CiliumClusterwideNetworkPolicySpecIngressFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -8892,8 +7748,7 @@ export enum CiliumClusterwideNetworkPolicySpecIngressFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecIngressFromGroups
  */
@@ -8951,44 +7806,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressFromNodes(obj: C
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecIngressFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecIngressFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecIngressFromRequires(obj: CiliumClusterwideNetworkPolicySpecIngressFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -9223,6 +8040,8 @@ export enum CiliumClusterwideNetworkPolicySpecIngressDenyFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -9242,8 +8061,7 @@ export enum CiliumClusterwideNetworkPolicySpecIngressDenyFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromGroups
  */
@@ -9301,44 +8119,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromNodes(ob
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires(obj: CiliumClusterwideNetworkPolicySpecIngressDenyFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -9624,6 +8404,8 @@ export enum CiliumClusterwideNetworkPolicySpecsEgressToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -9661,17 +8443,19 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressToFqdNs {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToFqdNs#matchPattern
    */
@@ -9694,8 +8478,7 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToFqdNs(obj: Cil
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecsEgressToGroups
  */
@@ -9838,44 +8621,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPorts(obj: Cil
     'rules': toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRules(obj.rules),
     'serverNames': obj.serverNames?.map(y => y),
     'terminatingTLS': toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsTerminatingTls(obj.terminatingTls),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecsEgressToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsEgressToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToRequires(obj: CiliumClusterwideNetworkPolicySpecsEgressToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -10064,6 +8809,8 @@ export enum CiliumClusterwideNetworkPolicySpecsEgressDenyToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -10083,8 +8830,7 @@ export enum CiliumClusterwideNetworkPolicySpecsEgressDenyToEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToGroups
  */
@@ -10173,44 +8919,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToPorts(obj:
   if (obj === undefined) { return undefined; }
   const result = {
     'ports': obj.ports?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToPortsPorts(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires(obj: CiliumClusterwideNetworkPolicySpecsEgressDenyToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -10448,6 +9156,8 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -10467,8 +9177,7 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecsIngressFromGroups
  */
@@ -10526,44 +9235,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressFromNodes(obj: 
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecsIngressFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsIngressFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsIngressFromRequires(obj: CiliumClusterwideNetworkPolicySpecsIngressFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -10798,6 +9469,8 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressDenyFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -10817,8 +9490,7 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressDenyFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroups
  */
@@ -10876,44 +9548,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodes(o
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires
- */
-export interface CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires(obj: CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -11188,21 +9822,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToEndpointsMatchE
  */
 export interface CiliumClusterwideNetworkPolicySpecEgressToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -11409,11 +10060,18 @@ export interface CiliumClusterwideNetworkPolicySpecEgressToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -11462,27 +10120,6 @@ export interface CiliumClusterwideNetworkPolicySpecEgressToPortsRules {
    * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRules#http
    */
   readonly http?: CiliumClusterwideNetworkPolicySpecEgressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -11494,9 +10131,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRules(obj:
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11566,55 +10200,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsTerminatin
     'privateKey': obj.privateKey,
     'secret': toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsTerminatingTlsSecret(obj.secret),
     'trustedCA': obj.trustedCa,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11833,21 +10418,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToEndpointsMa
  */
 export interface CiliumClusterwideNetworkPolicySpecEgressDenyToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -11938,11 +10540,18 @@ export interface CiliumClusterwideNetworkPolicySpecEgressDenyToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -11964,55 +10573,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToPortsPorts(
     'endPort': obj.endPort,
     'port': obj.port,
     'protocol': obj.protocol,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -12211,21 +10771,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressFromEndpointsMat
  */
 export interface CiliumClusterwideNetworkPolicySpecIngressFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -12286,55 +10863,6 @@ export interface CiliumClusterwideNetworkPolicySpecIngressFromNodesMatchExpressi
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumClusterwideNetworkPolicySpecIngressFromNodesMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecIngressFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -12532,11 +11060,18 @@ export interface CiliumClusterwideNetworkPolicySpecIngressToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -12585,27 +11120,6 @@ export interface CiliumClusterwideNetworkPolicySpecIngressToPortsRules {
    * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRules#http
    */
   readonly http?: CiliumClusterwideNetworkPolicySpecIngressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -12617,9 +11131,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRules(obj
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -12790,21 +11301,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromEndpoint
  */
 export interface CiliumClusterwideNetworkPolicySpecIngressDenyFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -12865,55 +11393,6 @@ export interface CiliumClusterwideNetworkPolicySpecIngressDenyFromNodesMatchExpr
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromNodesMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecIngressDenyFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -12995,11 +11474,18 @@ export interface CiliumClusterwideNetworkPolicySpecIngressDenyToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -13204,21 +11690,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToEndpointsMatch
  */
 export interface CiliumClusterwideNetworkPolicySpecsEgressToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -13425,11 +11928,18 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -13478,27 +11988,6 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressToPortsRules {
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRules#http
    */
   readonly http?: CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -13510,9 +11999,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRules(obj
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -13582,55 +12068,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsTerminati
     'privateKey': obj.privateKey,
     'secret': toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsTerminatingTlsSecret(obj.secret),
     'trustedCA': obj.trustedCa,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -13849,21 +12286,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToEndpointsM
  */
 export interface CiliumClusterwideNetworkPolicySpecsEgressDenyToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -13954,11 +12408,18 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressDenyToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -13980,55 +12441,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToPortsPorts
     'endPort': obj.endPort,
     'port': obj.port,
     'protocol': obj.protocol,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -14227,21 +12639,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressFromEndpointsMa
  */
 export interface CiliumClusterwideNetworkPolicySpecsIngressFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -14302,55 +12731,6 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressFromNodesMatchExpress
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumClusterwideNetworkPolicySpecsIngressFromNodesMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecsIngressFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -14548,11 +12928,18 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -14601,27 +12988,6 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressToPortsRules {
    * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRules#http
    */
   readonly http?: CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -14633,9 +12999,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRules(ob
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -14806,21 +13169,38 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromEndpoin
  */
 export interface CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -14881,55 +13261,6 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodesMatchExp
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodesMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions
- */
-export interface CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions(obj: CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -15011,11 +13342,18 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressDenyToPortsPorts {
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -15273,8 +13611,15 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsOriginatin
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -15290,6 +13635,20 @@ export enum CiliumClusterwideNetworkPolicySpecEgressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -15315,17 +13674,19 @@ export interface CiliumClusterwideNetworkPolicySpecEgressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesDns#matchPattern
    */
@@ -15433,113 +13794,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRulesHttp(
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka
- */
-export interface CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka(obj: CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
  * Secret is the secret that contains the certificates and private key for
  * the TLS context.
  * By default, Cilium will search in this secret for the following items:
@@ -15581,23 +13835,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsTerminatin
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecEgressToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
 
 /**
  * ServiceSelector is a label selector for k8s services
@@ -15764,8 +14001,15 @@ export enum CiliumClusterwideNetworkPolicySpecEgressDenyToNodesMatchExpressionsO
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -15781,25 +14025,22 @@ export enum CiliumClusterwideNetworkPolicySpecEgressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecEgressDenyToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
 }
 
 /**
@@ -15913,23 +14154,6 @@ export enum CiliumClusterwideNetworkPolicySpecIngressFromEndpointsMatchExpressio
  * @schema CiliumClusterwideNetworkPolicySpecIngressFromNodesMatchExpressionsOperator
  */
 export enum CiliumClusterwideNetworkPolicySpecIngressFromNodesMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecIngressFromRequiresMatchExpressionsOperator {
   /** In */
   IN = "In",
   /** NotIn */
@@ -16070,8 +14294,15 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsOriginati
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -16087,6 +14318,20 @@ export enum CiliumClusterwideNetworkPolicySpecIngressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -16112,17 +14357,19 @@ export interface CiliumClusterwideNetworkPolicySpecIngressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesDns#matchPattern
    */
@@ -16223,113 +14470,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRulesHttp
     'host': obj.host,
     'method': obj.method,
     'path': obj.path,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka
- */
-export interface CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka(obj: CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -16463,23 +14603,6 @@ export enum CiliumClusterwideNetworkPolicySpecIngressDenyFromNodesMatchExpressio
 }
 
 /**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecIngressDenyFromRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
  * Family is a IP address version.
  * Currently, we support `IPv4` and `IPv6`.
  * `IPv4` is set as default.
@@ -16523,8 +14646,15 @@ export class CiliumClusterwideNetworkPolicySpecIngressDenyIcmpsFieldsType {
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -16540,6 +14670,20 @@ export enum CiliumClusterwideNetworkPolicySpecIngressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -16757,8 +14901,15 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsOriginati
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -16774,6 +14925,20 @@ export enum CiliumClusterwideNetworkPolicySpecsEgressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -16799,17 +14964,19 @@ export interface CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesDns#matchPattern
    */
@@ -16917,113 +15084,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesHttp
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka
- */
-export interface CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka(obj: CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
  * Secret is the secret that contains the certificates and private key for
  * the TLS context.
  * By default, Cilium will search in this secret for the following items:
@@ -17065,23 +15125,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsTerminati
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecsEgressToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
 
 /**
  * ServiceSelector is a label selector for k8s services
@@ -17248,8 +15291,15 @@ export enum CiliumClusterwideNetworkPolicySpecsEgressDenyToNodesMatchExpressions
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -17265,25 +15315,22 @@ export enum CiliumClusterwideNetworkPolicySpecsEgressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecsEgressDenyToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
 }
 
 /**
@@ -17397,23 +15444,6 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressFromEndpointsMatchExpressi
  * @schema CiliumClusterwideNetworkPolicySpecsIngressFromNodesMatchExpressionsOperator
  */
 export enum CiliumClusterwideNetworkPolicySpecsIngressFromNodesMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecsIngressFromRequiresMatchExpressionsOperator {
   /** In */
   IN = "In",
   /** NotIn */
@@ -17554,8 +15584,15 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsOriginat
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -17571,6 +15608,20 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -17596,17 +15647,19 @@ export interface CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesDns#matchPattern
    */
@@ -17707,113 +15760,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesHtt
     'host': obj.host,
     'method': obj.method,
     'path': obj.path,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka
- */
-export interface CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka(obj: CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -17947,23 +15893,6 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressDenyFromNodesMatchExpressi
 }
 
 /**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressionsOperator
- */
-export enum CiliumClusterwideNetworkPolicySpecsIngressDenyFromRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
  * Family is a IP address version.
  * Currently, we support `IPv4` and `IPv6`.
  * `IPv4` is set as default.
@@ -18007,8 +15936,15 @@ export class CiliumClusterwideNetworkPolicySpecsIngressDenyIcmpsFieldsType {
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -18024,6 +15960,20 @@ export enum CiliumClusterwideNetworkPolicySpecsIngressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -18122,31 +16072,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecEgressToPortsRulesHttpH
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafkaRole
- */
-export enum CiliumClusterwideNetworkPolicySpecEgressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18359,31 +16284,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecIngressToPortsRulesHttp
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafkaRole
- */
-export enum CiliumClusterwideNetworkPolicySpecIngressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
-
-/**
  * operator represents a key's relationship to a set of values.
  * Valid operators are In, NotIn, Exists and DoesNotExist.
  *
@@ -18494,31 +16394,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesHttp
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafkaRole
- */
-export enum CiliumClusterwideNetworkPolicySpecsEgressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -18729,31 +16604,6 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesHtt
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafkaRole
- */
-export enum CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
 
 /**
  * operator represents a key's relationship to a set of values.
@@ -19070,6 +16920,145 @@ export function toJson_CiliumClusterwideNetworkPolicySpecsIngressToPortsRulesHtt
 
 
 /**
+ * A CiliumDatapathPlugin registers a datapath plugin with Cilium and contains
+information about its status and how Cilium should interact with it.
+ *
+ * @schema CiliumDatapathPlugin
+ */
+export class CiliumDatapathPlugin extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "CiliumDatapathPlugin"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'cilium.io/v2alpha1',
+    kind: 'CiliumDatapathPlugin',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "CiliumDatapathPlugin".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: CiliumDatapathPluginProps): any {
+    return {
+      ...CiliumDatapathPlugin.GVK,
+      ...toJson_CiliumDatapathPluginProps(props),
+    };
+  }
+
+  /**
+   * Defines a "CiliumDatapathPlugin" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: CiliumDatapathPluginProps) {
+    super(scope, id, {
+      ...CiliumDatapathPlugin.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...CiliumDatapathPlugin.GVK,
+      ...toJson_CiliumDatapathPluginProps(resolved),
+    };
+  }
+}
+
+/**
+ * A CiliumDatapathPlugin registers a datapath plugin with Cilium and contains
+ * information about its status and how Cilium should interact with it.
+ *
+ * @schema CiliumDatapathPlugin
+ */
+export interface CiliumDatapathPluginProps {
+  /**
+   * @schema CiliumDatapathPlugin#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * @schema CiliumDatapathPlugin#spec
+   */
+  readonly spec: CiliumDatapathPluginSpec;
+}
+
+/**
+ * Converts an object of type 'CiliumDatapathPluginProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumDatapathPluginProps(obj: CiliumDatapathPluginProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_CiliumDatapathPluginSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * @schema CiliumDatapathPluginSpec
+ */
+export interface CiliumDatapathPluginSpec {
+  /**
+   * AttachmentPolicy dictates how Cilium behaves when it cannot talk to
+   * a plugin.
+   *
+   * @schema CiliumDatapathPluginSpec#attachmentPolicy
+   */
+  readonly attachmentPolicy: CiliumDatapathPluginSpecAttachmentPolicy;
+
+  /**
+   * Version is an opaque string used to indicate the datapath plugin version.
+   * Update this when deploying a new version of a datapath plugin to trigger a datapath
+   * reinitialization.
+   *
+   * @schema CiliumDatapathPluginSpec#version
+   */
+  readonly version: string;
+}
+
+/**
+ * Converts an object of type 'CiliumDatapathPluginSpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumDatapathPluginSpec(obj: CiliumDatapathPluginSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'attachmentPolicy': obj.attachmentPolicy,
+    'version': obj.version,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * AttachmentPolicy dictates how Cilium behaves when it cannot talk to
+ * a plugin.
+ *
+ * @schema CiliumDatapathPluginSpecAttachmentPolicy
+ */
+export enum CiliumDatapathPluginSpecAttachmentPolicy {
+  /** Always */
+  ALWAYS = "Always",
+  /** BestEffort */
+  BEST_EFFORT = "BestEffort",
+}
+
+
+/**
  *
  *
  * @schema CiliumEgressGatewayPolicy
@@ -19238,6 +17227,10 @@ export interface CiliumEgressGatewayPolicySpecEgressGateway {
    * redirected to the node matching the NodeSelector field and SNATed
    * with IP address 192.168.1.100.
    *
+   * When set to "2001:db8::1", matching egress traffic will be
+   * redirected to the node matching the NodeSelector field and SNATed
+   * with IPv6 address 2001:db8::1.
+   *
    * When none of the Interface or EgressIP fields is specified, the
    * policy will use the first IPv4 assigned to the interface with the
    * default route.
@@ -19308,6 +17301,10 @@ export interface CiliumEgressGatewayPolicySpecEgressGateways {
    * When set to "192.168.1.100", matching egress traffic will be
    * redirected to the node matching the NodeSelector field and SNATed
    * with IP address 192.168.1.100.
+   *
+   * When set to "2001:db8::1", matching egress traffic will be
+   * redirected to the node matching the NodeSelector field and SNATed
+   * with IPv6 address 2001:db8::1.
    *
    * When none of the Interface or EgressIP fields is specified, the
    * policy will use the first IPv4 assigned to the interface with the
@@ -20161,6 +18158,20 @@ export interface CiliumEndpointSliceEndpoints {
    * @schema CiliumEndpointSliceEndpoints#networking
    */
   readonly networking?: CiliumEndpointSliceEndpointsNetworking;
+
+  /**
+   * PodUID is the UID of the Pod that owns this endpoint.
+   *
+   * @schema CiliumEndpointSliceEndpoints#pod-uid
+   */
+  readonly podUid?: string;
+
+  /**
+   * ServiceAccount is the service account of the endpoint.
+   *
+   * @schema CiliumEndpointSliceEndpoints#service-account
+   */
+  readonly serviceAccount?: string;
 }
 
 /**
@@ -20175,6 +18186,8 @@ export function toJson_CiliumEndpointSliceEndpoints(obj: CiliumEndpointSliceEndp
     'name': obj.name,
     'named-ports': obj.namedPorts?.map(y => toJson_CiliumEndpointSliceEndpointsNamedPorts(y)),
     'networking': toJson_CiliumEndpointSliceEndpointsNetworking(obj.networking),
+    'pod-uid': obj.podUid,
+    'service-account': obj.serviceAccount,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -20792,12 +18805,35 @@ export interface CiliumGatewayClassConfigSpec {
   readonly description?: string;
 
   /**
+   * Envoy specifies proxy configuration options.
+   * These settings control Envoy-specific behavior that is not part of the Gateway API standard.
+   *
+   * @schema CiliumGatewayClassConfigSpec#envoy
+   */
+  readonly envoy?: CiliumGatewayClassConfigSpecEnvoy;
+
+  /**
+   * HTTPOptions specifies HTTP connection manager options.
+   *
+   * @schema CiliumGatewayClassConfigSpec#httpOptions
+   */
+  readonly httpOptions?: CiliumGatewayClassConfigSpecHttpOptions;
+
+  /**
    * Service specifies the configuration for the generated Service.
    * Note that not all fields from upstream Service.Spec are supported
    *
    * @schema CiliumGatewayClassConfigSpec#service
    */
   readonly service?: CiliumGatewayClassConfigSpecService;
+
+  /**
+   * Telemetry specifies observability options for Gateways using this
+   * GatewayClass configuration.
+   *
+   * @schema CiliumGatewayClassConfigSpec#telemetry
+   */
+  readonly telemetry?: CiliumGatewayClassConfigSpecTelemetry;
 }
 
 /**
@@ -20808,7 +18844,69 @@ export function toJson_CiliumGatewayClassConfigSpec(obj: CiliumGatewayClassConfi
   if (obj === undefined) { return undefined; }
   const result = {
     'description': obj.description,
+    'envoy': toJson_CiliumGatewayClassConfigSpecEnvoy(obj.envoy),
+    'httpOptions': toJson_CiliumGatewayClassConfigSpecHttpOptions(obj.httpOptions),
     'service': toJson_CiliumGatewayClassConfigSpecService(obj.service),
+    'telemetry': toJson_CiliumGatewayClassConfigSpecTelemetry(obj.telemetry),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Envoy specifies proxy configuration options.
+ * These settings control Envoy-specific behavior that is not part of the Gateway API standard.
+ *
+ * @schema CiliumGatewayClassConfigSpecEnvoy
+ */
+export interface CiliumGatewayClassConfigSpecEnvoy {
+  /**
+   * ServerHeaderTransformation controls the HTTP "Server" response header.
+   * Defaults to OVERWRITE.
+   *
+   * @default OVERWRITE.
+   * @schema CiliumGatewayClassConfigSpecEnvoy#serverHeaderTransformation
+   */
+  readonly serverHeaderTransformation?: CiliumGatewayClassConfigSpecEnvoyServerHeaderTransformation;
+}
+
+/**
+ * Converts an object of type 'CiliumGatewayClassConfigSpecEnvoy' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumGatewayClassConfigSpecEnvoy(obj: CiliumGatewayClassConfigSpecEnvoy | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'serverHeaderTransformation': obj.serverHeaderTransformation,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPOptions specifies HTTP connection manager options.
+ *
+ * @schema CiliumGatewayClassConfigSpecHttpOptions
+ */
+export interface CiliumGatewayClassConfigSpecHttpOptions {
+  /**
+   * GRPCWebTranslation controls Envoy's gRPC-web to gRPC request translation.
+   *
+   * @schema CiliumGatewayClassConfigSpecHttpOptions#grpcWebTranslation
+   */
+  readonly grpcWebTranslation?: CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation;
+}
+
+/**
+ * Converts an object of type 'CiliumGatewayClassConfigSpecHttpOptions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumGatewayClassConfigSpecHttpOptions(obj: CiliumGatewayClassConfigSpecHttpOptions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'grpcWebTranslation': toJson_CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation(obj.grpcWebTranslation),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -20911,6 +19009,80 @@ export function toJson_CiliumGatewayClassConfigSpecService(obj: CiliumGatewayCla
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Telemetry specifies observability options for Gateways using this
+ * GatewayClass configuration.
+ *
+ * @schema CiliumGatewayClassConfigSpecTelemetry
+ */
+export interface CiliumGatewayClassConfigSpecTelemetry {
+  /**
+   * AccessLogs configures Envoy access logging for generated Gateway
+   * listeners.
+   *
+   * @schema CiliumGatewayClassConfigSpecTelemetry#accessLogs
+   */
+  readonly accessLogs?: CiliumGatewayClassConfigSpecTelemetryAccessLogs[];
+}
+
+/**
+ * Converts an object of type 'CiliumGatewayClassConfigSpecTelemetry' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumGatewayClassConfigSpecTelemetry(obj: CiliumGatewayClassConfigSpecTelemetry | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'accessLogs': obj.accessLogs?.map(y => toJson_CiliumGatewayClassConfigSpecTelemetryAccessLogs(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ServerHeaderTransformation controls the HTTP "Server" response header.
+ * Defaults to OVERWRITE.
+ *
+ * @default OVERWRITE.
+ * @schema CiliumGatewayClassConfigSpecEnvoyServerHeaderTransformation
+ */
+export enum CiliumGatewayClassConfigSpecEnvoyServerHeaderTransformation {
+  /** OVERWRITE */
+  OVERWRITE = "OVERWRITE",
+  /** APPEND_IF_ABSENT */
+  APPEND_UNDERSCORE_IF_UNDERSCORE_ABSENT = "APPEND_IF_ABSENT",
+  /** PASS_THROUGH */
+  PASS_UNDERSCORE_THROUGH = "PASS_THROUGH",
+}
+
+/**
+ * GRPCWebTranslation controls Envoy's gRPC-web to gRPC request translation.
+ *
+ * @schema CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation
+ */
+export interface CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation {
+  /**
+   * Enabled controls Envoy's gRPC-web to gRPC request translation.
+   *
+   * @schema CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation#enabled
+   */
+  readonly enabled?: boolean;
+}
+
+/**
+ * Converts an object of type 'CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation(obj: CiliumGatewayClassConfigSpecHttpOptionsGrpcWebTranslation | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'enabled': obj.enabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * LoadBalancerSourceRangesPolicy defines the policy for the LoadBalancerSourceRanges if the incoming traffic
  * is allowed or denied.
  *
@@ -20934,6 +19106,101 @@ export enum CiliumGatewayClassConfigSpecServiceType {
   LOAD_BALANCER = "LoadBalancer",
   /** NodePort */
   NODE_PORT = "NodePort",
+}
+
+/**
+ * AccessLogs defines an Envoy access log configuration, including its output
+ * format and the generated proxy components that should emit it.
+ * Access logs are currently written to Envoy stdout.
+ *
+ * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogs
+ */
+export interface CiliumGatewayClassConfigSpecTelemetryAccessLogs {
+  /**
+   * Format specifies the access log output format.
+   *
+   * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogs#format
+   */
+  readonly format: CiliumGatewayClassConfigSpecTelemetryAccessLogsFormat;
+
+  /**
+   * JSON maps access log field names to Envoy command operators.
+   * It is used when Format is "JSON".
+   * For available format specifiers, see the Envoy documentation:
+   * - https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage
+   * Note: Always refer to the documentation matching the specific Envoy version you are running.
+   * The following Cilium-specific formatters are also supported:
+   * - %CILIUM_GATEWAY_NAME% -- replaced with the Gateway resource name.
+   * - %CILIUM_GATEWAY_NAMESPACE% -- replaced with the Gateway resource namespace.
+   *
+   * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogs#json
+   */
+  readonly json?: { [key: string]: string };
+
+  /**
+   * Targets specifies the generated Envoy proxy components where access logs
+   * are emitted. If omitted, access logs are emitted for HTTP traffic only.
+   * HTTP targets Envoy HTTP connection managers. TCP targets Envoy TCP proxies,
+   * including TLS passthrough.
+   *
+   * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogs#targets
+   */
+  readonly targets?: CiliumGatewayClassConfigSpecTelemetryAccessLogsTargets[];
+
+  /**
+   * Text specifies the Envoy access log format string.
+   * It is used when Format is "Text".
+   * For available format specifiers, see the Envoy documentation:
+   * - https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage
+   * Note: Always refer to the documentation matching the specific Envoy version you are running.
+   * The following Cilium-specific formatters are also supported:
+   * - %CILIUM_GATEWAY_NAME% -- replaced with the Gateway resource name.
+   * - %CILIUM_GATEWAY_NAMESPACE% -- replaced with the Gateway resource namespace.
+   *
+   * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogs#text
+   */
+  readonly text?: string;
+}
+
+/**
+ * Converts an object of type 'CiliumGatewayClassConfigSpecTelemetryAccessLogs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumGatewayClassConfigSpecTelemetryAccessLogs(obj: CiliumGatewayClassConfigSpecTelemetryAccessLogs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'format': obj.format,
+    'json': ((obj.json) === undefined) ? undefined : (Object.entries(obj.json).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'targets': obj.targets?.map(y => y),
+    'text': obj.text,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Format specifies the access log output format.
+ *
+ * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogsFormat
+ */
+export enum CiliumGatewayClassConfigSpecTelemetryAccessLogsFormat {
+  /** JSON */
+  JSON = "JSON",
+  /** Text */
+  TEXT = "Text",
+}
+
+/**
+ * AccessLogsTarget specifies where access logs are emitted.
+ *
+ * @schema CiliumGatewayClassConfigSpecTelemetryAccessLogsTargets
+ */
+export enum CiliumGatewayClassConfigSpecTelemetryAccessLogsTargets {
+  /** HTTP */
+  HTTP = "HTTP",
+  /** TCP */
+  TCP = "TCP",
 }
 
 
@@ -21440,7 +19707,7 @@ export enum CiliumL2AnnouncementPolicySpecServiceSelectorMatchExpressionsOperato
 
 /**
  * CiliumLoadBalancerIPPool is a Kubernetes third-party resource which
-is used to defined pools of IPs which the operator can use to to allocate
+is used to defined pools of IPs which the operator can use to allocate
 and advertise IPs for Services of type LoadBalancer.
  *
  * @schema CiliumLoadBalancerIPPool
@@ -21496,7 +19763,7 @@ export class CiliumLoadBalancerIpPool extends ApiObject {
 
 /**
  * CiliumLoadBalancerIPPool is a Kubernetes third-party resource which
- * is used to defined pools of IPs which the operator can use to to allocate
+ * is used to defined pools of IPs which the operator can use to allocate
  * and advertise IPs for Services of type LoadBalancer.
  *
  * @schema CiliumLoadBalancerIPPool
@@ -21746,7 +20013,7 @@ export enum CiliumLoadBalancerIpPoolSpecServiceSelectorMatchExpressionsOperator 
 
 /**
  * CiliumLoadBalancerIPPool is a Kubernetes third-party resource which
-is used to defined pools of IPs which the operator can use to to allocate
+is used to defined pools of IPs which the operator can use to allocate
 and advertise IPs for Services of type LoadBalancer.
  *
  * @schema CiliumLoadBalancerIPPoolV2Alpha1
@@ -21802,7 +20069,7 @@ export class CiliumLoadBalancerIpPoolV2Alpha1 extends ApiObject {
 
 /**
  * CiliumLoadBalancerIPPool is a Kubernetes third-party resource which
- * is used to defined pools of IPs which the operator can use to to allocate
+ * is used to defined pools of IPs which the operator can use to allocate
  * and advertise IPs for Services of type LoadBalancer.
  *
  * @schema CiliumLoadBalancerIPPoolV2Alpha1
@@ -23054,9 +21321,7 @@ export function toJson_CiliumNetworkPolicySpecs(obj: CiliumNetworkPolicySpecs | 
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -23127,6 +21392,11 @@ export interface CiliumNetworkPolicySpecEgress {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecEgress#toEndpoints
    */
   readonly toEndpoints?: CiliumNetworkPolicySpecEgressToEndpoints[];
@@ -23134,7 +21404,7 @@ export interface CiliumNetworkPolicySpecEgress {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecEgress#toEntities
@@ -23161,9 +21431,10 @@ export interface CiliumNetworkPolicySpecEgress {
   readonly toFqdNs?: CiliumNetworkPolicySpecEgressToFqdNs[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -23197,19 +21468,11 @@ export interface CiliumNetworkPolicySpecEgress {
   readonly toPorts?: CiliumNetworkPolicySpecEgressToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecEgress#toRequires
    */
-  readonly toRequires?: CiliumNetworkPolicySpecEgressToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -23238,7 +21501,7 @@ export function toJson_CiliumNetworkPolicySpecEgress(obj: CiliumNetworkPolicySpe
     'toGroups': obj.toGroups?.map(y => toJson_CiliumNetworkPolicySpecEgressToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumNetworkPolicySpecEgressToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecEgressToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumNetworkPolicySpecEgressToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumNetworkPolicySpecEgressToServices(y)),
   };
   // filter undefined values
@@ -23255,9 +21518,7 @@ export function toJson_CiliumNetworkPolicySpecEgress(obj: CiliumNetworkPolicySpe
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -23321,6 +21582,11 @@ export interface CiliumNetworkPolicySpecEgressDeny {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecEgressDeny#toEndpoints
    */
   readonly toEndpoints?: CiliumNetworkPolicySpecEgressDenyToEndpoints[];
@@ -23328,7 +21594,7 @@ export interface CiliumNetworkPolicySpecEgressDeny {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecEgressDeny#toEntities
@@ -23336,9 +21602,10 @@ export interface CiliumNetworkPolicySpecEgressDeny {
   readonly toEntities?: CiliumNetworkPolicySpecEgressDenyToEntities[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -23372,19 +21639,11 @@ export interface CiliumNetworkPolicySpecEgressDeny {
   readonly toPorts?: CiliumNetworkPolicySpecEgressDenyToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecEgressDeny#toRequires
    */
-  readonly toRequires?: CiliumNetworkPolicySpecEgressDenyToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -23411,7 +21670,7 @@ export function toJson_CiliumNetworkPolicySpecEgressDeny(obj: CiliumNetworkPolic
     'toGroups': obj.toGroups?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToServices(y)),
   };
   // filter undefined values
@@ -23520,9 +21779,7 @@ export function toJson_CiliumNetworkPolicySpecEndpointSelector(obj: CiliumNetwor
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -23582,6 +21839,11 @@ export interface CiliumNetworkPolicySpecIngress {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecIngress#fromEndpoints
    */
   readonly fromEndpoints?: CiliumNetworkPolicySpecIngressFromEndpoints[];
@@ -23589,7 +21851,7 @@ export interface CiliumNetworkPolicySpecIngress {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecIngress#fromEntities
@@ -23597,12 +21859,13 @@ export interface CiliumNetworkPolicySpecIngress {
   readonly fromEntities?: CiliumNetworkPolicySpecIngressFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -23621,18 +21884,11 @@ export interface CiliumNetworkPolicySpecIngress {
   readonly fromNodes?: CiliumNetworkPolicySpecIngressFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecIngress#fromRequires
    */
-  readonly fromRequires?: CiliumNetworkPolicySpecIngressFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -23675,7 +21931,7 @@ export function toJson_CiliumNetworkPolicySpecIngress(obj: CiliumNetworkPolicySp
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumNetworkPolicySpecIngressFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumNetworkPolicySpecIngressFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumNetworkPolicySpecIngressFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumNetworkPolicySpecIngressIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecIngressToPorts(y)),
   };
@@ -23693,9 +21949,7 @@ export function toJson_CiliumNetworkPolicySpecIngress(obj: CiliumNetworkPolicySp
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet, FromGroups and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -23748,6 +22002,11 @@ export interface CiliumNetworkPolicySpecIngressDeny {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecIngressDeny#fromEndpoints
    */
   readonly fromEndpoints?: CiliumNetworkPolicySpecIngressDenyFromEndpoints[];
@@ -23755,7 +22014,7 @@ export interface CiliumNetworkPolicySpecIngressDeny {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecIngressDeny#fromEntities
@@ -23763,12 +22022,13 @@ export interface CiliumNetworkPolicySpecIngressDeny {
   readonly fromEntities?: CiliumNetworkPolicySpecIngressDenyFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -23787,18 +22047,11 @@ export interface CiliumNetworkPolicySpecIngressDeny {
   readonly fromNodes?: CiliumNetworkPolicySpecIngressDenyFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecIngressDeny#fromRequires
    */
-  readonly fromRequires?: CiliumNetworkPolicySpecIngressDenyFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -23840,7 +22093,7 @@ export function toJson_CiliumNetworkPolicySpecIngressDeny(obj: CiliumNetworkPoli
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyToPorts(y)),
   };
@@ -23850,7 +22103,7 @@ export function toJson_CiliumNetworkPolicySpecIngressDeny(obj: CiliumNetworkPoli
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Label is the Cilium's representation of a container label.
+ * Label is Cilium's representation of a label.
  *
  * @schema CiliumNetworkPolicySpecLabels
  */
@@ -23861,7 +22114,7 @@ export interface CiliumNetworkPolicySpecLabels {
   readonly key: string;
 
   /**
-   * Source can be one of the above values (e.g.: LabelSourceContainer).
+   * Source can be one of the above values (e.g.: LabelSourceK8s).
    *
    * @schema CiliumNetworkPolicySpecLabels#source
    */
@@ -23967,9 +22220,7 @@ export function toJson_CiliumNetworkPolicySpecNodeSelector(obj: CiliumNetworkPol
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -24040,6 +22291,11 @@ export interface CiliumNetworkPolicySpecsEgress {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecsEgress#toEndpoints
    */
   readonly toEndpoints?: CiliumNetworkPolicySpecsEgressToEndpoints[];
@@ -24047,7 +22303,7 @@ export interface CiliumNetworkPolicySpecsEgress {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecsEgress#toEntities
@@ -24074,9 +22330,10 @@ export interface CiliumNetworkPolicySpecsEgress {
   readonly toFqdNs?: CiliumNetworkPolicySpecsEgressToFqdNs[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -24110,19 +22367,11 @@ export interface CiliumNetworkPolicySpecsEgress {
   readonly toPorts?: CiliumNetworkPolicySpecsEgressToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecsEgress#toRequires
    */
-  readonly toRequires?: CiliumNetworkPolicySpecsEgressToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -24151,7 +22400,7 @@ export function toJson_CiliumNetworkPolicySpecsEgress(obj: CiliumNetworkPolicySp
     'toGroups': obj.toGroups?.map(y => toJson_CiliumNetworkPolicySpecsEgressToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumNetworkPolicySpecsEgressToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecsEgressToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumNetworkPolicySpecsEgressToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumNetworkPolicySpecsEgressToServices(y)),
   };
   // filter undefined values
@@ -24168,9 +22417,7 @@ export function toJson_CiliumNetworkPolicySpecsEgress(obj: CiliumNetworkPolicySp
  * member will have no effect on the rule.
  *
  * - If multiple members of the structure are specified, then all members
- * must match in order for the rule to take effect. The exception to this
- * rule is the ToRequires member; the effects of any Requires field in any
- * rule will apply to all other rules as well.
+ * must match in order for the rule to take effect.
  *
  * - ToEndpoints, ToCIDR, ToCIDRSet, ToEntities, ToServices and ToGroups are
  * mutually exclusive. Only one of these members may be present within an
@@ -24234,6 +22481,11 @@ export interface CiliumNetworkPolicySpecsEgressDeny {
    * Any endpoint with the label "role=frontend" can communicate with any
    * endpoint carrying the label "role=backend".
    *
+   * Note that while an empty non-nil ToEndpoints does not select anything,
+   * nil ToEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecsEgressDeny#toEndpoints
    */
   readonly toEndpoints?: CiliumNetworkPolicySpecsEgressDenyToEndpoints[];
@@ -24241,7 +22493,7 @@ export interface CiliumNetworkPolicySpecsEgressDeny {
   /**
    * ToEntities is a list of special entities to which the endpoint subject
    * to the rule is allowed to initiate connections. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecsEgressDeny#toEntities
@@ -24249,9 +22501,10 @@ export interface CiliumNetworkPolicySpecsEgressDeny {
   readonly toEntities?: CiliumNetworkPolicySpecsEgressDenyToEntities[];
 
   /**
-   * ToGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * ToGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * ToGroups entries are functionally equivalent to toCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
    * toGroups:
@@ -24285,19 +22538,11 @@ export interface CiliumNetworkPolicySpecsEgressDeny {
   readonly toPorts?: CiliumNetworkPolicySpecsEgressDenyToPorts[];
 
   /**
-   * ToRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be able to connect to other
-   * endpoints. These additional constraints do no by itself grant access
-   * privileges and must always be accompanied with at least one matching
-   * ToEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires any endpoint to which it
-   * communicates to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecsEgressDeny#toRequires
    */
-  readonly toRequires?: CiliumNetworkPolicySpecsEgressDenyToRequires[];
+  readonly toRequires?: string[];
 
   /**
    * ToServices is a list of services to which the endpoint subject
@@ -24324,7 +22569,7 @@ export function toJson_CiliumNetworkPolicySpecsEgressDeny(obj: CiliumNetworkPoli
     'toGroups': obj.toGroups?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToGroups(y)),
     'toNodes': obj.toNodes?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToNodes(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToPorts(y)),
-    'toRequires': obj.toRequires?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToRequires(y)),
+    'toRequires': obj.toRequires?.map(y => y),
     'toServices': obj.toServices?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToServices(y)),
   };
   // filter undefined values
@@ -24433,9 +22678,7 @@ export function toJson_CiliumNetworkPolicySpecsEndpointSelector(obj: CiliumNetwo
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -24495,6 +22738,11 @@ export interface CiliumNetworkPolicySpecsIngress {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecsIngress#fromEndpoints
    */
   readonly fromEndpoints?: CiliumNetworkPolicySpecsIngressFromEndpoints[];
@@ -24502,7 +22750,7 @@ export interface CiliumNetworkPolicySpecsIngress {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecsIngress#fromEntities
@@ -24510,12 +22758,13 @@ export interface CiliumNetworkPolicySpecsIngress {
   readonly fromEntities?: CiliumNetworkPolicySpecsIngressFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -24534,18 +22783,11 @@ export interface CiliumNetworkPolicySpecsIngress {
   readonly fromNodes?: CiliumNetworkPolicySpecsIngressFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecsIngress#fromRequires
    */
-  readonly fromRequires?: CiliumNetworkPolicySpecsIngressFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -24588,7 +22830,7 @@ export function toJson_CiliumNetworkPolicySpecsIngress(obj: CiliumNetworkPolicyS
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumNetworkPolicySpecsIngressFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumNetworkPolicySpecsIngressFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumNetworkPolicySpecsIngressFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumNetworkPolicySpecsIngressIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecsIngressToPorts(y)),
   };
@@ -24606,9 +22848,7 @@ export function toJson_CiliumNetworkPolicySpecsIngress(obj: CiliumNetworkPolicyS
  * member will have no effect on the rule.
  *
  * - If multiple members are set, all of them need to match in order for
- * the rule to take effect. The exception to this rule is FromRequires field;
- * the effects of any Requires field in any rule will apply to all other
- * rules as well.
+ * the rule to take effect.
  *
  * - FromEndpoints, FromCIDR, FromCIDRSet, FromGroups and FromEntities are mutually
  * exclusive. Only one of these members may be present within an individual
@@ -24661,6 +22901,11 @@ export interface CiliumNetworkPolicySpecsIngressDeny {
    * Any endpoint with the label "role=backend" can be consumed by any
    * endpoint carrying the label "role=frontend".
    *
+   * Note that while an empty non-nil FromEndpoints does not select anything,
+   * nil FromEndpoints is implicitly treated as a wildcard selector if ToPorts
+   * are also specified.
+   * To select everything, use one EndpointSelector without any match requirements.
+   *
    * @schema CiliumNetworkPolicySpecsIngressDeny#fromEndpoints
    */
   readonly fromEndpoints?: CiliumNetworkPolicySpecsIngressDenyFromEndpoints[];
@@ -24668,7 +22913,7 @@ export interface CiliumNetworkPolicySpecsIngressDeny {
   /**
    * FromEntities is a list of special entities which the endpoint subject
    * to the rule is allowed to receive connections from. Supported entities are
-   * `world`, `cluster`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
+   * `world`, `cluster`, `cluster-mesh`, `host`, `remote-node`, `kube-apiserver`, `ingress`, `init`,
    * `health`, `unmanaged`, `none` and `all`.
    *
    * @schema CiliumNetworkPolicySpecsIngressDeny#fromEntities
@@ -24676,12 +22921,13 @@ export interface CiliumNetworkPolicySpecsIngressDeny {
   readonly fromEntities?: CiliumNetworkPolicySpecsIngressDenyFromEntities[];
 
   /**
-   * FromGroups is a directive that allows the integration with multiple outside
-   * providers. Currently, only AWS is supported, and the rule can select by
-   * multiple sub directives:
+   * FromGroups allows policies to reference CIDRs provided by external integrations.
+   * Currently, only AWS is supported, and the rule can select by multiple sub directives.
+   * FromGroups entries are functionally equivalent to FromCIDR, and have the same
+   * limitiations. They cannot select traffic originating from within the cluster.
    *
    * Example:
-   * FromGroups:
+   * fromGroups:
    * - aws:
    * securityGroupsIds:
    * - 'sg-XXXXXXXXXXXXX'
@@ -24700,18 +22946,11 @@ export interface CiliumNetworkPolicySpecsIngressDeny {
   readonly fromNodes?: CiliumNetworkPolicySpecsIngressDenyFromNodes[];
 
   /**
-   * FromRequires is a list of additional constraints which must be met
-   * in order for the selected endpoints to be reachable. These
-   * additional constraints do no by itself grant access privileges and
-   * must always be accompanied with at least one matching FromEndpoints.
-   *
-   * Example:
-   * Any Endpoint with the label "team=A" requires consuming endpoint
-   * to also carry the label "team=A".
+   * Deprecated.
    *
    * @schema CiliumNetworkPolicySpecsIngressDeny#fromRequires
    */
-  readonly fromRequires?: CiliumNetworkPolicySpecsIngressDenyFromRequires[];
+  readonly fromRequires?: string[];
 
   /**
    * ICMPs is a list of ICMP rule identified by type number
@@ -24753,7 +22992,7 @@ export function toJson_CiliumNetworkPolicySpecsIngressDeny(obj: CiliumNetworkPol
     'fromEntities': obj.fromEntities?.map(y => y),
     'fromGroups': obj.fromGroups?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyFromGroups(y)),
     'fromNodes': obj.fromNodes?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyFromNodes(y)),
-    'fromRequires': obj.fromRequires?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyFromRequires(y)),
+    'fromRequires': obj.fromRequires?.map(y => y),
     'icmps': obj.icmps?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyIcmps(y)),
     'toPorts': obj.toPorts?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyToPorts(y)),
   };
@@ -24763,7 +23002,7 @@ export function toJson_CiliumNetworkPolicySpecsIngressDeny(obj: CiliumNetworkPol
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Label is the Cilium's representation of a container label.
+ * Label is Cilium's representation of a label.
  *
  * @schema CiliumNetworkPolicySpecsLabels
  */
@@ -24774,7 +23013,7 @@ export interface CiliumNetworkPolicySpecsLabels {
   readonly key: string;
 
   /**
-   * Source can be one of the above values (e.g.: LabelSourceContainer).
+   * Source can be one of the above values (e.g.: LabelSourceK8s).
    *
    * @schema CiliumNetworkPolicySpecsLabels#source
    */
@@ -25042,6 +23281,8 @@ export enum CiliumNetworkPolicySpecEgressToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -25079,17 +23320,19 @@ export interface CiliumNetworkPolicySpecEgressToFqdNs {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumNetworkPolicySpecEgressToFqdNs#matchPattern
    */
@@ -25112,8 +23355,7 @@ export function toJson_CiliumNetworkPolicySpecEgressToFqdNs(obj: CiliumNetworkPo
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecEgressToGroups
  */
@@ -25256,44 +23498,6 @@ export function toJson_CiliumNetworkPolicySpecEgressToPorts(obj: CiliumNetworkPo
     'rules': toJson_CiliumNetworkPolicySpecEgressToPortsRules(obj.rules),
     'serverNames': obj.serverNames?.map(y => y),
     'terminatingTLS': toJson_CiliumNetworkPolicySpecEgressToPortsTerminatingTls(obj.terminatingTls),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecEgressToRequires
- */
-export interface CiliumNetworkPolicySpecEgressToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecEgressToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecEgressToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecEgressToRequires(obj: CiliumNetworkPolicySpecEgressToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecEgressToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -25482,6 +23686,8 @@ export enum CiliumNetworkPolicySpecEgressDenyToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -25501,8 +23707,7 @@ export enum CiliumNetworkPolicySpecEgressDenyToEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecEgressDenyToGroups
  */
@@ -25591,44 +23796,6 @@ export function toJson_CiliumNetworkPolicySpecEgressDenyToPorts(obj: CiliumNetwo
   if (obj === undefined) { return undefined; }
   const result = {
     'ports': obj.ports?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToPortsPorts(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecEgressDenyToRequires
- */
-export interface CiliumNetworkPolicySpecEgressDenyToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressDenyToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressDenyToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecEgressDenyToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecEgressDenyToRequires(obj: CiliumNetworkPolicySpecEgressDenyToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -25866,6 +24033,8 @@ export enum CiliumNetworkPolicySpecIngressFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -25885,8 +24054,7 @@ export enum CiliumNetworkPolicySpecIngressFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecIngressFromGroups
  */
@@ -25944,44 +24112,6 @@ export function toJson_CiliumNetworkPolicySpecIngressFromNodes(obj: CiliumNetwor
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecIngressFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecIngressFromRequires
- */
-export interface CiliumNetworkPolicySpecIngressFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecIngressFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecIngressFromRequires(obj: CiliumNetworkPolicySpecIngressFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -26216,6 +24346,8 @@ export enum CiliumNetworkPolicySpecIngressDenyFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -26235,8 +24367,7 @@ export enum CiliumNetworkPolicySpecIngressDenyFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecIngressDenyFromGroups
  */
@@ -26294,44 +24425,6 @@ export function toJson_CiliumNetworkPolicySpecIngressDenyFromNodes(obj: CiliumNe
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecIngressDenyFromRequires
- */
-export interface CiliumNetworkPolicySpecIngressDenyFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressDenyFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressDenyFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecIngressDenyFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecIngressDenyFromRequires(obj: CiliumNetworkPolicySpecIngressDenyFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -26617,6 +24710,8 @@ export enum CiliumNetworkPolicySpecsEgressToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -26654,17 +24749,19 @@ export interface CiliumNetworkPolicySpecsEgressToFqdNs {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumNetworkPolicySpecsEgressToFqdNs#matchPattern
    */
@@ -26687,8 +24784,7 @@ export function toJson_CiliumNetworkPolicySpecsEgressToFqdNs(obj: CiliumNetworkP
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecsEgressToGroups
  */
@@ -26831,44 +24927,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPorts(obj: CiliumNetworkP
     'rules': toJson_CiliumNetworkPolicySpecsEgressToPortsRules(obj.rules),
     'serverNames': obj.serverNames?.map(y => y),
     'terminatingTLS': toJson_CiliumNetworkPolicySpecsEgressToPortsTerminatingTls(obj.terminatingTls),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecsEgressToRequires
- */
-export interface CiliumNetworkPolicySpecsEgressToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsEgressToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsEgressToRequires(obj: CiliumNetworkPolicySpecsEgressToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -27057,6 +25115,8 @@ export enum CiliumNetworkPolicySpecsEgressDenyToEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -27076,8 +25136,7 @@ export enum CiliumNetworkPolicySpecsEgressDenyToEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecsEgressDenyToGroups
  */
@@ -27166,44 +25225,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressDenyToPorts(obj: CiliumNetw
   if (obj === undefined) { return undefined; }
   const result = {
     'ports': obj.ports?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToPortsPorts(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecsEgressDenyToRequires
- */
-export interface CiliumNetworkPolicySpecsEgressDenyToRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressDenyToRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressDenyToRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsEgressDenyToRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsEgressDenyToRequires(obj: CiliumNetworkPolicySpecsEgressDenyToRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -27441,6 +25462,8 @@ export enum CiliumNetworkPolicySpecsIngressFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -27460,8 +25483,7 @@ export enum CiliumNetworkPolicySpecsIngressFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecsIngressFromGroups
  */
@@ -27519,44 +25541,6 @@ export function toJson_CiliumNetworkPolicySpecsIngressFromNodes(obj: CiliumNetwo
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecsIngressFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecsIngressFromRequires
- */
-export interface CiliumNetworkPolicySpecsIngressFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsIngressFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsIngressFromRequires(obj: CiliumNetworkPolicySpecsIngressFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -27791,6 +25775,8 @@ export enum CiliumNetworkPolicySpecsIngressDenyFromEntities {
   WORLD = "world",
   /** cluster */
   CLUSTER = "cluster",
+  /** cluster-mesh */
+  CLUSTER_HYPHEN_MESH = "cluster-mesh",
   /** host */
   HOST = "host",
   /** init */
@@ -27810,8 +25796,7 @@ export enum CiliumNetworkPolicySpecsIngressDenyFromEntities {
 }
 
 /**
- * Groups structure to store all kinds of new integrations that needs a new
- * derivative policy.
+ * Groups allows referencing CIDRs that are resolved from an external integration.
  *
  * @schema CiliumNetworkPolicySpecsIngressDenyFromGroups
  */
@@ -27869,44 +25854,6 @@ export function toJson_CiliumNetworkPolicySpecsIngressDenyFromNodes(obj: CiliumN
   if (obj === undefined) { return undefined; }
   const result = {
     'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyFromNodesMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * EndpointSelector is a wrapper for k8s LabelSelector.
- *
- * @schema CiliumNetworkPolicySpecsIngressDenyFromRequires
- */
-export interface CiliumNetworkPolicySpecsIngressDenyFromRequires {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressDenyFromRequires#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressDenyFromRequires#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsIngressDenyFromRequires' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsIngressDenyFromRequires(obj: CiliumNetworkPolicySpecsIngressDenyFromRequires | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -28181,21 +26128,38 @@ export function toJson_CiliumNetworkPolicySpecEgressToEndpointsMatchExpressions(
  */
 export interface CiliumNetworkPolicySpecEgressToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecEgressToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecEgressToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecEgressToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecEgressToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -28402,11 +26366,18 @@ export interface CiliumNetworkPolicySpecEgressToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecEgressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -28455,27 +26426,6 @@ export interface CiliumNetworkPolicySpecEgressToPortsRules {
    * @schema CiliumNetworkPolicySpecEgressToPortsRules#http
    */
   readonly http?: CiliumNetworkPolicySpecEgressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumNetworkPolicySpecEgressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -28487,9 +26437,6 @@ export function toJson_CiliumNetworkPolicySpecEgressToPortsRules(obj: CiliumNetw
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumNetworkPolicySpecEgressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumNetworkPolicySpecEgressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumNetworkPolicySpecEgressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -28559,55 +26506,6 @@ export function toJson_CiliumNetworkPolicySpecEgressToPortsTerminatingTls(obj: C
     'privateKey': obj.privateKey,
     'secret': toJson_CiliumNetworkPolicySpecEgressToPortsTerminatingTlsSecret(obj.secret),
     'trustedCA': obj.trustedCa,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecEgressToRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecEgressToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecEgressToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecEgressToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecEgressToRequiresMatchExpressions(obj: CiliumNetworkPolicySpecEgressToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -28826,21 +26724,38 @@ export function toJson_CiliumNetworkPolicySpecEgressDenyToEndpointsMatchExpressi
  */
 export interface CiliumNetworkPolicySpecEgressDenyToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecEgressDenyToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecEgressDenyToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecEgressDenyToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecEgressDenyToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -28931,11 +26846,18 @@ export interface CiliumNetworkPolicySpecEgressDenyToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecEgressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -28957,55 +26879,6 @@ export function toJson_CiliumNetworkPolicySpecEgressDenyToPortsPorts(obj: Cilium
     'endPort': obj.endPort,
     'port': obj.port,
     'protocol': obj.protocol,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions(obj: CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -29204,21 +27077,38 @@ export function toJson_CiliumNetworkPolicySpecIngressFromEndpointsMatchExpressio
  */
 export interface CiliumNetworkPolicySpecIngressFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecIngressFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecIngressFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecIngressFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecIngressFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -29279,55 +27169,6 @@ export interface CiliumNetworkPolicySpecIngressFromNodesMatchExpressions {
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumNetworkPolicySpecIngressFromNodesMatchExpressions(obj: CiliumNetworkPolicySpecIngressFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecIngressFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions(obj: CiliumNetworkPolicySpecIngressFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -29525,11 +27366,18 @@ export interface CiliumNetworkPolicySpecIngressToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecIngressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -29578,27 +27426,6 @@ export interface CiliumNetworkPolicySpecIngressToPortsRules {
    * @schema CiliumNetworkPolicySpecIngressToPortsRules#http
    */
   readonly http?: CiliumNetworkPolicySpecIngressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumNetworkPolicySpecIngressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -29610,9 +27437,6 @@ export function toJson_CiliumNetworkPolicySpecIngressToPortsRules(obj: CiliumNet
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumNetworkPolicySpecIngressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumNetworkPolicySpecIngressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumNetworkPolicySpecIngressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -29783,21 +27607,38 @@ export function toJson_CiliumNetworkPolicySpecIngressDenyFromEndpointsMatchExpre
  */
 export interface CiliumNetworkPolicySpecIngressDenyFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecIngressDenyFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecIngressDenyFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecIngressDenyFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecIngressDenyFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -29858,55 +27699,6 @@ export interface CiliumNetworkPolicySpecIngressDenyFromNodesMatchExpressions {
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumNetworkPolicySpecIngressDenyFromNodesMatchExpressions(obj: CiliumNetworkPolicySpecIngressDenyFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions(obj: CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -29988,11 +27780,18 @@ export interface CiliumNetworkPolicySpecIngressDenyToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecIngressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -30197,21 +27996,38 @@ export function toJson_CiliumNetworkPolicySpecsEgressToEndpointsMatchExpressions
  */
 export interface CiliumNetworkPolicySpecsEgressToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecsEgressToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecsEgressToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsEgressToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsEgressToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -30418,11 +28234,18 @@ export interface CiliumNetworkPolicySpecsEgressToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecsEgressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -30471,27 +28294,6 @@ export interface CiliumNetworkPolicySpecsEgressToPortsRules {
    * @schema CiliumNetworkPolicySpecsEgressToPortsRules#http
    */
   readonly http?: CiliumNetworkPolicySpecsEgressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumNetworkPolicySpecsEgressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -30503,9 +28305,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPortsRules(obj: CiliumNet
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumNetworkPolicySpecsEgressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumNetworkPolicySpecsEgressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumNetworkPolicySpecsEgressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -30575,55 +28374,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPortsTerminatingTls(obj: 
     'privateKey': obj.privateKey,
     'secret': toJson_CiliumNetworkPolicySpecsEgressToPortsTerminatingTlsSecret(obj.secret),
     'trustedCA': obj.trustedCa,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecsEgressToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions(obj: CiliumNetworkPolicySpecsEgressToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -30842,21 +28592,38 @@ export function toJson_CiliumNetworkPolicySpecsEgressDenyToEndpointsMatchExpress
  */
 export interface CiliumNetworkPolicySpecsEgressDenyToGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecsEgressDenyToGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecsEgressDenyToGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsEgressDenyToGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsEgressDenyToGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -30947,11 +28714,18 @@ export interface CiliumNetworkPolicySpecsEgressDenyToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecsEgressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -30973,55 +28747,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressDenyToPortsPorts(obj: Ciliu
     'endPort': obj.endPort,
     'port': obj.port,
     'protocol': obj.protocol,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions(obj: CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -31220,21 +28945,38 @@ export function toJson_CiliumNetworkPolicySpecsIngressFromEndpointsMatchExpressi
  */
 export interface CiliumNetworkPolicySpecsIngressFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecsIngressFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecsIngressFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsIngressFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsIngressFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -31295,55 +29037,6 @@ export interface CiliumNetworkPolicySpecsIngressFromNodesMatchExpressions {
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumNetworkPolicySpecsIngressFromNodesMatchExpressions(obj: CiliumNetworkPolicySpecsIngressFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions(obj: CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -31541,11 +29234,18 @@ export interface CiliumNetworkPolicySpecsIngressToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecsIngressToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -31594,27 +29294,6 @@ export interface CiliumNetworkPolicySpecsIngressToPortsRules {
    * @schema CiliumNetworkPolicySpecsIngressToPortsRules#http
    */
   readonly http?: CiliumNetworkPolicySpecsIngressToPortsRulesHttp[];
-
-  /**
-   * Kafka-specific rules.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRules#kafka
-   */
-  readonly kafka?: CiliumNetworkPolicySpecsIngressToPortsRulesKafka[];
-
-  /**
-   * Key-value pair rules.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRules#l7
-   */
-  readonly l7?: { [key: string]: string }[];
-
-  /**
-   * Name of the L7 protocol for which the Key-value pair rules apply.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRules#l7proto
-   */
-  readonly l7Proto?: string;
 }
 
 /**
@@ -31626,9 +29305,6 @@ export function toJson_CiliumNetworkPolicySpecsIngressToPortsRules(obj: CiliumNe
   const result = {
     'dns': obj.dns?.map(y => toJson_CiliumNetworkPolicySpecsIngressToPortsRulesDns(y)),
     'http': obj.http?.map(y => toJson_CiliumNetworkPolicySpecsIngressToPortsRulesHttp(y)),
-    'kafka': obj.kafka?.map(y => toJson_CiliumNetworkPolicySpecsIngressToPortsRulesKafka(y)),
-    'l7': obj.l7?.map(y => ((y) === undefined) ? undefined : (Object.entries(y).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {}))),
-    'l7proto': obj.l7Proto,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -31799,21 +29475,38 @@ export function toJson_CiliumNetworkPolicySpecsIngressDenyFromEndpointsMatchExpr
  */
 export interface CiliumNetworkPolicySpecsIngressDenyFromGroupsAws {
   /**
+   * Labels selects AWS ENIs by labels.
+   * Multiple labels are AND-ed together.
+   *
    * @schema CiliumNetworkPolicySpecsIngressDenyFromGroupsAws#labels
    */
   readonly labels?: { [key: string]: string };
 
   /**
+   * Deprecated: Region is unused.
+   *
    * @schema CiliumNetworkPolicySpecsIngressDenyFromGroupsAws#region
    */
   readonly region?: string;
 
   /**
+   * SecurityGroupsIds selects VPC SecurityGroups by IDs.
+   * If multiple IDs are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any Names specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsIngressDenyFromGroupsAws#securityGroupsIds
    */
   readonly securityGroupsIds?: string[];
 
   /**
+   * SecurityGroupsNames selects VPC SecurityGroups by name.
+   * If multiple names are specified, they are OR-ed together.
+   *
+   * Note that this may be AND-ed with any IDs specified. Specifying both
+   * IDs and Names is not recommended.
+   *
    * @schema CiliumNetworkPolicySpecsIngressDenyFromGroupsAws#securityGroupsNames
    */
   readonly securityGroupsNames?: string[];
@@ -31874,55 +29567,6 @@ export interface CiliumNetworkPolicySpecsIngressDenyFromNodesMatchExpressions {
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_CiliumNetworkPolicySpecsIngressDenyFromNodesMatchExpressions(obj: CiliumNetworkPolicySpecsIngressDenyFromNodesMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions
- */
-export interface CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions#operator
-   */
-  readonly operator: CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressionsOperator;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions(obj: CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressions | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'key': obj.key,
@@ -32004,11 +29648,18 @@ export interface CiliumNetworkPolicySpecsIngressDenyToPortsPorts {
    *
    * @schema CiliumNetworkPolicySpecsIngressDenyToPortsPorts#port
    */
-  readonly port: string;
+  readonly port?: string;
 
   /**
-   * Protocol is the L4 protocol. If omitted or empty, any protocol
-   * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+   * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+   * with transport ports (TCP, UDP, SCTP) match.
+   *
+   * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+   * "IPV6", "ESP", "AH", "ANY"
+   *
+   * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+   * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+   * flag to be set. These protocols do not use transport-layer ports.
    *
    * Matching on ICMP is not supported.
    *
@@ -32266,8 +29917,15 @@ export function toJson_CiliumNetworkPolicySpecEgressToPortsOriginatingTlsSecret(
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -32283,6 +29941,20 @@ export enum CiliumNetworkPolicySpecEgressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -32308,17 +29980,19 @@ export interface CiliumNetworkPolicySpecEgressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumNetworkPolicySpecEgressToPortsRulesDns#matchPattern
    */
@@ -32426,113 +30100,6 @@ export function toJson_CiliumNetworkPolicySpecEgressToPortsRulesHttp(obj: Cilium
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafka
- */
-export interface CiliumNetworkPolicySpecEgressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumNetworkPolicySpecEgressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecEgressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecEgressToPortsRulesKafka(obj: CiliumNetworkPolicySpecEgressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
  * Secret is the secret that contains the certificates and private key for
  * the TLS context.
  * By default, Cilium will search in this secret for the following items:
@@ -32574,23 +30141,6 @@ export function toJson_CiliumNetworkPolicySpecEgressToPortsTerminatingTlsSecret(
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecEgressToRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecEgressToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
 
 /**
  * ServiceSelector is a label selector for k8s services
@@ -32757,8 +30307,15 @@ export enum CiliumNetworkPolicySpecEgressDenyToNodesMatchExpressionsOperator {
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -32774,25 +30331,22 @@ export enum CiliumNetworkPolicySpecEgressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecEgressDenyToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
 }
 
 /**
@@ -32906,23 +30460,6 @@ export enum CiliumNetworkPolicySpecIngressFromEndpointsMatchExpressionsOperator 
  * @schema CiliumNetworkPolicySpecIngressFromNodesMatchExpressionsOperator
  */
 export enum CiliumNetworkPolicySpecIngressFromNodesMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecIngressFromRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecIngressFromRequiresMatchExpressionsOperator {
   /** In */
   IN = "In",
   /** NotIn */
@@ -33063,8 +30600,15 @@ export function toJson_CiliumNetworkPolicySpecIngressToPortsOriginatingTlsSecret
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -33080,6 +30624,20 @@ export enum CiliumNetworkPolicySpecIngressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -33105,17 +30663,19 @@ export interface CiliumNetworkPolicySpecIngressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumNetworkPolicySpecIngressToPortsRulesDns#matchPattern
    */
@@ -33216,113 +30776,6 @@ export function toJson_CiliumNetworkPolicySpecIngressToPortsRulesHttp(obj: Ciliu
     'host': obj.host,
     'method': obj.method,
     'path': obj.path,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafka
- */
-export interface CiliumNetworkPolicySpecIngressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumNetworkPolicySpecIngressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecIngressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecIngressToPortsRulesKafka(obj: CiliumNetworkPolicySpecIngressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -33456,23 +30909,6 @@ export enum CiliumNetworkPolicySpecIngressDenyFromNodesMatchExpressionsOperator 
 }
 
 /**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecIngressDenyFromRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
  * Family is a IP address version.
  * Currently, we support `IPv4` and `IPv6`.
  * `IPv4` is set as default.
@@ -33516,8 +30952,15 @@ export class CiliumNetworkPolicySpecIngressDenyIcmpsFieldsType {
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -33533,6 +30976,20 @@ export enum CiliumNetworkPolicySpecIngressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -33750,8 +31207,15 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPortsOriginatingTlsSecret
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -33767,6 +31231,20 @@ export enum CiliumNetworkPolicySpecsEgressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -33792,17 +31270,19 @@ export interface CiliumNetworkPolicySpecsEgressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumNetworkPolicySpecsEgressToPortsRulesDns#matchPattern
    */
@@ -33910,113 +31390,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPortsRulesHttp(obj: Ciliu
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafka
- */
-export interface CiliumNetworkPolicySpecsEgressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumNetworkPolicySpecsEgressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsEgressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsEgressToPortsRulesKafka(obj: CiliumNetworkPolicySpecsEgressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
  * Secret is the secret that contains the certificates and private key for
  * the TLS context.
  * By default, Cilium will search in this secret for the following items:
@@ -34058,23 +31431,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPortsTerminatingTlsSecret
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecsEgressToRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecsEgressToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
 
 /**
  * ServiceSelector is a label selector for k8s services
@@ -34241,8 +31597,15 @@ export enum CiliumNetworkPolicySpecsEgressDenyToNodesMatchExpressionsOperator {
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -34258,25 +31621,22 @@ export enum CiliumNetworkPolicySpecsEgressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecsEgressDenyToRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
 }
 
 /**
@@ -34390,23 +31750,6 @@ export enum CiliumNetworkPolicySpecsIngressFromEndpointsMatchExpressionsOperator
  * @schema CiliumNetworkPolicySpecsIngressFromNodesMatchExpressionsOperator
  */
 export enum CiliumNetworkPolicySpecsIngressFromNodesMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecsIngressFromRequiresMatchExpressionsOperator {
   /** In */
   IN = "In",
   /** NotIn */
@@ -34547,8 +31890,15 @@ export function toJson_CiliumNetworkPolicySpecsIngressToPortsOriginatingTlsSecre
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -34564,6 +31914,20 @@ export enum CiliumNetworkPolicySpecsIngressToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -34589,17 +31953,19 @@ export interface CiliumNetworkPolicySpecsIngressToPortsRulesDns {
    * the pattern. As a special case a "*" as the leftmost character, without a
    * following "." matches all subdomains as well as the name to the right.
    * A trailing "." is automatically added when missing.
+   * - "**." is a special prefix which matches all multilevel subdomains in the prefix.
    *
    * Examples:
-   * `*.cilium.io` matches subdomains of cilium at that level
+   * 1. `*.cilium.io` matches subdomains of cilium at that level
    * www.cilium.io and blog.cilium.io match, cilium.io and google.com do not
-   * `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
+   * 2. `*cilium.io` matches cilium.io and all subdomains ends with "cilium.io"
    * except those containing "." separator, subcilium.io and sub-cilium.io match,
    * www.cilium.io and blog.cilium.io does not
-   * sub*.cilium.io matches subdomains of cilium where the subdomain component
-   * begins with "sub"
-   * sub.cilium.io and subdomain.cilium.io match, www.cilium.io,
+   * 3. `sub*.cilium.io` matches subdomains of cilium where the subdomain component
+   * begins with "sub". sub.cilium.io and subdomain.cilium.io match while www.cilium.io,
    * blog.cilium.io, cilium.io and google.com do not
+   * 4. `**.cilium.io` matches all multilevel subdomains of cilium.io.
+   * "app.cilium.io" and "test.app.cilium.io" match but not "cilium.io"
    *
    * @schema CiliumNetworkPolicySpecsIngressToPortsRulesDns#matchPattern
    */
@@ -34700,113 +32066,6 @@ export function toJson_CiliumNetworkPolicySpecsIngressToPortsRulesHttp(obj: Cili
     'host': obj.host,
     'method': obj.method,
     'path': obj.path,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * PortRule is a list of Kafka protocol constraints. All fields are
- * optional, if all fields are empty or missing, the rule will match all
- * Kafka messages.
- *
- * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafka
- */
-export interface CiliumNetworkPolicySpecsIngressToPortsRulesKafka {
-  /**
-   * APIKey is a case-insensitive string matched against the key of a
-   * request, e.g. "produce", "fetch", "createtopic", "deletetopic", et al
-   * Reference: https://kafka.apache.org/protocol#protocol_api_keys
-   *
-   * If omitted or empty, and if Role is not specified, then all keys are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafka#apiKey
-   */
-  readonly apiKey?: string;
-
-  /**
-   * APIVersion is the version matched against the api version of the
-   * Kafka message. If set, it has to be a string representing a positive
-   * integer.
-   *
-   * If omitted or empty, all versions are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafka#apiVersion
-   */
-  readonly apiVersion?: string;
-
-  /**
-   * ClientID is the client identifier as provided in the request.
-   *
-   * From Kafka protocol documentation:
-   * This is a user supplied identifier for the client application. The
-   * user can use any identifier they like and it will be used when
-   * logging errors, monitoring aggregates, etc. For example, one might
-   * want to monitor not just the requests per second overall, but the
-   * number coming from each client application (each of which could
-   * reside on multiple servers). This id acts as a logical grouping
-   * across all requests from a particular client.
-   *
-   * If omitted or empty, all client identifiers are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafka#clientID
-   */
-  readonly clientId?: string;
-
-  /**
-   * Role is a case-insensitive string and describes a group of API keys
-   * necessary to perform certain higher-level Kafka operations such as "produce"
-   * or "consume". A Role automatically expands into all APIKeys required
-   * to perform the specified higher-level operation.
-   *
-   * The following values are supported:
-   * - "produce": Allow producing to the topics specified in the rule
-   * - "consume": Allow consuming from the topics specified in the rule
-   *
-   * This field is incompatible with the APIKey field, i.e APIKey and Role
-   * cannot both be specified in the same rule.
-   *
-   * If omitted or empty, and if APIKey is not specified, then all keys are
-   * allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafka#role
-   */
-  readonly role?: CiliumNetworkPolicySpecsIngressToPortsRulesKafkaRole;
-
-  /**
-   * Topic is the topic name contained in the message. If a Kafka request
-   * contains multiple topics, then all topics must be allowed or the
-   * message will be rejected.
-   *
-   * This constraint is ignored if the matched request message type
-   * doesn't contain any topic. Maximum size of Topic can be 249
-   * characters as per recent Kafka spec and allowed characters are
-   * a-z, A-Z, 0-9, -, . and _.
-   *
-   * Older Kafka versions had longer topic lengths of 255, but in Kafka 0.10
-   * version the length was changed from 255 to 249. For compatibility
-   * reasons we are using 255.
-   *
-   * If omitted or empty, all topics are allowed.
-   *
-   * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafka#topic
-   */
-  readonly topic?: string;
-}
-
-/**
- * Converts an object of type 'CiliumNetworkPolicySpecsIngressToPortsRulesKafka' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNetworkPolicySpecsIngressToPortsRulesKafka(obj: CiliumNetworkPolicySpecsIngressToPortsRulesKafka | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'apiKey': obj.apiKey,
-    'apiVersion': obj.apiVersion,
-    'clientID': obj.clientId,
-    'role': obj.role,
-    'topic': obj.topic,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -34940,23 +32199,6 @@ export enum CiliumNetworkPolicySpecsIngressDenyFromNodesMatchExpressionsOperator
 }
 
 /**
- * operator represents a key's relationship to a set of values.
- * Valid operators are In, NotIn, Exists and DoesNotExist.
- *
- * @schema CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressionsOperator
- */
-export enum CiliumNetworkPolicySpecsIngressDenyFromRequiresMatchExpressionsOperator {
-  /** In */
-  IN = "In",
-  /** NotIn */
-  NOT_IN = "NotIn",
-  /** Exists */
-  EXISTS = "Exists",
-  /** DoesNotExist */
-  DOES_NOT_EXIST = "DoesNotExist",
-}
-
-/**
  * Family is a IP address version.
  * Currently, we support `IPv4` and `IPv6`.
  * `IPv4` is set as default.
@@ -35000,8 +32242,15 @@ export class CiliumNetworkPolicySpecsIngressDenyIcmpsFieldsType {
 }
 
 /**
- * Protocol is the L4 protocol. If omitted or empty, any protocol
- * matches. Accepted values: "TCP", "UDP", "SCTP", "ANY"
+ * Protocol is the L4 protocol. If "ANY", omitted or empty, any protocols
+ * with transport ports (TCP, UDP, SCTP) match.
+ *
+ * Accepted values: "TCP", "UDP", "SCTP", "VRRP", "IGMP", "GRE", "IPIP",
+ * "IPV6", "ESP", "AH", "ANY"
+ *
+ * Tunnel/encapsulation protocols (GRE, IPIP, IPV6, ESP, AH) and other
+ * extended IP protocols (VRRP, IGMP) require the --enable-extended-ip-protocols
+ * flag to be set. These protocols do not use transport-layer ports.
  *
  * Matching on ICMP is not supported.
  *
@@ -35017,6 +32266,20 @@ export enum CiliumNetworkPolicySpecsIngressDenyToPortsPortsProtocol {
   UDP = "UDP",
   /** SCTP */
   SCTP = "SCTP",
+  /** VRRP */
+  VRRP = "VRRP",
+  /** IGMP */
+  IGMP = "IGMP",
+  /** GRE */
+  GRE = "GRE",
+  /** IPIP */
+  IPIP = "IPIP",
+  /** IPV6 */
+  IPV6 = "IPV6",
+  /** ESP */
+  ESP = "ESP",
+  /** AH */
+  AH = "AH",
   /** ANY */
   ANY = "ANY",
 }
@@ -35115,31 +32378,6 @@ export function toJson_CiliumNetworkPolicySpecEgressToPortsRulesHttpHeaderMatche
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumNetworkPolicySpecEgressToPortsRulesKafkaRole
- */
-export enum CiliumNetworkPolicySpecEgressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -35352,31 +32590,6 @@ export function toJson_CiliumNetworkPolicySpecIngressToPortsRulesHttpHeaderMatch
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumNetworkPolicySpecIngressToPortsRulesKafkaRole
- */
-export enum CiliumNetworkPolicySpecIngressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
-
-/**
  * operator represents a key's relationship to a set of values.
  * Valid operators are In, NotIn, Exists and DoesNotExist.
  *
@@ -35487,31 +32700,6 @@ export function toJson_CiliumNetworkPolicySpecsEgressToPortsRulesHttpHeaderMatch
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumNetworkPolicySpecsEgressToPortsRulesKafkaRole
- */
-export enum CiliumNetworkPolicySpecsEgressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -35722,31 +32910,6 @@ export function toJson_CiliumNetworkPolicySpecsIngressToPortsRulesHttpHeaderMatc
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Role is a case-insensitive string and describes a group of API keys
- * necessary to perform certain higher-level Kafka operations such as "produce"
- * or "consume". A Role automatically expands into all APIKeys required
- * to perform the specified higher-level operation.
- *
- * The following values are supported:
- * - "produce": Allow producing to the topics specified in the rule
- * - "consume": Allow consuming from the topics specified in the rule
- *
- * This field is incompatible with the APIKey field, i.e APIKey and Role
- * cannot both be specified in the same rule.
- *
- * If omitted or empty, and if APIKey is not specified, then all keys are
- * allowed.
- *
- * @schema CiliumNetworkPolicySpecsIngressToPortsRulesKafkaRole
- */
-export enum CiliumNetworkPolicySpecsIngressToPortsRulesKafkaRole {
-  /** produce */
-  PRODUCE = "produce",
-  /** consume */
-  CONSUME = "consume",
-}
 
 /**
  * operator represents a key's relationship to a set of values.
@@ -36235,13 +33398,6 @@ export interface CiliumNodeSpec {
    * @schema CiliumNodeSpec#ipam
    */
   readonly ipam?: CiliumNodeSpecIpam;
-
-  /**
-   * NodeIdentity is the Cilium numeric identity allocated for the node, if any.
-   *
-   * @schema CiliumNodeSpec#nodeidentity
-   */
-  readonly nodeidentity?: number;
 }
 
 /**
@@ -36261,7 +33417,6 @@ export function toJson_CiliumNodeSpec(obj: CiliumNodeSpec | undefined): Record<s
     'ingress': toJson_CiliumNodeSpecIngress(obj.ingress),
     'instance-id': obj.instanceId,
     'ipam': toJson_CiliumNodeSpecIpam(obj.ipam),
-    'nodeidentity': obj.nodeidentity,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -36501,48 +33656,11 @@ export interface CiliumNodeSpecEni {
   readonly firstInterfaceIndex?: number;
 
   /**
-   * InstanceID is the AWS InstanceId of the node. The InstanceID is used
-   * to retrieve AWS metadata for the node.
-   *
-   * OBSOLETE: This field is obsolete, please use Spec.InstanceID
-   *
-   * @schema CiliumNodeSpecEni#instance-id
-   */
-  readonly instanceId?: string;
-
-  /**
    * InstanceType is the AWS EC2 instance type, e.g. "m5.large"
    *
    * @schema CiliumNodeSpecEni#instance-type
    */
   readonly instanceType?: string;
-
-  /**
-   * MaxAboveWatermark is the maximum number of addresses to allocate
-   * beyond the addresses needed to reach the PreAllocate watermark.
-   * Going above the watermark can help reduce the number of API calls to
-   * allocate IPs, e.g. when a new ENI is allocated, as many secondary
-   * IPs as possible are allocated. Limiting the amount can help reduce
-   * waste of IPs.
-   *
-   * OBSOLETE: This field is obsolete, please use Spec.IPAM.MaxAboveWatermark
-   *
-   * @schema CiliumNodeSpecEni#max-above-watermark
-   */
-  readonly maxAboveWatermark?: number;
-
-  /**
-   * MinAllocate is the minimum number of IPs that must be allocated when
-   * the node is first bootstrapped. It defines the minimum base socket
-   * of addresses that must be available. After reaching this watermark,
-   * the PreAllocate and MaxAboveWatermark logic takes over to continue
-   * allocating IPs.
-   *
-   * OBSOLETE: This field is obsolete, please use Spec.IPAM.MinAllocate
-   *
-   * @schema CiliumNodeSpecEni#min-allocate
-   */
-  readonly minAllocate?: number;
 
   /**
    * NodeSubnetID is the subnet of the primary ENI the instance was brought up
@@ -36551,18 +33669,6 @@ export interface CiliumNodeSpecEni {
    * @schema CiliumNodeSpecEni#node-subnet-id
    */
   readonly nodeSubnetId?: string;
-
-  /**
-   * PreAllocate defines the number of IP addresses that must be
-   * available for allocation in the IPAMspec. It defines the buffer of
-   * addresses available immediately without requiring cilium-operator to
-   * get involved.
-   *
-   * OBSOLETE: This field is obsolete, please use Spec.IPAM.PreAllocate
-   *
-   * @schema CiliumNodeSpecEni#pre-allocate
-   */
-  readonly preAllocate?: number;
 
   /**
    * SecurityGroupTags is the list of tags to use when evaliating what
@@ -36624,12 +33730,8 @@ export function toJson_CiliumNodeSpecEni(obj: CiliumNodeSpecEni | undefined): Re
     'disable-prefix-delegation': obj.disablePrefixDelegation,
     'exclude-interface-tags': ((obj.excludeInterfaceTags) === undefined) ? undefined : (Object.entries(obj.excludeInterfaceTags).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'first-interface-index': obj.firstInterfaceIndex,
-    'instance-id': obj.instanceId,
     'instance-type': obj.instanceType,
-    'max-above-watermark': obj.maxAboveWatermark,
-    'min-allocate': obj.minAllocate,
     'node-subnet-id': obj.nodeSubnetId,
-    'pre-allocate': obj.preAllocate,
     'security-group-tags': ((obj.securityGroupTags) === undefined) ? undefined : (Object.entries(obj.securityGroupTags).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'security-groups': obj.securityGroups?.map(y => y),
     'subnet-ids': obj.subnetIds?.map(y => y),
@@ -36787,7 +33889,7 @@ export interface CiliumNodeSpecIpam {
 
   /**
    * PreAllocate defines the number of IP addresses that must be
-   * available for allocation in the IPAMspec. It defines the buffer of
+   * available for allocation in the IPAMSpec. It defines the buffer of
    * addresses available immediately without requiring cilium-operator to
    * get involved.
    *
@@ -36963,6 +34065,20 @@ export function toJson_CiliumNodeSpecIpamPools(obj: CiliumNodeSpecIpamPools | un
  */
 export interface CiliumNodeSpecIpamPoolsAllocated {
   /**
+   * AllowFirstIP allows the first IP of each allocated CIDR to be used.
+   *
+   * @schema CiliumNodeSpecIpamPoolsAllocated#allowFirstIP
+   */
+  readonly allowFirstIp?: boolean;
+
+  /**
+   * AllowLastIP allows the last IP of each allocated CIDR to be used.
+   *
+   * @schema CiliumNodeSpecIpamPoolsAllocated#allowLastIP
+   */
+  readonly allowLastIp?: boolean;
+
+  /**
    * CIDRs contains a list of pod CIDRs currently allocated from this pool
    *
    * @schema CiliumNodeSpecIpamPoolsAllocated#cidrs
@@ -36984,6 +34100,8 @@ export interface CiliumNodeSpecIpamPoolsAllocated {
 export function toJson_CiliumNodeSpecIpamPoolsAllocated(obj: CiliumNodeSpecIpamPoolsAllocated | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'allowFirstIP': obj.allowFirstIp,
+    'allowLastIP': obj.allowLastIp,
     'cidrs': obj.cidrs?.map(y => y),
     'pool': obj.pool,
   };
@@ -37301,235 +34419,6 @@ export function toJson_CiliumNodeConfigSpecNodeSelectorMatchExpressions(obj: Cil
 
 
 /**
- * CiliumNodeConfig is a list of configuration key-value pairs. It is applied to
-nodes indicated by a label selector.
-
-If multiple overrides apply to the same node, they will be ordered by name
-with later Overrides overwriting any conflicting keys.
- *
- * @schema CiliumNodeConfigV2Alpha1
- */
-export class CiliumNodeConfigV2Alpha1 extends ApiObject {
-  /**
-   * Returns the apiVersion and kind for "CiliumNodeConfigV2Alpha1"
-   */
-  public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'cilium.io/v2alpha1',
-    kind: 'CiliumNodeConfig',
-  }
-
-  /**
-   * Renders a Kubernetes manifest for "CiliumNodeConfigV2Alpha1".
-   *
-   * This can be used to inline resource manifests inside other objects (e.g. as templates).
-   *
-   * @param props initialization props
-   */
-  public static manifest(props: CiliumNodeConfigV2Alpha1Props): any {
-    return {
-      ...CiliumNodeConfigV2Alpha1.GVK,
-      ...toJson_CiliumNodeConfigV2Alpha1Props(props),
-    };
-  }
-
-  /**
-   * Defines a "CiliumNodeConfigV2Alpha1" API object
-   * @param scope the scope in which to define this object
-   * @param id a scope-local name for the object
-   * @param props initialization props
-   */
-  public constructor(scope: Construct, id: string, props: CiliumNodeConfigV2Alpha1Props) {
-    super(scope, id, {
-      ...CiliumNodeConfigV2Alpha1.GVK,
-      ...props,
-    });
-  }
-
-  /**
-   * Renders the object to Kubernetes JSON.
-   */
-  public override toJson(): any {
-    const resolved = super.toJson();
-
-    return {
-      ...CiliumNodeConfigV2Alpha1.GVK,
-      ...toJson_CiliumNodeConfigV2Alpha1Props(resolved),
-    };
-  }
-}
-
-/**
- * CiliumNodeConfig is a list of configuration key-value pairs. It is applied to
- * nodes indicated by a label selector.
- *
- * If multiple overrides apply to the same node, they will be ordered by name
- * with later Overrides overwriting any conflicting keys.
- *
- * @schema CiliumNodeConfigV2Alpha1
- */
-export interface CiliumNodeConfigV2Alpha1Props {
-  /**
-   * @schema CiliumNodeConfigV2Alpha1#metadata
-   */
-  readonly metadata?: ApiObjectMetadata;
-
-  /**
-   * Spec is the desired Cilium configuration overrides for a given node
-   *
-   * @schema CiliumNodeConfigV2Alpha1#spec
-   */
-  readonly spec: CiliumNodeConfigV2Alpha1Spec;
-}
-
-/**
- * Converts an object of type 'CiliumNodeConfigV2Alpha1Props' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNodeConfigV2Alpha1Props(obj: CiliumNodeConfigV2Alpha1Props | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'metadata': obj.metadata,
-    'spec': toJson_CiliumNodeConfigV2Alpha1Spec(obj.spec),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Spec is the desired Cilium configuration overrides for a given node
- *
- * @schema CiliumNodeConfigV2Alpha1Spec
- */
-export interface CiliumNodeConfigV2Alpha1Spec {
-  /**
-   * Defaults is treated the same as the cilium-config ConfigMap - a set
-   * of key-value pairs parsed by the agent and operator processes.
-   * Each key must be a valid config-map data field (i.e. a-z, A-Z, -, _, and .)
-   *
-   * @default treated the same as the cilium-config ConfigMap - a set
-   * @schema CiliumNodeConfigV2Alpha1Spec#defaults
-   */
-  readonly defaults: { [key: string]: string };
-
-  /**
-   * NodeSelector is a label selector that determines to which nodes
-   * this configuration applies.
-   * If not supplied, then this config applies to no nodes. If
-   * empty, then it applies to all nodes.
-   *
-   * @schema CiliumNodeConfigV2Alpha1Spec#nodeSelector
-   */
-  readonly nodeSelector: CiliumNodeConfigV2Alpha1SpecNodeSelector;
-}
-
-/**
- * Converts an object of type 'CiliumNodeConfigV2Alpha1Spec' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNodeConfigV2Alpha1Spec(obj: CiliumNodeConfigV2Alpha1Spec | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'defaults': ((obj.defaults) === undefined) ? undefined : (Object.entries(obj.defaults).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-    'nodeSelector': toJson_CiliumNodeConfigV2Alpha1SpecNodeSelector(obj.nodeSelector),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * NodeSelector is a label selector that determines to which nodes
- * this configuration applies.
- * If not supplied, then this config applies to no nodes. If
- * empty, then it applies to all nodes.
- *
- * @schema CiliumNodeConfigV2Alpha1SpecNodeSelector
- */
-export interface CiliumNodeConfigV2Alpha1SpecNodeSelector {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema CiliumNodeConfigV2Alpha1SpecNodeSelector#matchExpressions
-   */
-  readonly matchExpressions?: CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema CiliumNodeConfigV2Alpha1SpecNodeSelector#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'CiliumNodeConfigV2Alpha1SpecNodeSelector' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNodeConfigV2Alpha1SpecNodeSelector(obj: CiliumNodeConfigV2Alpha1SpecNodeSelector | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions
- */
-export interface CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions#operator
-   */
-  readonly operator: string;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions(obj: CiliumNodeConfigV2Alpha1SpecNodeSelectorMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-
-/**
  * CiliumPodIPPool defines an IP pool that can be used for pooled IPAM (i.e. the multi-pool IPAM
 mode).
  *
@@ -37622,6 +34511,26 @@ export function toJson_CiliumPodIpPoolProps(obj: CiliumPodIpPoolProps | undefine
  */
 export interface CiliumPodIpPoolSpec {
   /**
+   * AllowFirstIP allows the first IP of each allocated CIDR to be used. If
+   * unset or false, this IP is reserved. This field is ignored for /{31,32}
+   * and /{127,128} CIDRs since reserving the first and last IPs would make
+   * the CIDRs unusable. This field is immutable.
+   *
+   * @schema CiliumPodIpPoolSpec#allowFirstIP
+   */
+  readonly allowFirstIp?: boolean;
+
+  /**
+   * AllowLastIP allows the last IP of each allocated CIDR to be used. If
+   * unset or false, this IP is reserved. This field is ignored for /{31,32}
+   * and /{127,128} CIDRs since reserving the first and last IPs would make
+   * the CIDRs unusable. This field is immutable.
+   *
+   * @schema CiliumPodIpPoolSpec#allowLastIP
+   */
+  readonly allowLastIp?: boolean;
+
+  /**
    * IPv4 specifies the IPv4 CIDRs and mask sizes of the pool
    *
    * @schema CiliumPodIpPoolSpec#ipv4
@@ -37634,6 +34543,37 @@ export interface CiliumPodIpPoolSpec {
    * @schema CiliumPodIpPoolSpec#ipv6
    */
   readonly ipv6?: CiliumPodIpPoolSpecIpv6;
+
+  /**
+   * NamespaceSelector selects the set of Namespaces that are eligible to use
+   * this pool. If both PodSelector and NamespaceSelector are specified, a Pod
+   * must match both selectors to be eligible for IP allocation from this pool.
+   *
+   * If NamespaceSelector is empty, the pool can be used by Pods in any namespace
+   * (subject to PodSelector constraints).
+   *
+   * @schema CiliumPodIpPoolSpec#namespaceSelector
+   */
+  readonly namespaceSelector?: CiliumPodIpPoolSpecNamespaceSelector;
+
+  /**
+   * PodSelector selects the set of Pods that are eligible to receive IPs from
+   * this pool when neither the Pod nor its Namespace specify an explicit
+   * `ipam.cilium.io/*` annotation.
+   *
+   * The selector can match on regular Pod labels and on the following synthetic
+   * labels that Cilium adds for convenience:
+   *
+   * io.kubernetes.pod.namespace – the Pod's namespace
+   * io.kubernetes.pod.name      – the Pod's name
+   *
+   * A single Pod must not match more than one pool for the same IP family.
+   * If multiple pools match, IP allocation fails for that Pod and a warning event
+   * is emitted in the namespace of the Pod.
+   *
+   * @schema CiliumPodIpPoolSpec#podSelector
+   */
+  readonly podSelector?: CiliumPodIpPoolSpecPodSelector;
 }
 
 /**
@@ -37643,8 +34583,12 @@ export interface CiliumPodIpPoolSpec {
 export function toJson_CiliumPodIpPoolSpec(obj: CiliumPodIpPoolSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'allowFirstIP': obj.allowFirstIp,
+    'allowLastIP': obj.allowLastIp,
     'ipv4': toJson_CiliumPodIpPoolSpecIpv4(obj.ipv4),
     'ipv6': toJson_CiliumPodIpPoolSpecIpv6(obj.ipv6),
+    'namespaceSelector': toJson_CiliumPodIpPoolSpecNamespaceSelector(obj.namespaceSelector),
+    'podSelector': toJson_CiliumPodIpPoolSpecPodSelector(obj.podSelector),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -37722,4 +34666,229 @@ export function toJson_CiliumPodIpPoolSpecIpv6(obj: CiliumPodIpPoolSpecIpv6 | un
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * NamespaceSelector selects the set of Namespaces that are eligible to use
+ * this pool. If both PodSelector and NamespaceSelector are specified, a Pod
+ * must match both selectors to be eligible for IP allocation from this pool.
+ *
+ * If NamespaceSelector is empty, the pool can be used by Pods in any namespace
+ * (subject to PodSelector constraints).
+ *
+ * @schema CiliumPodIpPoolSpecNamespaceSelector
+ */
+export interface CiliumPodIpPoolSpecNamespaceSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumPodIpPoolSpecNamespaceSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumPodIpPoolSpecNamespaceSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'CiliumPodIpPoolSpecNamespaceSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumPodIpPoolSpecNamespaceSelector(obj: CiliumPodIpPoolSpecNamespaceSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * PodSelector selects the set of Pods that are eligible to receive IPs from
+ * this pool when neither the Pod nor its Namespace specify an explicit
+ * `ipam.cilium.io/*` annotation.
+ *
+ * The selector can match on regular Pod labels and on the following synthetic
+ * labels that Cilium adds for convenience:
+ *
+ * io.kubernetes.pod.namespace – the Pod's namespace
+ * io.kubernetes.pod.name      – the Pod's name
+ *
+ * A single Pod must not match more than one pool for the same IP family.
+ * If multiple pools match, IP allocation fails for that Pod and a warning event
+ * is emitted in the namespace of the Pod.
+ *
+ * @schema CiliumPodIpPoolSpecPodSelector
+ */
+export interface CiliumPodIpPoolSpecPodSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema CiliumPodIpPoolSpecPodSelector#matchExpressions
+   */
+  readonly matchExpressions?: CiliumPodIpPoolSpecPodSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema CiliumPodIpPoolSpecPodSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'CiliumPodIpPoolSpecPodSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumPodIpPoolSpecPodSelector(obj: CiliumPodIpPoolSpecPodSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_CiliumPodIpPoolSpecPodSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions
+ */
+export interface CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumPodIpPoolSpecNamespaceSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions(obj: CiliumPodIpPoolSpecNamespaceSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema CiliumPodIpPoolSpecPodSelectorMatchExpressions
+ */
+export interface CiliumPodIpPoolSpecPodSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema CiliumPodIpPoolSpecPodSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema CiliumPodIpPoolSpecPodSelectorMatchExpressions#operator
+   */
+  readonly operator: CiliumPodIpPoolSpecPodSelectorMatchExpressionsOperator;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema CiliumPodIpPoolSpecPodSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'CiliumPodIpPoolSpecPodSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CiliumPodIpPoolSpecPodSelectorMatchExpressions(obj: CiliumPodIpPoolSpecPodSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * operator represents a key's relationship to a set of values.
+ * Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumPodIpPoolSpecNamespaceSelectorMatchExpressionsOperator
+ */
+export enum CiliumPodIpPoolSpecNamespaceSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
+
+/**
+ * operator represents a key's relationship to a set of values.
+ * Valid operators are In, NotIn, Exists and DoesNotExist.
+ *
+ * @schema CiliumPodIpPoolSpecPodSelectorMatchExpressionsOperator
+ */
+export enum CiliumPodIpPoolSpecPodSelectorMatchExpressionsOperator {
+  /** In */
+  IN = "In",
+  /** NotIn */
+  NOT_IN = "NotIn",
+  /** Exists */
+  EXISTS = "Exists",
+  /** DoesNotExist */
+  DOES_NOT_EXIST = "DoesNotExist",
+}
 

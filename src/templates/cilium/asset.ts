@@ -38,6 +38,9 @@ const getCrdUrls = async (version: string) => {
       if (!item.download_url) {
         continue;
       }
+      if (!item.download_url.endsWith(".yaml")) {
+        continue;
+      }
       crdUrls.push(item.download_url);
     }
   }
@@ -48,7 +51,7 @@ const getCrdUrls = async (version: string) => {
 };
 
 export const assets: TemplateAssetFn = async (dir) => {
-  const version = "1.18.5";
+  const version = "1.20.1";
 
   const sourceChartPath = await helm.pull(
     {
