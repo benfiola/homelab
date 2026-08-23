@@ -141,7 +141,7 @@
 /ip/dhcp-server/lease/add address=192.168.24.11 server=iot mac-address=24:48:45:4D:1B:C2 comment="garage.camera"
 /ip/dhcp-server/lease/add address=192.168.24.12 server=iot mac-address=54:8C:81:DE:3D:C8 comment="porch.camera"
 /ip/dhcp-server/lease/add address=192.168.24.13 server=iot mac-address=EC:71:DB:2F:D2:68 comment="doorbell.camera"
-/ip/dhcp-server/lease/add address=192.168.24.14 server=iot mac-address=DC:A6:32:E8:02:B5 comment="bedroom-2.speaker"
+/ip/dhcp-server/lease/add address=192.168.24.14 server=iot mac-address=DC:A6:32:E8:02:B5 comment="bedroom-2.voice-assistant"
 /ip/dhcp-server/lease/add address=192.168.32.2 server=infrastructure mac-address=F8:75:A4:FE:1F:E9 comment="husky.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=88:A4:C2:A0:B5:BB comment="chihuahua.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=00:2B:67:D6:40:6B comment="malamute.cluster"
@@ -161,7 +161,7 @@
 /ip/dns/static/add name=garage.camera.fiola.dev address=192.168.24.11 ttl=10m
 /ip/dns/static/add name=porch.camera.fiola.dev address=192.168.24.12 ttl=10m
 /ip/dns/static/add name=doorbell.camera.fiola.dev address=192.168.24.13 ttl=10m
-/ip/dns/static/add name=bedroom-2.speaker.fiola.dev address=192.168.88.14 ttl=10m
+/ip/dns/static/add name=bedroom-2.voice-assistant.fiola.dev address=192.168.88.14 ttl=10m
 /ip/dns/static/add name=husky.cluster.fiola.dev address=192.168.32.2 ttl=10m
 /ip/dns/static/add name=chihuahua.cluster.fiola.dev address=192.168.32.3 ttl=10m
 /ip/dns/static/add name=malamute.cluster.fiola.dev address=192.168.32.4 ttl=10m
@@ -205,13 +205,13 @@
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.5 comment="yoto player"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.6 comment="sonos (bedroom-2 right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.7 comment="sonos (bedroom-2 left)"
-/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.14 comment="bedroom-2.speaker"
+/ip/firewall/address-list/add list=IOT_ALLOW_WAN address=192.168.24.14 comment="bedroom-2.voice-assistant"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.2 comment="projector"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.3 comment="sonos (play right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.4 comment="sonos (play left)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.6 comment="sonos (bedroom-2 right)"
 /ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.7 comment="sonos (bedroom-2 left)"
-/ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.14 comment="bedroom-2.speaker"
+/ip/firewall/address-list/add list=IOT_ALLOW_INTRANET address=192.168.24.14 comment="bedroom-2.voice-assistant"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_FAMILY address=192.168.33.2/32 comment="cluster gateway (family)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_PERSONAL address=192.168.33.3/32 comment="cluster gateway (personal)"
 /ip/firewall/address-list/add list=INFRASTRUCTURE_INGRESS_INFRASTRUCTURE address=192.168.33.4/32 comment="cluster gateway (infrastructure)"
