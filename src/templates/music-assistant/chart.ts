@@ -27,6 +27,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "ghcr.io/benfiola/homelab-images/music-assistant:1.0.0",
     {
       containerPorts: {
+        internal: [8094, "TCP"],
         ui: [8095, "TCP"],
         stream: [8097, "TCP"],
       },
@@ -38,7 +39,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     },
   );
-  const service = statefulSet.createService({ ui: 8095, stream: 8097 });
+  const service = statefulSet.createService({
+    internal: 8094,
+    ui: 8095,
+    stream: 8097,
+  });
 
   new HttpRoute(chart, "family", "listen.fiola.dev").match(service, 8095);
   new TcpRoute(chart, "family", "stream.listen.fiola.dev", 8097, service, 8097);
