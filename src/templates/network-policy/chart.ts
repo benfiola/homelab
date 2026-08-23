@@ -425,7 +425,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(frigate, tcp(5000, 8554, 8555), udp(8555))
     .to(llamaCppServer, tcp(8080))
     .to(mosquitto, tcp(1883))
-    .to(musicAssistant, tcp(8094))
+    .to(musicAssistant, tcp(8094, 8095))
     .to(wyomingPiper, tcp(10200))
     .to(wyomingWhisper, tcp(10300))
     .to(dns("mobile-apps.home-assistant.io"), tcp(443));
