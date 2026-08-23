@@ -14,12 +14,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const daemonSet = new DaemonSet(chart, id, {
     hostNetwork: true,
+    securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
   });
   daemonSet.addContainer(
     id,
     "ghcr.io/benfiola/homelab-images/mdns-reflector:3.0.1",
     {
-      securityContext: { uid: 0, gid: 0 },
+      env: {
+        EXTRA_INTERFACES: "mdns0",
+      },
     },
   );
 
