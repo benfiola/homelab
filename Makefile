@@ -1,9 +1,9 @@
 BWS_VERSION ?= 2.1.0
 CDK8S_VERSION ?= 2.203.1
-CILIUM_VERSION ?= 1.18.5
-CILIUMCLI_VERSION ?= 0.18.9
+CILIUMCLI_VERSION ?= 0.19.7
 FLUX_VERSION ?= 2.7.3
 HELM_VERSION ?= 4.0.0
+HUBBLE_VERSION ?= 1.19.4
 JB_VERSION ?= 0.6.0
 K9S_VERSION ?= 0.50.16
 KUBECTL_VERSION ?= 1.36.1
@@ -95,7 +95,7 @@ helm_url := https://get.helm.sh/helm-v$(HELM_VERSION)-linux-$(helm_arch).tar.gz
 $(eval $(call tool-from-tar-gz,helm,$(helm_url), 1))
 
 hubble_arch := $(arch)
-hubble_url := https://github.com/cilium/hubble/releases/download/v$(CILIUM_VERSION)/hubble-linux-$(hubble_arch).tar.gz
+hubble_url := https://github.com/cilium/hubble/releases/download/v$(HUBBLE_VERSION)/hubble-linux-$(hubble_arch).tar.gz
 $(eval $(call tool-from-tar-gz,hubble,$(hubble_url),0))
 
 jb_arch := $(arch)
