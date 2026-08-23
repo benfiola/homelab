@@ -419,6 +419,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // home-assistant
   homeAssistant
+    .from(cidrs("224.0.0.251/32"), udp(5353))
+    .to(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("192.168.24.0/24"))
     .to(frigate, tcp(5000, 8554, 8555), udp(8555))
     .to(llamaCppServer, tcp(8080))
@@ -541,6 +543,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // music-assistant
   musicAssistant
+    .from(cidrs("224.0.0.251/32"), udp(5353))
+    .to(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("192.168.24.0/24"))
     .to(gatewayFamily, tcp(8097))
     .to(dns("tidal.com"), tcp(443))
@@ -702,7 +706,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   nodes.to(nodes, tcp(10250));
 
   // general - mdns
-  nodes
+  host
     .to(cidrs("224.0.0.251/32"), udp(5353))
     .from(cidrs("224.0.0.251/32"), udp(5353));
 
