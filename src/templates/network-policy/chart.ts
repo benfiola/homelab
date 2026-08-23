@@ -742,7 +742,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.24.6/32",
         // iot + iot_allow_intranet (sonos (bedroom-2 left))
         "192.168.24.7/32",
-        // iot + iot_allow_intranet (bedroom-2.voice-assistant)
+        // iot + iot_allow_intranet (bedroom-2.assistant)
         "192.168.24.14/32",
       ),
       tcp(8097, 10443),
@@ -785,7 +785,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "192.168.24.6/32",
         // iot + iot_allow_intranet (sonos (bedroom-2 left))
         "192.168.24.7/32",
-        // iot + iot_allow_intranet (bedroom-2.voice-assistant)
+        // iot + iot_allow_intranet (bedroom-2.assistant)
         "192.168.24.14/32",
       ),
       tcp(3724, 6969, 7878, 8085, 10443, 25565),
