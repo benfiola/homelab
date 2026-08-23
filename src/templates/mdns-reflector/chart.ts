@@ -1,7 +1,6 @@
 import {
   Chart,
-  findApiObject,
-  Helm,
+  DaemonSet,
   Namespace,
   VerticalPodAutoscaler,
 } from "../../cdk8s";
@@ -13,20 +12,18 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Namespace(chart, { privileged: true });
 
-  new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
-    daemonSet: {
-      hostNetwork: true,
-    },
+  const daemonSet = new DaemonSet(chart, id, {
+    hostNetwork: true,
   });
-
-  new VerticalPodAutoscaler(
-    chart,
-    findApiObject(chart, {
-      apiVersion: "apps/v1",
-      kind: "DaemonSet",
-      name: "mdns-reflector",
-    }),
+  daemonSet.addContainer(
+    id,
+    "ghcr.io/benfiola/homelab-images/mdns-reflector:3.0.0",
+    {
+      securityContext: { uid: 0, gid: 0 },
+    },
   );
+
+  new VerticalPodAutoscaler(chart, daemonSet);
 
   return chart;
 };
