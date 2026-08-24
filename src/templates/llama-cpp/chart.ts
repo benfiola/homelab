@@ -68,7 +68,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "llama-cpp",
     "ghcr.io/ggml-org/llama.cpp:server-cuda-b10236",
     {
-      containerPorts: { ui: 8033, web: 8080 },
+      containerPorts: { web: 8080 },
       args: [
         "--model",
         `/data/${files.model}`,
