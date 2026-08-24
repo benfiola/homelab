@@ -28,8 +28,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   const files = {
-    model: "Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
-    mmproj: "Qwen3-VL-8B-Instruct-mmproj-F16.gguf",
+    model: "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+    mmproj: "mmproj-gemma-4-12b-it-F16.gguf",
+    mtp: "mtp-gemma-4-12b-it-Q8_0.gguf",
   } as const;
 
   const ss = new StatefulSet(chart, "llama-cpp", {
@@ -55,6 +56,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "/data",
         files.model,
         files.mmproj,
+        files.mtp,
       ],
       volumeMounts: {
         data: "/data",
@@ -72,18 +74,23 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         `/data/${files.model}`,
         "--mmproj",
         `/data/${files.mmproj}`,
+        "--model-draft",
+        `/data/${files.mtp}`,
+        "--spec-type",
+        "draft-mtp",
+        "--spec-draft-n-max",
+        "4",
         "--n-gpu-layers",
-        "99",
+        "999",
         "--flash-attn",
         "on",
+        "--jinja",
         "--cache-type-k",
         "q8_0",
         "--cache-type-v",
         "q8_0",
         "--ctx-size",
         "16384",
-        "--image-min-tokens",
-        "1024",
         "--parallel",
         "1",
         "--host",
