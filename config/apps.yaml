@@ -26,6 +26,7 @@ apps:
   - template: home-assistant
   - template: intel-device-plugins
   - template: intel-device-plugins-operator
+  - template: kokoro-fastapi
   - template: kube-state-metrics
   - template: linstor
   - template: llama-cpp
@@ -58,6 +59,6 @@ apps:
   - template: vault-secrets-operator
   - template: vertical-pod-autoscaler
   - template: volsync
-  - template: wyoming-piper
+  - template: wyoming-openai
   - template: wyoming-whisper
   - template: volume-snapshot-api

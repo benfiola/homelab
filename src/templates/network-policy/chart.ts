@@ -137,6 +137,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "intel-device-plugins-operator",
     pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
   );
+  const kokoroFastapi = svc(
+    "kokoro-fastapi",
+    pod("kokoro-fastapi", "kokoro-fastapi"),
+  );
   const kubeStateMetrics = svc(
     "kube-state-metrics",
     component("metrics", "kube-state-metrics"),
@@ -279,13 +283,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const volsync = svc("volsync", pod("volsync", "volsync"));
   const volsyncMover = svc("volsync-mover", pod("volsync-mover", "*"));
-  const wyomingPiper = svc(
-    "wyoming-piper",
-    pod("wyoming-piper", "wyoming-piper"),
-  );
-  const wyomingPiperAssetsServer = svc(
-    "wyoming-piper-assets-server",
-    _assetsServer("wyoming-piper"),
+  const wyomingOpenai = svc(
+    "wyoming-openai",
+    pod("wyoming-openai", "wyoming-openai"),
   );
   const wyomingWhisper = svc(
     "wyoming-whisper",
@@ -426,7 +426,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(llamaCppServer, tcp(8080))
     .to(mosquitto, tcp(1883))
     .to(musicAssistant, tcp(8094, 8095))
-    .to(wyomingPiper, tcp(10200))
+    .to(wyomingOpenai, tcp(10300))
     .to(wyomingWhisper, tcp(10300))
     .to(dns("mobile-apps.home-assistant.io"), tcp(443));
 
@@ -434,6 +434,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   controlPlane.to(intelDevicePluginsOperator, tcp(9443));
   intelDevicePluginsOperator.to(kubeApiServer, tcp(6443));
   host.to(intelDevicePluginsOperator, tcp(8081, 9443));
+
+  // kokoro-fastapi
+  host.to(kokoroFastapi, tcp(8880));
 
   // kube-state-metrics
   kubeStateMetrics.to(kubeApiServer, tcp(6443));
@@ -660,8 +663,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("*.backblazeb2.com"), tcp(443))
     .to(dns("*.backblaze.com"), tcp(443));
 
-  // wyoming-piper
-  wyomingPiper.to(wyomingPiperAssetsServer, tcp(8080));
+  // wyoming-openai
+  wyomingOpenai.to(kokoroFastapi, tcp(8880));
 
   // wyoming-whisper
   wyomingWhisper
