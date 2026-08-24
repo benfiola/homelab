@@ -20,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   deployment.addContainer(
     "kokoro-fastapi",
-    "ghcr.io/remsky/kokoro-fastapi-gpu:v0.8.1",
+    "ghcr.io/remsky/kokoro-fastapi-gpu:v0.8.1-cu128",
     {
       env: {
         USE_GPU: "true",
