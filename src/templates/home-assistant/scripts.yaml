@@ -25,3 +25,35 @@ toggle_scene:
         - action: light.turn_off
           target:
             entity_id: "{{ zone_entity }}"
+
+bedroom_2_lights_on:
+  alias: Bedroom 2 lights on
+  description: >-
+    Turns the bedroom 2 lights on at a warm, normal brightness. Use for
+    requests like "turn on the lights", "brighten the room", or
+    "lights on".
+  sequence:
+    - action: scene.turn_on
+      target:
+        entity_id: scene.bedroom_2_bedroom_2_warm
+
+bedroom_2_lights_dim:
+  alias: Bedroom 2 lights dim
+  description: >-
+    Dims the bedroom 2 lights to a low, warm, relaxing level. Use for requests
+    like "dim the lights", "make the bedroom cozy", or "turn the
+    lights down low".
+  sequence:
+    - action: scene.turn_on
+      target:
+        entity_id: scene.bedroom_2_bedroom_2_warm_dim
+
+bedroom_2_lights_off:
+  alias: Bedroom 2 lights off
+  description: >-
+    Turns off all bedroom 2 lights. Use for requests like "turn off the
+    lights" or "lights off".
+  sequence:
+    - action: light.turn_off
+      target:
+        device_id: 3565c55584a0ddc92b4a137ac64230a3
