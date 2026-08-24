@@ -93,6 +93,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         "16384",
         "--parallel",
         "1",
+        "--chat-template-kwargs",
+        '{"enable_thinking":false}',
         "--host",
         "0.0.0.0",
         "--port",
