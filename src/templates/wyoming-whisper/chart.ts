@@ -30,7 +30,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       args: [
         "--hass-token=$(HASS_TOKEN)",
         "--hass-api=http://home-assistant.home-assistant.svc:8123/api",
-        "--model=rhasspy/faster-whisper-base-int8",
+        "--model=large-v3-turbo",
         "--language=en",
         "--uri=tcp://0.0.0.0:10300",
         "--data-dir=/data",
