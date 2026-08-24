@@ -44,6 +44,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     volumes: {
       "config-map": { configMap: config.name },
       config: { pvc: { size: "10Gi", storageClass: "replicated" } },
+      media: { pvc: { size: "10Gi", storageClass: "standard" } },
     },
     podAnnotations: {
       "k8s.v1.cni.cncf.io/networks": "multus-network/mdns@mdns0",
@@ -75,6 +76,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       volumeMounts: {
         config: "/config",
+        media: "/media",
       },
     },
   );
