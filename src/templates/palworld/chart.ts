@@ -7,6 +7,8 @@ import {
   VaultAuth,
   VaultStaticSecret,
   VerticalPodAutoscaler,
+  VolsyncAuth,
+  VolsyncBackup,
 } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
@@ -23,8 +25,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
+  const securityContext = { uid: 1000, gid: 1000 };
+
   const statefulSet = new StatefulSet(chart, "palworld", {
-    securityContext: { uid: 1000, gid: 1000 },
+    securityContext,
     volumes: {
       data: {
         pvc: { size: "5Gi", storageClass: "standard" },
@@ -63,6 +67,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   });
 
   new VerticalPodAutoscaler(chart, statefulSet);
+
+  const volsyncAuth = new VolsyncAuth(chart);
+
+  new VolsyncBackup(chart, volsyncAuth, "data-palworld-0", { securityContext });
 
   new UdpRoute(chart, "friends", hostname, 8211, svc, 8211);
   new HttpRoute(chart, "friends", `admin.${hostname}`).match(svc, 8080);
