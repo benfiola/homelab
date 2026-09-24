@@ -25,10 +25,10 @@ outputs:
   - file: switch.cluster.yaml
     template: network-switch.cluster.yaml
 
-  - file: wireguard.bfiola-desktop-infrastructure.conf
+  - file: wireguard.bfiola-desktop-linux-infrastructure.conf
     template: network-wireguard.conf
     inputs:
-      privateKey: "{{ secrets.wireguard.devices.bfiolaDesktop.infrastructure.private }}"
+      privateKey: "{{ secrets.wireguard.devices.bfiolaDesktopLinux.infrastructure.private }}"
       address: 192.168.34.3/32
       publicKey: "{{ secrets.wireguard.interfaces.infrastructure.public }}"
       port: 13233
@@ -36,11 +36,32 @@ outputs:
         - 192.168.32.0/23
         - 192.168.88.1/32
 
-  - file: wireguard.bfiola-desktop-management.conf
+  - file: wireguard.bfiola-desktop-linux-management.conf
     template: network-wireguard.conf
     inputs:
-      privateKey: "{{ secrets.wireguard.devices.bfiolaDesktop.management.private }}"
+      privateKey: "{{ secrets.wireguard.devices.bfiolaDesktopLinux.management.private }}"
       address: 192.168.89.3/32
+      publicKey: "{{ secrets.wireguard.interfaces.management.public }}"
+      port: 13234
+      allowedIps:
+        - 192.168.88.0/24
+
+  - file: wireguard.bfiola-desktop-wsl-infrastructure.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "{{ secrets.wireguard.devices.bfiolaDesktopWsl.infrastructure.private }}"
+      address: 192.168.34.5/32
+      publicKey: "{{ secrets.wireguard.interfaces.infrastructure.public }}"
+      port: 13233
+      allowedIps:
+        - 192.168.32.0/23
+        - 192.168.88.1/32
+
+  - file: wireguard.bfiola-desktop-wsl-management.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "{{ secrets.wireguard.devices.bfiolaDesktopWsl.management.private }}"
+      address: 192.168.89.5/32
       publicKey: "{{ secrets.wireguard.interfaces.management.public }}"
       port: 13234
       allowedIps:
