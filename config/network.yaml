@@ -101,6 +101,19 @@ outputs:
       allowedIps:
         - 192.168.88.0/24
 
+  - file: wireguard.bfiola-ipad.conf
+    template: network-wireguard.conf
+    inputs:
+      privateKey: "{{ secrets.wireguard.devices.bfiolaIpad.personal.private }}"
+      address: 192.168.17.5/32
+      publicKey: "{{ secrets.wireguard.interfaces.personal.public }}"
+      port: 13232
+      allowedIps:
+        - 192.168.33.2/32
+        - 192.168.33.3/32
+        - 192.168.33.7/32
+        - 192.168.88.1/32
+
   - file: wireguard.bfiola-iphone.conf
     template: network-wireguard.conf
     inputs:

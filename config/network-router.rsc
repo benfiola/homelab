@@ -40,6 +40,7 @@
 /interface/wireguard/peers/add allowed-address=192.168.17.2/32 interface=wg-personal name=bfiola-home-laptop-personal persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaHomeLaptop.personal.public }}"
 /interface/wireguard/peers/add allowed-address=192.168.17.3/32 interface=wg-personal name=bfiola-work-laptop-personal persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaWorkLaptop.personal.public }}"
 /interface/wireguard/peers/add allowed-address=192.168.17.4/32 interface=wg-personal name=bfiola-iphone persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaIphone.personal.public }}"
+/interface/wireguard/peers/add allowed-address=192.168.17.5/32 interface=wg-personal name=bfiola-ipad persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaIpad.personal.public }}"
 /interface/wireguard/peers/add allowed-address=192.168.34.2/32 interface=wg-infrastructure name=bfiola-home-laptop-infrastructure persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaHomeLaptop.infrastructure.public }}"
 /interface/wireguard/peers/add allowed-address=192.168.34.3/32 interface=wg-infrastructure name=bfiola-desktop-linux-infrastructure persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaDesktopLinux.infrastructure.public }}"
 /interface/wireguard/peers/add allowed-address=192.168.34.4/32 interface=wg-infrastructure name=bfiola-work-laptop-infrastructure persistent-keepalive=25s public-key="{{ secrets.wireguard.devices.bfiolaWorkLaptop.infrastructure.public }}"
