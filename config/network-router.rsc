@@ -144,7 +144,7 @@
 /ip/dhcp-server/lease/add address=192.168.24.11 server=iot mac-address=24:48:45:4D:1B:C2 comment="garage.camera"
 /ip/dhcp-server/lease/add address=192.168.24.12 server=iot mac-address=54:8C:81:DE:3D:C8 comment="porch.camera"
 /ip/dhcp-server/lease/add address=192.168.24.13 server=iot mac-address=EC:71:DB:2F:D2:68 comment="doorbell.camera"
-/ip/dhcp-server/lease/add address=192.168.24.14 server=iot mac-address=DC:A6:32:E8:02:B5 comment="bedroom-2.assistant"
+/ip/dhcp-server/lease/add address=192.168.24.14 server=iot mac-address=08:38:E6:35:C2:CE comment="bedroom-2.assistant"
 /ip/dhcp-server/lease/add address=192.168.32.2 server=infrastructure mac-address=F8:75:A4:FE:1F:E9 comment="husky.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.3 server=infrastructure mac-address=88:A4:C2:A0:B5:BB comment="chihuahua.cluster"
 /ip/dhcp-server/lease/add address=192.168.32.4 server=infrastructure mac-address=00:2B:67:D6:40:6B comment="malamute.cluster"
