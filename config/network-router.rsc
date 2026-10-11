@@ -132,6 +132,7 @@
 /ip/dhcp-client/add interface=ether1
 
 # assign static ips
+/ip/dhcp-server/lease/add address=192.168.16.2 server=personal mac-address=C8:7F:54:6C:10:46 comment="bfiola-desktop"
 /ip/dhcp-server/lease/add address=192.168.24.2 server=iot mac-address=D4:0A:DC:DB:A9:0E comment="projector"
 /ip/dhcp-server/lease/add address=192.168.24.3 server=iot mac-address=80:4A:F2:B2:19:E2 comment="sonos (play right)"
 /ip/dhcp-server/lease/add address=192.168.24.4 server=iot mac-address=80:4A:F2:B2:19:64 comment="sonos (play left)"
@@ -158,6 +159,7 @@
 /ip/dhcp-server/lease/add address=192.168.88.6 server=management mac-address=94:83:C4:AA:F9:1B comment="living-room.ap"
 
 # assign dns
+/ip/dns/static/add name=bfiola-desktop.fiola.dev address=192.168.16.2 ttl=10m
 /ip/dns/static/add name=3d-printer.fiola.dev address=192.168.24.8 ttl=10m
 /ip/dns/static/add name=printer.fiola.dev address=192.168.24.9 ttl=10m
 /ip/dns/static/add name=front-yard.camera.fiola.dev address=192.168.24.10 ttl=10m
