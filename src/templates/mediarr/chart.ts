@@ -294,6 +294,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumes: {
       config: { pvc: { size: "20Gi", storageClass: "standard" } },
       data: { pvc: { name: data.name } },
+      cache: { emptyDir: { sizeLimit: "50Gi" } },
     },
   });
   jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
@@ -312,6 +313,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
     volumeMounts: {
       config: "/config",
       data: "/data",
+      cache: "/config/cache",
     },
   });
   addWaitForDataInitContainer(jellyfin);

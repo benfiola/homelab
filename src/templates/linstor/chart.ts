@@ -38,6 +38,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // these are cluster scoped resources that will be deployed wherever `piraeus-operator` is deployed.
   new LinstorCluster(chart, `${id}-cluster`, {
     metadata: { name: id },
+    spec: {
+      properties: [{ name: "DrbdOptions/auto-diskful", value: "30" }],
+    },
   });
 
   new LinstorSatelliteConfiguration(chart, `${id}-satellite-configuration`, {
