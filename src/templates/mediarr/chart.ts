@@ -297,7 +297,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       cache: { emptyDir: { sizeLimit: "50Gi" } },
     },
   });
-  jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.1", {
+  jellyfin.addContainer("jellyfin", "lscr.io/linuxserver/jellyfin:10.11.11", {
     containerPorts: {
       web: 8096,
     },
