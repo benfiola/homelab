@@ -518,6 +518,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("api.radarr.video"), tcp(443))
+    .to(dns("api4.thetvdb.com"), tcp(443))
     // rotten tomatoes ratings
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
   mediarrSonarr
