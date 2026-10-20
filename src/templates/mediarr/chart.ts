@@ -25,7 +25,12 @@ export const chart: TemplateChartFn = async (construct, id) => {
 
   const data = new NasVolume(chart, "media");
 
-  const scriptFiles = ["init-data.sh", "wait-for-data-init.sh", "mss-clamp.sh"];
+  const scriptFiles = [
+    "init-data.sh",
+    "wait-for-data-init.sh",
+    "mss-clamp.sh",
+    "run-speed-check.sh",
+  ];
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: Object.fromEntries(
       await Promise.all(
@@ -77,6 +82,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
   ) => {
     workload.addVolume("gt-tun", { hostPath: { path: "/dev/net/tun" } });
     workload.addVolume("gt-state", { emptyDir: {} });
+    workload.addVolume("gt-scripts", { configMap: scripts.name });
 
     const env: WorkloadEnv = {
       DNS_UPSTREAM_RESOLVER_TYPE: "plain",
@@ -104,11 +110,10 @@ export const chart: TemplateChartFn = async (construct, id) => {
     const volumeMounts: Record<string, string> = {
       "gt-tun": "/dev/net/tun",
       "gt-state": "/tmp/gluetun",
+      "gt-scripts": "/scripts",
     };
 
     if (opts.portForwarding) {
-      workload.addVolume("gt-scripts", { configMap: scripts.name });
-      volumeMounts["gt-scripts"] = "/scripts";
       env.PORT_FORWARD_ONLY = "yes";
       env.VPN_PORT_FORWARDING = "on";
       env.VPN_PORT_FORWARDING_UP_COMMAND = opts.portForwarding.upCommand;
@@ -123,6 +128,13 @@ export const chart: TemplateChartFn = async (construct, id) => {
       },
       env,
       volumeMounts,
+      liveness: {
+        exec: { command: ["/bin/sh", "/scripts/run-speed-check.sh"] },
+        initialDelaySeconds: 120,
+        periodSeconds: 600,
+        timeoutSeconds: 30,
+        failureThreshold: 3,
+      },
     });
 
     workload.addVolume("mss-clamp-scripts", { configMap: scripts.name });
