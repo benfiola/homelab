@@ -284,6 +284,27 @@ export interface ChallengeSpecSolver {
    * @schema ChallengeSpecSolver#selector
    */
   readonly selector?: ChallengeSpecSolverSelector;
+
+  /**
+   * WaitInsteadOfSelfCheck, if set, skips cert-manager's self-check and
+   * instead waits this long after presentation before asking the ACME server
+   * to validate the challenge.
+   *
+   * This is an advanced escape hatch for environments where cert-manager's
+   * self-check cannot succeed from its own network or DNS viewpoint even
+   * though the ACME server can still validate successfully, for example due
+   * to split-horizon DNS or NAT hairpinning.
+   *
+   * A value of 0 skips the self-check and asks the ACME server to validate
+   * immediately after presentation, relying on the ACME server's own
+   * validation retries (RFC 8555 section 8.2) to succeed once the challenge
+   * has propagated. A negative duration is rejected.
+   * Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration,
+   * for example `30s` or `2m`.
+   *
+   * @schema ChallengeSpecSolver#waitInsteadOfSelfCheck
+   */
+  readonly waitInsteadOfSelfCheck?: string;
 }
 
 /**
@@ -296,6 +317,7 @@ export function toJson_ChallengeSpecSolver(obj: ChallengeSpecSolver | undefined)
     'dns01': toJson_ChallengeSpecSolverDns01(obj.dns01),
     'http01': toJson_ChallengeSpecSolverHttp01(obj.http01),
     'selector': toJson_ChallengeSpecSolverSelector(obj.selector),
+    'waitInsteadOfSelfCheck': obj.waitInsteadOfSelfCheck,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -686,6 +708,22 @@ export interface ChallengeSpecSolverDns01AzureDns {
    * @schema ChallengeSpecSolverDns01AzureDns#tenantID
    */
   readonly tenantId?: string;
+
+  /**
+   * ZoneType determines which type of Azure DNS zone to use.
+   *
+   * Valid values are:
+   * - AzurePublicZone  (default): Use a public Azure DNS zone.
+   * - AzurePrivateZone: Use an Azure Private DNS zone.
+   *
+   * If not specified, AzurePublicZone is used.
+   *
+   * Support for Azure Private DNS zones is currently
+   * experimental and may change in future releases.
+   *
+   * @schema ChallengeSpecSolverDns01AzureDns#zoneType
+   */
+  readonly zoneType?: ChallengeSpecSolverDns01AzureDnsZoneType;
 }
 
 /**
@@ -703,6 +741,7 @@ export function toJson_ChallengeSpecSolverDns01AzureDns(obj: ChallengeSpecSolver
     'resourceGroupName': obj.resourceGroupName,
     'subscriptionID': obj.subscriptionId,
     'tenantID': obj.tenantId,
+    'zoneType': obj.zoneType,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -852,7 +891,7 @@ export interface ChallengeSpecSolverDns01Rfc2136 {
   /**
    * The IP address or hostname of an authoritative DNS server supporting
    * RFC2136 in the form host:port. If the host is an IPv6 address it must be
-   * enclosed in square brackets (e.g [2001:db8::1]) ; port is optional.
+   * enclosed in square brackets (e.g [2001:db8::1]); port is optional.
    * This field is required.
    *
    * @schema ChallengeSpecSolverDns01Rfc2136#nameserver
@@ -920,8 +959,8 @@ export interface ChallengeSpecSolverDns01Route53 {
   /**
    * The AccessKeyID is used for authentication.
    * Cannot be set when SecretAccessKeyID is set.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ChallengeSpecSolverDns01Route53#accessKeyID
@@ -932,8 +971,8 @@ export interface ChallengeSpecSolverDns01Route53 {
    * The SecretAccessKey is used for authentication. If set, pull the AWS
    * access key ID from a key within a Kubernetes Secret.
    * Cannot be set when AccessKeyID is set.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ChallengeSpecSolverDns01Route53#accessKeyIDSecretRef
@@ -992,8 +1031,8 @@ export interface ChallengeSpecSolverDns01Route53 {
 
   /**
    * The SecretAccessKey is used for authentication.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ChallengeSpecSolverDns01Route53#secretAccessKeySecretRef
@@ -1489,6 +1528,27 @@ export function toJson_ChallengeSpecSolverDns01AzureDnsManagedIdentity(obj: Chal
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ZoneType determines which type of Azure DNS zone to use.
+ *
+ * Valid values are:
+ * - AzurePublicZone  (default): Use a public Azure DNS zone.
+ * - AzurePrivateZone: Use an Azure Private DNS zone.
+ *
+ * If not specified, AzurePublicZone is used.
+ *
+ * Support for Azure Private DNS zones is currently
+ * experimental and may change in future releases.
+ *
+ * @schema ChallengeSpecSolverDns01AzureDnsZoneType
+ */
+export enum ChallengeSpecSolverDns01AzureDnsZoneType {
+  /** AzurePublicZone */
+  AZURE_PUBLIC_ZONE = "AzurePublicZone",
+  /** AzurePrivateZone */
+  AZURE_PRIVATE_ZONE = "AzurePrivateZone",
+}
+
+/**
  * A reference to a specific 'key' within a Secret resource.
  * In some instances, `key` is a required field.
  *
@@ -1704,8 +1764,8 @@ export function toJson_ChallengeSpecSolverDns01Rfc2136TsigSecretSecretRef(obj: C
  * The SecretAccessKey is used for authentication. If set, pull the AWS
  * access key ID from a key within a Kubernetes Secret.
  * Cannot be set when AccessKeyID is set.
- * If neither the Access Key nor Key ID are set, we fall-back to using env
- * vars, shared credentials file or AWS Instance metadata,
+ * If neither the Access Key nor Key ID are set, we fall back to using env
+ * vars, shared credentials file, or AWS Instance metadata,
  * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema ChallengeSpecSolverDns01Route53AccessKeyIdSecretRef
@@ -1775,8 +1835,8 @@ export function toJson_ChallengeSpecSolverDns01Route53Auth(obj: ChallengeSpecSol
 
 /**
  * The SecretAccessKey is used for authentication.
- * If neither the Access Key nor Key ID are set, we fall-back to using env
- * vars, shared credentials file or AWS Instance metadata,
+ * If neither the Access Key nor Key ID are set, we fall back to using env
+ * vars, shared credentials file, or AWS Instance metadata,
  * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema ChallengeSpecSolverDns01Route53SecretAccessKeySecretRef
@@ -2756,9 +2816,10 @@ export interface ChallengeSpecSolverHttp01GatewayHttpRoutePodTemplateSpecTolerat
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema ChallengeSpecSolverHttp01GatewayHttpRoutePodTemplateSpecTolerations#operator
@@ -3086,9 +3147,10 @@ export interface ChallengeSpecSolverHttp01IngressPodTemplateSpecTolerations {
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema ChallengeSpecSolverHttp01IngressPodTemplateSpecTolerations#operator
@@ -6909,7 +6971,7 @@ export interface OrderSpec {
 
   /**
    * Duration is the duration for the not after date for the requested certificate.
-   * this is set on order creation as pe the ACME spec.
+   * This is set on order creation as per the ACME spec.
    *
    * @schema OrderSpec#duration
    */
@@ -6944,6 +7006,18 @@ export interface OrderSpec {
   readonly profile?: string;
 
   /**
+   * Replaces is the ARI CertID (RFC 9773 §4.1) of the certificate that this
+   * Order is intended to replace. When set, cert-manager will include the
+   * "replaces" field on the newOrder request to the ACME server if and only
+   * if the server advertises ARI support in its directory. The CertID has
+   * the form "base64url(AKI).base64url(serial)" and is derived locally from
+   * the currently issued leaf certificate.
+   *
+   * @schema OrderSpec#replaces
+   */
+  readonly replaces?: string;
+
+  /**
    * Certificate signing request bytes in DER encoding.
    * This will be used when finalizing the order.
    * This field must be set on the order.
@@ -6966,6 +7040,7 @@ export function toJson_OrderSpec(obj: OrderSpec | undefined): Record<string, any
     'ipAddresses': obj.ipAddresses?.map(y => y),
     'issuerRef': toJson_OrderSpecIssuerRef(obj.issuerRef),
     'profile': obj.profile,
+    'replaces': obj.replaces,
     'request': obj.request,
   };
   // filter undefined values

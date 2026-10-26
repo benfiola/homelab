@@ -141,7 +141,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     _assetsServer("llama-cpp"),
   );
   const llamaCppServer = svc("llama-cpp", pod("llama-cpp", "llama-cpp"));
-  const lokiBackend = svc("loki-backend", component("backend", "loki"));
+  const loki = svc("loki", component("single-binary", "loki"));
   const lokiGateway = svc("loki-gateway", component("gateway", "loki"));
   const lokiMemcachedChunksCache = svc(
     "loki-memcached-chunks-cache",
@@ -151,8 +151,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "loki-memcached-results-cache",
     component("memcached-results-cache", "loki"),
   );
-  const lokiRead = svc("loki-read", component("read", "loki"));
-  const lokiWrite = svc("loki-write", component("write", "loki"));
   const metricsServer = svc(
     "metrics-server",
     pod("metrics-server", "metrics-server"),
@@ -425,28 +423,16 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   llamaCppServer.to(llamaCppAssetsServer, tcp(8080));
 
   // loki
-  lokiBackend
+  loki
     .to(kubeApiServer, tcp(6443))
     .to(garage, tcp(3900))
-    .to(lokiRead, tcp(7946))
-    .to(lokiWrite, tcp(7946));
-  host.to(lokiBackend, tcp(3100));
-  lokiGateway.to(lokiRead, tcp(3100)).to(lokiWrite, tcp(3100));
+    .to(lokiMemcachedChunksCache, tcp(11211))
+    .to(lokiMemcachedResultsCache, tcp(11211));
+  host.to(loki, tcp(3100));
+  lokiGateway.to(loki, tcp(3100));
   host.to(lokiGateway, tcp(8080));
   host.to(lokiMemcachedChunksCache, tcp(9150, 11211));
   host.to(lokiMemcachedResultsCache, tcp(9150, 11211));
-  lokiRead
-    .to(garage, tcp(3900))
-    .to(lokiBackend, tcp(7946, 9095))
-    .to(lokiMemcachedResultsCache, tcp(11211))
-    .to(lokiWrite, tcp(7946, 9095));
-  host.to(lokiRead, tcp(3100));
-  lokiWrite
-    .to(garage, tcp(3900))
-    .to(lokiBackend, tcp(7946))
-    .to(lokiMemcachedChunksCache, tcp(11211))
-    .to(lokiRead, tcp(7946));
-  host.to(lokiWrite, tcp(3100));
 
   // mediarr
   mediarrJellyfin

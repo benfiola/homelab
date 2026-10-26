@@ -14,7 +14,7 @@ export class BackendTlsPolicy extends ApiObject {
    * Returns the apiVersion and kind for "BackendTLSPolicy"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'gateway.networking.k8s.io/v1alpha3',
+    apiVersion: 'gateway.networking.k8s.io/v1',
     kind: 'BackendTLSPolicy',
   }
 
@@ -117,8 +117,6 @@ export interface BackendTlsPolicySpec {
 
   /**
    * TargetRefs identifies an API object to apply the policy to.
-   * Only Services have Extended support. Implementations MAY support
-   * additional objects, with Implementation Specific support.
    * Note that this config applies to the entire referenced resource
    * by default, but this default may change in the future to provide
    * a more granular application of the policy.
@@ -131,9 +129,50 @@ export interface BackendTlsPolicySpec {
    * be unique across all targetRef entries in the BackendTLSPolicy.
    * * They select different sectionNames in the same target.
    *
-   * Support: Extended for Kubernetes Service
+   * When more than one BackendTLSPolicy selects the same target and
+   * sectionName, implementations MUST determine precedence using the
+   * following criteria, continuing on ties:
    *
-   * Support: Implementation-specific for any other resource
+   * * The older policy by creation timestamp takes precedence. For
+   * example, a policy with a creation timestamp of "2021-07-15
+   * 01:02:03" MUST be given precedence over a policy with a
+   * creation timestamp of "2021-07-15 01:02:04".
+   * * The policy appearing first in alphabetical order by {namespace}/{name}.
+   * For example, a policy named `foo/bar` is given precedence over a
+   * policy named `foo/baz`.
+   *
+   * For any BackendTLSPolicy that does not take precedence, the
+   * implementation MUST ensure the `Accepted` Condition is set to
+   * `status: False`, with Reason `Conflicted`.
+   *
+   * Implementations SHOULD NOT support more than one targetRef at this
+   * time. Although the API technically allows for this, the current guidance
+   * for conflict resolution and status handling is lacking. Until that can be
+   * clarified in a future release, the safest approach is to support a single
+   * targetRef.
+   *
+   * Support Levels:
+   *
+   * * Extended: Kubernetes Service referenced by backendRefs used on a Route.
+   * - HTTPRoute, GRPCRoute, TLSRoute with termination
+   * - Filters that needs a backend of type Service, like Mirror and External Authorization
+   *
+   * * Implementation-Specific: Implementations MAY use BackendTLSPolicy for:
+   * - Services not referenced by any Route (e.g., infrastructure services)
+   * - Service mesh workload-to-service communication
+   * - Other resource types beyond Service
+   *
+   * Implementations SHOULD aim to ensure that BackendTLSPolicy behavior is consistent,
+   * even outside of the extended HTTPRoute -(backendRef) -> Service path.
+   * They SHOULD clearly document how BackendTLSPolicy is interpreted in these
+   * scenarios, including:
+   * - Which resources beyond Service are supported
+   * - How the policy is discovered and applied
+   * - Any implementation-specific semantics or restrictions
+   *
+   * Note that this config applies to the entire referenced resource
+   * by default, but this default may change in the future to provide
+   * a more granular application of the policy.
    *
    * @schema BackendTlsPolicySpec#targetRefs
    */
@@ -249,8 +288,31 @@ export interface BackendTlsPolicySpecValidation {
    * not both. If CACertificateRefs is empty or unspecified, the configuration for
    * WellKnownCACertificates MUST be honored instead if supported by the implementation.
    *
-   * References to a resource in a different namespace are invalid for the
-   * moment, although we will revisit this in the future.
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+   * does not exist) or is misconfigured (e.g., a ConfigMap does not contain a key
+   * named `ca.crt`). In this case, the Reason must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this case, the Reason
+   * must be set to `InvalidKind` and the Message of the Condition must explain which
+   * kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace. This may change in future
+   * spec updates.
+   *
+   * Implementations MAY choose to perform further validation of the certificate
+   * content (e.g., checking expiry or enforcing specific formats). In such cases,
+   * an implementation-specific Reason and Message must be set for the invalid reference.
+   *
+   * In all cases, the implementation MUST ensure the `ResolvedRefs` Condition on
+   * the BackendTLSPolicy is set to `status: False`, with a Reason and Message
+   * that indicate the cause of the error. Connections using an invalid
+   * CACertificateRef MUST fail, and the client MUST receive an HTTP 5xx error
+   * response. If ALL CACertificateRefs are invalid, the implementation MUST also
+   * ensure the `Accepted` Condition on the BackendTLSPolicy is set to
+   * `status: False`, with a Reason `NoValidCACertificate`.
    *
    * A single CACertificateRef to a Kubernetes ConfigMap kind has "Core" support.
    * Implementations MAY choose to support attaching multiple certificates to
@@ -259,8 +321,8 @@ export interface BackendTlsPolicySpecValidation {
    * Support: Core - An optional single reference to a Kubernetes ConfigMap,
    * with the CA certificate in a key named `ca.crt`.
    *
-   * Support: Implementation-specific (More than one reference, or other kinds
-   * of resources).
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
    *
    * @schema BackendTlsPolicySpecValidation#caCertificateRefs
    */
@@ -271,9 +333,11 @@ export interface BackendTlsPolicySpecValidation {
    * backends:
    *
    * 1. Hostname MUST be used as the SNI to connect to the backend (RFC 6066).
-   * 2. Hostname MUST be used for authentication and MUST match the certificate served by the matching backend, unless SubjectAltNames is specified.
-   * authentication and MUST match the certificate served by the matching
-   * backend.
+   * 2. Hostname MUST be used for authentication and MUST match the certificate
+   * served by the matching backend, unless SubjectAltNames is specified.
+   * 3. If SubjectAltNames are specified, Hostname can be used for certificate selection
+   * but MUST NOT be used for authentication. If you want to use the value
+   * of the Hostname field for authentication, you MUST add it to the SubjectAltNames list.
    *
    * Support: Core
    *
@@ -293,21 +357,29 @@ export interface BackendTlsPolicySpecValidation {
   readonly subjectAltNames?: BackendTlsPolicySpecValidationSubjectAltNames[];
 
   /**
-   * WellKnownCACertificates specifies whether system CA certificates may be used in
-   * the TLS handshake between the gateway and backend pod.
+   * WellKnownCACertificates specifies whether a well-known set of CA certificates
+   * may be used in the TLS handshake between the gateway and backend pod.
    *
    * If WellKnownCACertificates is unspecified or empty (""), then CACertificateRefs
    * must be specified with at least one entry for a valid configuration. Only one of
-   * CACertificateRefs or WellKnownCACertificates may be specified, not both. If an
-   * implementation does not support the WellKnownCACertificates field or the value
-   * supplied is not supported, the Status Conditions on the Policy MUST be
-   * updated to include an Accepted: False Condition with Reason: Invalid.
+   * CACertificateRefs or WellKnownCACertificates may be specified, not both.
+   * If an implementation does not support the WellKnownCACertificates field, or
+   * the supplied value is not recognized, the implementation MUST ensure the
+   * `Accepted` Condition on the BackendTLSPolicy is set to `status: False`, with
+   * a Reason `Invalid`.
+   *
+   * Valid values include:
+   * * "System" - indicates that well-known system CA certificates should be used.
+   *
+   * Implementations MAY define their own sets of CA certificates. Such definitions
+   * MUST use an implementation-specific, prefixed name, such as
+   * `mycompany.com/my-custom-ca-certificates`.
    *
    * Support: Implementation-specific
    *
    * @schema BackendTlsPolicySpecValidation#wellKnownCACertificates
    */
-  readonly wellKnownCaCertificates?: BackendTlsPolicySpecValidationWellKnownCaCertificates;
+  readonly wellKnownCaCertificates?: string;
 }
 
 /**
@@ -434,26 +506,6 @@ export function toJson_BackendTlsPolicySpecValidationSubjectAltNames(obj: Backen
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * WellKnownCACertificates specifies whether system CA certificates may be used in
- * the TLS handshake between the gateway and backend pod.
- *
- * If WellKnownCACertificates is unspecified or empty (""), then CACertificateRefs
- * must be specified with at least one entry for a valid configuration. Only one of
- * CACertificateRefs or WellKnownCACertificates may be specified, not both. If an
- * implementation does not support the WellKnownCACertificates field or the value
- * supplied is not supported, the Status Conditions on the Policy MUST be
- * updated to include an Accepted: False Condition with Reason: Invalid.
- *
- * Support: Implementation-specific
- *
- * @schema BackendTlsPolicySpecValidationWellKnownCaCertificates
- */
-export enum BackendTlsPolicySpecValidationWellKnownCaCertificates {
-  /** System */
-  SYSTEM = "System",
-}
-
-/**
  * Type determines the format of the Subject Alternative Name. Always required.
  *
  * Support: Core
@@ -469,8 +521,527 @@ export enum BackendTlsPolicySpecValidationSubjectAltNamesType {
 
 
 /**
+ * BackendTLSPolicy provides a way to configure how a Gateway
+connects to a Backend via TLS.
+ *
+ * @schema BackendTLSPolicyV1Alpha3
+ */
+export class BackendTlsPolicyV1Alpha3 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "BackendTLSPolicyV1Alpha3"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1alpha3',
+    kind: 'BackendTLSPolicy',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "BackendTLSPolicyV1Alpha3".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: BackendTlsPolicyV1Alpha3Props): any {
+    return {
+      ...BackendTlsPolicyV1Alpha3.GVK,
+      ...toJson_BackendTlsPolicyV1Alpha3Props(props),
+    };
+  }
+
+  /**
+   * Defines a "BackendTLSPolicyV1Alpha3" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: BackendTlsPolicyV1Alpha3Props) {
+    super(scope, id, {
+      ...BackendTlsPolicyV1Alpha3.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...BackendTlsPolicyV1Alpha3.GVK,
+      ...toJson_BackendTlsPolicyV1Alpha3Props(resolved),
+    };
+  }
+}
+
+/**
+ * BackendTLSPolicy provides a way to configure how a Gateway
+ * connects to a Backend via TLS.
+ *
+ * @schema BackendTLSPolicyV1Alpha3
+ */
+export interface BackendTlsPolicyV1Alpha3Props {
+  /**
+   * @schema BackendTLSPolicyV1Alpha3#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of BackendTLSPolicy.
+   *
+   * @schema BackendTLSPolicyV1Alpha3#spec
+   */
+  readonly spec: BackendTlsPolicyV1Alpha3Spec;
+}
+
+/**
+ * Converts an object of type 'BackendTlsPolicyV1Alpha3Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTlsPolicyV1Alpha3Props(obj: BackendTlsPolicyV1Alpha3Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_BackendTlsPolicyV1Alpha3Spec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of BackendTLSPolicy.
+ *
+ * @schema BackendTlsPolicyV1Alpha3Spec
+ */
+export interface BackendTlsPolicyV1Alpha3Spec {
+  /**
+   * Options are a list of key/value pairs to enable extended TLS
+   * configuration for each implementation. For example, configuring the
+   * minimum TLS version or supported cipher suites.
+   *
+   * A set of common keys MAY be defined by the API in the future. To avoid
+   * any ambiguity, implementation-specific definitions MUST use
+   * domain-prefixed names, such as `example.com/my-custom-option`.
+   * Un-prefixed names are reserved for key names defined by Gateway API.
+   *
+   * Support: Implementation-specific
+   *
+   * @schema BackendTlsPolicyV1Alpha3Spec#options
+   */
+  readonly options?: { [key: string]: string };
+
+  /**
+   * TargetRefs identifies an API object to apply the policy to.
+   * Note that this config applies to the entire referenced resource
+   * by default, but this default may change in the future to provide
+   * a more granular application of the policy.
+   *
+   * TargetRefs must be _distinct_. This means either that:
+   *
+   * * They select different targets. If this is the case, then targetRef
+   * entries are distinct. In terms of fields, this means that the
+   * multi-part key defined by `group`, `kind`, and `name` must
+   * be unique across all targetRef entries in the BackendTLSPolicy.
+   * * They select different sectionNames in the same target.
+   *
+   * When more than one BackendTLSPolicy selects the same target and
+   * sectionName, implementations MUST determine precedence using the
+   * following criteria, continuing on ties:
+   *
+   * * The older policy by creation timestamp takes precedence. For
+   * example, a policy with a creation timestamp of "2021-07-15
+   * 01:02:03" MUST be given precedence over a policy with a
+   * creation timestamp of "2021-07-15 01:02:04".
+   * * The policy appearing first in alphabetical order by {namespace}/{name}.
+   * For example, a policy named `foo/bar` is given precedence over a
+   * policy named `foo/baz`.
+   *
+   * For any BackendTLSPolicy that does not take precedence, the
+   * implementation MUST ensure the `Accepted` Condition is set to
+   * `status: False`, with Reason `Conflicted`.
+   *
+   * Implementations SHOULD NOT support more than one targetRef at this
+   * time. Although the API technically allows for this, the current guidance
+   * for conflict resolution and status handling is lacking. Until that can be
+   * clarified in a future release, the safest approach is to support a single
+   * targetRef.
+   *
+   * Support Levels:
+   *
+   * * Extended: Kubernetes Service referenced by backendRefs used on a Route.
+   * - HTTPRoute, GRPCRoute, TLSRoute with termination
+   * - Filters that needs a backend of type Service, like Mirror and External Authorization
+   *
+   * * Implementation-Specific: Implementations MAY use BackendTLSPolicy for:
+   * - Services not referenced by any Route (e.g., infrastructure services)
+   * - Service mesh workload-to-service communication
+   * - Other resource types beyond Service
+   *
+   * Implementations SHOULD aim to ensure that BackendTLSPolicy behavior is consistent,
+   * even outside of the extended HTTPRoute -(backendRef) -> Service path.
+   * They SHOULD clearly document how BackendTLSPolicy is interpreted in these
+   * scenarios, including:
+   * - Which resources beyond Service are supported
+   * - How the policy is discovered and applied
+   * - Any implementation-specific semantics or restrictions
+   *
+   * Note that this config applies to the entire referenced resource
+   * by default, but this default may change in the future to provide
+   * a more granular application of the policy.
+   *
+   * @schema BackendTlsPolicyV1Alpha3Spec#targetRefs
+   */
+  readonly targetRefs: BackendTlsPolicyV1Alpha3SpecTargetRefs[];
+
+  /**
+   * Validation contains backend TLS validation configuration.
+   *
+   * @schema BackendTlsPolicyV1Alpha3Spec#validation
+   */
+  readonly validation: BackendTlsPolicyV1Alpha3SpecValidation;
+}
+
+/**
+ * Converts an object of type 'BackendTlsPolicyV1Alpha3Spec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTlsPolicyV1Alpha3Spec(obj: BackendTlsPolicyV1Alpha3Spec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'options': ((obj.options) === undefined) ? undefined : (Object.entries(obj.options).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'targetRefs': obj.targetRefs?.map(y => toJson_BackendTlsPolicyV1Alpha3SpecTargetRefs(y)),
+    'validation': toJson_BackendTlsPolicyV1Alpha3SpecValidation(obj.validation),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LocalPolicyTargetReferenceWithSectionName identifies an API object to apply a
+ * direct policy to. This should be used as part of Policy resources that can
+ * target single resources. For more information on how this policy attachment
+ * mode works, and a sample Policy resource, refer to the policy attachment
+ * documentation for Gateway API.
+ *
+ * Note: This should only be used for direct policy attachment when references
+ * to SectionName are actually needed. In all other cases,
+ * LocalPolicyTargetReference should be used.
+ *
+ * @schema BackendTlsPolicyV1Alpha3SpecTargetRefs
+ */
+export interface BackendTlsPolicyV1Alpha3SpecTargetRefs {
+  /**
+   * Group is the group of the target resource.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecTargetRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the target resource.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecTargetRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the target resource.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecTargetRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * SectionName is the name of a section within the target resource. When
+   * unspecified, this targetRef targets the entire resource. In the following
+   * resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name
+   * * HTTPRoute: HTTPRouteRule name
+   * * Service: Port name
+   *
+   * If a SectionName is specified, but does not exist on the targeted object,
+   * the Policy must fail to attach, and the policy implementation should record
+   * a `ResolvedRefs` or similar Condition in the Policy's status.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecTargetRefs#sectionName
+   */
+  readonly sectionName?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTlsPolicyV1Alpha3SpecTargetRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTlsPolicyV1Alpha3SpecTargetRefs(obj: BackendTlsPolicyV1Alpha3SpecTargetRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'sectionName': obj.sectionName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Validation contains backend TLS validation configuration.
+ *
+ * @schema BackendTlsPolicyV1Alpha3SpecValidation
+ */
+export interface BackendTlsPolicyV1Alpha3SpecValidation {
+  /**
+   * CACertificateRefs contains one or more references to Kubernetes objects that
+   * contain a PEM-encoded TLS CA certificate bundle, which is used to
+   * validate a TLS handshake between the Gateway and backend Pod.
+   *
+   * If CACertificateRefs is empty or unspecified, then WellKnownCACertificates must be
+   * specified. Only one of CACertificateRefs or WellKnownCACertificates may be specified,
+   * not both. If CACertificateRefs is empty or unspecified, the configuration for
+   * WellKnownCACertificates MUST be honored instead if supported by the implementation.
+   *
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+   * does not exist) or is misconfigured (e.g., a ConfigMap does not contain a key
+   * named `ca.crt`). In this case, the Reason must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this case, the Reason
+   * must be set to `InvalidKind` and the Message of the Condition must explain which
+   * kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace. This may change in future
+   * spec updates.
+   *
+   * Implementations MAY choose to perform further validation of the certificate
+   * content (e.g., checking expiry or enforcing specific formats). In such cases,
+   * an implementation-specific Reason and Message must be set for the invalid reference.
+   *
+   * In all cases, the implementation MUST ensure the `ResolvedRefs` Condition on
+   * the BackendTLSPolicy is set to `status: False`, with a Reason and Message
+   * that indicate the cause of the error. Connections using an invalid
+   * CACertificateRef MUST fail, and the client MUST receive an HTTP 5xx error
+   * response. If ALL CACertificateRefs are invalid, the implementation MUST also
+   * ensure the `Accepted` Condition on the BackendTLSPolicy is set to
+   * `status: False`, with a Reason `NoValidCACertificate`.
+   *
+   * A single CACertificateRef to a Kubernetes ConfigMap kind has "Core" support.
+   * Implementations MAY choose to support attaching multiple certificates to
+   * a backend, but this behavior is implementation-specific.
+   *
+   * Support: Core - An optional single reference to a Kubernetes ConfigMap,
+   * with the CA certificate in a key named `ca.crt`.
+   *
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidation#caCertificateRefs
+   */
+  readonly caCertificateRefs?: BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs[];
+
+  /**
+   * Hostname is used for two purposes in the connection between Gateways and
+   * backends:
+   *
+   * 1. Hostname MUST be used as the SNI to connect to the backend (RFC 6066).
+   * 2. Hostname MUST be used for authentication and MUST match the certificate
+   * served by the matching backend, unless SubjectAltNames is specified.
+   * 3. If SubjectAltNames are specified, Hostname can be used for certificate selection
+   * but MUST NOT be used for authentication. If you want to use the value
+   * of the Hostname field for authentication, you MUST add it to the SubjectAltNames list.
+   *
+   * Support: Core
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidation#hostname
+   */
+  readonly hostname: string;
+
+  /**
+   * SubjectAltNames contains one or more Subject Alternative Names.
+   * When specified the certificate served from the backend MUST
+   * have at least one Subject Alternate Name matching one of the specified SubjectAltNames.
+   *
+   * Support: Extended
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidation#subjectAltNames
+   */
+  readonly subjectAltNames?: BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames[];
+
+  /**
+   * WellKnownCACertificates specifies whether a well-known set of CA certificates
+   * may be used in the TLS handshake between the gateway and backend pod.
+   *
+   * If WellKnownCACertificates is unspecified or empty (""), then CACertificateRefs
+   * must be specified with at least one entry for a valid configuration. Only one of
+   * CACertificateRefs or WellKnownCACertificates may be specified, not both.
+   * If an implementation does not support the WellKnownCACertificates field, or
+   * the supplied value is not recognized, the implementation MUST ensure the
+   * `Accepted` Condition on the BackendTLSPolicy is set to `status: False`, with
+   * a Reason `Invalid`.
+   *
+   * Valid values include:
+   * * "System" - indicates that well-known system CA certificates should be used.
+   *
+   * Implementations MAY define their own sets of CA certificates. Such definitions
+   * MUST use an implementation-specific, prefixed name, such as
+   * `mycompany.com/my-custom-ca-certificates`.
+   *
+   * Support: Implementation-specific
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidation#wellKnownCACertificates
+   */
+  readonly wellKnownCaCertificates?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTlsPolicyV1Alpha3SpecValidation' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTlsPolicyV1Alpha3SpecValidation(obj: BackendTlsPolicyV1Alpha3SpecValidation | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs(y)),
+    'hostname': obj.hostname,
+    'subjectAltNames': obj.subjectAltNames?.map(y => toJson_BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames(y)),
+    'wellKnownCACertificates': obj.wellKnownCaCertificates,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LocalObjectReference identifies an API object within the namespace of the
+ * referrer.
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs
+ */
+export interface BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the referent. For example "HTTPRoute" or "Service".
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs(obj: BackendTlsPolicyV1Alpha3SpecValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SubjectAltName represents Subject Alternative Name.
+ *
+ * @schema BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames
+ */
+export interface BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames {
+  /**
+   * Hostname contains Subject Alternative Name specified in DNS name format.
+   * Required when Type is set to Hostname, ignored otherwise.
+   *
+   * Support: Core
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames#hostname
+   */
+  readonly hostname?: string;
+
+  /**
+   * Type determines the format of the Subject Alternative Name. Always required.
+   *
+   * Support: Core
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames#type
+   */
+  readonly type: BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNamesType;
+
+  /**
+   * URI contains Subject Alternative Name specified in a full URI format.
+   * It MUST include both a scheme (e.g., "http" or "ftp") and a scheme-specific-part.
+   * Common values include SPIFFE IDs like "spiffe://mycluster.example.com/ns/myns/sa/svc1sa".
+   * Required when Type is set to URI, ignored otherwise.
+   *
+   * Support: Core
+   *
+   * @schema BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames#uri
+   */
+  readonly uri?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames(obj: BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNames | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'hostname': obj.hostname,
+    'type': obj.type,
+    'uri': obj.uri,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type determines the format of the Subject Alternative Name. Always required.
+ *
+ * Support: Core
+ *
+ * @schema BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNamesType
+ */
+export enum BackendTlsPolicyV1Alpha3SpecValidationSubjectAltNamesType {
+  /** Hostname */
+  HOSTNAME = "Hostname",
+  /** URI */
+  URI = "URI",
+}
+
+
+/**
  * Gateway represents an instance of a service-traffic handling infrastructure
 by binding Listeners to a set of IP addresses.
+A Gateway name SHOULD be compliant with RFC 1035, consisting of a maximum of 63 lower case alphanumeric
+characters or hyphens ('-'), and MUST start and end with an alphanumeric character.
  *
  * @schema Gateway
  */
@@ -526,6 +1097,8 @@ export class Gateway extends ApiObject {
 /**
  * Gateway represents an instance of a service-traffic handling infrastructure
  * by binding Listeners to a set of IP addresses.
+ * A Gateway name SHOULD be compliant with RFC 1035, consisting of a maximum of 63 lower case alphanumeric
+ * characters or hyphens ('-'), and MUST start and end with an alphanumeric character.
  *
  * @schema Gateway
  */
@@ -568,7 +1141,7 @@ export interface GatewaySpec {
    * Addresses requested for this Gateway. This is optional and behavior can
    * depend on the implementation. If a value is set in the spec and the
    * requested address is invalid or unavailable, the implementation MUST
-   * indicate this in the associated entry in GatewayStatus.Addresses.
+   * indicate this in an associated entry in GatewayStatus.Conditions.
    *
    * The Addresses field represents a request for the address(es) on the
    * "outside of the Gateway", that traffic bound for this Gateway will use.
@@ -592,21 +1165,34 @@ export interface GatewaySpec {
 
   /**
    * AllowedListeners defines which ListenerSets can be attached to this Gateway.
-   * While this feature is experimental, the default value is to allow no ListenerSets.
+   * The default value is to allow no ListenerSets.
    *
    * @schema GatewaySpec#allowedListeners
    */
   readonly allowedListeners?: GatewaySpecAllowedListeners;
 
   /**
-   * BackendTLS configures TLS settings for when this Gateway is connecting to
-   * backends with TLS.
+   * DefaultScope, when set, configures the Gateway as a default Gateway,
+   * meaning it will dynamically and implicitly have Routes (e.g. HTTPRoute)
+   * attached to it, according to the scope configured here.
    *
-   * Support: Core
+   * If unset (the default) or set to None, the Gateway will not act as a
+   * default Gateway; if set, the Gateway will claim any Route with a
+   * matching scope set in its UseDefaultGateway field, subject to the usual
+   * rules about which routes the Gateway can attach to.
    *
-   * @schema GatewaySpec#backendTLS
+   * Think carefully before using this functionality! While the normal rules
+   * about which Route can apply are still enforced, it is simply easier for
+   * the wrong Route to be accidentally attached to this Gateway in this
+   * configuration. If the Gateway operator is not also the operator in
+   * control of the scope (e.g. namespace) with tight controls and checks on
+   * what kind of workloads and Routes get added in that scope, we strongly
+   * recommend not using this just because it seems convenient, and instead
+   * stick to direct Route attachment.
+   *
+   * @schema GatewaySpec#defaultScope
    */
-  readonly backendTls?: GatewaySpecBackendTls;
+  readonly defaultScope?: GatewaySpecDefaultScope;
 
   /**
    * GatewayClassName used for this Gateway. This is the name of a
@@ -755,6 +1341,12 @@ export interface GatewaySpec {
    * request to "foo.example.com" SHOULD only be routed using routes attached
    * to the "foo.example.com" Listener (and not the "*.example.com" Listener).
    *
+   * If traffic to a Gateway does not match any Listener's hostname (or if
+   * the Listener does not specify a hostname and the request does not match
+   * any attached Route), the request MUST be rejected. The specific mechanism
+   * for rejection depends on the protocol: HTTP returns a 404 status code,
+   * while gRPC returns an Unimplemented status code.
+   *
    * This concept is known as "Listener Isolation", and it is an Extended feature
    * of Gateway API. Implementations that do not support Listener Isolation MUST
    * clearly document this, and MUST NOT claim support for the
@@ -791,6 +1383,15 @@ export interface GatewaySpec {
    * @schema GatewaySpec#listeners
    */
   readonly listeners: GatewaySpecListeners[];
+
+  /**
+   * TLS specifies frontend and backend tls configuration for entire gateway.
+   *
+   * Support: Extended
+   *
+   * @schema GatewaySpec#tls
+   */
+  readonly tls?: GatewaySpecTls;
 }
 
 /**
@@ -802,10 +1403,11 @@ export function toJson_GatewaySpec(obj: GatewaySpec | undefined): Record<string,
   const result = {
     'addresses': obj.addresses?.map(y => toJson_GatewaySpecAddresses(y)),
     'allowedListeners': toJson_GatewaySpecAllowedListeners(obj.allowedListeners),
-    'backendTLS': toJson_GatewaySpecBackendTls(obj.backendTls),
+    'defaultScope': obj.defaultScope,
     'gatewayClassName': obj.gatewayClassName,
     'infrastructure': toJson_GatewaySpecInfrastructure(obj.infrastructure),
     'listeners': obj.listeners?.map(y => toJson_GatewaySpecListeners(y)),
+    'tls': toJson_GatewaySpecTls(obj.tls),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -856,14 +1458,14 @@ export function toJson_GatewaySpecAddresses(obj: GatewaySpecAddresses | undefine
 
 /**
  * AllowedListeners defines which ListenerSets can be attached to this Gateway.
- * While this feature is experimental, the default value is to allow no ListenerSets.
+ * The default value is to allow no ListenerSets.
  *
  * @schema GatewaySpecAllowedListeners
  */
 export interface GatewaySpecAllowedListeners {
   /**
    * Namespaces defines which namespaces ListenerSets can be attached to this Gateway.
-   * While this feature is experimental, the default value is to allow no ListenerSets.
+   * The default value is to allow no ListenerSets.
    *
    * @schema GatewaySpecAllowedListeners#namespaces
    */
@@ -885,49 +1487,32 @@ export function toJson_GatewaySpecAllowedListeners(obj: GatewaySpecAllowedListen
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * BackendTLS configures TLS settings for when this Gateway is connecting to
- * backends with TLS.
+ * DefaultScope, when set, configures the Gateway as a default Gateway,
+ * meaning it will dynamically and implicitly have Routes (e.g. HTTPRoute)
+ * attached to it, according to the scope configured here.
  *
- * Support: Core
+ * If unset (the default) or set to None, the Gateway will not act as a
+ * default Gateway; if set, the Gateway will claim any Route with a
+ * matching scope set in its UseDefaultGateway field, subject to the usual
+ * rules about which routes the Gateway can attach to.
  *
- * @schema GatewaySpecBackendTls
+ * Think carefully before using this functionality! While the normal rules
+ * about which Route can apply are still enforced, it is simply easier for
+ * the wrong Route to be accidentally attached to this Gateway in this
+ * configuration. If the Gateway operator is not also the operator in
+ * control of the scope (e.g. namespace) with tight controls and checks on
+ * what kind of workloads and Routes get added in that scope, we strongly
+ * recommend not using this just because it seems convenient, and instead
+ * stick to direct Route attachment.
+ *
+ * @schema GatewaySpecDefaultScope
  */
-export interface GatewaySpecBackendTls {
-  /**
-   * ClientCertificateRef is a reference to an object that contains a Client
-   * Certificate and the associated private key.
-   *
-   * References to a resource in different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
-   *
-   * ClientCertificateRef can reference to standard Kubernetes resources, i.e.
-   * Secret, or implementation-specific custom resources.
-   *
-   * This setting can be overridden on the service level by use of BackendTLSPolicy.
-   *
-   * Support: Core
-   *
-   * @schema GatewaySpecBackendTls#clientCertificateRef
-   */
-  readonly clientCertificateRef?: GatewaySpecBackendTlsClientCertificateRef;
+export enum GatewaySpecDefaultScope {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
 }
-
-/**
- * Converts an object of type 'GatewaySpecBackendTls' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewaySpecBackendTls(obj: GatewaySpecBackendTls | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'clientCertificateRef': toJson_GatewaySpecBackendTlsClientCertificateRef(obj.clientCertificateRef),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Infrastructure defines infrastructure level attributes about this Gateway instance.
@@ -1076,7 +1661,7 @@ export interface GatewaySpecListeners {
    * the Gateway SHOULD return a 421.
    * * If the current Listener (selected by SNI matching during ClientHello)
    * does not match the Host:
-   * * If another Listener does match the Host the Gateway SHOULD return a
+   * * If another Listener does match the Host, the Gateway SHOULD return a
    * 421.
    * * If no other Listener matches the Host, the Gateway MUST return a
    * 404.
@@ -1131,7 +1716,7 @@ export interface GatewaySpecListeners {
    * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
    * if the Protocol field is "HTTP", "TCP", or "UDP".
    *
-   * The association of SNIs to Certificate defined in GatewayTLSConfig is
+   * The association of SNIs to Certificate defined in ListenerTLSConfig is
    * defined based on the Hostname field for this listener.
    *
    * The GatewayClass MUST use the longest matching SNI out of all
@@ -1164,8 +1749,54 @@ export function toJson_GatewaySpecListeners(obj: GatewaySpecListeners | undefine
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * TLS specifies frontend and backend tls configuration for entire gateway.
+ *
+ * Support: Extended
+ *
+ * @schema GatewaySpecTls
+ */
+export interface GatewaySpecTls {
+  /**
+   * Backend describes TLS configuration for gateway when connecting
+   * to backends.
+   *
+   * Note that this contains only details for the Gateway as a TLS client,
+   * and does _not_ imply behavior about how to choose which backend should
+   * get a TLS connection. That is determined by the presence of a BackendTLSPolicy.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTls#backend
+   */
+  readonly backend?: GatewaySpecTlsBackend;
+
+  /**
+   * Frontend describes TLS config when client connects to Gateway.
+   * Support: Core
+   *
+   * @schema GatewaySpecTls#frontend
+   */
+  readonly frontend?: GatewaySpecTlsFrontend;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTls(obj: GatewaySpecTls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backend': toJson_GatewaySpecTlsBackend(obj.backend),
+    'frontend': toJson_GatewaySpecTlsFrontend(obj.frontend),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Namespaces defines which namespaces ListenerSets can be attached to this Gateway.
- * While this feature is experimental, the default value is to allow no ListenerSets.
+ * The default value is to allow no ListenerSets.
  *
  * @schema GatewaySpecAllowedListenersNamespaces
  */
@@ -1179,7 +1810,7 @@ export interface GatewaySpecAllowedListenersNamespaces {
    * * All: ListenerSets in all namespaces may be attached to this Gateway.
    * * None: Only listeners defined in the Gateway's spec are allowed
    *
-   * While this feature is experimental, the default value None
+   * The default value None
    *
    * @schema GatewaySpecAllowedListenersNamespaces#from
    */
@@ -1204,81 +1835,6 @@ export function toJson_GatewaySpecAllowedListenersNamespaces(obj: GatewaySpecAll
   const result = {
     'from': obj.from,
     'selector': toJson_GatewaySpecAllowedListenersNamespacesSelector(obj.selector),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * ClientCertificateRef is a reference to an object that contains a Client
- * Certificate and the associated private key.
- *
- * References to a resource in different namespace are invalid UNLESS there
- * is a ReferenceGrant in the target namespace that allows the certificate
- * to be attached. If a ReferenceGrant does not allow this reference, the
- * "ResolvedRefs" condition MUST be set to False for this listener with the
- * "RefNotPermitted" reason.
- *
- * ClientCertificateRef can reference to standard Kubernetes resources, i.e.
- * Secret, or implementation-specific custom resources.
- *
- * This setting can be overridden on the service level by use of BackendTLSPolicy.
- *
- * Support: Core
- *
- * @schema GatewaySpecBackendTlsClientCertificateRef
- */
-export interface GatewaySpecBackendTlsClientCertificateRef {
-  /**
-   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
-   * When unspecified or empty string, core API group is inferred.
-   *
-   * @schema GatewaySpecBackendTlsClientCertificateRef#group
-   */
-  readonly group?: string;
-
-  /**
-   * Kind is kind of the referent. For example "Secret".
-   *
-   * @schema GatewaySpecBackendTlsClientCertificateRef#kind
-   */
-  readonly kind?: string;
-
-  /**
-   * Name is the name of the referent.
-   *
-   * @schema GatewaySpecBackendTlsClientCertificateRef#name
-   */
-  readonly name: string;
-
-  /**
-   * Namespace is the namespace of the referenced object. When unspecified, the local
-   * namespace is inferred.
-   *
-   * Note that when a namespace different than the local namespace is specified,
-   * a ReferenceGrant object is required in the referent namespace to allow that
-   * namespace's owner to accept the reference. See the ReferenceGrant
-   * documentation for details.
-   *
-   * Support: Core
-   *
-   * @schema GatewaySpecBackendTlsClientCertificateRef#namespace
-   */
-  readonly namespace?: string;
-}
-
-/**
- * Converts an object of type 'GatewaySpecBackendTlsClientCertificateRef' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewaySpecBackendTlsClientCertificateRef(obj: GatewaySpecBackendTlsClientCertificateRef | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1421,7 +1977,7 @@ export function toJson_GatewaySpecListenersAllowedRoutes(obj: GatewaySpecListene
  * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
  * if the Protocol field is "HTTP", "TCP", or "UDP".
  *
- * The association of SNIs to Certificate defined in GatewayTLSConfig is
+ * The association of SNIs to Certificate defined in ListenerTLSConfig is
  * defined based on the Hostname field for this listener.
  *
  * The GatewayClass MUST use the longest matching SNI out of all
@@ -1461,19 +2017,6 @@ export interface GatewaySpecListenersTls {
    * @schema GatewaySpecListenersTls#certificateRefs
    */
   readonly certificateRefs?: GatewaySpecListenersTlsCertificateRefs[];
-
-  /**
-   * FrontendValidation holds configuration information for validating the frontend (client).
-   * Setting this field will require clients to send a client certificate
-   * required for validation during the TLS handshake. In browsers this may result in a dialog appearing
-   * that requests a user to specify the client certificate.
-   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
-   *
-   * Support: Extended
-   *
-   * @schema GatewaySpecListenersTls#frontendValidation
-   */
-  readonly frontendValidation?: GatewaySpecListenersTlsFrontendValidation;
 
   /**
    * Mode defines the TLS behavior for the TLS session initiated by the client.
@@ -1519,9 +2062,113 @@ export function toJson_GatewaySpecListenersTls(obj: GatewaySpecListenersTls | un
   if (obj === undefined) { return undefined; }
   const result = {
     'certificateRefs': obj.certificateRefs?.map(y => toJson_GatewaySpecListenersTlsCertificateRefs(y)),
-    'frontendValidation': toJson_GatewaySpecListenersTlsFrontendValidation(obj.frontendValidation),
     'mode': obj.mode,
     'options': ((obj.options) === undefined) ? undefined : (Object.entries(obj.options).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Backend describes TLS configuration for gateway when connecting
+ * to backends.
+ *
+ * Note that this contains only details for the Gateway as a TLS client,
+ * and does _not_ imply behavior about how to choose which backend should
+ * get a TLS connection. That is determined by the presence of a BackendTLSPolicy.
+ *
+ * Support: Core
+ *
+ * @schema GatewaySpecTlsBackend
+ */
+export interface GatewaySpecTlsBackend {
+  /**
+   * ClientCertificateRef references an object that contains a client certificate
+   * and its associated private key. It can reference standard Kubernetes resources,
+   * i.e., Secret, or implementation-specific custom resources.
+   *
+   * A ClientCertificateRef is considered invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+   * does not exist) or is misconfigured (e.g., a Secret does not contain the keys
+   * named `tls.crt` and `tls.key`). In this case, the `ResolvedRefs` condition
+   * on the Gateway MUST be set to False with the Reason `InvalidClientCertificateRef`
+   * and the Message of the Condition MUST indicate why the reference is invalid.
+   *
+   * * It refers to a resource in another namespace UNLESS there is a ReferenceGrant
+   * in the target namespace that allows the certificate to be attached.
+   * If a ReferenceGrant does not allow this reference, the `ResolvedRefs` condition
+   * on the Gateway MUST be set to False with the Reason `RefNotPermitted`.
+   *
+   * Implementations MAY choose to perform further validation of the certificate
+   * content (e.g., checking expiry or enforcing specific formats). In such cases,
+   * an implementation-specific Reason and Message MUST be set.
+   *
+   * Support: Core - Reference to a Kubernetes TLS Secret (with the type `kubernetes.io/tls`).
+   * Support: Implementation-specific - Other resource kinds or Secrets with a
+   * different type (e.g., `Opaque`).
+   *
+   * @schema GatewaySpecTlsBackend#clientCertificateRef
+   */
+  readonly clientCertificateRef?: GatewaySpecTlsBackendClientCertificateRef;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsBackend' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsBackend(obj: GatewaySpecTlsBackend | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'clientCertificateRef': toJson_GatewaySpecTlsBackendClientCertificateRef(obj.clientCertificateRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Frontend describes TLS config when client connects to Gateway.
+ * Support: Core
+ *
+ * @schema GatewaySpecTlsFrontend
+ */
+export interface GatewaySpecTlsFrontend {
+  /**
+   * Default specifies the default client certificate validation configuration
+   * for all Listeners handling HTTPS traffic, unless a per-port configuration
+   * is defined.
+   *
+   * support: Core
+   *
+   * @schema GatewaySpecTlsFrontend#default
+   */
+  readonly default: GatewaySpecTlsFrontendDefault;
+
+  /**
+   * PerPort specifies tls configuration assigned per port.
+   * Per port configuration is optional. Once set this configuration overrides
+   * the default configuration for all Listeners handling HTTPS traffic
+   * that match this port.
+   * Each override port requires a unique TLS configuration.
+   *
+   * support: Core
+   *
+   * @schema GatewaySpecTlsFrontend#perPort
+   */
+  readonly perPort?: GatewaySpecTlsFrontendPerPort[];
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontend' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontend(obj: GatewaySpecTlsFrontend | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'default': toJson_GatewaySpecTlsFrontendDefault(obj.default),
+    'perPort': obj.perPort?.map(y => toJson_GatewaySpecTlsFrontendPerPort(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1537,7 +2184,7 @@ export function toJson_GatewaySpecListenersTls(obj: GatewaySpecListenersTls | un
  * * All: ListenerSets in all namespaces may be attached to this Gateway.
  * * None: Only listeners defined in the Gateway's spec are allowed
  *
- * While this feature is experimental, the default value None
+ * The default value None
  *
  * @schema GatewaySpecAllowedListenersNamespacesFrom
  */
@@ -1749,60 +2396,6 @@ export function toJson_GatewaySpecListenersTlsCertificateRefs(obj: GatewaySpecLi
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * FrontendValidation holds configuration information for validating the frontend (client).
- * Setting this field will require clients to send a client certificate
- * required for validation during the TLS handshake. In browsers this may result in a dialog appearing
- * that requests a user to specify the client certificate.
- * The maximum depth of a certificate chain accepted in verification is Implementation specific.
- *
- * Support: Extended
- *
- * @schema GatewaySpecListenersTlsFrontendValidation
- */
-export interface GatewaySpecListenersTlsFrontendValidation {
-  /**
-   * CACertificateRefs contains one or more references to
-   * Kubernetes objects that contain TLS certificates of
-   * the Certificate Authorities that can be used
-   * as a trust anchor to validate the certificates presented by the client.
-   *
-   * A single CA certificate reference to a Kubernetes ConfigMap
-   * has "Core" support.
-   * Implementations MAY choose to support attaching multiple CA certificates to
-   * a Listener, but this behavior is implementation-specific.
-   *
-   * Support: Core - A single reference to a Kubernetes ConfigMap
-   * with the CA certificate in a key named `ca.crt`.
-   *
-   * Support: Implementation-specific (More than one reference, or other kinds
-   * of resources).
-   *
-   * References to a resource in a different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
-   *
-   * @schema GatewaySpecListenersTlsFrontendValidation#caCertificateRefs
-   */
-  readonly caCertificateRefs?: GatewaySpecListenersTlsFrontendValidationCaCertificateRefs[];
-}
-
-/**
- * Converts an object of type 'GatewaySpecListenersTlsFrontendValidation' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewaySpecListenersTlsFrontendValidation(obj: GatewaySpecListenersTlsFrontendValidation | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_GatewaySpecListenersTlsFrontendValidationCaCertificateRefs(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
  * Mode defines the TLS behavior for the TLS session initiated by the client.
  * There are two possible modes:
  *
@@ -1825,6 +2418,169 @@ export enum GatewaySpecListenersTlsMode {
   /** Passthrough */
   PASSTHROUGH = "Passthrough",
 }
+
+/**
+ * ClientCertificateRef references an object that contains a client certificate
+ * and its associated private key. It can reference standard Kubernetes resources,
+ * i.e., Secret, or implementation-specific custom resources.
+ *
+ * A ClientCertificateRef is considered invalid if:
+ *
+ * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+ * does not exist) or is misconfigured (e.g., a Secret does not contain the keys
+ * named `tls.crt` and `tls.key`). In this case, the `ResolvedRefs` condition
+ * on the Gateway MUST be set to False with the Reason `InvalidClientCertificateRef`
+ * and the Message of the Condition MUST indicate why the reference is invalid.
+ *
+ * * It refers to a resource in another namespace UNLESS there is a ReferenceGrant
+ * in the target namespace that allows the certificate to be attached.
+ * If a ReferenceGrant does not allow this reference, the `ResolvedRefs` condition
+ * on the Gateway MUST be set to False with the Reason `RefNotPermitted`.
+ *
+ * Implementations MAY choose to perform further validation of the certificate
+ * content (e.g., checking expiry or enforcing specific formats). In such cases,
+ * an implementation-specific Reason and Message MUST be set.
+ *
+ * Support: Core - Reference to a Kubernetes TLS Secret (with the type `kubernetes.io/tls`).
+ * Support: Implementation-specific - Other resource kinds or Secrets with a
+ * different type (e.g., `Opaque`).
+ *
+ * @schema GatewaySpecTlsBackendClientCertificateRef
+ */
+export interface GatewaySpecTlsBackendClientCertificateRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema GatewaySpecTlsBackendClientCertificateRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent. For example "Secret".
+   *
+   * @schema GatewaySpecTlsBackendClientCertificateRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema GatewaySpecTlsBackendClientCertificateRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsBackendClientCertificateRef#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsBackendClientCertificateRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsBackendClientCertificateRef(obj: GatewaySpecTlsBackendClientCertificateRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Default specifies the default client certificate validation configuration
+ * for all Listeners handling HTTPS traffic, unless a per-port configuration
+ * is defined.
+ *
+ * support: Core
+ *
+ * @schema GatewaySpecTlsFrontendDefault
+ */
+export interface GatewaySpecTlsFrontendDefault {
+  /**
+   * Validation holds configuration information for validating the frontend (client).
+   * Setting this field will result in mutual authentication when connecting to the gateway.
+   * In browsers this may result in a dialog appearing
+   * that requests a user to specify the client certificate.
+   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsFrontendDefault#validation
+   */
+  readonly validation?: GatewaySpecTlsFrontendDefaultValidation;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontendDefault' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontendDefault(obj: GatewaySpecTlsFrontendDefault | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'validation': toJson_GatewaySpecTlsFrontendDefaultValidation(obj.validation),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * @schema GatewaySpecTlsFrontendPerPort
+ */
+export interface GatewaySpecTlsFrontendPerPort {
+  /**
+   * The Port indicates the Port Number to which the TLS configuration will be
+   * applied. This configuration will be applied to all Listeners handling HTTPS
+   * traffic that match this port.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsFrontendPerPort#port
+   */
+  readonly port: number;
+
+  /**
+   * TLS store the configuration that will be applied to all Listeners handling
+   * HTTPS traffic and matching given port.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsFrontendPerPort#tls
+   */
+  readonly tls: GatewaySpecTlsFrontendPerPortTls;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontendPerPort' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontendPerPort(obj: GatewaySpecTlsFrontendPerPort | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
+    'tls': toJson_GatewaySpecTlsFrontendPerPortTls(obj.tls),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -1940,67 +2696,136 @@ export function toJson_GatewaySpecListenersAllowedRoutesNamespacesSelector(obj: 
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ObjectReference identifies an API object including its namespace.
+ * Validation holds configuration information for validating the frontend (client).
+ * Setting this field will result in mutual authentication when connecting to the gateway.
+ * In browsers this may result in a dialog appearing
+ * that requests a user to specify the client certificate.
+ * The maximum depth of a certificate chain accepted in verification is Implementation specific.
  *
- * The API object must be valid in the cluster; the Group and Kind must
- * be registered in the cluster for this reference to be valid.
+ * Support: Core
  *
- * References to objects with invalid Group and Kind are not valid, and must
- * be rejected by the implementation, with appropriate Conditions set
- * on the containing object.
- *
- * @schema GatewaySpecListenersTlsFrontendValidationCaCertificateRefs
+ * @schema GatewaySpecTlsFrontendDefaultValidation
  */
-export interface GatewaySpecListenersTlsFrontendValidationCaCertificateRefs {
+export interface GatewaySpecTlsFrontendDefaultValidation {
   /**
-   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
-   * When set to the empty string, core API group is inferred.
+   * CACertificateRefs contains one or more references to Kubernetes
+   * objects that contain a PEM-encoded TLS CA certificate bundle, which
+   * is used as a trust anchor to validate the certificates presented by
+   * the client.
    *
-   * @schema GatewaySpecListenersTlsFrontendValidationCaCertificateRefs#group
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the
+   * referenced resource does not exist) or is misconfigured (e.g., a
+   * ConfigMap does not contain a key named `ca.crt`). In this case, the
+   * Reason on all matching HTTPS listeners must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this
+   * case, the Reason on all matching HTTPS listeners must be set to
+   * `InvalidCACertificateKind` and the Message of the Condition must explain
+   * which kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace UNLESS there is a
+   * ReferenceGrant in the target namespace that allows the CA
+   * certificate to be attached. If a ReferenceGrant does not allow this
+   * reference, the `ResolvedRefs` on all matching HTTPS listeners condition
+   * MUST be set with the Reason `RefNotPermitted`.
+   *
+   * Implementations MAY choose to perform further validation of the
+   * certificate content (e.g., checking expiry or enforcing specific formats).
+   * In such cases, an implementation-specific Reason and Message MUST be set.
+   *
+   * In all cases, the implementation MUST ensure that the `ResolvedRefs`
+   * condition is set to `status: False` on all targeted listeners (i.e.,
+   * listeners serving HTTPS on a matching port). The condition MUST
+   * include a Reason and Message that indicate the cause of the error. If
+   * ALL CACertificateRefs are invalid, the implementation MUST also ensure
+   * the `Accepted` condition on the listener is set to `status: False`, with
+   * the Reason `NoValidCACertificate`.
+   * Implementations MAY choose to support attaching multiple CA certificates
+   * to a listener, but this behavior is implementation-specific.
+   *
+   * Support: Core - A single reference to a Kubernetes ConfigMap, with the
+   * CA certificate in a key named `ca.crt`.
+   *
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
+   *
+   * @schema GatewaySpecTlsFrontendDefaultValidation#caCertificateRefs
    */
-  readonly group: string;
+  readonly caCertificateRefs: GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs[];
 
   /**
-   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   * FrontendValidationMode defines the mode for validating the client certificate.
+   * There are two possible modes:
    *
-   * @schema GatewaySpecListenersTlsFrontendValidationCaCertificateRefs#kind
-   */
-  readonly kind: string;
-
-  /**
-   * Name is the name of the referent.
+   * - AllowValidOnly: In this mode, the gateway will accept connections only if
+   * the client presents a valid certificate. This certificate must successfully
+   * pass validation against the CA certificates specified in `CACertificateRefs`.
+   * - AllowInsecureFallback: In this mode, the gateway will accept connections
+   * even if the client certificate is not presented or fails verification.
    *
-   * @schema GatewaySpecListenersTlsFrontendValidationCaCertificateRefs#name
-   */
-  readonly name: string;
-
-  /**
-   * Namespace is the namespace of the referenced object. When unspecified, the local
-   * namespace is inferred.
+   * This approach delegates client authorization to the backend and introduce
+   * a significant security risk. It should be used in testing environments or
+   * on a temporary basis in non-testing environments.
    *
-   * Note that when a namespace different than the local namespace is specified,
-   * a ReferenceGrant object is required in the referent namespace to allow that
-   * namespace's owner to accept the reference. See the ReferenceGrant
-   * documentation for details.
+   * Defaults to AllowValidOnly.
    *
    * Support: Core
    *
-   * @schema GatewaySpecListenersTlsFrontendValidationCaCertificateRefs#namespace
+   * @default AllowValidOnly.
+   * @schema GatewaySpecTlsFrontendDefaultValidation#mode
    */
-  readonly namespace?: string;
+  readonly mode?: GatewaySpecTlsFrontendDefaultValidationMode;
 }
 
 /**
- * Converts an object of type 'GatewaySpecListenersTlsFrontendValidationCaCertificateRefs' to JSON representation.
+ * Converts an object of type 'GatewaySpecTlsFrontendDefaultValidation' to JSON representation.
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewaySpecListenersTlsFrontendValidationCaCertificateRefs(obj: GatewaySpecListenersTlsFrontendValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+export function toJson_GatewaySpecTlsFrontendDefaultValidation(obj: GatewaySpecTlsFrontendDefaultValidation | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
+    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs(y)),
+    'mode': obj.mode,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLS store the configuration that will be applied to all Listeners handling
+ * HTTPS traffic and matching given port.
+ *
+ * Support: Core
+ *
+ * @schema GatewaySpecTlsFrontendPerPortTls
+ */
+export interface GatewaySpecTlsFrontendPerPortTls {
+  /**
+   * Validation holds configuration information for validating the frontend (client).
+   * Setting this field will result in mutual authentication when connecting to the gateway.
+   * In browsers this may result in a dialog appearing
+   * that requests a user to specify the client certificate.
+   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsFrontendPerPortTls#validation
+   */
+  readonly validation?: GatewaySpecTlsFrontendPerPortTlsValidation;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontendPerPortTls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontendPerPortTls(obj: GatewaySpecTlsFrontendPerPortTls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'validation': toJson_GatewaySpecTlsFrontendPerPortTlsValidation(obj.validation),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2055,6 +2880,298 @@ export function toJson_GatewaySpecListenersAllowedRoutesNamespacesSelectorMatchE
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectReference identifies an API object including its namespace.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs
+ */
+export interface GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When set to the empty string, core API group is inferred.
+   *
+   * @schema GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   *
+   * @schema GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs(obj: GatewaySpecTlsFrontendDefaultValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FrontendValidationMode defines the mode for validating the client certificate.
+ * There are two possible modes:
+ *
+ * - AllowValidOnly: In this mode, the gateway will accept connections only if
+ * the client presents a valid certificate. This certificate must successfully
+ * pass validation against the CA certificates specified in `CACertificateRefs`.
+ * - AllowInsecureFallback: In this mode, the gateway will accept connections
+ * even if the client certificate is not presented or fails verification.
+ *
+ * This approach delegates client authorization to the backend and introduce
+ * a significant security risk. It should be used in testing environments or
+ * on a temporary basis in non-testing environments.
+ *
+ * Defaults to AllowValidOnly.
+ *
+ * Support: Core
+ *
+ * @default AllowValidOnly.
+ * @schema GatewaySpecTlsFrontendDefaultValidationMode
+ */
+export enum GatewaySpecTlsFrontendDefaultValidationMode {
+  /** AllowValidOnly */
+  ALLOW_VALID_ONLY = "AllowValidOnly",
+  /** AllowInsecureFallback */
+  ALLOW_INSECURE_FALLBACK = "AllowInsecureFallback",
+}
+
+/**
+ * Validation holds configuration information for validating the frontend (client).
+ * Setting this field will result in mutual authentication when connecting to the gateway.
+ * In browsers this may result in a dialog appearing
+ * that requests a user to specify the client certificate.
+ * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+ *
+ * Support: Core
+ *
+ * @schema GatewaySpecTlsFrontendPerPortTlsValidation
+ */
+export interface GatewaySpecTlsFrontendPerPortTlsValidation {
+  /**
+   * CACertificateRefs contains one or more references to Kubernetes
+   * objects that contain a PEM-encoded TLS CA certificate bundle, which
+   * is used as a trust anchor to validate the certificates presented by
+   * the client.
+   *
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the
+   * referenced resource does not exist) or is misconfigured (e.g., a
+   * ConfigMap does not contain a key named `ca.crt`). In this case, the
+   * Reason on all matching HTTPS listeners must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this
+   * case, the Reason on all matching HTTPS listeners must be set to
+   * `InvalidCACertificateKind` and the Message of the Condition must explain
+   * which kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace UNLESS there is a
+   * ReferenceGrant in the target namespace that allows the CA
+   * certificate to be attached. If a ReferenceGrant does not allow this
+   * reference, the `ResolvedRefs` on all matching HTTPS listeners condition
+   * MUST be set with the Reason `RefNotPermitted`.
+   *
+   * Implementations MAY choose to perform further validation of the
+   * certificate content (e.g., checking expiry or enforcing specific formats).
+   * In such cases, an implementation-specific Reason and Message MUST be set.
+   *
+   * In all cases, the implementation MUST ensure that the `ResolvedRefs`
+   * condition is set to `status: False` on all targeted listeners (i.e.,
+   * listeners serving HTTPS on a matching port). The condition MUST
+   * include a Reason and Message that indicate the cause of the error. If
+   * ALL CACertificateRefs are invalid, the implementation MUST also ensure
+   * the `Accepted` condition on the listener is set to `status: False`, with
+   * the Reason `NoValidCACertificate`.
+   * Implementations MAY choose to support attaching multiple CA certificates
+   * to a listener, but this behavior is implementation-specific.
+   *
+   * Support: Core - A single reference to a Kubernetes ConfigMap, with the
+   * CA certificate in a key named `ca.crt`.
+   *
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
+   *
+   * @schema GatewaySpecTlsFrontendPerPortTlsValidation#caCertificateRefs
+   */
+  readonly caCertificateRefs: GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs[];
+
+  /**
+   * FrontendValidationMode defines the mode for validating the client certificate.
+   * There are two possible modes:
+   *
+   * - AllowValidOnly: In this mode, the gateway will accept connections only if
+   * the client presents a valid certificate. This certificate must successfully
+   * pass validation against the CA certificates specified in `CACertificateRefs`.
+   * - AllowInsecureFallback: In this mode, the gateway will accept connections
+   * even if the client certificate is not presented or fails verification.
+   *
+   * This approach delegates client authorization to the backend and introduce
+   * a significant security risk. It should be used in testing environments or
+   * on a temporary basis in non-testing environments.
+   *
+   * Defaults to AllowValidOnly.
+   *
+   * Support: Core
+   *
+   * @default AllowValidOnly.
+   * @schema GatewaySpecTlsFrontendPerPortTlsValidation#mode
+   */
+  readonly mode?: GatewaySpecTlsFrontendPerPortTlsValidationMode;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontendPerPortTlsValidation' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontendPerPortTlsValidation(obj: GatewaySpecTlsFrontendPerPortTlsValidation | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs(y)),
+    'mode': obj.mode,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectReference identifies an API object including its namespace.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs
+ */
+export interface GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When set to the empty string, core API group is inferred.
+   *
+   * @schema GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   *
+   * @schema GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs(obj: GatewaySpecTlsFrontendPerPortTlsValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FrontendValidationMode defines the mode for validating the client certificate.
+ * There are two possible modes:
+ *
+ * - AllowValidOnly: In this mode, the gateway will accept connections only if
+ * the client presents a valid certificate. This certificate must successfully
+ * pass validation against the CA certificates specified in `CACertificateRefs`.
+ * - AllowInsecureFallback: In this mode, the gateway will accept connections
+ * even if the client certificate is not presented or fails verification.
+ *
+ * This approach delegates client authorization to the backend and introduce
+ * a significant security risk. It should be used in testing environments or
+ * on a temporary basis in non-testing environments.
+ *
+ * Defaults to AllowValidOnly.
+ *
+ * Support: Core
+ *
+ * @default AllowValidOnly.
+ * @schema GatewaySpecTlsFrontendPerPortTlsValidationMode
+ */
+export enum GatewaySpecTlsFrontendPerPortTlsValidationMode {
+  /** AllowValidOnly */
+  ALLOW_VALID_ONLY = "AllowValidOnly",
+  /** AllowInsecureFallback */
+  ALLOW_INSECURE_FALLBACK = "AllowInsecureFallback",
+}
 
 
 /**
@@ -2157,7 +3274,7 @@ export interface GatewayV1Beta1Spec {
    * Addresses requested for this Gateway. This is optional and behavior can
    * depend on the implementation. If a value is set in the spec and the
    * requested address is invalid or unavailable, the implementation MUST
-   * indicate this in the associated entry in GatewayStatus.Addresses.
+   * indicate this in an associated entry in GatewayStatus.Conditions.
    *
    * The Addresses field represents a request for the address(es) on the
    * "outside of the Gateway", that traffic bound for this Gateway will use.
@@ -2181,21 +3298,34 @@ export interface GatewayV1Beta1Spec {
 
   /**
    * AllowedListeners defines which ListenerSets can be attached to this Gateway.
-   * While this feature is experimental, the default value is to allow no ListenerSets.
+   * The default value is to allow no ListenerSets.
    *
    * @schema GatewayV1Beta1Spec#allowedListeners
    */
   readonly allowedListeners?: GatewayV1Beta1SpecAllowedListeners;
 
   /**
-   * BackendTLS configures TLS settings for when this Gateway is connecting to
-   * backends with TLS.
+   * DefaultScope, when set, configures the Gateway as a default Gateway,
+   * meaning it will dynamically and implicitly have Routes (e.g. HTTPRoute)
+   * attached to it, according to the scope configured here.
    *
-   * Support: Core
+   * If unset (the default) or set to None, the Gateway will not act as a
+   * default Gateway; if set, the Gateway will claim any Route with a
+   * matching scope set in its UseDefaultGateway field, subject to the usual
+   * rules about which routes the Gateway can attach to.
    *
-   * @schema GatewayV1Beta1Spec#backendTLS
+   * Think carefully before using this functionality! While the normal rules
+   * about which Route can apply are still enforced, it is simply easier for
+   * the wrong Route to be accidentally attached to this Gateway in this
+   * configuration. If the Gateway operator is not also the operator in
+   * control of the scope (e.g. namespace) with tight controls and checks on
+   * what kind of workloads and Routes get added in that scope, we strongly
+   * recommend not using this just because it seems convenient, and instead
+   * stick to direct Route attachment.
+   *
+   * @schema GatewayV1Beta1Spec#defaultScope
    */
-  readonly backendTls?: GatewayV1Beta1SpecBackendTls;
+  readonly defaultScope?: GatewayV1Beta1SpecDefaultScope;
 
   /**
    * GatewayClassName used for this Gateway. This is the name of a
@@ -2344,6 +3474,12 @@ export interface GatewayV1Beta1Spec {
    * request to "foo.example.com" SHOULD only be routed using routes attached
    * to the "foo.example.com" Listener (and not the "*.example.com" Listener).
    *
+   * If traffic to a Gateway does not match any Listener's hostname (or if
+   * the Listener does not specify a hostname and the request does not match
+   * any attached Route), the request MUST be rejected. The specific mechanism
+   * for rejection depends on the protocol: HTTP returns a 404 status code,
+   * while gRPC returns an Unimplemented status code.
+   *
    * This concept is known as "Listener Isolation", and it is an Extended feature
    * of Gateway API. Implementations that do not support Listener Isolation MUST
    * clearly document this, and MUST NOT claim support for the
@@ -2380,6 +3516,15 @@ export interface GatewayV1Beta1Spec {
    * @schema GatewayV1Beta1Spec#listeners
    */
   readonly listeners: GatewayV1Beta1SpecListeners[];
+
+  /**
+   * TLS specifies frontend and backend tls configuration for entire gateway.
+   *
+   * Support: Extended
+   *
+   * @schema GatewayV1Beta1Spec#tls
+   */
+  readonly tls?: GatewayV1Beta1SpecTls;
 }
 
 /**
@@ -2391,10 +3536,11 @@ export function toJson_GatewayV1Beta1Spec(obj: GatewayV1Beta1Spec | undefined): 
   const result = {
     'addresses': obj.addresses?.map(y => toJson_GatewayV1Beta1SpecAddresses(y)),
     'allowedListeners': toJson_GatewayV1Beta1SpecAllowedListeners(obj.allowedListeners),
-    'backendTLS': toJson_GatewayV1Beta1SpecBackendTls(obj.backendTls),
+    'defaultScope': obj.defaultScope,
     'gatewayClassName': obj.gatewayClassName,
     'infrastructure': toJson_GatewayV1Beta1SpecInfrastructure(obj.infrastructure),
     'listeners': obj.listeners?.map(y => toJson_GatewayV1Beta1SpecListeners(y)),
+    'tls': toJson_GatewayV1Beta1SpecTls(obj.tls),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2445,14 +3591,14 @@ export function toJson_GatewayV1Beta1SpecAddresses(obj: GatewayV1Beta1SpecAddres
 
 /**
  * AllowedListeners defines which ListenerSets can be attached to this Gateway.
- * While this feature is experimental, the default value is to allow no ListenerSets.
+ * The default value is to allow no ListenerSets.
  *
  * @schema GatewayV1Beta1SpecAllowedListeners
  */
 export interface GatewayV1Beta1SpecAllowedListeners {
   /**
    * Namespaces defines which namespaces ListenerSets can be attached to this Gateway.
-   * While this feature is experimental, the default value is to allow no ListenerSets.
+   * The default value is to allow no ListenerSets.
    *
    * @schema GatewayV1Beta1SpecAllowedListeners#namespaces
    */
@@ -2474,49 +3620,32 @@ export function toJson_GatewayV1Beta1SpecAllowedListeners(obj: GatewayV1Beta1Spe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * BackendTLS configures TLS settings for when this Gateway is connecting to
- * backends with TLS.
+ * DefaultScope, when set, configures the Gateway as a default Gateway,
+ * meaning it will dynamically and implicitly have Routes (e.g. HTTPRoute)
+ * attached to it, according to the scope configured here.
  *
- * Support: Core
+ * If unset (the default) or set to None, the Gateway will not act as a
+ * default Gateway; if set, the Gateway will claim any Route with a
+ * matching scope set in its UseDefaultGateway field, subject to the usual
+ * rules about which routes the Gateway can attach to.
  *
- * @schema GatewayV1Beta1SpecBackendTls
+ * Think carefully before using this functionality! While the normal rules
+ * about which Route can apply are still enforced, it is simply easier for
+ * the wrong Route to be accidentally attached to this Gateway in this
+ * configuration. If the Gateway operator is not also the operator in
+ * control of the scope (e.g. namespace) with tight controls and checks on
+ * what kind of workloads and Routes get added in that scope, we strongly
+ * recommend not using this just because it seems convenient, and instead
+ * stick to direct Route attachment.
+ *
+ * @schema GatewayV1Beta1SpecDefaultScope
  */
-export interface GatewayV1Beta1SpecBackendTls {
-  /**
-   * ClientCertificateRef is a reference to an object that contains a Client
-   * Certificate and the associated private key.
-   *
-   * References to a resource in different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
-   *
-   * ClientCertificateRef can reference to standard Kubernetes resources, i.e.
-   * Secret, or implementation-specific custom resources.
-   *
-   * This setting can be overridden on the service level by use of BackendTLSPolicy.
-   *
-   * Support: Core
-   *
-   * @schema GatewayV1Beta1SpecBackendTls#clientCertificateRef
-   */
-  readonly clientCertificateRef?: GatewayV1Beta1SpecBackendTlsClientCertificateRef;
+export enum GatewayV1Beta1SpecDefaultScope {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
 }
-
-/**
- * Converts an object of type 'GatewayV1Beta1SpecBackendTls' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewayV1Beta1SpecBackendTls(obj: GatewayV1Beta1SpecBackendTls | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'clientCertificateRef': toJson_GatewayV1Beta1SpecBackendTlsClientCertificateRef(obj.clientCertificateRef),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Infrastructure defines infrastructure level attributes about this Gateway instance.
@@ -2665,7 +3794,7 @@ export interface GatewayV1Beta1SpecListeners {
    * the Gateway SHOULD return a 421.
    * * If the current Listener (selected by SNI matching during ClientHello)
    * does not match the Host:
-   * * If another Listener does match the Host the Gateway SHOULD return a
+   * * If another Listener does match the Host, the Gateway SHOULD return a
    * 421.
    * * If no other Listener matches the Host, the Gateway MUST return a
    * 404.
@@ -2720,7 +3849,7 @@ export interface GatewayV1Beta1SpecListeners {
    * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
    * if the Protocol field is "HTTP", "TCP", or "UDP".
    *
-   * The association of SNIs to Certificate defined in GatewayTLSConfig is
+   * The association of SNIs to Certificate defined in ListenerTLSConfig is
    * defined based on the Hostname field for this listener.
    *
    * The GatewayClass MUST use the longest matching SNI out of all
@@ -2753,8 +3882,54 @@ export function toJson_GatewayV1Beta1SpecListeners(obj: GatewayV1Beta1SpecListen
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * TLS specifies frontend and backend tls configuration for entire gateway.
+ *
+ * Support: Extended
+ *
+ * @schema GatewayV1Beta1SpecTls
+ */
+export interface GatewayV1Beta1SpecTls {
+  /**
+   * Backend describes TLS configuration for gateway when connecting
+   * to backends.
+   *
+   * Note that this contains only details for the Gateway as a TLS client,
+   * and does _not_ imply behavior about how to choose which backend should
+   * get a TLS connection. That is determined by the presence of a BackendTLSPolicy.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTls#backend
+   */
+  readonly backend?: GatewayV1Beta1SpecTlsBackend;
+
+  /**
+   * Frontend describes TLS config when client connects to Gateway.
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTls#frontend
+   */
+  readonly frontend?: GatewayV1Beta1SpecTlsFrontend;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTls(obj: GatewayV1Beta1SpecTls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backend': toJson_GatewayV1Beta1SpecTlsBackend(obj.backend),
+    'frontend': toJson_GatewayV1Beta1SpecTlsFrontend(obj.frontend),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Namespaces defines which namespaces ListenerSets can be attached to this Gateway.
- * While this feature is experimental, the default value is to allow no ListenerSets.
+ * The default value is to allow no ListenerSets.
  *
  * @schema GatewayV1Beta1SpecAllowedListenersNamespaces
  */
@@ -2768,7 +3943,7 @@ export interface GatewayV1Beta1SpecAllowedListenersNamespaces {
    * * All: ListenerSets in all namespaces may be attached to this Gateway.
    * * None: Only listeners defined in the Gateway's spec are allowed
    *
-   * While this feature is experimental, the default value None
+   * The default value None
    *
    * @schema GatewayV1Beta1SpecAllowedListenersNamespaces#from
    */
@@ -2793,81 +3968,6 @@ export function toJson_GatewayV1Beta1SpecAllowedListenersNamespaces(obj: Gateway
   const result = {
     'from': obj.from,
     'selector': toJson_GatewayV1Beta1SpecAllowedListenersNamespacesSelector(obj.selector),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * ClientCertificateRef is a reference to an object that contains a Client
- * Certificate and the associated private key.
- *
- * References to a resource in different namespace are invalid UNLESS there
- * is a ReferenceGrant in the target namespace that allows the certificate
- * to be attached. If a ReferenceGrant does not allow this reference, the
- * "ResolvedRefs" condition MUST be set to False for this listener with the
- * "RefNotPermitted" reason.
- *
- * ClientCertificateRef can reference to standard Kubernetes resources, i.e.
- * Secret, or implementation-specific custom resources.
- *
- * This setting can be overridden on the service level by use of BackendTLSPolicy.
- *
- * Support: Core
- *
- * @schema GatewayV1Beta1SpecBackendTlsClientCertificateRef
- */
-export interface GatewayV1Beta1SpecBackendTlsClientCertificateRef {
-  /**
-   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
-   * When unspecified or empty string, core API group is inferred.
-   *
-   * @schema GatewayV1Beta1SpecBackendTlsClientCertificateRef#group
-   */
-  readonly group?: string;
-
-  /**
-   * Kind is kind of the referent. For example "Secret".
-   *
-   * @schema GatewayV1Beta1SpecBackendTlsClientCertificateRef#kind
-   */
-  readonly kind?: string;
-
-  /**
-   * Name is the name of the referent.
-   *
-   * @schema GatewayV1Beta1SpecBackendTlsClientCertificateRef#name
-   */
-  readonly name: string;
-
-  /**
-   * Namespace is the namespace of the referenced object. When unspecified, the local
-   * namespace is inferred.
-   *
-   * Note that when a namespace different than the local namespace is specified,
-   * a ReferenceGrant object is required in the referent namespace to allow that
-   * namespace's owner to accept the reference. See the ReferenceGrant
-   * documentation for details.
-   *
-   * Support: Core
-   *
-   * @schema GatewayV1Beta1SpecBackendTlsClientCertificateRef#namespace
-   */
-  readonly namespace?: string;
-}
-
-/**
- * Converts an object of type 'GatewayV1Beta1SpecBackendTlsClientCertificateRef' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewayV1Beta1SpecBackendTlsClientCertificateRef(obj: GatewayV1Beta1SpecBackendTlsClientCertificateRef | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3010,7 +4110,7 @@ export function toJson_GatewayV1Beta1SpecListenersAllowedRoutes(obj: GatewayV1Be
  * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
  * if the Protocol field is "HTTP", "TCP", or "UDP".
  *
- * The association of SNIs to Certificate defined in GatewayTLSConfig is
+ * The association of SNIs to Certificate defined in ListenerTLSConfig is
  * defined based on the Hostname field for this listener.
  *
  * The GatewayClass MUST use the longest matching SNI out of all
@@ -3050,19 +4150,6 @@ export interface GatewayV1Beta1SpecListenersTls {
    * @schema GatewayV1Beta1SpecListenersTls#certificateRefs
    */
   readonly certificateRefs?: GatewayV1Beta1SpecListenersTlsCertificateRefs[];
-
-  /**
-   * FrontendValidation holds configuration information for validating the frontend (client).
-   * Setting this field will require clients to send a client certificate
-   * required for validation during the TLS handshake. In browsers this may result in a dialog appearing
-   * that requests a user to specify the client certificate.
-   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
-   *
-   * Support: Extended
-   *
-   * @schema GatewayV1Beta1SpecListenersTls#frontendValidation
-   */
-  readonly frontendValidation?: GatewayV1Beta1SpecListenersTlsFrontendValidation;
 
   /**
    * Mode defines the TLS behavior for the TLS session initiated by the client.
@@ -3108,9 +4195,113 @@ export function toJson_GatewayV1Beta1SpecListenersTls(obj: GatewayV1Beta1SpecLis
   if (obj === undefined) { return undefined; }
   const result = {
     'certificateRefs': obj.certificateRefs?.map(y => toJson_GatewayV1Beta1SpecListenersTlsCertificateRefs(y)),
-    'frontendValidation': toJson_GatewayV1Beta1SpecListenersTlsFrontendValidation(obj.frontendValidation),
     'mode': obj.mode,
     'options': ((obj.options) === undefined) ? undefined : (Object.entries(obj.options).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Backend describes TLS configuration for gateway when connecting
+ * to backends.
+ *
+ * Note that this contains only details for the Gateway as a TLS client,
+ * and does _not_ imply behavior about how to choose which backend should
+ * get a TLS connection. That is determined by the presence of a BackendTLSPolicy.
+ *
+ * Support: Core
+ *
+ * @schema GatewayV1Beta1SpecTlsBackend
+ */
+export interface GatewayV1Beta1SpecTlsBackend {
+  /**
+   * ClientCertificateRef references an object that contains a client certificate
+   * and its associated private key. It can reference standard Kubernetes resources,
+   * i.e., Secret, or implementation-specific custom resources.
+   *
+   * A ClientCertificateRef is considered invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+   * does not exist) or is misconfigured (e.g., a Secret does not contain the keys
+   * named `tls.crt` and `tls.key`). In this case, the `ResolvedRefs` condition
+   * on the Gateway MUST be set to False with the Reason `InvalidClientCertificateRef`
+   * and the Message of the Condition MUST indicate why the reference is invalid.
+   *
+   * * It refers to a resource in another namespace UNLESS there is a ReferenceGrant
+   * in the target namespace that allows the certificate to be attached.
+   * If a ReferenceGrant does not allow this reference, the `ResolvedRefs` condition
+   * on the Gateway MUST be set to False with the Reason `RefNotPermitted`.
+   *
+   * Implementations MAY choose to perform further validation of the certificate
+   * content (e.g., checking expiry or enforcing specific formats). In such cases,
+   * an implementation-specific Reason and Message MUST be set.
+   *
+   * Support: Core - Reference to a Kubernetes TLS Secret (with the type `kubernetes.io/tls`).
+   * Support: Implementation-specific - Other resource kinds or Secrets with a
+   * different type (e.g., `Opaque`).
+   *
+   * @schema GatewayV1Beta1SpecTlsBackend#clientCertificateRef
+   */
+  readonly clientCertificateRef?: GatewayV1Beta1SpecTlsBackendClientCertificateRef;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsBackend' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsBackend(obj: GatewayV1Beta1SpecTlsBackend | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'clientCertificateRef': toJson_GatewayV1Beta1SpecTlsBackendClientCertificateRef(obj.clientCertificateRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Frontend describes TLS config when client connects to Gateway.
+ * Support: Core
+ *
+ * @schema GatewayV1Beta1SpecTlsFrontend
+ */
+export interface GatewayV1Beta1SpecTlsFrontend {
+  /**
+   * Default specifies the default client certificate validation configuration
+   * for all Listeners handling HTTPS traffic, unless a per-port configuration
+   * is defined.
+   *
+   * support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontend#default
+   */
+  readonly default: GatewayV1Beta1SpecTlsFrontendDefault;
+
+  /**
+   * PerPort specifies tls configuration assigned per port.
+   * Per port configuration is optional. Once set this configuration overrides
+   * the default configuration for all Listeners handling HTTPS traffic
+   * that match this port.
+   * Each override port requires a unique TLS configuration.
+   *
+   * support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontend#perPort
+   */
+  readonly perPort?: GatewayV1Beta1SpecTlsFrontendPerPort[];
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontend' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontend(obj: GatewayV1Beta1SpecTlsFrontend | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'default': toJson_GatewayV1Beta1SpecTlsFrontendDefault(obj.default),
+    'perPort': obj.perPort?.map(y => toJson_GatewayV1Beta1SpecTlsFrontendPerPort(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3126,7 +4317,7 @@ export function toJson_GatewayV1Beta1SpecListenersTls(obj: GatewayV1Beta1SpecLis
  * * All: ListenerSets in all namespaces may be attached to this Gateway.
  * * None: Only listeners defined in the Gateway's spec are allowed
  *
- * While this feature is experimental, the default value None
+ * The default value None
  *
  * @schema GatewayV1Beta1SpecAllowedListenersNamespacesFrom
  */
@@ -3338,60 +4529,6 @@ export function toJson_GatewayV1Beta1SpecListenersTlsCertificateRefs(obj: Gatewa
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * FrontendValidation holds configuration information for validating the frontend (client).
- * Setting this field will require clients to send a client certificate
- * required for validation during the TLS handshake. In browsers this may result in a dialog appearing
- * that requests a user to specify the client certificate.
- * The maximum depth of a certificate chain accepted in verification is Implementation specific.
- *
- * Support: Extended
- *
- * @schema GatewayV1Beta1SpecListenersTlsFrontendValidation
- */
-export interface GatewayV1Beta1SpecListenersTlsFrontendValidation {
-  /**
-   * CACertificateRefs contains one or more references to
-   * Kubernetes objects that contain TLS certificates of
-   * the Certificate Authorities that can be used
-   * as a trust anchor to validate the certificates presented by the client.
-   *
-   * A single CA certificate reference to a Kubernetes ConfigMap
-   * has "Core" support.
-   * Implementations MAY choose to support attaching multiple CA certificates to
-   * a Listener, but this behavior is implementation-specific.
-   *
-   * Support: Core - A single reference to a Kubernetes ConfigMap
-   * with the CA certificate in a key named `ca.crt`.
-   *
-   * Support: Implementation-specific (More than one reference, or other kinds
-   * of resources).
-   *
-   * References to a resource in a different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
-   *
-   * @schema GatewayV1Beta1SpecListenersTlsFrontendValidation#caCertificateRefs
-   */
-  readonly caCertificateRefs?: GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs[];
-}
-
-/**
- * Converts an object of type 'GatewayV1Beta1SpecListenersTlsFrontendValidation' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewayV1Beta1SpecListenersTlsFrontendValidation(obj: GatewayV1Beta1SpecListenersTlsFrontendValidation | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
  * Mode defines the TLS behavior for the TLS session initiated by the client.
  * There are two possible modes:
  *
@@ -3414,6 +4551,169 @@ export enum GatewayV1Beta1SpecListenersTlsMode {
   /** Passthrough */
   PASSTHROUGH = "Passthrough",
 }
+
+/**
+ * ClientCertificateRef references an object that contains a client certificate
+ * and its associated private key. It can reference standard Kubernetes resources,
+ * i.e., Secret, or implementation-specific custom resources.
+ *
+ * A ClientCertificateRef is considered invalid if:
+ *
+ * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+ * does not exist) or is misconfigured (e.g., a Secret does not contain the keys
+ * named `tls.crt` and `tls.key`). In this case, the `ResolvedRefs` condition
+ * on the Gateway MUST be set to False with the Reason `InvalidClientCertificateRef`
+ * and the Message of the Condition MUST indicate why the reference is invalid.
+ *
+ * * It refers to a resource in another namespace UNLESS there is a ReferenceGrant
+ * in the target namespace that allows the certificate to be attached.
+ * If a ReferenceGrant does not allow this reference, the `ResolvedRefs` condition
+ * on the Gateway MUST be set to False with the Reason `RefNotPermitted`.
+ *
+ * Implementations MAY choose to perform further validation of the certificate
+ * content (e.g., checking expiry or enforcing specific formats). In such cases,
+ * an implementation-specific Reason and Message MUST be set.
+ *
+ * Support: Core - Reference to a Kubernetes TLS Secret (with the type `kubernetes.io/tls`).
+ * Support: Implementation-specific - Other resource kinds or Secrets with a
+ * different type (e.g., `Opaque`).
+ *
+ * @schema GatewayV1Beta1SpecTlsBackendClientCertificateRef
+ */
+export interface GatewayV1Beta1SpecTlsBackendClientCertificateRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema GatewayV1Beta1SpecTlsBackendClientCertificateRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent. For example "Secret".
+   *
+   * @schema GatewayV1Beta1SpecTlsBackendClientCertificateRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema GatewayV1Beta1SpecTlsBackendClientCertificateRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsBackendClientCertificateRef#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsBackendClientCertificateRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsBackendClientCertificateRef(obj: GatewayV1Beta1SpecTlsBackendClientCertificateRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Default specifies the default client certificate validation configuration
+ * for all Listeners handling HTTPS traffic, unless a per-port configuration
+ * is defined.
+ *
+ * support: Core
+ *
+ * @schema GatewayV1Beta1SpecTlsFrontendDefault
+ */
+export interface GatewayV1Beta1SpecTlsFrontendDefault {
+  /**
+   * Validation holds configuration information for validating the frontend (client).
+   * Setting this field will result in mutual authentication when connecting to the gateway.
+   * In browsers this may result in a dialog appearing
+   * that requests a user to specify the client certificate.
+   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendDefault#validation
+   */
+  readonly validation?: GatewayV1Beta1SpecTlsFrontendDefaultValidation;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendDefault' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontendDefault(obj: GatewayV1Beta1SpecTlsFrontendDefault | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'validation': toJson_GatewayV1Beta1SpecTlsFrontendDefaultValidation(obj.validation),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * @schema GatewayV1Beta1SpecTlsFrontendPerPort
+ */
+export interface GatewayV1Beta1SpecTlsFrontendPerPort {
+  /**
+   * The Port indicates the Port Number to which the TLS configuration will be
+   * applied. This configuration will be applied to all Listeners handling HTTPS
+   * traffic that match this port.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPort#port
+   */
+  readonly port: number;
+
+  /**
+   * TLS store the configuration that will be applied to all Listeners handling
+   * HTTPS traffic and matching given port.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPort#tls
+   */
+  readonly tls: GatewayV1Beta1SpecTlsFrontendPerPortTls;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendPerPort' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontendPerPort(obj: GatewayV1Beta1SpecTlsFrontendPerPort | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
+    'tls': toJson_GatewayV1Beta1SpecTlsFrontendPerPortTls(obj.tls),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -3529,67 +4829,136 @@ export function toJson_GatewayV1Beta1SpecListenersAllowedRoutesNamespacesSelecto
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * ObjectReference identifies an API object including its namespace.
+ * Validation holds configuration information for validating the frontend (client).
+ * Setting this field will result in mutual authentication when connecting to the gateway.
+ * In browsers this may result in a dialog appearing
+ * that requests a user to specify the client certificate.
+ * The maximum depth of a certificate chain accepted in verification is Implementation specific.
  *
- * The API object must be valid in the cluster; the Group and Kind must
- * be registered in the cluster for this reference to be valid.
+ * Support: Core
  *
- * References to objects with invalid Group and Kind are not valid, and must
- * be rejected by the implementation, with appropriate Conditions set
- * on the containing object.
- *
- * @schema GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs
+ * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidation
  */
-export interface GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs {
+export interface GatewayV1Beta1SpecTlsFrontendDefaultValidation {
   /**
-   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
-   * When set to the empty string, core API group is inferred.
+   * CACertificateRefs contains one or more references to Kubernetes
+   * objects that contain a PEM-encoded TLS CA certificate bundle, which
+   * is used as a trust anchor to validate the certificates presented by
+   * the client.
    *
-   * @schema GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs#group
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the
+   * referenced resource does not exist) or is misconfigured (e.g., a
+   * ConfigMap does not contain a key named `ca.crt`). In this case, the
+   * Reason on all matching HTTPS listeners must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this
+   * case, the Reason on all matching HTTPS listeners must be set to
+   * `InvalidCACertificateKind` and the Message of the Condition must explain
+   * which kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace UNLESS there is a
+   * ReferenceGrant in the target namespace that allows the CA
+   * certificate to be attached. If a ReferenceGrant does not allow this
+   * reference, the `ResolvedRefs` on all matching HTTPS listeners condition
+   * MUST be set with the Reason `RefNotPermitted`.
+   *
+   * Implementations MAY choose to perform further validation of the
+   * certificate content (e.g., checking expiry or enforcing specific formats).
+   * In such cases, an implementation-specific Reason and Message MUST be set.
+   *
+   * In all cases, the implementation MUST ensure that the `ResolvedRefs`
+   * condition is set to `status: False` on all targeted listeners (i.e.,
+   * listeners serving HTTPS on a matching port). The condition MUST
+   * include a Reason and Message that indicate the cause of the error. If
+   * ALL CACertificateRefs are invalid, the implementation MUST also ensure
+   * the `Accepted` condition on the listener is set to `status: False`, with
+   * the Reason `NoValidCACertificate`.
+   * Implementations MAY choose to support attaching multiple CA certificates
+   * to a listener, but this behavior is implementation-specific.
+   *
+   * Support: Core - A single reference to a Kubernetes ConfigMap, with the
+   * CA certificate in a key named `ca.crt`.
+   *
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidation#caCertificateRefs
    */
-  readonly group: string;
+  readonly caCertificateRefs: GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs[];
 
   /**
-   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   * FrontendValidationMode defines the mode for validating the client certificate.
+   * There are two possible modes:
    *
-   * @schema GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs#kind
-   */
-  readonly kind: string;
-
-  /**
-   * Name is the name of the referent.
+   * - AllowValidOnly: In this mode, the gateway will accept connections only if
+   * the client presents a valid certificate. This certificate must successfully
+   * pass validation against the CA certificates specified in `CACertificateRefs`.
+   * - AllowInsecureFallback: In this mode, the gateway will accept connections
+   * even if the client certificate is not presented or fails verification.
    *
-   * @schema GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs#name
-   */
-  readonly name: string;
-
-  /**
-   * Namespace is the namespace of the referenced object. When unspecified, the local
-   * namespace is inferred.
+   * This approach delegates client authorization to the backend and introduce
+   * a significant security risk. It should be used in testing environments or
+   * on a temporary basis in non-testing environments.
    *
-   * Note that when a namespace different than the local namespace is specified,
-   * a ReferenceGrant object is required in the referent namespace to allow that
-   * namespace's owner to accept the reference. See the ReferenceGrant
-   * documentation for details.
+   * Defaults to AllowValidOnly.
    *
    * Support: Core
    *
-   * @schema GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs#namespace
+   * @default AllowValidOnly.
+   * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidation#mode
    */
-  readonly namespace?: string;
+  readonly mode?: GatewayV1Beta1SpecTlsFrontendDefaultValidationMode;
 }
 
 /**
- * Converts an object of type 'GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs' to JSON representation.
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendDefaultValidation' to JSON representation.
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs(obj: GatewayV1Beta1SpecListenersTlsFrontendValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+export function toJson_GatewayV1Beta1SpecTlsFrontendDefaultValidation(obj: GatewayV1Beta1SpecTlsFrontendDefaultValidation | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
+    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs(y)),
+    'mode': obj.mode,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLS store the configuration that will be applied to all Listeners handling
+ * HTTPS traffic and matching given port.
+ *
+ * Support: Core
+ *
+ * @schema GatewayV1Beta1SpecTlsFrontendPerPortTls
+ */
+export interface GatewayV1Beta1SpecTlsFrontendPerPortTls {
+  /**
+   * Validation holds configuration information for validating the frontend (client).
+   * Setting this field will result in mutual authentication when connecting to the gateway.
+   * In browsers this may result in a dialog appearing
+   * that requests a user to specify the client certificate.
+   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTls#validation
+   */
+  readonly validation?: GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendPerPortTls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontendPerPortTls(obj: GatewayV1Beta1SpecTlsFrontendPerPortTls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'validation': toJson_GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation(obj.validation),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3645,6 +5014,298 @@ export function toJson_GatewayV1Beta1SpecListenersAllowedRoutesNamespacesSelecto
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
+/**
+ * ObjectReference identifies an API object including its namespace.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs
+ */
+export interface GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When set to the empty string, core API group is inferred.
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs(obj: GatewayV1Beta1SpecTlsFrontendDefaultValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FrontendValidationMode defines the mode for validating the client certificate.
+ * There are two possible modes:
+ *
+ * - AllowValidOnly: In this mode, the gateway will accept connections only if
+ * the client presents a valid certificate. This certificate must successfully
+ * pass validation against the CA certificates specified in `CACertificateRefs`.
+ * - AllowInsecureFallback: In this mode, the gateway will accept connections
+ * even if the client certificate is not presented or fails verification.
+ *
+ * This approach delegates client authorization to the backend and introduce
+ * a significant security risk. It should be used in testing environments or
+ * on a temporary basis in non-testing environments.
+ *
+ * Defaults to AllowValidOnly.
+ *
+ * Support: Core
+ *
+ * @default AllowValidOnly.
+ * @schema GatewayV1Beta1SpecTlsFrontendDefaultValidationMode
+ */
+export enum GatewayV1Beta1SpecTlsFrontendDefaultValidationMode {
+  /** AllowValidOnly */
+  ALLOW_VALID_ONLY = "AllowValidOnly",
+  /** AllowInsecureFallback */
+  ALLOW_INSECURE_FALLBACK = "AllowInsecureFallback",
+}
+
+/**
+ * Validation holds configuration information for validating the frontend (client).
+ * Setting this field will result in mutual authentication when connecting to the gateway.
+ * In browsers this may result in a dialog appearing
+ * that requests a user to specify the client certificate.
+ * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+ *
+ * Support: Core
+ *
+ * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation
+ */
+export interface GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation {
+  /**
+   * CACertificateRefs contains one or more references to Kubernetes
+   * objects that contain a PEM-encoded TLS CA certificate bundle, which
+   * is used as a trust anchor to validate the certificates presented by
+   * the client.
+   *
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the
+   * referenced resource does not exist) or is misconfigured (e.g., a
+   * ConfigMap does not contain a key named `ca.crt`). In this case, the
+   * Reason on all matching HTTPS listeners must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this
+   * case, the Reason on all matching HTTPS listeners must be set to
+   * `InvalidCACertificateKind` and the Message of the Condition must explain
+   * which kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace UNLESS there is a
+   * ReferenceGrant in the target namespace that allows the CA
+   * certificate to be attached. If a ReferenceGrant does not allow this
+   * reference, the `ResolvedRefs` on all matching HTTPS listeners condition
+   * MUST be set with the Reason `RefNotPermitted`.
+   *
+   * Implementations MAY choose to perform further validation of the
+   * certificate content (e.g., checking expiry or enforcing specific formats).
+   * In such cases, an implementation-specific Reason and Message MUST be set.
+   *
+   * In all cases, the implementation MUST ensure that the `ResolvedRefs`
+   * condition is set to `status: False` on all targeted listeners (i.e.,
+   * listeners serving HTTPS on a matching port). The condition MUST
+   * include a Reason and Message that indicate the cause of the error. If
+   * ALL CACertificateRefs are invalid, the implementation MUST also ensure
+   * the `Accepted` condition on the listener is set to `status: False`, with
+   * the Reason `NoValidCACertificate`.
+   * Implementations MAY choose to support attaching multiple CA certificates
+   * to a listener, but this behavior is implementation-specific.
+   *
+   * Support: Core - A single reference to a Kubernetes ConfigMap, with the
+   * CA certificate in a key named `ca.crt`.
+   *
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation#caCertificateRefs
+   */
+  readonly caCertificateRefs: GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs[];
+
+  /**
+   * FrontendValidationMode defines the mode for validating the client certificate.
+   * There are two possible modes:
+   *
+   * - AllowValidOnly: In this mode, the gateway will accept connections only if
+   * the client presents a valid certificate. This certificate must successfully
+   * pass validation against the CA certificates specified in `CACertificateRefs`.
+   * - AllowInsecureFallback: In this mode, the gateway will accept connections
+   * even if the client certificate is not presented or fails verification.
+   *
+   * This approach delegates client authorization to the backend and introduce
+   * a significant security risk. It should be used in testing environments or
+   * on a temporary basis in non-testing environments.
+   *
+   * Defaults to AllowValidOnly.
+   *
+   * Support: Core
+   *
+   * @default AllowValidOnly.
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation#mode
+   */
+  readonly mode?: GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationMode;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation(obj: GatewayV1Beta1SpecTlsFrontendPerPortTlsValidation | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs(y)),
+    'mode': obj.mode,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ObjectReference identifies an API object including its namespace.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs
+ */
+export interface GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When set to the empty string, core API group is inferred.
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs(obj: GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * FrontendValidationMode defines the mode for validating the client certificate.
+ * There are two possible modes:
+ *
+ * - AllowValidOnly: In this mode, the gateway will accept connections only if
+ * the client presents a valid certificate. This certificate must successfully
+ * pass validation against the CA certificates specified in `CACertificateRefs`.
+ * - AllowInsecureFallback: In this mode, the gateway will accept connections
+ * even if the client certificate is not presented or fails verification.
+ *
+ * This approach delegates client authorization to the backend and introduce
+ * a significant security risk. It should be used in testing environments or
+ * on a temporary basis in non-testing environments.
+ *
+ * Defaults to AllowValidOnly.
+ *
+ * Support: Core
+ *
+ * @default AllowValidOnly.
+ * @schema GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationMode
+ */
+export enum GatewayV1Beta1SpecTlsFrontendPerPortTlsValidationMode {
+  /** AllowValidOnly */
+  ALLOW_VALID_ONLY = "AllowValidOnly",
+  /** AllowInsecureFallback */
+  ALLOW_INSECURE_FALLBACK = "AllowInsecureFallback",
+}
+
 
 /**
  * GatewayClass describes a class of Gateways available to the user for creating
@@ -3664,6 +5325,9 @@ associated GatewayClass. This ensures that a GatewayClass associated with a
 Gateway is not deleted while in use.
 
 GatewayClass is a Cluster level resource.
+
+A GatewayClass name SHOULD be compliant with RFC 1035, consisting of a maximum of 63 lower case alphanumeric
+characters or hyphens ('-'), and MUST start and end with an alphanumeric character.
  *
  * @schema GatewayClass
  */
@@ -3734,6 +5398,9 @@ export class GatewayClass extends ApiObject {
  * Gateway is not deleted while in use.
  *
  * GatewayClass is a Cluster level resource.
+ *
+ * A GatewayClass name SHOULD be compliant with RFC 1035, consisting of a maximum of 63 lower case alphanumeric
+ * characters or hyphens ('-'), and MUST start and end with an alphanumeric character.
  *
  * @schema GatewayClass
  */
@@ -4213,7 +5880,7 @@ export class GrpcRoute extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: GrpcRouteProps = {}): any {
+  public static manifest(props: GrpcRouteProps): any {
     return {
       ...GrpcRoute.GVK,
       ...toJson_GrpcRouteProps(props),
@@ -4226,7 +5893,7 @@ export class GrpcRoute extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: GrpcRouteProps = {}) {
+  public constructor(scope: Construct, id: string, props: GrpcRouteProps) {
     super(scope, id, {
       ...GrpcRoute.GVK,
       ...props,
@@ -4288,7 +5955,7 @@ export interface GrpcRouteProps {
    *
    * @schema GRPCRoute#spec
    */
-  readonly spec?: GrpcRouteSpec;
+  readonly spec: GrpcRouteSpec;
 }
 
 /**
@@ -4441,6 +6108,24 @@ export interface GrpcRouteSpec {
    * @schema GrpcRouteSpec#rules
    */
   readonly rules?: GrpcRouteSpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema GrpcRouteSpec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: GrpcRouteSpecUseDefaultGateways;
 }
 
 /**
@@ -4453,6 +6138,7 @@ export function toJson_GrpcRouteSpec(obj: GrpcRouteSpec | undefined): Record<str
     'hostnames': obj.hostnames?.map(y => y),
     'parentRefs': obj.parentRefs?.map(y => toJson_GrpcRouteSpecParentRefs(y)),
     'rules': obj.rules?.map(y => toJson_GrpcRouteSpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -4791,6 +6477,29 @@ export function toJson_GrpcRouteSpecRules(obj: GrpcRouteSpecRules | undefined): 
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema GrpcRouteSpecUseDefaultGateways
+ */
+export enum GrpcRouteSpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
  * GRPCBackendRef defines how a GRPCRoute forwards a gRPC request.
  *
  * Note that when a namespace different than the local namespace is specified, a
@@ -5051,8 +6760,8 @@ export function toJson_GrpcRouteSpecRulesFilters(obj: GrpcRouteSpecRulesFilters 
  * - method:
  * type: Exact
  * service: "foo"
- * headers:
- * - name: "version"
+ * - headers:
+ * name: "version"
  * value "v1"
  *
  * ```
@@ -5124,17 +6833,6 @@ export interface GrpcRouteSpecRulesSessionPersistence {
   readonly cookieConfig?: GrpcRouteSpecRulesSessionPersistenceCookieConfig;
 
   /**
-   * IdleTimeout defines the idle timeout of the persistent session.
-   * Once the session has been idle for more than the specified
-   * IdleTimeout duration, the session becomes invalid.
-   *
-   * Support: Extended
-   *
-   * @schema GrpcRouteSpecRulesSessionPersistence#idleTimeout
-   */
-  readonly idleTimeout?: string;
-
-  /**
    * SessionName defines the name of the persistent session token
    * which may be reflected in the cookie or the header. Users
    * should avoid reusing session names to prevent unintended
@@ -5148,7 +6846,7 @@ export interface GrpcRouteSpecRulesSessionPersistence {
 
   /**
    * Type defines the type of session persistence such as through
-   * the use a header or cookie. Defaults to cookie based session
+   * the use of a header or cookie. Defaults to cookie based session
    * persistence.
    *
    * Support: Core for "Cookie" type
@@ -5170,7 +6868,6 @@ export function toJson_GrpcRouteSpecRulesSessionPersistence(obj: GrpcRouteSpecRu
   const result = {
     'absoluteTimeout': obj.absoluteTimeout,
     'cookieConfig': toJson_GrpcRouteSpecRulesSessionPersistenceCookieConfig(obj.cookieConfig),
-    'idleTimeout': obj.idleTimeout,
     'sessionName': obj.sessionName,
     'type': obj.type,
   };
@@ -5470,6 +7167,10 @@ export interface GrpcRouteSpecRulesFiltersRequestMirror {
    * Support: Extended for Kubernetes Service
    *
    * Support: Implementation-specific for any other resource
+   *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
    *
    * @schema GrpcRouteSpecRulesFiltersRequestMirror#backendRef
    */
@@ -5805,7 +7506,7 @@ export function toJson_GrpcRouteSpecRulesSessionPersistenceCookieConfig(obj: Grp
 
 /**
  * Type defines the type of session persistence such as through
- * the use a header or cookie. Defaults to cookie based session
+ * the use of a header or cookie. Defaults to cookie based session
  * persistence.
  *
  * Support: Core for "Cookie" type
@@ -6005,6 +7706,10 @@ export interface GrpcRouteSpecRulesBackendRefsFiltersRequestMirror {
    *
    * Support: Implementation-specific for any other resource
    *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
    * @schema GrpcRouteSpecRulesBackendRefsFiltersRequestMirror#backendRef
    */
   readonly backendRef: GrpcRouteSpecRulesBackendRefsFiltersRequestMirrorBackendRef;
@@ -6203,6 +7908,9 @@ export interface GrpcRouteSpecRulesFiltersRequestHeaderModifierAdd {
   /**
    * Value is the value of HTTP Header to be matched.
    *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   *
    * @schema GrpcRouteSpecRulesFiltersRequestHeaderModifierAdd#value
    */
   readonly value: string;
@@ -6245,6 +7953,9 @@ export interface GrpcRouteSpecRulesFiltersRequestHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema GrpcRouteSpecRulesFiltersRequestHeaderModifierSet#value
    */
@@ -6290,6 +8001,10 @@ export function toJson_GrpcRouteSpecRulesFiltersRequestHeaderModifierSet(obj: Gr
  * Support: Extended for Kubernetes Service
  *
  * Support: Implementation-specific for any other resource
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
  *
  * @schema GrpcRouteSpecRulesFiltersRequestMirrorBackendRef
  */
@@ -6434,6 +8149,9 @@ export interface GrpcRouteSpecRulesFiltersResponseHeaderModifierAdd {
   /**
    * Value is the value of HTTP Header to be matched.
    *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   *
    * @schema GrpcRouteSpecRulesFiltersResponseHeaderModifierAdd#value
    */
   readonly value: string;
@@ -6476,6 +8194,9 @@ export interface GrpcRouteSpecRulesFiltersResponseHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema GrpcRouteSpecRulesFiltersResponseHeaderModifierSet#value
    */
@@ -6580,6 +8301,9 @@ export interface GrpcRouteSpecRulesBackendRefsFiltersRequestHeaderModifierAdd {
   /**
    * Value is the value of HTTP Header to be matched.
    *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   *
    * @schema GrpcRouteSpecRulesBackendRefsFiltersRequestHeaderModifierAdd#value
    */
   readonly value: string;
@@ -6622,6 +8346,9 @@ export interface GrpcRouteSpecRulesBackendRefsFiltersRequestHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema GrpcRouteSpecRulesBackendRefsFiltersRequestHeaderModifierSet#value
    */
@@ -6667,6 +8394,10 @@ export function toJson_GrpcRouteSpecRulesBackendRefsFiltersRequestHeaderModifier
  * Support: Extended for Kubernetes Service
  *
  * Support: Implementation-specific for any other resource
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
  *
  * @schema GrpcRouteSpecRulesBackendRefsFiltersRequestMirrorBackendRef
  */
@@ -6811,6 +8542,9 @@ export interface GrpcRouteSpecRulesBackendRefsFiltersResponseHeaderModifierAdd {
   /**
    * Value is the value of HTTP Header to be matched.
    *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   *
    * @schema GrpcRouteSpecRulesBackendRefsFiltersResponseHeaderModifierAdd#value
    */
   readonly value: string;
@@ -6853,6 +8587,9 @@ export interface GrpcRouteSpecRulesBackendRefsFiltersResponseHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema GrpcRouteSpecRulesBackendRefsFiltersResponseHeaderModifierSet#value
    */
@@ -7107,6 +8844,24 @@ export interface HttpRouteSpec {
    * @schema HttpRouteSpec#rules
    */
   readonly rules?: HttpRouteSpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema HttpRouteSpec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: HttpRouteSpecUseDefaultGateways;
 }
 
 /**
@@ -7119,6 +8874,7 @@ export function toJson_HttpRouteSpec(obj: HttpRouteSpec | undefined): Record<str
     'hostnames': obj.hostnames?.map(y => y),
     'parentRefs': obj.parentRefs?.map(y => toJson_HttpRouteSpecParentRefs(y)),
     'rules': obj.rules?.map(y => toJson_HttpRouteSpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -7503,6 +9259,29 @@ export function toJson_HttpRouteSpecRules(obj: HttpRouteSpecRules | undefined): 
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema HttpRouteSpecUseDefaultGateways
+ */
+export enum HttpRouteSpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
  * HTTPBackendRef defines how a HTTPRoute forwards a HTTP request.
  *
  * Note that when a namespace different than the local namespace is specified, a
@@ -7677,6 +9456,20 @@ export interface HttpRouteSpecRulesFilters {
   readonly extensionRef?: HttpRouteSpecRulesFiltersExtensionRef;
 
   /**
+   * ExternalAuth configures settings related to sending request details
+   * to an external auth service. The external service MUST authenticate
+   * the request, and MAY authorize the request as well.
+   *
+   * If there is any problem communicating with the external service,
+   * this filter MUST fail closed.
+   *
+   * Support: Extended
+   *
+   * @schema HttpRouteSpecRulesFilters#externalAuth
+   */
+  readonly externalAuth?: HttpRouteSpecRulesFiltersExternalAuth;
+
+  /**
    * RequestHeaderModifier defines a schema for a filter that modifies request
    * headers.
    *
@@ -7778,6 +9571,7 @@ export function toJson_HttpRouteSpecRulesFilters(obj: HttpRouteSpecRulesFilters 
   const result = {
     'cors': toJson_HttpRouteSpecRulesFiltersCors(obj.cors),
     'extensionRef': toJson_HttpRouteSpecRulesFiltersExtensionRef(obj.extensionRef),
+    'externalAuth': toJson_HttpRouteSpecRulesFiltersExternalAuth(obj.externalAuth),
     'requestHeaderModifier': toJson_HttpRouteSpecRulesFiltersRequestHeaderModifier(obj.requestHeaderModifier),
     'requestMirror': toJson_HttpRouteSpecRulesFiltersRequestMirror(obj.requestMirror),
     'requestRedirect': toJson_HttpRouteSpecRulesFiltersRequestRedirect(obj.requestRedirect),
@@ -7900,7 +9694,7 @@ export interface HttpRouteSpecRulesRetry {
    * For example, setting the `rules[].retry.backoff` field to the value
    * `100ms` will cause a backend request to first be retried approximately
    * 100 milliseconds after timing out or receiving a response code configured
-   * to be retryable.
+   * to be retriable.
    *
    * An implementation MAY use an exponential or alternative backoff strategy
    * for subsequent retry attempts, MAY cap the maximum backoff duration to
@@ -7993,17 +9787,6 @@ export interface HttpRouteSpecRulesSessionPersistence {
   readonly cookieConfig?: HttpRouteSpecRulesSessionPersistenceCookieConfig;
 
   /**
-   * IdleTimeout defines the idle timeout of the persistent session.
-   * Once the session has been idle for more than the specified
-   * IdleTimeout duration, the session becomes invalid.
-   *
-   * Support: Extended
-   *
-   * @schema HttpRouteSpecRulesSessionPersistence#idleTimeout
-   */
-  readonly idleTimeout?: string;
-
-  /**
    * SessionName defines the name of the persistent session token
    * which may be reflected in the cookie or the header. Users
    * should avoid reusing session names to prevent unintended
@@ -8017,7 +9800,7 @@ export interface HttpRouteSpecRulesSessionPersistence {
 
   /**
    * Type defines the type of session persistence such as through
-   * the use a header or cookie. Defaults to cookie based session
+   * the use of a header or cookie. Defaults to cookie based session
    * persistence.
    *
    * Support: Core for "Cookie" type
@@ -8039,7 +9822,6 @@ export function toJson_HttpRouteSpecRulesSessionPersistence(obj: HttpRouteSpecRu
   const result = {
     'absoluteTimeout': obj.absoluteTimeout,
     'cookieConfig': toJson_HttpRouteSpecRulesSessionPersistenceCookieConfig(obj.cookieConfig),
-    'idleTimeout': obj.idleTimeout,
     'sessionName': obj.sessionName,
     'type': obj.type,
   };
@@ -8161,6 +9943,20 @@ export interface HttpRouteSpecRulesBackendRefsFilters {
   readonly extensionRef?: HttpRouteSpecRulesBackendRefsFiltersExtensionRef;
 
   /**
+   * ExternalAuth configures settings related to sending request details
+   * to an external auth service. The external service MUST authenticate
+   * the request, and MAY authorize the request as well.
+   *
+   * If there is any problem communicating with the external service,
+   * this filter MUST fail closed.
+   *
+   * Support: Extended
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFilters#externalAuth
+   */
+  readonly externalAuth?: HttpRouteSpecRulesBackendRefsFiltersExternalAuth;
+
+  /**
    * RequestHeaderModifier defines a schema for a filter that modifies request
    * headers.
    *
@@ -8262,6 +10058,7 @@ export function toJson_HttpRouteSpecRulesBackendRefsFilters(obj: HttpRouteSpecRu
   const result = {
     'cors': toJson_HttpRouteSpecRulesBackendRefsFiltersCors(obj.cors),
     'extensionRef': toJson_HttpRouteSpecRulesBackendRefsFiltersExtensionRef(obj.extensionRef),
+    'externalAuth': toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuth(obj.externalAuth),
     'requestHeaderModifier': toJson_HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifier(obj.requestHeaderModifier),
     'requestMirror': toJson_HttpRouteSpecRulesBackendRefsFiltersRequestMirror(obj.requestMirror),
     'requestRedirect': toJson_HttpRouteSpecRulesBackendRefsFiltersRequestRedirect(obj.requestRedirect),
@@ -8287,12 +10084,12 @@ export interface HttpRouteSpecRulesFiltersCors {
    * AllowCredentials indicates whether the actual cross-origin request allows
    * to include credentials.
    *
-   * The only valid value for the `Access-Control-Allow-Credentials` response
-   * header is true (case-sensitive).
+   * When set to true, the gateway will include the `Access-Control-Allow-Credentials`
+   * response header with value true (case-sensitive).
    *
-   * If the credentials are not allowed in cross-origin requests, the gateway
-   * will omit the header `Access-Control-Allow-Credentials` entirely rather
-   * than setting its value to false.
+   * When set to false or omitted the gateway will omit the header
+   * `Access-Control-Allow-Credentials` entirely (this is the standard CORS
+   * behavior).
    *
    * Support: Extended
    *
@@ -8304,14 +10101,14 @@ export interface HttpRouteSpecRulesFiltersCors {
    * AllowHeaders indicates which HTTP request headers are supported for
    * accessing the requested resource.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Allow-Headers`
    * response header are separated by a comma (",").
    *
-   * When the `AllowHeaders` field is configured with one or more headers, the
+   * When the `allowHeaders` field is configured with one or more headers, the
    * gateway must return the `Access-Control-Allow-Headers` response header
-   * which value is present in the `AllowHeaders` field.
+   * which value is present in the `allowHeaders` field.
    *
    * If any header name in the `Access-Control-Request-Headers` request header
    * is not included in the list of header names specified by the response
@@ -8323,18 +10120,20 @@ export interface HttpRouteSpecRulesFiltersCors {
    * client side.
    *
    * A wildcard indicates that the requests with all HTTP headers are allowed.
-   * The `Access-Control-Allow-Headers` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
    *
-   * When the `AllowCredentials` field is specified and `AllowHeaders` field
-   * specified with the `*` wildcard, the gateway must specify one or more
-   * HTTP headers in the value of the `Access-Control-Allow-Headers` response
-   * header. The value of the header `Access-Control-Allow-Headers` is same as
-   * the `Access-Control-Request-Headers` header provided by the client. If
-   * the header `Access-Control-Request-Headers` is not included in the
-   * request, the gateway will omit the `Access-Control-Allow-Headers`
-   * response header, instead of specifying the `*` wildcard. A Gateway
-   * implementation may choose to add implementation-specific default headers.
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Headers`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Headers` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Headers` response header. Instead, it must
+   * return one or more header names matching the value of the
+   * `Access-Control-Request-Headers` request header.
+   * If the `Access-Control-Request-Headers` header is not present in the
+   * request, the gateway must omit the `Access-Control-Allow-Headers`
+   * response header.
    *
    * Support: Extended
    *
@@ -8349,7 +10148,7 @@ export interface HttpRouteSpecRulesFiltersCors {
    * Valid values are any method defined by RFC9110, along with the special
    * value `*`, which represents all HTTP methods are allowed.
    *
-   * Method names are case sensitive, so these values are also case-sensitive.
+   * Method names are case-sensitive, so these values are also case-sensitive.
    * (See https://www.rfc-editor.org/rfc/rfc2616#section-5.1.1)
    *
    * Multiple method names in the value of the `Access-Control-Allow-Methods`
@@ -8358,29 +10157,29 @@ export interface HttpRouteSpecRulesFiltersCors {
    * A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`.
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-method) The
    * CORS-safelisted methods are always allowed, regardless of whether they
-   * are specified in the `AllowMethods` field.
+   * are specified in the `allowMethods` field.
    *
-   * When the `AllowMethods` field is configured with one or more methods, the
+   * When the `allowMethods` field is configured with one or more methods, the
    * gateway must return the `Access-Control-Allow-Methods` response header
-   * which value is present in the `AllowMethods` field.
+   * which value is present in the `allowMethods` field.
    *
    * If the HTTP method of the `Access-Control-Request-Method` request header
    * is not included in the list of methods specified by the response header
    * `Access-Control-Allow-Methods`, it will present an error on the client
    * side.
    *
-   * The `Access-Control-Allow-Methods` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Methods`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Method` request header.
    *
-   * When the `AllowCredentials` field is specified and `AllowMethods` field
-   * specified with the `*` wildcard, the gateway must specify one HTTP method
-   * in the value of the Access-Control-Allow-Methods response header. The
-   * value of the header `Access-Control-Allow-Methods` is same as the
-   * `Access-Control-Request-Method` header provided by the client. If the
-   * header `Access-Control-Request-Method` is not included in the request,
-   * the gateway will omit the `Access-Control-Allow-Methods` response header,
-   * instead of specifying the `*` wildcard. A Gateway implementation may
-   * choose to add implementation-specific default methods.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Methods` response header. Instead, it must
+   * return a single HTTP method matching the value of the
+   * `Access-Control-Request-Method` request header.
+   * If the `Access-Control-Request-Method` header is not present in the request,
+   * the gateway must omit the `Access-Control-Allow-Methods` response header.
    *
    * Support: Extended
    *
@@ -8414,7 +10213,7 @@ export interface HttpRouteSpecRulesFiltersCors {
    * An origin value that includes _only_ the `*` character indicates requests
    * from all `Origin`s are allowed.
    *
-   * When the `AllowOrigins` field is configured with multiple origins, it
+   * When the `allowOrigins` field is configured with multiple origins, it
    * means the server supports clients from multiple origins. If the request
    * `Origin` matches the configured allowed origins, the gateway must return
    * the given `Origin` and sets value of the header
@@ -8431,15 +10230,20 @@ export interface HttpRouteSpecRulesFiltersCors {
    * the CORS headers. The cross-origin request fails on the client side.
    * Therefore, the client doesn't attempt the actual cross-origin request.
    *
-   * The `Access-Control-Allow-Origin` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * Conversely, if the request `Origin` matches one of the configured
+   * allowed origins, the gateway sets the response header
+   * `Access-Control-Allow-Origin` to the same value as the `Origin`
+   * header provided by the client.
    *
-   * When the `AllowCredentials` field is specified and `AllowOrigins` field
-   * specified with the `*` wildcard, the gateway must return a single origin
-   * in the value of the `Access-Control-Allow-Origin` response header,
-   * instead of specifying the `*` wildcard. The value of the header
-   * `Access-Control-Allow-Origin` is same as the `Origin` header provided by
-   * the client.
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Origin`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Origin` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Origin` response header. Instead, it must
+   * return a single origin matching the value of the `Origin` request header.
    *
    * Support: Extended
    *
@@ -8464,19 +10268,25 @@ export interface HttpRouteSpecRulesFiltersCors {
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
    * The CORS-safelisted response headers are exposed to client by default.
    *
-   * When an HTTP header name is specified using the `ExposeHeaders` field,
+   * When an HTTP header name is specified using the `exposeHeaders` field,
    * this additional header will be exposed as part of the response to the
    * client.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Expose-Headers`
    * response header are separated by a comma (",").
    *
    * A wildcard indicates that the responses with all HTTP headers are exposed
-   * to clients. The `Access-Control-Expose-Headers` response header can only
-   * use `*` wildcard as value when the `AllowCredentials` field is
-   * unspecified.
+   * to clients.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Expose-Headers`
+   * response header can contain the wildcard `*`.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `true`, the gateway cannot use the `*`
+   * in the `Access-Control-Expose-Headers` response header.
    *
    * Support: Extended
    *
@@ -8494,6 +10304,9 @@ export interface HttpRouteSpecRulesFiltersCors {
    *
    * The default value of `Access-Control-Max-Age` response header is 5
    * (seconds).
+   *
+   * When the `MaxAge` field is unspecified, the gateway sets the response
+   * header "Access-Control-Max-Age: 5" by default.
    *
    * @schema HttpRouteSpecRulesFiltersCors#maxAge
    */
@@ -8565,6 +10378,115 @@ export function toJson_HttpRouteSpecRulesFiltersExtensionRef(obj: HttpRouteSpecR
     'group': obj.group,
     'kind': obj.kind,
     'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuth configures settings related to sending request details
+ * to an external auth service. The external service MUST authenticate
+ * the request, and MAY authorize the request as well.
+ *
+ * If there is any problem communicating with the external service,
+ * this filter MUST fail closed.
+ *
+ * Support: Extended
+ *
+ * @schema HttpRouteSpecRulesFiltersExternalAuth
+ */
+export interface HttpRouteSpecRulesFiltersExternalAuth {
+  /**
+   * BackendRef is a reference to a backend to send authorization
+   * requests to.
+   *
+   * The backend must speak the selected protocol (GRPC or HTTP) on the
+   * referenced port.
+   *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuth#backendRef
+   */
+  readonly backendRef: HttpRouteSpecRulesFiltersExternalAuthBackendRef;
+
+  /**
+   * ForwardBody controls if requests to the authorization server should include
+   * the body of the client request; and if so, how big that body is allowed
+   * to be.
+   *
+   * It is expected that implementations will buffer the request body up to
+   * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+   * 4xx series error (413 or 403 are common examples), and fail processing
+   * of the filter.
+   *
+   * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+   * be forwarded.
+   *
+   * Feature Name: HTTPRouteExternalAuthForwardBody
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuth#forwardBody
+   */
+  readonly forwardBody?: HttpRouteSpecRulesFiltersExternalAuthForwardBody;
+
+  /**
+   * GRPCAuthConfig contains configuration for communication with ext_authz
+   * protocol-speaking backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuth#grpc
+   */
+  readonly grpc?: HttpRouteSpecRulesFiltersExternalAuthGrpc;
+
+  /**
+   * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+   * backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuth#http
+   */
+  readonly http?: HttpRouteSpecRulesFiltersExternalAuthHttp;
+
+  /**
+   * ExternalAuthProtocol describes which protocol to use when communicating with an
+   * ext_authz authorization server.
+   *
+   * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+   * on the port specified in `backendRefs`. Requests and responses are defined
+   * in the protobufs explained at:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+   *
+   * When this is set to HTTP, each backend must respond with a `200` status
+   * code in on a successful authorization. Any other code is considered
+   * an authorization failure.
+   *
+   * Feature Names:
+   * GRPC Support - HTTPRouteExternalAuthGRPC
+   * HTTP Support - HTTPRouteExternalAuthHTTP
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuth#protocol
+   */
+  readonly protocol: HttpRouteSpecRulesFiltersExternalAuthProtocol;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesFiltersExternalAuth' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesFiltersExternalAuth(obj: HttpRouteSpecRulesFiltersExternalAuth | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRef': toJson_HttpRouteSpecRulesFiltersExternalAuthBackendRef(obj.backendRef),
+    'forwardBody': toJson_HttpRouteSpecRulesFiltersExternalAuthForwardBody(obj.forwardBody),
+    'grpc': toJson_HttpRouteSpecRulesFiltersExternalAuthGrpc(obj.grpc),
+    'http': toJson_HttpRouteSpecRulesFiltersExternalAuthHttp(obj.http),
+    'protocol': obj.protocol,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -8702,6 +10624,10 @@ export interface HttpRouteSpecRulesFiltersRequestMirror {
    *
    * Support: Implementation-specific for any other resource
    *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
    * @schema HttpRouteSpecRulesFiltersRequestMirror#backendRef
    */
   readonly backendRef: HttpRouteSpecRulesFiltersRequestMirrorBackendRef;
@@ -8835,7 +10761,7 @@ export interface HttpRouteSpecRulesFiltersRequestRedirect {
    * Accepted Condition for the Route to `status: False`, with a
    * Reason of `UnsupportedValue`.
    *
-   * Support: Core
+   * Support: statusCode 301 and 302 are Core; all others are Extended.
    *
    * @schema HttpRouteSpecRulesFiltersRequestRedirect#statusCode
    */
@@ -9003,6 +10929,8 @@ export enum HttpRouteSpecRulesFiltersType {
   EXTENSION_REF = "ExtensionRef",
   /** CORS */
   CORS = "CORS",
+  /** ExternalAuth */
+  EXTERNAL_AUTH = "ExternalAuth",
 }
 
 /**
@@ -9093,6 +11021,9 @@ export interface HttpRouteSpecRulesMatchesHeaders {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesMatchesHeaders#value
    */
@@ -9308,7 +11239,7 @@ export function toJson_HttpRouteSpecRulesSessionPersistenceCookieConfig(obj: Htt
 
 /**
  * Type defines the type of session persistence such as through
- * the use a header or cookie. Defaults to cookie based session
+ * the use of a header or cookie. Defaults to cookie based session
  * persistence.
  *
  * Support: Core for "Cookie" type
@@ -9338,12 +11269,12 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * AllowCredentials indicates whether the actual cross-origin request allows
    * to include credentials.
    *
-   * The only valid value for the `Access-Control-Allow-Credentials` response
-   * header is true (case-sensitive).
+   * When set to true, the gateway will include the `Access-Control-Allow-Credentials`
+   * response header with value true (case-sensitive).
    *
-   * If the credentials are not allowed in cross-origin requests, the gateway
-   * will omit the header `Access-Control-Allow-Credentials` entirely rather
-   * than setting its value to false.
+   * When set to false or omitted the gateway will omit the header
+   * `Access-Control-Allow-Credentials` entirely (this is the standard CORS
+   * behavior).
    *
    * Support: Extended
    *
@@ -9355,14 +11286,14 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * AllowHeaders indicates which HTTP request headers are supported for
    * accessing the requested resource.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Allow-Headers`
    * response header are separated by a comma (",").
    *
-   * When the `AllowHeaders` field is configured with one or more headers, the
+   * When the `allowHeaders` field is configured with one or more headers, the
    * gateway must return the `Access-Control-Allow-Headers` response header
-   * which value is present in the `AllowHeaders` field.
+   * which value is present in the `allowHeaders` field.
    *
    * If any header name in the `Access-Control-Request-Headers` request header
    * is not included in the list of header names specified by the response
@@ -9374,18 +11305,20 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * client side.
    *
    * A wildcard indicates that the requests with all HTTP headers are allowed.
-   * The `Access-Control-Allow-Headers` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
    *
-   * When the `AllowCredentials` field is specified and `AllowHeaders` field
-   * specified with the `*` wildcard, the gateway must specify one or more
-   * HTTP headers in the value of the `Access-Control-Allow-Headers` response
-   * header. The value of the header `Access-Control-Allow-Headers` is same as
-   * the `Access-Control-Request-Headers` header provided by the client. If
-   * the header `Access-Control-Request-Headers` is not included in the
-   * request, the gateway will omit the `Access-Control-Allow-Headers`
-   * response header, instead of specifying the `*` wildcard. A Gateway
-   * implementation may choose to add implementation-specific default headers.
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Headers`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Headers` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Headers` response header. Instead, it must
+   * return one or more header names matching the value of the
+   * `Access-Control-Request-Headers` request header.
+   * If the `Access-Control-Request-Headers` header is not present in the
+   * request, the gateway must omit the `Access-Control-Allow-Headers`
+   * response header.
    *
    * Support: Extended
    *
@@ -9400,7 +11333,7 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * Valid values are any method defined by RFC9110, along with the special
    * value `*`, which represents all HTTP methods are allowed.
    *
-   * Method names are case sensitive, so these values are also case-sensitive.
+   * Method names are case-sensitive, so these values are also case-sensitive.
    * (See https://www.rfc-editor.org/rfc/rfc2616#section-5.1.1)
    *
    * Multiple method names in the value of the `Access-Control-Allow-Methods`
@@ -9409,29 +11342,29 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`.
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-method) The
    * CORS-safelisted methods are always allowed, regardless of whether they
-   * are specified in the `AllowMethods` field.
+   * are specified in the `allowMethods` field.
    *
-   * When the `AllowMethods` field is configured with one or more methods, the
+   * When the `allowMethods` field is configured with one or more methods, the
    * gateway must return the `Access-Control-Allow-Methods` response header
-   * which value is present in the `AllowMethods` field.
+   * which value is present in the `allowMethods` field.
    *
    * If the HTTP method of the `Access-Control-Request-Method` request header
    * is not included in the list of methods specified by the response header
    * `Access-Control-Allow-Methods`, it will present an error on the client
    * side.
    *
-   * The `Access-Control-Allow-Methods` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Methods`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Method` request header.
    *
-   * When the `AllowCredentials` field is specified and `AllowMethods` field
-   * specified with the `*` wildcard, the gateway must specify one HTTP method
-   * in the value of the Access-Control-Allow-Methods response header. The
-   * value of the header `Access-Control-Allow-Methods` is same as the
-   * `Access-Control-Request-Method` header provided by the client. If the
-   * header `Access-Control-Request-Method` is not included in the request,
-   * the gateway will omit the `Access-Control-Allow-Methods` response header,
-   * instead of specifying the `*` wildcard. A Gateway implementation may
-   * choose to add implementation-specific default methods.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Methods` response header. Instead, it must
+   * return a single HTTP method matching the value of the
+   * `Access-Control-Request-Method` request header.
+   * If the `Access-Control-Request-Method` header is not present in the request,
+   * the gateway must omit the `Access-Control-Allow-Methods` response header.
    *
    * Support: Extended
    *
@@ -9465,7 +11398,7 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * An origin value that includes _only_ the `*` character indicates requests
    * from all `Origin`s are allowed.
    *
-   * When the `AllowOrigins` field is configured with multiple origins, it
+   * When the `allowOrigins` field is configured with multiple origins, it
    * means the server supports clients from multiple origins. If the request
    * `Origin` matches the configured allowed origins, the gateway must return
    * the given `Origin` and sets value of the header
@@ -9482,15 +11415,20 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * the CORS headers. The cross-origin request fails on the client side.
    * Therefore, the client doesn't attempt the actual cross-origin request.
    *
-   * The `Access-Control-Allow-Origin` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * Conversely, if the request `Origin` matches one of the configured
+   * allowed origins, the gateway sets the response header
+   * `Access-Control-Allow-Origin` to the same value as the `Origin`
+   * header provided by the client.
    *
-   * When the `AllowCredentials` field is specified and `AllowOrigins` field
-   * specified with the `*` wildcard, the gateway must return a single origin
-   * in the value of the `Access-Control-Allow-Origin` response header,
-   * instead of specifying the `*` wildcard. The value of the header
-   * `Access-Control-Allow-Origin` is same as the `Origin` header provided by
-   * the client.
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Origin`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Origin` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Origin` response header. Instead, it must
+   * return a single origin matching the value of the `Origin` request header.
    *
    * Support: Extended
    *
@@ -9515,19 +11453,25 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
    * The CORS-safelisted response headers are exposed to client by default.
    *
-   * When an HTTP header name is specified using the `ExposeHeaders` field,
+   * When an HTTP header name is specified using the `exposeHeaders` field,
    * this additional header will be exposed as part of the response to the
    * client.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Expose-Headers`
    * response header are separated by a comma (",").
    *
    * A wildcard indicates that the responses with all HTTP headers are exposed
-   * to clients. The `Access-Control-Expose-Headers` response header can only
-   * use `*` wildcard as value when the `AllowCredentials` field is
-   * unspecified.
+   * to clients.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Expose-Headers`
+   * response header can contain the wildcard `*`.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `true`, the gateway cannot use the `*`
+   * in the `Access-Control-Expose-Headers` response header.
    *
    * Support: Extended
    *
@@ -9545,6 +11489,9 @@ export interface HttpRouteSpecRulesBackendRefsFiltersCors {
    *
    * The default value of `Access-Control-Max-Age` response header is 5
    * (seconds).
+   *
+   * When the `MaxAge` field is unspecified, the gateway sets the response
+   * header "Access-Control-Max-Age: 5" by default.
    *
    * @schema HttpRouteSpecRulesBackendRefsFiltersCors#maxAge
    */
@@ -9616,6 +11563,115 @@ export function toJson_HttpRouteSpecRulesBackendRefsFiltersExtensionRef(obj: Htt
     'group': obj.group,
     'kind': obj.kind,
     'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuth configures settings related to sending request details
+ * to an external auth service. The external service MUST authenticate
+ * the request, and MAY authorize the request as well.
+ *
+ * If there is any problem communicating with the external service,
+ * this filter MUST fail closed.
+ *
+ * Support: Extended
+ *
+ * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuth
+ */
+export interface HttpRouteSpecRulesBackendRefsFiltersExternalAuth {
+  /**
+   * BackendRef is a reference to a backend to send authorization
+   * requests to.
+   *
+   * The backend must speak the selected protocol (GRPC or HTTP) on the
+   * referenced port.
+   *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuth#backendRef
+   */
+  readonly backendRef: HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef;
+
+  /**
+   * ForwardBody controls if requests to the authorization server should include
+   * the body of the client request; and if so, how big that body is allowed
+   * to be.
+   *
+   * It is expected that implementations will buffer the request body up to
+   * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+   * 4xx series error (413 or 403 are common examples), and fail processing
+   * of the filter.
+   *
+   * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+   * be forwarded.
+   *
+   * Feature Name: HTTPRouteExternalAuthForwardBody
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuth#forwardBody
+   */
+  readonly forwardBody?: HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody;
+
+  /**
+   * GRPCAuthConfig contains configuration for communication with ext_authz
+   * protocol-speaking backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuth#grpc
+   */
+  readonly grpc?: HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc;
+
+  /**
+   * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+   * backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuth#http
+   */
+  readonly http?: HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp;
+
+  /**
+   * ExternalAuthProtocol describes which protocol to use when communicating with an
+   * ext_authz authorization server.
+   *
+   * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+   * on the port specified in `backendRefs`. Requests and responses are defined
+   * in the protobufs explained at:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+   *
+   * When this is set to HTTP, each backend must respond with a `200` status
+   * code in on a successful authorization. Any other code is considered
+   * an authorization failure.
+   *
+   * Feature Names:
+   * GRPC Support - HTTPRouteExternalAuthGRPC
+   * HTTP Support - HTTPRouteExternalAuthHTTP
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuth#protocol
+   */
+  readonly protocol: HttpRouteSpecRulesBackendRefsFiltersExternalAuthProtocol;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesBackendRefsFiltersExternalAuth' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuth(obj: HttpRouteSpecRulesBackendRefsFiltersExternalAuth | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRef': toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef(obj.backendRef),
+    'forwardBody': toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody(obj.forwardBody),
+    'grpc': toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc(obj.grpc),
+    'http': toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp(obj.http),
+    'protocol': obj.protocol,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -9753,6 +11809,10 @@ export interface HttpRouteSpecRulesBackendRefsFiltersRequestMirror {
    *
    * Support: Implementation-specific for any other resource
    *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
    * @schema HttpRouteSpecRulesBackendRefsFiltersRequestMirror#backendRef
    */
   readonly backendRef: HttpRouteSpecRulesBackendRefsFiltersRequestMirrorBackendRef;
@@ -9886,7 +11946,7 @@ export interface HttpRouteSpecRulesBackendRefsFiltersRequestRedirect {
    * Accepted Condition for the Route to `status: False`, with a
    * Reason of `UnsupportedValue`.
    *
-   * Support: Core
+   * Support: statusCode 301 and 302 are Core; all others are Extended.
    *
    * @schema HttpRouteSpecRulesBackendRefsFiltersRequestRedirect#statusCode
    */
@@ -10054,6 +12114,8 @@ export enum HttpRouteSpecRulesBackendRefsFiltersType {
   EXTENSION_REF = "ExtensionRef",
   /** CORS */
   CORS = "CORS",
+  /** ExternalAuth */
+  EXTERNAL_AUTH = "ExternalAuth",
 }
 
 /**
@@ -10126,6 +12188,296 @@ export enum HttpRouteSpecRulesFiltersCorsAllowMethods {
 }
 
 /**
+ * BackendRef is a reference to a backend to send authorization
+ * requests to.
+ *
+ * The backend must speak the selected protocol (GRPC or HTTP) on the
+ * referenced port.
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
+ *
+ * @schema HttpRouteSpecRulesFiltersExternalAuthBackendRef
+ */
+export interface HttpRouteSpecRulesFiltersExternalAuthBackendRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthBackendRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema HttpRouteSpecRulesFiltersExternalAuthBackendRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthBackendRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthBackendRef#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthBackendRef#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesFiltersExternalAuthBackendRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesFiltersExternalAuthBackendRef(obj: HttpRouteSpecRulesFiltersExternalAuthBackendRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ForwardBody controls if requests to the authorization server should include
+ * the body of the client request; and if so, how big that body is allowed
+ * to be.
+ *
+ * It is expected that implementations will buffer the request body up to
+ * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+ * 4xx series error (413 or 403 are common examples), and fail processing
+ * of the filter.
+ *
+ * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+ * be forwarded.
+ *
+ * Feature Name: HTTPRouteExternalAuthForwardBody
+ *
+ * @schema HttpRouteSpecRulesFiltersExternalAuthForwardBody
+ */
+export interface HttpRouteSpecRulesFiltersExternalAuthForwardBody {
+  /**
+   * MaxSize specifies how large in bytes the largest body that will be buffered
+   * and sent to the authorization server. If the body size is larger than
+   * `maxSize`, then the body sent to the authorization server must be
+   * truncated to `maxSize` bytes.
+   *
+   * Experimental note: This behavior needs to be checked against
+   * various dataplanes; it may need to be changed.
+   * See https://github.com/kubernetes-sigs/gateway-api/pull/4001#discussion_r2291405746
+   * for more.
+   *
+   * If 0, the body will not be sent to the authorization server.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthForwardBody#maxSize
+   */
+  readonly maxSize?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesFiltersExternalAuthForwardBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesFiltersExternalAuthForwardBody(obj: HttpRouteSpecRulesFiltersExternalAuthForwardBody | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'maxSize': obj.maxSize,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GRPCAuthConfig contains configuration for communication with ext_authz
+ * protocol-speaking backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteSpecRulesFiltersExternalAuthGrpc
+ */
+export interface HttpRouteSpecRulesFiltersExternalAuthGrpc {
+  /**
+   * AllowedRequestHeaders specifies what headers from the client request
+   * will be sent to the authorization server.
+   *
+   * If this list is empty, then all headers must be sent.
+   *
+   * If the list has entries, only those entries must be sent.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthGrpc#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesFiltersExternalAuthGrpc' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesFiltersExternalAuthGrpc(obj: HttpRouteSpecRulesFiltersExternalAuthGrpc | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+ * backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteSpecRulesFiltersExternalAuthHttp
+ */
+export interface HttpRouteSpecRulesFiltersExternalAuthHttp {
+  /**
+   * AllowedRequestHeaders specifies what additional headers from the client request
+   * will be sent to the authorization server.
+   *
+   * The following headers must always be sent to the authorization server,
+   * regardless of this setting:
+   *
+   * * `Host`
+   * * `Method`
+   * * `Path`
+   * * `Content-Length`
+   * * `Authorization`
+   *
+   * If this list is empty, then only those headers must be sent.
+   *
+   * Note that `Content-Length` has a special behavior, in that the length
+   * sent must be correct for the actual request to the external authorization
+   * server - that is, it must reflect the actual number of bytes sent in the
+   * body of the request to the authorization server.
+   *
+   * So if the `forwardBody` stanza is unset, or `forwardBody.maxSize` is set
+   * to `0`, then `Content-Length` must be `0`. If `forwardBody.maxSize` is set
+   * to anything other than `0`, then the `Content-Length` of the authorization
+   * request must be set to the actual number of bytes forwarded.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthHttp#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+
+  /**
+   * AllowedResponseHeaders specifies what headers from the authorization response
+   * will be copied into the request to the backend.
+   *
+   * If this list is empty, then all headers from the authorization server
+   * except Authority or Host must be copied.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthHttp#allowedResponseHeaders
+   */
+  readonly allowedResponseHeaders?: string[];
+
+  /**
+   * Path sets the prefix that paths from the client request will have added
+   * when forwarded to the authorization server.
+   *
+   * When empty or unspecified, no prefix is added.
+   *
+   * Valid values are the same as the "value" regex for path values in the `match`
+   * stanza, and the validation regex will screen out invalid paths in the same way.
+   * Even with the validation, implementations MUST sanitize this input before using it
+   * directly.
+   *
+   * @schema HttpRouteSpecRulesFiltersExternalAuthHttp#path
+   */
+  readonly path?: string;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesFiltersExternalAuthHttp' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesFiltersExternalAuthHttp(obj: HttpRouteSpecRulesFiltersExternalAuthHttp | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+    'allowedResponseHeaders': obj.allowedResponseHeaders?.map(y => y),
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuthProtocol describes which protocol to use when communicating with an
+ * ext_authz authorization server.
+ *
+ * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+ * on the port specified in `backendRefs`. Requests and responses are defined
+ * in the protobufs explained at:
+ * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+ *
+ * When this is set to HTTP, each backend must respond with a `200` status
+ * code in on a successful authorization. Any other code is considered
+ * an authorization failure.
+ *
+ * Feature Names:
+ * GRPC Support - HTTPRouteExternalAuthGRPC
+ * HTTP Support - HTTPRouteExternalAuthHTTP
+ *
+ * @schema HttpRouteSpecRulesFiltersExternalAuthProtocol
+ */
+export enum HttpRouteSpecRulesFiltersExternalAuthProtocol {
+  /** HTTP */
+  HTTP = "HTTP",
+  /** GRPC */
+  GRPC = "GRPC",
+}
+
+/**
  * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
  *
  * @schema HttpRouteSpecRulesFiltersRequestHeaderModifierAdd
@@ -10147,6 +12499,9 @@ export interface HttpRouteSpecRulesFiltersRequestHeaderModifierAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesFiltersRequestHeaderModifierAdd#value
    */
@@ -10190,6 +12545,9 @@ export interface HttpRouteSpecRulesFiltersRequestHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesFiltersRequestHeaderModifierSet#value
    */
@@ -10235,6 +12593,10 @@ export function toJson_HttpRouteSpecRulesFiltersRequestHeaderModifierSet(obj: Ht
  * Support: Extended for Kubernetes Service
  *
  * Support: Implementation-specific for any other resource
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
  *
  * @schema HttpRouteSpecRulesFiltersRequestMirrorBackendRef
  */
@@ -10463,7 +12825,7 @@ export enum HttpRouteSpecRulesFiltersRequestRedirectScheme {
  * Accepted Condition for the Route to `status: False`, with a
  * Reason of `UnsupportedValue`.
  *
- * Support: Core
+ * Support: statusCode 301 and 302 are Core; all others are Extended.
  *
  * @schema HttpRouteSpecRulesFiltersRequestRedirectStatusCode
  */
@@ -10472,6 +12834,12 @@ export enum HttpRouteSpecRulesFiltersRequestRedirectStatusCode {
   VALUE_301 = 301,
   /** 302 */
   VALUE_302 = 302,
+  /** 303 */
+  VALUE_303 = 303,
+  /** 307 */
+  VALUE_307 = 307,
+  /** 308 */
+  VALUE_308 = 308,
 }
 
 /**
@@ -10496,6 +12864,9 @@ export interface HttpRouteSpecRulesFiltersResponseHeaderModifierAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesFiltersResponseHeaderModifierAdd#value
    */
@@ -10539,6 +12910,9 @@ export interface HttpRouteSpecRulesFiltersResponseHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesFiltersResponseHeaderModifierSet#value
    */
@@ -10748,6 +13122,296 @@ export enum HttpRouteSpecRulesBackendRefsFiltersCorsAllowMethods {
 }
 
 /**
+ * BackendRef is a reference to a backend to send authorization
+ * requests to.
+ *
+ * The backend must speak the selected protocol (GRPC or HTTP) on the
+ * referenced port.
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
+ *
+ * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef
+ */
+export interface HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef(obj: HttpRouteSpecRulesBackendRefsFiltersExternalAuthBackendRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ForwardBody controls if requests to the authorization server should include
+ * the body of the client request; and if so, how big that body is allowed
+ * to be.
+ *
+ * It is expected that implementations will buffer the request body up to
+ * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+ * 4xx series error (413 or 403 are common examples), and fail processing
+ * of the filter.
+ *
+ * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+ * be forwarded.
+ *
+ * Feature Name: HTTPRouteExternalAuthForwardBody
+ *
+ * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody
+ */
+export interface HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody {
+  /**
+   * MaxSize specifies how large in bytes the largest body that will be buffered
+   * and sent to the authorization server. If the body size is larger than
+   * `maxSize`, then the body sent to the authorization server must be
+   * truncated to `maxSize` bytes.
+   *
+   * Experimental note: This behavior needs to be checked against
+   * various dataplanes; it may need to be changed.
+   * See https://github.com/kubernetes-sigs/gateway-api/pull/4001#discussion_r2291405746
+   * for more.
+   *
+   * If 0, the body will not be sent to the authorization server.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody#maxSize
+   */
+  readonly maxSize?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody(obj: HttpRouteSpecRulesBackendRefsFiltersExternalAuthForwardBody | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'maxSize': obj.maxSize,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GRPCAuthConfig contains configuration for communication with ext_authz
+ * protocol-speaking backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc
+ */
+export interface HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc {
+  /**
+   * AllowedRequestHeaders specifies what headers from the client request
+   * will be sent to the authorization server.
+   *
+   * If this list is empty, then all headers must be sent.
+   *
+   * If the list has entries, only those entries must be sent.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc(obj: HttpRouteSpecRulesBackendRefsFiltersExternalAuthGrpc | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+ * backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp
+ */
+export interface HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp {
+  /**
+   * AllowedRequestHeaders specifies what additional headers from the client request
+   * will be sent to the authorization server.
+   *
+   * The following headers must always be sent to the authorization server,
+   * regardless of this setting:
+   *
+   * * `Host`
+   * * `Method`
+   * * `Path`
+   * * `Content-Length`
+   * * `Authorization`
+   *
+   * If this list is empty, then only those headers must be sent.
+   *
+   * Note that `Content-Length` has a special behavior, in that the length
+   * sent must be correct for the actual request to the external authorization
+   * server - that is, it must reflect the actual number of bytes sent in the
+   * body of the request to the authorization server.
+   *
+   * So if the `forwardBody` stanza is unset, or `forwardBody.maxSize` is set
+   * to `0`, then `Content-Length` must be `0`. If `forwardBody.maxSize` is set
+   * to anything other than `0`, then the `Content-Length` of the authorization
+   * request must be set to the actual number of bytes forwarded.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+
+  /**
+   * AllowedResponseHeaders specifies what headers from the authorization response
+   * will be copied into the request to the backend.
+   *
+   * If this list is empty, then all headers from the authorization server
+   * except Authority or Host must be copied.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp#allowedResponseHeaders
+   */
+  readonly allowedResponseHeaders?: string[];
+
+  /**
+   * Path sets the prefix that paths from the client request will have added
+   * when forwarded to the authorization server.
+   *
+   * When empty or unspecified, no prefix is added.
+   *
+   * Valid values are the same as the "value" regex for path values in the `match`
+   * stanza, and the validation regex will screen out invalid paths in the same way.
+   * Even with the validation, implementations MUST sanitize this input before using it
+   * directly.
+   *
+   * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp#path
+   */
+  readonly path?: string;
+}
+
+/**
+ * Converts an object of type 'HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp(obj: HttpRouteSpecRulesBackendRefsFiltersExternalAuthHttp | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+    'allowedResponseHeaders': obj.allowedResponseHeaders?.map(y => y),
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuthProtocol describes which protocol to use when communicating with an
+ * ext_authz authorization server.
+ *
+ * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+ * on the port specified in `backendRefs`. Requests and responses are defined
+ * in the protobufs explained at:
+ * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+ *
+ * When this is set to HTTP, each backend must respond with a `200` status
+ * code in on a successful authorization. Any other code is considered
+ * an authorization failure.
+ *
+ * Feature Names:
+ * GRPC Support - HTTPRouteExternalAuthGRPC
+ * HTTP Support - HTTPRouteExternalAuthHTTP
+ *
+ * @schema HttpRouteSpecRulesBackendRefsFiltersExternalAuthProtocol
+ */
+export enum HttpRouteSpecRulesBackendRefsFiltersExternalAuthProtocol {
+  /** HTTP */
+  HTTP = "HTTP",
+  /** GRPC */
+  GRPC = "GRPC",
+}
+
+/**
  * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
  *
  * @schema HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifierAdd
@@ -10769,6 +13433,9 @@ export interface HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifierAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifierAdd#value
    */
@@ -10812,6 +13479,9 @@ export interface HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifierSet#value
    */
@@ -10857,6 +13527,10 @@ export function toJson_HttpRouteSpecRulesBackendRefsFiltersRequestHeaderModifier
  * Support: Extended for Kubernetes Service
  *
  * Support: Implementation-specific for any other resource
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
  *
  * @schema HttpRouteSpecRulesBackendRefsFiltersRequestMirrorBackendRef
  */
@@ -11085,7 +13759,7 @@ export enum HttpRouteSpecRulesBackendRefsFiltersRequestRedirectScheme {
  * Accepted Condition for the Route to `status: False`, with a
  * Reason of `UnsupportedValue`.
  *
- * Support: Core
+ * Support: statusCode 301 and 302 are Core; all others are Extended.
  *
  * @schema HttpRouteSpecRulesBackendRefsFiltersRequestRedirectStatusCode
  */
@@ -11094,6 +13768,12 @@ export enum HttpRouteSpecRulesBackendRefsFiltersRequestRedirectStatusCode {
   VALUE_301 = 301,
   /** 302 */
   VALUE_302 = 302,
+  /** 303 */
+  VALUE_303 = 303,
+  /** 307 */
+  VALUE_307 = 307,
+  /** 308 */
+  VALUE_308 = 308,
 }
 
 /**
@@ -11118,6 +13798,9 @@ export interface HttpRouteSpecRulesBackendRefsFiltersResponseHeaderModifierAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesBackendRefsFiltersResponseHeaderModifierAdd#value
    */
@@ -11161,6 +13844,9 @@ export interface HttpRouteSpecRulesBackendRefsFiltersResponseHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteSpecRulesBackendRefsFiltersResponseHeaderModifierSet#value
    */
@@ -11565,6 +14251,24 @@ export interface HttpRouteV1Beta1Spec {
    * @schema HttpRouteV1Beta1Spec#rules
    */
   readonly rules?: HttpRouteV1Beta1SpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema HttpRouteV1Beta1Spec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: HttpRouteV1Beta1SpecUseDefaultGateways;
 }
 
 /**
@@ -11577,6 +14281,7 @@ export function toJson_HttpRouteV1Beta1Spec(obj: HttpRouteV1Beta1Spec | undefine
     'hostnames': obj.hostnames?.map(y => y),
     'parentRefs': obj.parentRefs?.map(y => toJson_HttpRouteV1Beta1SpecParentRefs(y)),
     'rules': obj.rules?.map(y => toJson_HttpRouteV1Beta1SpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11961,6 +14666,29 @@ export function toJson_HttpRouteV1Beta1SpecRules(obj: HttpRouteV1Beta1SpecRules 
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema HttpRouteV1Beta1SpecUseDefaultGateways
+ */
+export enum HttpRouteV1Beta1SpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
  * HTTPBackendRef defines how a HTTPRoute forwards a HTTP request.
  *
  * Note that when a namespace different than the local namespace is specified, a
@@ -12135,6 +14863,20 @@ export interface HttpRouteV1Beta1SpecRulesFilters {
   readonly extensionRef?: HttpRouteV1Beta1SpecRulesFiltersExtensionRef;
 
   /**
+   * ExternalAuth configures settings related to sending request details
+   * to an external auth service. The external service MUST authenticate
+   * the request, and MAY authorize the request as well.
+   *
+   * If there is any problem communicating with the external service,
+   * this filter MUST fail closed.
+   *
+   * Support: Extended
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFilters#externalAuth
+   */
+  readonly externalAuth?: HttpRouteV1Beta1SpecRulesFiltersExternalAuth;
+
+  /**
    * RequestHeaderModifier defines a schema for a filter that modifies request
    * headers.
    *
@@ -12236,6 +14978,7 @@ export function toJson_HttpRouteV1Beta1SpecRulesFilters(obj: HttpRouteV1Beta1Spe
   const result = {
     'cors': toJson_HttpRouteV1Beta1SpecRulesFiltersCors(obj.cors),
     'extensionRef': toJson_HttpRouteV1Beta1SpecRulesFiltersExtensionRef(obj.extensionRef),
+    'externalAuth': toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuth(obj.externalAuth),
     'requestHeaderModifier': toJson_HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifier(obj.requestHeaderModifier),
     'requestMirror': toJson_HttpRouteV1Beta1SpecRulesFiltersRequestMirror(obj.requestMirror),
     'requestRedirect': toJson_HttpRouteV1Beta1SpecRulesFiltersRequestRedirect(obj.requestRedirect),
@@ -12358,7 +15101,7 @@ export interface HttpRouteV1Beta1SpecRulesRetry {
    * For example, setting the `rules[].retry.backoff` field to the value
    * `100ms` will cause a backend request to first be retried approximately
    * 100 milliseconds after timing out or receiving a response code configured
-   * to be retryable.
+   * to be retriable.
    *
    * An implementation MAY use an exponential or alternative backoff strategy
    * for subsequent retry attempts, MAY cap the maximum backoff duration to
@@ -12451,17 +15194,6 @@ export interface HttpRouteV1Beta1SpecRulesSessionPersistence {
   readonly cookieConfig?: HttpRouteV1Beta1SpecRulesSessionPersistenceCookieConfig;
 
   /**
-   * IdleTimeout defines the idle timeout of the persistent session.
-   * Once the session has been idle for more than the specified
-   * IdleTimeout duration, the session becomes invalid.
-   *
-   * Support: Extended
-   *
-   * @schema HttpRouteV1Beta1SpecRulesSessionPersistence#idleTimeout
-   */
-  readonly idleTimeout?: string;
-
-  /**
    * SessionName defines the name of the persistent session token
    * which may be reflected in the cookie or the header. Users
    * should avoid reusing session names to prevent unintended
@@ -12475,7 +15207,7 @@ export interface HttpRouteV1Beta1SpecRulesSessionPersistence {
 
   /**
    * Type defines the type of session persistence such as through
-   * the use a header or cookie. Defaults to cookie based session
+   * the use of a header or cookie. Defaults to cookie based session
    * persistence.
    *
    * Support: Core for "Cookie" type
@@ -12497,7 +15229,6 @@ export function toJson_HttpRouteV1Beta1SpecRulesSessionPersistence(obj: HttpRout
   const result = {
     'absoluteTimeout': obj.absoluteTimeout,
     'cookieConfig': toJson_HttpRouteV1Beta1SpecRulesSessionPersistenceCookieConfig(obj.cookieConfig),
-    'idleTimeout': obj.idleTimeout,
     'sessionName': obj.sessionName,
     'type': obj.type,
   };
@@ -12619,6 +15350,20 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFilters {
   readonly extensionRef?: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExtensionRef;
 
   /**
+   * ExternalAuth configures settings related to sending request details
+   * to an external auth service. The external service MUST authenticate
+   * the request, and MAY authorize the request as well.
+   *
+   * If there is any problem communicating with the external service,
+   * this filter MUST fail closed.
+   *
+   * Support: Extended
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFilters#externalAuth
+   */
+  readonly externalAuth?: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth;
+
+  /**
    * RequestHeaderModifier defines a schema for a filter that modifies request
    * headers.
    *
@@ -12720,6 +15465,7 @@ export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFilters(obj: HttpRout
   const result = {
     'cors': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors(obj.cors),
     'extensionRef': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExtensionRef(obj.extensionRef),
+    'externalAuth': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth(obj.externalAuth),
     'requestHeaderModifier': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderModifier(obj.requestHeaderModifier),
     'requestMirror': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestMirror(obj.requestMirror),
     'requestRedirect': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestRedirect(obj.requestRedirect),
@@ -12745,12 +15491,12 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * AllowCredentials indicates whether the actual cross-origin request allows
    * to include credentials.
    *
-   * The only valid value for the `Access-Control-Allow-Credentials` response
-   * header is true (case-sensitive).
+   * When set to true, the gateway will include the `Access-Control-Allow-Credentials`
+   * response header with value true (case-sensitive).
    *
-   * If the credentials are not allowed in cross-origin requests, the gateway
-   * will omit the header `Access-Control-Allow-Credentials` entirely rather
-   * than setting its value to false.
+   * When set to false or omitted the gateway will omit the header
+   * `Access-Control-Allow-Credentials` entirely (this is the standard CORS
+   * behavior).
    *
    * Support: Extended
    *
@@ -12762,14 +15508,14 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * AllowHeaders indicates which HTTP request headers are supported for
    * accessing the requested resource.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Allow-Headers`
    * response header are separated by a comma (",").
    *
-   * When the `AllowHeaders` field is configured with one or more headers, the
+   * When the `allowHeaders` field is configured with one or more headers, the
    * gateway must return the `Access-Control-Allow-Headers` response header
-   * which value is present in the `AllowHeaders` field.
+   * which value is present in the `allowHeaders` field.
    *
    * If any header name in the `Access-Control-Request-Headers` request header
    * is not included in the list of header names specified by the response
@@ -12781,18 +15527,20 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * client side.
    *
    * A wildcard indicates that the requests with all HTTP headers are allowed.
-   * The `Access-Control-Allow-Headers` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
    *
-   * When the `AllowCredentials` field is specified and `AllowHeaders` field
-   * specified with the `*` wildcard, the gateway must specify one or more
-   * HTTP headers in the value of the `Access-Control-Allow-Headers` response
-   * header. The value of the header `Access-Control-Allow-Headers` is same as
-   * the `Access-Control-Request-Headers` header provided by the client. If
-   * the header `Access-Control-Request-Headers` is not included in the
-   * request, the gateway will omit the `Access-Control-Allow-Headers`
-   * response header, instead of specifying the `*` wildcard. A Gateway
-   * implementation may choose to add implementation-specific default headers.
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Headers`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Headers` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Headers` response header. Instead, it must
+   * return one or more header names matching the value of the
+   * `Access-Control-Request-Headers` request header.
+   * If the `Access-Control-Request-Headers` header is not present in the
+   * request, the gateway must omit the `Access-Control-Allow-Headers`
+   * response header.
    *
    * Support: Extended
    *
@@ -12807,7 +15555,7 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * Valid values are any method defined by RFC9110, along with the special
    * value `*`, which represents all HTTP methods are allowed.
    *
-   * Method names are case sensitive, so these values are also case-sensitive.
+   * Method names are case-sensitive, so these values are also case-sensitive.
    * (See https://www.rfc-editor.org/rfc/rfc2616#section-5.1.1)
    *
    * Multiple method names in the value of the `Access-Control-Allow-Methods`
@@ -12816,29 +15564,29 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`.
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-method) The
    * CORS-safelisted methods are always allowed, regardless of whether they
-   * are specified in the `AllowMethods` field.
+   * are specified in the `allowMethods` field.
    *
-   * When the `AllowMethods` field is configured with one or more methods, the
+   * When the `allowMethods` field is configured with one or more methods, the
    * gateway must return the `Access-Control-Allow-Methods` response header
-   * which value is present in the `AllowMethods` field.
+   * which value is present in the `allowMethods` field.
    *
    * If the HTTP method of the `Access-Control-Request-Method` request header
    * is not included in the list of methods specified by the response header
    * `Access-Control-Allow-Methods`, it will present an error on the client
    * side.
    *
-   * The `Access-Control-Allow-Methods` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Methods`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Method` request header.
    *
-   * When the `AllowCredentials` field is specified and `AllowMethods` field
-   * specified with the `*` wildcard, the gateway must specify one HTTP method
-   * in the value of the Access-Control-Allow-Methods response header. The
-   * value of the header `Access-Control-Allow-Methods` is same as the
-   * `Access-Control-Request-Method` header provided by the client. If the
-   * header `Access-Control-Request-Method` is not included in the request,
-   * the gateway will omit the `Access-Control-Allow-Methods` response header,
-   * instead of specifying the `*` wildcard. A Gateway implementation may
-   * choose to add implementation-specific default methods.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Methods` response header. Instead, it must
+   * return a single HTTP method matching the value of the
+   * `Access-Control-Request-Method` request header.
+   * If the `Access-Control-Request-Method` header is not present in the request,
+   * the gateway must omit the `Access-Control-Allow-Methods` response header.
    *
    * Support: Extended
    *
@@ -12872,7 +15620,7 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * An origin value that includes _only_ the `*` character indicates requests
    * from all `Origin`s are allowed.
    *
-   * When the `AllowOrigins` field is configured with multiple origins, it
+   * When the `allowOrigins` field is configured with multiple origins, it
    * means the server supports clients from multiple origins. If the request
    * `Origin` matches the configured allowed origins, the gateway must return
    * the given `Origin` and sets value of the header
@@ -12889,15 +15637,20 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * the CORS headers. The cross-origin request fails on the client side.
    * Therefore, the client doesn't attempt the actual cross-origin request.
    *
-   * The `Access-Control-Allow-Origin` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * Conversely, if the request `Origin` matches one of the configured
+   * allowed origins, the gateway sets the response header
+   * `Access-Control-Allow-Origin` to the same value as the `Origin`
+   * header provided by the client.
    *
-   * When the `AllowCredentials` field is specified and `AllowOrigins` field
-   * specified with the `*` wildcard, the gateway must return a single origin
-   * in the value of the `Access-Control-Allow-Origin` response header,
-   * instead of specifying the `*` wildcard. The value of the header
-   * `Access-Control-Allow-Origin` is same as the `Origin` header provided by
-   * the client.
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Origin`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Origin` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Origin` response header. Instead, it must
+   * return a single origin matching the value of the `Origin` request header.
    *
    * Support: Extended
    *
@@ -12922,19 +15675,25 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
    * The CORS-safelisted response headers are exposed to client by default.
    *
-   * When an HTTP header name is specified using the `ExposeHeaders` field,
+   * When an HTTP header name is specified using the `exposeHeaders` field,
    * this additional header will be exposed as part of the response to the
    * client.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Expose-Headers`
    * response header are separated by a comma (",").
    *
    * A wildcard indicates that the responses with all HTTP headers are exposed
-   * to clients. The `Access-Control-Expose-Headers` response header can only
-   * use `*` wildcard as value when the `AllowCredentials` field is
-   * unspecified.
+   * to clients.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Expose-Headers`
+   * response header can contain the wildcard `*`.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `true`, the gateway cannot use the `*`
+   * in the `Access-Control-Expose-Headers` response header.
    *
    * Support: Extended
    *
@@ -12952,6 +15711,9 @@ export interface HttpRouteV1Beta1SpecRulesFiltersCors {
    *
    * The default value of `Access-Control-Max-Age` response header is 5
    * (seconds).
+   *
+   * When the `MaxAge` field is unspecified, the gateway sets the response
+   * header "Access-Control-Max-Age: 5" by default.
    *
    * @schema HttpRouteV1Beta1SpecRulesFiltersCors#maxAge
    */
@@ -13023,6 +15785,115 @@ export function toJson_HttpRouteV1Beta1SpecRulesFiltersExtensionRef(obj: HttpRou
     'group': obj.group,
     'kind': obj.kind,
     'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuth configures settings related to sending request details
+ * to an external auth service. The external service MUST authenticate
+ * the request, and MAY authorize the request as well.
+ *
+ * If there is any problem communicating with the external service,
+ * this filter MUST fail closed.
+ *
+ * Support: Extended
+ *
+ * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuth
+ */
+export interface HttpRouteV1Beta1SpecRulesFiltersExternalAuth {
+  /**
+   * BackendRef is a reference to a backend to send authorization
+   * requests to.
+   *
+   * The backend must speak the selected protocol (GRPC or HTTP) on the
+   * referenced port.
+   *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuth#backendRef
+   */
+  readonly backendRef: HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef;
+
+  /**
+   * ForwardBody controls if requests to the authorization server should include
+   * the body of the client request; and if so, how big that body is allowed
+   * to be.
+   *
+   * It is expected that implementations will buffer the request body up to
+   * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+   * 4xx series error (413 or 403 are common examples), and fail processing
+   * of the filter.
+   *
+   * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+   * be forwarded.
+   *
+   * Feature Name: HTTPRouteExternalAuthForwardBody
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuth#forwardBody
+   */
+  readonly forwardBody?: HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody;
+
+  /**
+   * GRPCAuthConfig contains configuration for communication with ext_authz
+   * protocol-speaking backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuth#grpc
+   */
+  readonly grpc?: HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc;
+
+  /**
+   * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+   * backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuth#http
+   */
+  readonly http?: HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp;
+
+  /**
+   * ExternalAuthProtocol describes which protocol to use when communicating with an
+   * ext_authz authorization server.
+   *
+   * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+   * on the port specified in `backendRefs`. Requests and responses are defined
+   * in the protobufs explained at:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+   *
+   * When this is set to HTTP, each backend must respond with a `200` status
+   * code in on a successful authorization. Any other code is considered
+   * an authorization failure.
+   *
+   * Feature Names:
+   * GRPC Support - HTTPRouteExternalAuthGRPC
+   * HTTP Support - HTTPRouteExternalAuthHTTP
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuth#protocol
+   */
+  readonly protocol: HttpRouteV1Beta1SpecRulesFiltersExternalAuthProtocol;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesFiltersExternalAuth' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuth(obj: HttpRouteV1Beta1SpecRulesFiltersExternalAuth | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRef': toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef(obj.backendRef),
+    'forwardBody': toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody(obj.forwardBody),
+    'grpc': toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc(obj.grpc),
+    'http': toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp(obj.http),
+    'protocol': obj.protocol,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -13160,6 +16031,10 @@ export interface HttpRouteV1Beta1SpecRulesFiltersRequestMirror {
    *
    * Support: Implementation-specific for any other resource
    *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
    * @schema HttpRouteV1Beta1SpecRulesFiltersRequestMirror#backendRef
    */
   readonly backendRef: HttpRouteV1Beta1SpecRulesFiltersRequestMirrorBackendRef;
@@ -13293,7 +16168,7 @@ export interface HttpRouteV1Beta1SpecRulesFiltersRequestRedirect {
    * Accepted Condition for the Route to `status: False`, with a
    * Reason of `UnsupportedValue`.
    *
-   * Support: Core
+   * Support: statusCode 301 and 302 are Core; all others are Extended.
    *
    * @schema HttpRouteV1Beta1SpecRulesFiltersRequestRedirect#statusCode
    */
@@ -13461,6 +16336,8 @@ export enum HttpRouteV1Beta1SpecRulesFiltersType {
   EXTENSION_REF = "ExtensionRef",
   /** CORS */
   CORS = "CORS",
+  /** ExternalAuth */
+  EXTERNAL_AUTH = "ExternalAuth",
 }
 
 /**
@@ -13551,6 +16428,9 @@ export interface HttpRouteV1Beta1SpecRulesMatchesHeaders {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesMatchesHeaders#value
    */
@@ -13766,7 +16646,7 @@ export function toJson_HttpRouteV1Beta1SpecRulesSessionPersistenceCookieConfig(o
 
 /**
  * Type defines the type of session persistence such as through
- * the use a header or cookie. Defaults to cookie based session
+ * the use of a header or cookie. Defaults to cookie based session
  * persistence.
  *
  * Support: Core for "Cookie" type
@@ -13796,12 +16676,12 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * AllowCredentials indicates whether the actual cross-origin request allows
    * to include credentials.
    *
-   * The only valid value for the `Access-Control-Allow-Credentials` response
-   * header is true (case-sensitive).
+   * When set to true, the gateway will include the `Access-Control-Allow-Credentials`
+   * response header with value true (case-sensitive).
    *
-   * If the credentials are not allowed in cross-origin requests, the gateway
-   * will omit the header `Access-Control-Allow-Credentials` entirely rather
-   * than setting its value to false.
+   * When set to false or omitted the gateway will omit the header
+   * `Access-Control-Allow-Credentials` entirely (this is the standard CORS
+   * behavior).
    *
    * Support: Extended
    *
@@ -13813,14 +16693,14 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * AllowHeaders indicates which HTTP request headers are supported for
    * accessing the requested resource.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Allow-Headers`
    * response header are separated by a comma (",").
    *
-   * When the `AllowHeaders` field is configured with one or more headers, the
+   * When the `allowHeaders` field is configured with one or more headers, the
    * gateway must return the `Access-Control-Allow-Headers` response header
-   * which value is present in the `AllowHeaders` field.
+   * which value is present in the `allowHeaders` field.
    *
    * If any header name in the `Access-Control-Request-Headers` request header
    * is not included in the list of header names specified by the response
@@ -13832,18 +16712,20 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * client side.
    *
    * A wildcard indicates that the requests with all HTTP headers are allowed.
-   * The `Access-Control-Allow-Headers` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
    *
-   * When the `AllowCredentials` field is specified and `AllowHeaders` field
-   * specified with the `*` wildcard, the gateway must specify one or more
-   * HTTP headers in the value of the `Access-Control-Allow-Headers` response
-   * header. The value of the header `Access-Control-Allow-Headers` is same as
-   * the `Access-Control-Request-Headers` header provided by the client. If
-   * the header `Access-Control-Request-Headers` is not included in the
-   * request, the gateway will omit the `Access-Control-Allow-Headers`
-   * response header, instead of specifying the `*` wildcard. A Gateway
-   * implementation may choose to add implementation-specific default headers.
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Headers`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Headers` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowHeaders` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Headers` response header. Instead, it must
+   * return one or more header names matching the value of the
+   * `Access-Control-Request-Headers` request header.
+   * If the `Access-Control-Request-Headers` header is not present in the
+   * request, the gateway must omit the `Access-Control-Allow-Headers`
+   * response header.
    *
    * Support: Extended
    *
@@ -13858,7 +16740,7 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * Valid values are any method defined by RFC9110, along with the special
    * value `*`, which represents all HTTP methods are allowed.
    *
-   * Method names are case sensitive, so these values are also case-sensitive.
+   * Method names are case-sensitive, so these values are also case-sensitive.
    * (See https://www.rfc-editor.org/rfc/rfc2616#section-5.1.1)
    *
    * Multiple method names in the value of the `Access-Control-Allow-Methods`
@@ -13867,29 +16749,29 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`.
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-method) The
    * CORS-safelisted methods are always allowed, regardless of whether they
-   * are specified in the `AllowMethods` field.
+   * are specified in the `allowMethods` field.
    *
-   * When the `AllowMethods` field is configured with one or more methods, the
+   * When the `allowMethods` field is configured with one or more methods, the
    * gateway must return the `Access-Control-Allow-Methods` response header
-   * which value is present in the `AllowMethods` field.
+   * which value is present in the `allowMethods` field.
    *
    * If the HTTP method of the `Access-Control-Request-Method` request header
    * is not included in the list of methods specified by the response header
    * `Access-Control-Allow-Methods`, it will present an error on the client
    * side.
    *
-   * The `Access-Control-Allow-Methods` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Methods`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Access-Control-Request-Method` request header.
    *
-   * When the `AllowCredentials` field is specified and `AllowMethods` field
-   * specified with the `*` wildcard, the gateway must specify one HTTP method
-   * in the value of the Access-Control-Allow-Methods response header. The
-   * value of the header `Access-Control-Allow-Methods` is same as the
-   * `Access-Control-Request-Method` header provided by the client. If the
-   * header `Access-Control-Request-Method` is not included in the request,
-   * the gateway will omit the `Access-Control-Allow-Methods` response header,
-   * instead of specifying the `*` wildcard. A Gateway implementation may
-   * choose to add implementation-specific default methods.
+   * If the configuration contains the wildcard `*` in `allowMethods` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Methods` response header. Instead, it must
+   * return a single HTTP method matching the value of the
+   * `Access-Control-Request-Method` request header.
+   * If the `Access-Control-Request-Method` header is not present in the request,
+   * the gateway must omit the `Access-Control-Allow-Methods` response header.
    *
    * Support: Extended
    *
@@ -13923,7 +16805,7 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * An origin value that includes _only_ the `*` character indicates requests
    * from all `Origin`s are allowed.
    *
-   * When the `AllowOrigins` field is configured with multiple origins, it
+   * When the `allowOrigins` field is configured with multiple origins, it
    * means the server supports clients from multiple origins. If the request
    * `Origin` matches the configured allowed origins, the gateway must return
    * the given `Origin` and sets value of the header
@@ -13940,15 +16822,20 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * the CORS headers. The cross-origin request fails on the client side.
    * Therefore, the client doesn't attempt the actual cross-origin request.
    *
-   * The `Access-Control-Allow-Origin` response header can only use `*`
-   * wildcard as value when the `AllowCredentials` field is unspecified.
+   * Conversely, if the request `Origin` matches one of the configured
+   * allowed origins, the gateway sets the response header
+   * `Access-Control-Allow-Origin` to the same value as the `Origin`
+   * header provided by the client.
    *
-   * When the `AllowCredentials` field is specified and `AllowOrigins` field
-   * specified with the `*` wildcard, the gateway must return a single origin
-   * in the value of the `Access-Control-Allow-Origin` response header,
-   * instead of specifying the `*` wildcard. The value of the header
-   * `Access-Control-Allow-Origin` is same as the `Origin` header provided by
-   * the client.
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Allow-Origin`
+   * response header may either contain the wildcard `*` or echo the value
+   * of the `Origin` request header.
+   *
+   * If the configuration contains the wildcard `*` in `allowOrigins` and
+   * `allowCredentials` is set to `true`, the gateway must not return `*`
+   * in the `Access-Control-Allow-Origin` response header. Instead, it must
+   * return a single origin matching the value of the `Origin` request header.
    *
    * Support: Extended
    *
@@ -13973,19 +16860,25 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    * (See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
    * The CORS-safelisted response headers are exposed to client by default.
    *
-   * When an HTTP header name is specified using the `ExposeHeaders` field,
+   * When an HTTP header name is specified using the `exposeHeaders` field,
    * this additional header will be exposed as part of the response to the
    * client.
    *
-   * Header names are not case sensitive.
+   * Header names are not case-sensitive.
    *
    * Multiple header names in the value of the `Access-Control-Expose-Headers`
    * response header are separated by a comma (",").
    *
    * A wildcard indicates that the responses with all HTTP headers are exposed
-   * to clients. The `Access-Control-Expose-Headers` response header can only
-   * use `*` wildcard as value when the `AllowCredentials` field is
-   * unspecified.
+   * to clients.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `false`, the `Access-Control-Expose-Headers`
+   * response header can contain the wildcard `*`.
+   *
+   * If the configuration contains the wildcard `*` in `exposeHeaders` and
+   * `allowCredentials` is set to `true`, the gateway cannot use the `*`
+   * in the `Access-Control-Expose-Headers` response header.
    *
    * Support: Extended
    *
@@ -14003,6 +16896,9 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors {
    *
    * The default value of `Access-Control-Max-Age` response header is 5
    * (seconds).
+   *
+   * When the `MaxAge` field is unspecified, the gateway sets the response
+   * header "Access-Control-Max-Age: 5" by default.
    *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersCors#maxAge
    */
@@ -14074,6 +16970,115 @@ export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExtensionRef(o
     'group': obj.group,
     'kind': obj.kind,
     'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuth configures settings related to sending request details
+ * to an external auth service. The external service MUST authenticate
+ * the request, and MAY authorize the request as well.
+ *
+ * If there is any problem communicating with the external service,
+ * this filter MUST fail closed.
+ *
+ * Support: Extended
+ *
+ * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth
+ */
+export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth {
+  /**
+   * BackendRef is a reference to a backend to send authorization
+   * requests to.
+   *
+   * The backend must speak the selected protocol (GRPC or HTTP) on the
+   * referenced port.
+   *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth#backendRef
+   */
+  readonly backendRef: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef;
+
+  /**
+   * ForwardBody controls if requests to the authorization server should include
+   * the body of the client request; and if so, how big that body is allowed
+   * to be.
+   *
+   * It is expected that implementations will buffer the request body up to
+   * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+   * 4xx series error (413 or 403 are common examples), and fail processing
+   * of the filter.
+   *
+   * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+   * be forwarded.
+   *
+   * Feature Name: HTTPRouteExternalAuthForwardBody
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth#forwardBody
+   */
+  readonly forwardBody?: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody;
+
+  /**
+   * GRPCAuthConfig contains configuration for communication with ext_authz
+   * protocol-speaking backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth#grpc
+   */
+  readonly grpc?: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc;
+
+  /**
+   * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+   * backends.
+   *
+   * If unset, implementations must assume the default behavior for each
+   * included field is intended.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth#http
+   */
+  readonly http?: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp;
+
+  /**
+   * ExternalAuthProtocol describes which protocol to use when communicating with an
+   * ext_authz authorization server.
+   *
+   * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+   * on the port specified in `backendRefs`. Requests and responses are defined
+   * in the protobufs explained at:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+   *
+   * When this is set to HTTP, each backend must respond with a `200` status
+   * code in on a successful authorization. Any other code is considered
+   * an authorization failure.
+   *
+   * Feature Names:
+   * GRPC Support - HTTPRouteExternalAuthGRPC
+   * HTTP Support - HTTPRouteExternalAuthHTTP
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth#protocol
+   */
+  readonly protocol: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthProtocol;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth(obj: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuth | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRef': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef(obj.backendRef),
+    'forwardBody': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody(obj.forwardBody),
+    'grpc': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc(obj.grpc),
+    'http': toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp(obj.http),
+    'protocol': obj.protocol,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -14211,6 +17216,10 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestMirror {
    *
    * Support: Implementation-specific for any other resource
    *
+   * If the backend service requires TLS, use BackendTLSPolicy to tell the
+   * implementation to supply the TLS details to be used to connect to that
+   * backend.
+   *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestMirror#backendRef
    */
   readonly backendRef: HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestMirrorBackendRef;
@@ -14344,7 +17353,7 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestRedirect {
    * Accepted Condition for the Route to `status: False`, with a
    * Reason of `UnsupportedValue`.
    *
-   * Support: Core
+   * Support: statusCode 301 and 302 are Core; all others are Extended.
    *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestRedirect#statusCode
    */
@@ -14512,6 +17521,8 @@ export enum HttpRouteV1Beta1SpecRulesBackendRefsFiltersType {
   EXTENSION_REF = "ExtensionRef",
   /** CORS */
   CORS = "CORS",
+  /** ExternalAuth */
+  EXTERNAL_AUTH = "ExternalAuth",
 }
 
 /**
@@ -14584,6 +17595,296 @@ export enum HttpRouteV1Beta1SpecRulesFiltersCorsAllowMethods {
 }
 
 /**
+ * BackendRef is a reference to a backend to send authorization
+ * requests to.
+ *
+ * The backend must speak the selected protocol (GRPC or HTTP) on the
+ * referenced port.
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
+ *
+ * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef
+ */
+export interface HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef(obj: HttpRouteV1Beta1SpecRulesFiltersExternalAuthBackendRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ForwardBody controls if requests to the authorization server should include
+ * the body of the client request; and if so, how big that body is allowed
+ * to be.
+ *
+ * It is expected that implementations will buffer the request body up to
+ * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+ * 4xx series error (413 or 403 are common examples), and fail processing
+ * of the filter.
+ *
+ * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+ * be forwarded.
+ *
+ * Feature Name: HTTPRouteExternalAuthForwardBody
+ *
+ * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody
+ */
+export interface HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody {
+  /**
+   * MaxSize specifies how large in bytes the largest body that will be buffered
+   * and sent to the authorization server. If the body size is larger than
+   * `maxSize`, then the body sent to the authorization server must be
+   * truncated to `maxSize` bytes.
+   *
+   * Experimental note: This behavior needs to be checked against
+   * various dataplanes; it may need to be changed.
+   * See https://github.com/kubernetes-sigs/gateway-api/pull/4001#discussion_r2291405746
+   * for more.
+   *
+   * If 0, the body will not be sent to the authorization server.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody#maxSize
+   */
+  readonly maxSize?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody(obj: HttpRouteV1Beta1SpecRulesFiltersExternalAuthForwardBody | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'maxSize': obj.maxSize,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GRPCAuthConfig contains configuration for communication with ext_authz
+ * protocol-speaking backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc
+ */
+export interface HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc {
+  /**
+   * AllowedRequestHeaders specifies what headers from the client request
+   * will be sent to the authorization server.
+   *
+   * If this list is empty, then all headers must be sent.
+   *
+   * If the list has entries, only those entries must be sent.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc(obj: HttpRouteV1Beta1SpecRulesFiltersExternalAuthGrpc | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+ * backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp
+ */
+export interface HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp {
+  /**
+   * AllowedRequestHeaders specifies what additional headers from the client request
+   * will be sent to the authorization server.
+   *
+   * The following headers must always be sent to the authorization server,
+   * regardless of this setting:
+   *
+   * * `Host`
+   * * `Method`
+   * * `Path`
+   * * `Content-Length`
+   * * `Authorization`
+   *
+   * If this list is empty, then only those headers must be sent.
+   *
+   * Note that `Content-Length` has a special behavior, in that the length
+   * sent must be correct for the actual request to the external authorization
+   * server - that is, it must reflect the actual number of bytes sent in the
+   * body of the request to the authorization server.
+   *
+   * So if the `forwardBody` stanza is unset, or `forwardBody.maxSize` is set
+   * to `0`, then `Content-Length` must be `0`. If `forwardBody.maxSize` is set
+   * to anything other than `0`, then the `Content-Length` of the authorization
+   * request must be set to the actual number of bytes forwarded.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+
+  /**
+   * AllowedResponseHeaders specifies what headers from the authorization response
+   * will be copied into the request to the backend.
+   *
+   * If this list is empty, then all headers from the authorization server
+   * except Authority or Host must be copied.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp#allowedResponseHeaders
+   */
+  readonly allowedResponseHeaders?: string[];
+
+  /**
+   * Path sets the prefix that paths from the client request will have added
+   * when forwarded to the authorization server.
+   *
+   * When empty or unspecified, no prefix is added.
+   *
+   * Valid values are the same as the "value" regex for path values in the `match`
+   * stanza, and the validation regex will screen out invalid paths in the same way.
+   * Even with the validation, implementations MUST sanitize this input before using it
+   * directly.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp#path
+   */
+  readonly path?: string;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp(obj: HttpRouteV1Beta1SpecRulesFiltersExternalAuthHttp | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+    'allowedResponseHeaders': obj.allowedResponseHeaders?.map(y => y),
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuthProtocol describes which protocol to use when communicating with an
+ * ext_authz authorization server.
+ *
+ * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+ * on the port specified in `backendRefs`. Requests and responses are defined
+ * in the protobufs explained at:
+ * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+ *
+ * When this is set to HTTP, each backend must respond with a `200` status
+ * code in on a successful authorization. Any other code is considered
+ * an authorization failure.
+ *
+ * Feature Names:
+ * GRPC Support - HTTPRouteExternalAuthGRPC
+ * HTTP Support - HTTPRouteExternalAuthHTTP
+ *
+ * @schema HttpRouteV1Beta1SpecRulesFiltersExternalAuthProtocol
+ */
+export enum HttpRouteV1Beta1SpecRulesFiltersExternalAuthProtocol {
+  /** HTTP */
+  HTTP = "HTTP",
+  /** GRPC */
+  GRPC = "GRPC",
+}
+
+/**
  * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
  *
  * @schema HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifierAdd
@@ -14605,6 +17906,9 @@ export interface HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifierAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifierAdd#value
    */
@@ -14648,6 +17952,9 @@ export interface HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifierSet#value
    */
@@ -14693,6 +18000,10 @@ export function toJson_HttpRouteV1Beta1SpecRulesFiltersRequestHeaderModifierSet(
  * Support: Extended for Kubernetes Service
  *
  * Support: Implementation-specific for any other resource
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
  *
  * @schema HttpRouteV1Beta1SpecRulesFiltersRequestMirrorBackendRef
  */
@@ -14921,7 +18232,7 @@ export enum HttpRouteV1Beta1SpecRulesFiltersRequestRedirectScheme {
  * Accepted Condition for the Route to `status: False`, with a
  * Reason of `UnsupportedValue`.
  *
- * Support: Core
+ * Support: statusCode 301 and 302 are Core; all others are Extended.
  *
  * @schema HttpRouteV1Beta1SpecRulesFiltersRequestRedirectStatusCode
  */
@@ -14930,6 +18241,12 @@ export enum HttpRouteV1Beta1SpecRulesFiltersRequestRedirectStatusCode {
   VALUE_301 = 301,
   /** 302 */
   VALUE_302 = 302,
+  /** 303 */
+  VALUE_303 = 303,
+  /** 307 */
+  VALUE_307 = 307,
+  /** 308 */
+  VALUE_308 = 308,
 }
 
 /**
@@ -14954,6 +18271,9 @@ export interface HttpRouteV1Beta1SpecRulesFiltersResponseHeaderModifierAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesFiltersResponseHeaderModifierAdd#value
    */
@@ -14997,6 +18317,9 @@ export interface HttpRouteV1Beta1SpecRulesFiltersResponseHeaderModifierSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesFiltersResponseHeaderModifierSet#value
    */
@@ -15206,6 +18529,296 @@ export enum HttpRouteV1Beta1SpecRulesBackendRefsFiltersCorsAllowMethods {
 }
 
 /**
+ * BackendRef is a reference to a backend to send authorization
+ * requests to.
+ *
+ * The backend must speak the selected protocol (GRPC or HTTP) on the
+ * referenced port.
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
+ *
+ * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef
+ */
+export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef(obj: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthBackendRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ForwardBody controls if requests to the authorization server should include
+ * the body of the client request; and if so, how big that body is allowed
+ * to be.
+ *
+ * It is expected that implementations will buffer the request body up to
+ * `forwardBody.maxSize` bytes. Bodies over that size must be rejected with a
+ * 4xx series error (413 or 403 are common examples), and fail processing
+ * of the filter.
+ *
+ * If unset, or `forwardBody.maxSize` is set to `0`, then the body will not
+ * be forwarded.
+ *
+ * Feature Name: HTTPRouteExternalAuthForwardBody
+ *
+ * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody
+ */
+export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody {
+  /**
+   * MaxSize specifies how large in bytes the largest body that will be buffered
+   * and sent to the authorization server. If the body size is larger than
+   * `maxSize`, then the body sent to the authorization server must be
+   * truncated to `maxSize` bytes.
+   *
+   * Experimental note: This behavior needs to be checked against
+   * various dataplanes; it may need to be changed.
+   * See https://github.com/kubernetes-sigs/gateway-api/pull/4001#discussion_r2291405746
+   * for more.
+   *
+   * If 0, the body will not be sent to the authorization server.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody#maxSize
+   */
+  readonly maxSize?: number;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody(obj: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthForwardBody | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'maxSize': obj.maxSize,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GRPCAuthConfig contains configuration for communication with ext_authz
+ * protocol-speaking backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc
+ */
+export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc {
+  /**
+   * AllowedRequestHeaders specifies what headers from the client request
+   * will be sent to the authorization server.
+   *
+   * If this list is empty, then all headers must be sent.
+   *
+   * If the list has entries, only those entries must be sent.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc(obj: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthGrpc | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPAuthConfig contains configuration for communication with HTTP-speaking
+ * backends.
+ *
+ * If unset, implementations must assume the default behavior for each
+ * included field is intended.
+ *
+ * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp
+ */
+export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp {
+  /**
+   * AllowedRequestHeaders specifies what additional headers from the client request
+   * will be sent to the authorization server.
+   *
+   * The following headers must always be sent to the authorization server,
+   * regardless of this setting:
+   *
+   * * `Host`
+   * * `Method`
+   * * `Path`
+   * * `Content-Length`
+   * * `Authorization`
+   *
+   * If this list is empty, then only those headers must be sent.
+   *
+   * Note that `Content-Length` has a special behavior, in that the length
+   * sent must be correct for the actual request to the external authorization
+   * server - that is, it must reflect the actual number of bytes sent in the
+   * body of the request to the authorization server.
+   *
+   * So if the `forwardBody` stanza is unset, or `forwardBody.maxSize` is set
+   * to `0`, then `Content-Length` must be `0`. If `forwardBody.maxSize` is set
+   * to anything other than `0`, then the `Content-Length` of the authorization
+   * request must be set to the actual number of bytes forwarded.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp#allowedHeaders
+   */
+  readonly allowedHeaders?: string[];
+
+  /**
+   * AllowedResponseHeaders specifies what headers from the authorization response
+   * will be copied into the request to the backend.
+   *
+   * If this list is empty, then all headers from the authorization server
+   * except Authority or Host must be copied.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp#allowedResponseHeaders
+   */
+  readonly allowedResponseHeaders?: string[];
+
+  /**
+   * Path sets the prefix that paths from the client request will have added
+   * when forwarded to the authorization server.
+   *
+   * When empty or unspecified, no prefix is added.
+   *
+   * Valid values are the same as the "value" regex for path values in the `match`
+   * stanza, and the validation regex will screen out invalid paths in the same way.
+   * Even with the validation, implementations MUST sanitize this input before using it
+   * directly.
+   *
+   * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp#path
+   */
+  readonly path?: string;
+}
+
+/**
+ * Converts an object of type 'HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp(obj: HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthHttp | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedHeaders': obj.allowedHeaders?.map(y => y),
+    'allowedResponseHeaders': obj.allowedResponseHeaders?.map(y => y),
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalAuthProtocol describes which protocol to use when communicating with an
+ * ext_authz authorization server.
+ *
+ * When this is set to GRPC, each backend must use the Envoy ext_authz protocol
+ * on the port specified in `backendRefs`. Requests and responses are defined
+ * in the protobufs explained at:
+ * https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto
+ *
+ * When this is set to HTTP, each backend must respond with a `200` status
+ * code in on a successful authorization. Any other code is considered
+ * an authorization failure.
+ *
+ * Feature Names:
+ * GRPC Support - HTTPRouteExternalAuthGRPC
+ * HTTP Support - HTTPRouteExternalAuthHTTP
+ *
+ * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthProtocol
+ */
+export enum HttpRouteV1Beta1SpecRulesBackendRefsFiltersExternalAuthProtocol {
+  /** HTTP */
+  HTTP = "HTTP",
+  /** GRPC */
+  GRPC = "GRPC",
+}
+
+/**
  * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
  *
  * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderModifierAdd
@@ -15227,6 +18840,9 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderModifie
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderModifierAdd#value
    */
@@ -15270,6 +18886,9 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderModifie
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderModifierSet#value
    */
@@ -15315,6 +18934,10 @@ export function toJson_HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestHeaderM
  * Support: Extended for Kubernetes Service
  *
  * Support: Implementation-specific for any other resource
+ *
+ * If the backend service requires TLS, use BackendTLSPolicy to tell the
+ * implementation to supply the TLS details to be used to connect to that
+ * backend.
  *
  * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestMirrorBackendRef
  */
@@ -15543,7 +19166,7 @@ export enum HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestRedirectScheme {
  * Accepted Condition for the Route to `status: False`, with a
  * Reason of `UnsupportedValue`.
  *
- * Support: Core
+ * Support: statusCode 301 and 302 are Core; all others are Extended.
  *
  * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestRedirectStatusCode
  */
@@ -15552,6 +19175,12 @@ export enum HttpRouteV1Beta1SpecRulesBackendRefsFiltersRequestRedirectStatusCode
   VALUE_301 = 301,
   /** 302 */
   VALUE_302 = 302,
+  /** 303 */
+  VALUE_303 = 303,
+  /** 307 */
+  VALUE_307 = 307,
+  /** 308 */
+  VALUE_308 = 308,
 }
 
 /**
@@ -15576,6 +19205,9 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersResponseHeaderModifi
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersResponseHeaderModifierAdd#value
    */
@@ -15619,6 +19251,9 @@ export interface HttpRouteV1Beta1SpecRulesBackendRefsFiltersResponseHeaderModifi
 
   /**
    * Value is the value of HTTP Header to be matched.
+   *
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
    *
    * @schema HttpRouteV1Beta1SpecRulesBackendRefsFiltersResponseHeaderModifierSet#value
    */
@@ -15792,6 +19427,847 @@ export enum HttpRouteV1Beta1SpecRulesBackendRefsFiltersUrlRewritePathType {
 
 
 /**
+ * ListenerSet defines a set of additional listeners to attach to an existing Gateway.
+This resource provides a mechanism to merge multiple listeners into a single Gateway.
+
+The parent Gateway must explicitly allow ListenerSet attachment through its
+AllowedListeners configuration. By default, Gateways do not allow ListenerSet
+attachment.
+
+Routes can attach to a ListenerSet by specifying it as a parentRef, and can
+optionally target specific listeners using the sectionName field.
+
+Policy Attachment:
+- Policies that attach to a ListenerSet apply to all listeners defined in that resource
+- Policies do not impact listeners in the parent Gateway
+- Different ListenerSets attached to the same Gateway can have different policies
+- If an implementation cannot apply a policy to specific listeners, it should reject the policy
+
+ReferenceGrant Semantics:
+- ReferenceGrants applied to a Gateway are not inherited by child ListenerSets
+- ReferenceGrants applied to a ListenerSet do not grant permission to the parent Gateway's listeners
+- A ListenerSet can reference secrets/backends in its own namespace without a ReferenceGrant
+
+Gateway Integration:
+  - The parent Gateway's status will include "AttachedListenerSets"
+    which is the count of ListenerSets that have successfully attached to a Gateway
+    A ListenerSet is successfully attached to a Gateway when all the following conditions are met:
+  - The ListenerSet is selected by the Gateway's AllowedListeners field
+  - The ListenerSet has a valid ParentRef selecting the Gateway
+  - The ListenerSet's status has the condition "Accepted: true"
+ *
+ * @schema ListenerSet
+ */
+export class ListenerSet extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "ListenerSet"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1',
+    kind: 'ListenerSet',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "ListenerSet".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ListenerSetProps): any {
+    return {
+      ...ListenerSet.GVK,
+      ...toJson_ListenerSetProps(props),
+    };
+  }
+
+  /**
+   * Defines a "ListenerSet" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ListenerSetProps) {
+    super(scope, id, {
+      ...ListenerSet.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ListenerSet.GVK,
+      ...toJson_ListenerSetProps(resolved),
+    };
+  }
+}
+
+/**
+ * ListenerSet defines a set of additional listeners to attach to an existing Gateway.
+ * This resource provides a mechanism to merge multiple listeners into a single Gateway.
+ *
+ * The parent Gateway must explicitly allow ListenerSet attachment through its
+ * AllowedListeners configuration. By default, Gateways do not allow ListenerSet
+ * attachment.
+ *
+ * Routes can attach to a ListenerSet by specifying it as a parentRef, and can
+ * optionally target specific listeners using the sectionName field.
+ *
+ * Policy Attachment:
+ * - Policies that attach to a ListenerSet apply to all listeners defined in that resource
+ * - Policies do not impact listeners in the parent Gateway
+ * - Different ListenerSets attached to the same Gateway can have different policies
+ * - If an implementation cannot apply a policy to specific listeners, it should reject the policy
+ *
+ * ReferenceGrant Semantics:
+ * - ReferenceGrants applied to a Gateway are not inherited by child ListenerSets
+ * - ReferenceGrants applied to a ListenerSet do not grant permission to the parent Gateway's listeners
+ * - A ListenerSet can reference secrets/backends in its own namespace without a ReferenceGrant
+ *
+ * Gateway Integration:
+ * - The parent Gateway's status will include "AttachedListenerSets"
+ * which is the count of ListenerSets that have successfully attached to a Gateway
+ * A ListenerSet is successfully attached to a Gateway when all the following conditions are met:
+ * - The ListenerSet is selected by the Gateway's AllowedListeners field
+ * - The ListenerSet has a valid ParentRef selecting the Gateway
+ * - The ListenerSet's status has the condition "Accepted: true"
+ *
+ * @schema ListenerSet
+ */
+export interface ListenerSetProps {
+  /**
+   * @schema ListenerSet#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of ListenerSet.
+   *
+   * @schema ListenerSet#spec
+   */
+  readonly spec: ListenerSetSpec;
+}
+
+/**
+ * Converts an object of type 'ListenerSetProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetProps(obj: ListenerSetProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_ListenerSetSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of ListenerSet.
+ *
+ * @schema ListenerSetSpec
+ */
+export interface ListenerSetSpec {
+  /**
+   * Listeners associated with this ListenerSet. Listeners define
+   * logical endpoints that are bound on this referenced parent Gateway's addresses.
+   *
+   * Listeners in a `Gateway` and their attached `ListenerSets` are concatenated
+   * as a list when programming the underlying infrastructure. Each listener
+   * name does not need to be unique across the Gateway and ListenerSets.
+   * See ListenerEntry.Name for more details.
+   *
+   * Implementations MUST treat the parent Gateway as having the merged
+   * list of all listeners from itself and attached ListenerSets using
+   * the following precedence:
+   *
+   * 1. "parent" Gateway
+   * 2. ListenerSet ordered by creation time (oldest first)
+   * 3. ListenerSet ordered alphabetically by "{namespace}/{name}".
+   *
+   * An implementation MAY reject listeners by setting the ListenerEntryStatus
+   * `Accepted` condition to False with the Reason `TooManyListeners`
+   *
+   * If a listener has a conflict, this will be reported in the
+   * Status.ListenerEntryStatus setting the `Conflicted` condition to True.
+   *
+   * Implementations SHOULD be cautious about what information from the
+   * parent or siblings are reported to avoid accidentally leaking
+   * sensitive information that the child would not otherwise have access
+   * to. This can include contents of secrets etc.
+   *
+   * @schema ListenerSetSpec#listeners
+   */
+  readonly listeners: ListenerSetSpecListeners[];
+
+  /**
+   * ParentRef references the Gateway that the listeners are attached to.
+   *
+   * @schema ListenerSetSpec#parentRef
+   */
+  readonly parentRef: ListenerSetSpecParentRef;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpec(obj: ListenerSetSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'listeners': obj.listeners?.map(y => toJson_ListenerSetSpecListeners(y)),
+    'parentRef': toJson_ListenerSetSpecParentRef(obj.parentRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * @schema ListenerSetSpecListeners
+ */
+export interface ListenerSetSpecListeners {
+  /**
+   * AllowedRoutes defines the types of routes that MAY be attached to a
+   * Listener and the trusted namespaces where those Route resources MAY be
+   * present.
+   *
+   * Although a client request may match multiple route rules, only one rule
+   * may ultimately receive the request. Matching precedence MUST be
+   * determined in order of the following criteria:
+   *
+   * * The most specific match as defined by the Route type.
+   * * The oldest Route based on creation timestamp. For example, a Route with
+   * a creation timestamp of "2020-09-08 01:02:03" is given precedence over
+   * a Route with a creation timestamp of "2020-09-08 01:02:04".
+   * * If everything else is equivalent, the Route appearing first in
+   * alphabetical order (namespace/name) should be given precedence. For
+   * example, foo/bar is given precedence over foo/baz.
+   *
+   * All valid rules within a Route attached to this Listener should be
+   * implemented. Invalid Route rules can be ignored (sometimes that will mean
+   * the full Route). If a Route rule transitions from valid to invalid,
+   * support for that Route rule should be dropped to ensure consistency. For
+   * example, even if a filter specified by a Route rule is invalid, the rest
+   * of the rules within that Route should still be supported.
+   *
+   * @schema ListenerSetSpecListeners#allowedRoutes
+   */
+  readonly allowedRoutes?: ListenerSetSpecListenersAllowedRoutes;
+
+  /**
+   * Hostname specifies the virtual hostname to match for protocol types that
+   * define this concept. When unspecified, all hostnames are matched. This
+   * field is ignored for protocols that don't require hostname based
+   * matching.
+   *
+   * Implementations MUST apply Hostname matching appropriately for each of
+   * the following protocols:
+   *
+   * * TLS: The Listener Hostname MUST match the SNI.
+   * * HTTP: The Listener Hostname MUST match the Host header of the request.
+   * * HTTPS: The Listener Hostname SHOULD match at both the TLS and HTTP
+   * protocol layers as described above. If an implementation does not
+   * ensure that both the SNI and Host header match the Listener hostname,
+   * it MUST clearly document that.
+   *
+   * For HTTPRoute and TLSRoute resources, there is an interaction with the
+   * `spec.hostnames` array. When both listener and route specify hostnames,
+   * there MUST be an intersection between the values for a Route to be
+   * accepted. For more information, refer to the Route specific Hostnames
+   * documentation.
+   *
+   * Hostnames that are prefixed with a wildcard label (`*.`) are interpreted
+   * as a suffix match. That means that a match for `*.example.com` would match
+   * both `test.example.com`, and `foo.test.example.com`, but not `example.com`.
+   *
+   * @schema ListenerSetSpecListeners#hostname
+   */
+  readonly hostname?: string;
+
+  /**
+   * Name is the name of the Listener. This name MUST be unique within a
+   * ListenerSet.
+   *
+   * Name is not required to be unique across a Gateway and ListenerSets.
+   * Routes can attach to a Listener by having a ListenerSet as a parentRef
+   * and setting the SectionName
+   *
+   * @schema ListenerSetSpecListeners#name
+   */
+  readonly name: string;
+
+  /**
+   * Port is the network port. Multiple listeners may use the
+   * same port, subject to the Listener compatibility rules.
+   *
+   * @schema ListenerSetSpecListeners#port
+   */
+  readonly port: number;
+
+  /**
+   * Protocol specifies the network protocol this listener expects to receive.
+   *
+   * @schema ListenerSetSpecListeners#protocol
+   */
+  readonly protocol: string;
+
+  /**
+   * TLS is the TLS configuration for the Listener. This field is required if
+   * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
+   * if the Protocol field is "HTTP", "TCP", or "UDP".
+   *
+   * The association of SNIs to Certificate defined in ListenerTLSConfig is
+   * defined based on the Hostname field for this listener.
+   *
+   * The GatewayClass MUST use the longest matching SNI out of all
+   * available certificates for any TLS handshake.
+   *
+   * @schema ListenerSetSpecListeners#tls
+   */
+  readonly tls?: ListenerSetSpecListenersTls;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListeners' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListeners(obj: ListenerSetSpecListeners | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'allowedRoutes': toJson_ListenerSetSpecListenersAllowedRoutes(obj.allowedRoutes),
+    'hostname': obj.hostname,
+    'name': obj.name,
+    'port': obj.port,
+    'protocol': obj.protocol,
+    'tls': toJson_ListenerSetSpecListenersTls(obj.tls),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParentRef references the Gateway that the listeners are attached to.
+ *
+ * @schema ListenerSetSpecParentRef
+ */
+export interface ListenerSetSpecParentRef {
+  /**
+   * Group is the group of the referent.
+   *
+   * @schema ListenerSetSpecParentRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent. For example "Gateway".
+   *
+   * @schema ListenerSetSpecParentRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema ListenerSetSpecParentRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referent.  If not present,
+   * the namespace of the referent is assumed to be the same as
+   * the namespace of the referring object.
+   *
+   * @schema ListenerSetSpecParentRef#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecParentRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecParentRef(obj: ListenerSetSpecParentRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * AllowedRoutes defines the types of routes that MAY be attached to a
+ * Listener and the trusted namespaces where those Route resources MAY be
+ * present.
+ *
+ * Although a client request may match multiple route rules, only one rule
+ * may ultimately receive the request. Matching precedence MUST be
+ * determined in order of the following criteria:
+ *
+ * * The most specific match as defined by the Route type.
+ * * The oldest Route based on creation timestamp. For example, a Route with
+ * a creation timestamp of "2020-09-08 01:02:03" is given precedence over
+ * a Route with a creation timestamp of "2020-09-08 01:02:04".
+ * * If everything else is equivalent, the Route appearing first in
+ * alphabetical order (namespace/name) should be given precedence. For
+ * example, foo/bar is given precedence over foo/baz.
+ *
+ * All valid rules within a Route attached to this Listener should be
+ * implemented. Invalid Route rules can be ignored (sometimes that will mean
+ * the full Route). If a Route rule transitions from valid to invalid,
+ * support for that Route rule should be dropped to ensure consistency. For
+ * example, even if a filter specified by a Route rule is invalid, the rest
+ * of the rules within that Route should still be supported.
+ *
+ * @schema ListenerSetSpecListenersAllowedRoutes
+ */
+export interface ListenerSetSpecListenersAllowedRoutes {
+  /**
+   * Kinds specifies the groups and kinds of Routes that are allowed to bind
+   * to this Gateway Listener. When unspecified or empty, the kinds of Routes
+   * selected are determined using the Listener protocol.
+   *
+   * A RouteGroupKind MUST correspond to kinds of Routes that are compatible
+   * with the application protocol specified in the Listener's Protocol field.
+   * If an implementation does not support or recognize this resource type, it
+   * MUST set the "ResolvedRefs" condition to False for this Listener with the
+   * "InvalidRouteKinds" reason.
+   *
+   * Support: Core
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutes#kinds
+   */
+  readonly kinds?: ListenerSetSpecListenersAllowedRoutesKinds[];
+
+  /**
+   * Namespaces indicates namespaces from which Routes may be attached to this
+   * Listener. This is restricted to the namespace of this Gateway by default.
+   *
+   * Support: Core
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutes#namespaces
+   */
+  readonly namespaces?: ListenerSetSpecListenersAllowedRoutesNamespaces;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersAllowedRoutes' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersAllowedRoutes(obj: ListenerSetSpecListenersAllowedRoutes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'kinds': obj.kinds?.map(y => toJson_ListenerSetSpecListenersAllowedRoutesKinds(y)),
+    'namespaces': toJson_ListenerSetSpecListenersAllowedRoutesNamespaces(obj.namespaces),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLS is the TLS configuration for the Listener. This field is required if
+ * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
+ * if the Protocol field is "HTTP", "TCP", or "UDP".
+ *
+ * The association of SNIs to Certificate defined in ListenerTLSConfig is
+ * defined based on the Hostname field for this listener.
+ *
+ * The GatewayClass MUST use the longest matching SNI out of all
+ * available certificates for any TLS handshake.
+ *
+ * @schema ListenerSetSpecListenersTls
+ */
+export interface ListenerSetSpecListenersTls {
+  /**
+   * CertificateRefs contains a series of references to Kubernetes objects that
+   * contains TLS certificates and private keys. These certificates are used to
+   * establish a TLS handshake for requests that match the hostname of the
+   * associated listener.
+   *
+   * A single CertificateRef to a Kubernetes Secret has "Core" support.
+   * Implementations MAY choose to support attaching multiple certificates to
+   * a Listener, but this behavior is implementation-specific.
+   *
+   * References to a resource in different namespace are invalid UNLESS there
+   * is a ReferenceGrant in the target namespace that allows the certificate
+   * to be attached. If a ReferenceGrant does not allow this reference, the
+   * "ResolvedRefs" condition MUST be set to False for this listener with the
+   * "RefNotPermitted" reason.
+   *
+   * This field is required to have at least one element when the mode is set
+   * to "Terminate" (default) and is optional otherwise.
+   *
+   * CertificateRefs can reference to standard Kubernetes resources, i.e.
+   * Secret, or implementation-specific custom resources.
+   *
+   * Support: Core - A single reference to a Kubernetes Secret of type kubernetes.io/tls
+   *
+   * Support: Implementation-specific (More than one reference or other resource types)
+   *
+   * @schema ListenerSetSpecListenersTls#certificateRefs
+   */
+  readonly certificateRefs?: ListenerSetSpecListenersTlsCertificateRefs[];
+
+  /**
+   * Mode defines the TLS behavior for the TLS session initiated by the client.
+   * There are two possible modes:
+   *
+   * - Terminate: The TLS session between the downstream client and the
+   * Gateway is terminated at the Gateway. This mode requires certificates
+   * to be specified in some way, such as populating the certificateRefs
+   * field.
+   * - Passthrough: The TLS session is NOT terminated by the Gateway. This
+   * implies that the Gateway can't decipher the TLS stream except for
+   * the ClientHello message of the TLS protocol. The certificateRefs field
+   * is ignored in this mode.
+   *
+   * Support: Core
+   *
+   * @schema ListenerSetSpecListenersTls#mode
+   */
+  readonly mode?: ListenerSetSpecListenersTlsMode;
+
+  /**
+   * Options are a list of key/value pairs to enable extended TLS
+   * configuration for each implementation. For example, configuring the
+   * minimum TLS version or supported cipher suites.
+   *
+   * A set of common keys MAY be defined by the API in the future. To avoid
+   * any ambiguity, implementation-specific definitions MUST use
+   * domain-prefixed names, such as `example.com/my-custom-option`.
+   * Un-prefixed names are reserved for key names defined by Gateway API.
+   *
+   * Support: Implementation-specific
+   *
+   * @schema ListenerSetSpecListenersTls#options
+   */
+  readonly options?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersTls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersTls(obj: ListenerSetSpecListenersTls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'certificateRefs': obj.certificateRefs?.map(y => toJson_ListenerSetSpecListenersTlsCertificateRefs(y)),
+    'mode': obj.mode,
+    'options': ((obj.options) === undefined) ? undefined : (Object.entries(obj.options).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RouteGroupKind indicates the group and kind of a Route resource.
+ *
+ * @schema ListenerSetSpecListenersAllowedRoutesKinds
+ */
+export interface ListenerSetSpecListenersAllowedRoutesKinds {
+  /**
+   * Group is the group of the Route.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesKinds#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the kind of the Route.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesKinds#kind
+   */
+  readonly kind: string;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersAllowedRoutesKinds' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersAllowedRoutesKinds(obj: ListenerSetSpecListenersAllowedRoutesKinds | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Namespaces indicates namespaces from which Routes may be attached to this
+ * Listener. This is restricted to the namespace of this Gateway by default.
+ *
+ * Support: Core
+ *
+ * @schema ListenerSetSpecListenersAllowedRoutesNamespaces
+ */
+export interface ListenerSetSpecListenersAllowedRoutesNamespaces {
+  /**
+   * From indicates where Routes will be selected for this Gateway. Possible
+   * values are:
+   *
+   * * All: Routes in all namespaces may be used by this Gateway.
+   * * Selector: Routes in namespaces selected by the selector may be used by
+   * this Gateway.
+   * * Same: Only Routes in the same namespace may be used by this Gateway.
+   *
+   * Support: Core
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespaces#from
+   */
+  readonly from?: ListenerSetSpecListenersAllowedRoutesNamespacesFrom;
+
+  /**
+   * Selector must be specified when From is set to "Selector". In that case,
+   * only Routes in Namespaces matching this Selector will be selected by this
+   * Gateway. This field is ignored for other values of "From".
+   *
+   * Support: Core
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespaces#selector
+   */
+  readonly selector?: ListenerSetSpecListenersAllowedRoutesNamespacesSelector;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersAllowedRoutesNamespaces' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersAllowedRoutesNamespaces(obj: ListenerSetSpecListenersAllowedRoutesNamespaces | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'from': obj.from,
+    'selector': toJson_ListenerSetSpecListenersAllowedRoutesNamespacesSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SecretObjectReference identifies an API object including its namespace,
+ * defaulting to Secret.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema ListenerSetSpecListenersTlsCertificateRefs
+ */
+export interface ListenerSetSpecListenersTlsCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema ListenerSetSpecListenersTlsCertificateRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent. For example "Secret".
+   *
+   * @schema ListenerSetSpecListenersTlsCertificateRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema ListenerSetSpecListenersTlsCertificateRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema ListenerSetSpecListenersTlsCertificateRefs#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersTlsCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersTlsCertificateRefs(obj: ListenerSetSpecListenersTlsCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Mode defines the TLS behavior for the TLS session initiated by the client.
+ * There are two possible modes:
+ *
+ * - Terminate: The TLS session between the downstream client and the
+ * Gateway is terminated at the Gateway. This mode requires certificates
+ * to be specified in some way, such as populating the certificateRefs
+ * field.
+ * - Passthrough: The TLS session is NOT terminated by the Gateway. This
+ * implies that the Gateway can't decipher the TLS stream except for
+ * the ClientHello message of the TLS protocol. The certificateRefs field
+ * is ignored in this mode.
+ *
+ * Support: Core
+ *
+ * @schema ListenerSetSpecListenersTlsMode
+ */
+export enum ListenerSetSpecListenersTlsMode {
+  /** Terminate */
+  TERMINATE = "Terminate",
+  /** Passthrough */
+  PASSTHROUGH = "Passthrough",
+}
+
+/**
+ * From indicates where Routes will be selected for this Gateway. Possible
+ * values are:
+ *
+ * * All: Routes in all namespaces may be used by this Gateway.
+ * * Selector: Routes in namespaces selected by the selector may be used by
+ * this Gateway.
+ * * Same: Only Routes in the same namespace may be used by this Gateway.
+ *
+ * Support: Core
+ *
+ * @schema ListenerSetSpecListenersAllowedRoutesNamespacesFrom
+ */
+export enum ListenerSetSpecListenersAllowedRoutesNamespacesFrom {
+  /** All */
+  ALL = "All",
+  /** Selector */
+  SELECTOR = "Selector",
+  /** Same */
+  SAME = "Same",
+}
+
+/**
+ * Selector must be specified when From is set to "Selector". In that case,
+ * only Routes in Namespaces matching this Selector will be selected by this
+ * Gateway. This field is ignored for other values of "From".
+ *
+ * Support: Core
+ *
+ * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelector
+ */
+export interface ListenerSetSpecListenersAllowedRoutesNamespacesSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelector#matchExpressions
+   */
+  readonly matchExpressions?: ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersAllowedRoutesNamespacesSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersAllowedRoutesNamespacesSelector(obj: ListenerSetSpecListenersAllowedRoutesNamespacesSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions
+ */
+export interface ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions(obj: ListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+
+/**
  * ReferenceGrant identifies kinds of resources in other namespaces that are
 trusted to reference the specified kinds of resources in the same namespace
 as the policy.
@@ -15816,7 +20292,7 @@ export class ReferenceGrant extends ApiObject {
    * Returns the apiVersion and kind for "ReferenceGrant"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'gateway.networking.k8s.io/v1beta1',
+    apiVersion: 'gateway.networking.k8s.io/v1',
     kind: 'ReferenceGrant',
   }
 
@@ -15827,7 +20303,7 @@ export class ReferenceGrant extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: ReferenceGrantProps = {}): any {
+  public static manifest(props: ReferenceGrantProps): any {
     return {
       ...ReferenceGrant.GVK,
       ...toJson_ReferenceGrantProps(props),
@@ -15840,7 +20316,7 @@ export class ReferenceGrant extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: ReferenceGrantProps = {}) {
+  public constructor(scope: Construct, id: string, props: ReferenceGrantProps) {
     super(scope, id, {
       ...ReferenceGrant.GVK,
       ...props,
@@ -15891,7 +20367,7 @@ export interface ReferenceGrantProps {
    *
    * @schema ReferenceGrant#spec
    */
-  readonly spec?: ReferenceGrantSpec;
+  readonly spec: ReferenceGrantSpec;
 }
 
 /**
@@ -16075,6 +20551,289 @@ export function toJson_ReferenceGrantSpecTo(obj: ReferenceGrantSpecTo | undefine
 
 
 /**
+ * ReferenceGrant identifies kinds of resources in other namespaces that are
+trusted to reference the specified kinds of resources in the same namespace
+as the policy.
+
+Each ReferenceGrant can be used to represent a unique trust relationship.
+Additional Reference Grants can be used to add to the set of trusted
+sources of inbound references for the namespace they are defined within.
+
+All cross-namespace references in Gateway API (with the exception of cross-namespace
+Gateway-route attachment) require a ReferenceGrant.
+
+ReferenceGrant is a form of runtime verification allowing users to assert
+which cross-namespace object references are permitted. Implementations that
+support ReferenceGrant MUST NOT permit cross-namespace references which have
+no grant, and MUST respond to the removal of a grant by revoking the access
+that the grant allowed.
+ *
+ * @schema ReferenceGrantV1Beta1
+ */
+export class ReferenceGrantV1Beta1 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "ReferenceGrantV1Beta1"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1beta1',
+    kind: 'ReferenceGrant',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "ReferenceGrantV1Beta1".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: ReferenceGrantV1Beta1Props): any {
+    return {
+      ...ReferenceGrantV1Beta1.GVK,
+      ...toJson_ReferenceGrantV1Beta1Props(props),
+    };
+  }
+
+  /**
+   * Defines a "ReferenceGrantV1Beta1" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: ReferenceGrantV1Beta1Props) {
+    super(scope, id, {
+      ...ReferenceGrantV1Beta1.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...ReferenceGrantV1Beta1.GVK,
+      ...toJson_ReferenceGrantV1Beta1Props(resolved),
+    };
+  }
+}
+
+/**
+ * ReferenceGrant identifies kinds of resources in other namespaces that are
+ * trusted to reference the specified kinds of resources in the same namespace
+ * as the policy.
+ *
+ * Each ReferenceGrant can be used to represent a unique trust relationship.
+ * Additional Reference Grants can be used to add to the set of trusted
+ * sources of inbound references for the namespace they are defined within.
+ *
+ * All cross-namespace references in Gateway API (with the exception of cross-namespace
+ * Gateway-route attachment) require a ReferenceGrant.
+ *
+ * ReferenceGrant is a form of runtime verification allowing users to assert
+ * which cross-namespace object references are permitted. Implementations that
+ * support ReferenceGrant MUST NOT permit cross-namespace references which have
+ * no grant, and MUST respond to the removal of a grant by revoking the access
+ * that the grant allowed.
+ *
+ * @schema ReferenceGrantV1Beta1
+ */
+export interface ReferenceGrantV1Beta1Props {
+  /**
+   * @schema ReferenceGrantV1Beta1#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of ReferenceGrant.
+   *
+   * @schema ReferenceGrantV1Beta1#spec
+   */
+  readonly spec: ReferenceGrantV1Beta1Spec;
+}
+
+/**
+ * Converts an object of type 'ReferenceGrantV1Beta1Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ReferenceGrantV1Beta1Props(obj: ReferenceGrantV1Beta1Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_ReferenceGrantV1Beta1Spec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of ReferenceGrant.
+ *
+ * @schema ReferenceGrantV1Beta1Spec
+ */
+export interface ReferenceGrantV1Beta1Spec {
+  /**
+   * From describes the trusted namespaces and kinds that can reference the
+   * resources described in "To". Each entry in this list MUST be considered
+   * to be an additional place that references can be valid from, or to put
+   * this another way, entries MUST be combined using OR.
+   *
+   * Support: Core
+   *
+   * @schema ReferenceGrantV1Beta1Spec#from
+   */
+  readonly from: ReferenceGrantV1Beta1SpecFrom[];
+
+  /**
+   * To describes the resources that may be referenced by the resources
+   * described in "From". Each entry in this list MUST be considered to be an
+   * additional place that references can be valid to, or to put this another
+   * way, entries MUST be combined using OR.
+   *
+   * Support: Core
+   *
+   * @schema ReferenceGrantV1Beta1Spec#to
+   */
+  readonly to: ReferenceGrantV1Beta1SpecTo[];
+}
+
+/**
+ * Converts an object of type 'ReferenceGrantV1Beta1Spec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ReferenceGrantV1Beta1Spec(obj: ReferenceGrantV1Beta1Spec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'from': obj.from?.map(y => toJson_ReferenceGrantV1Beta1SpecFrom(y)),
+    'to': obj.to?.map(y => toJson_ReferenceGrantV1Beta1SpecTo(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ReferenceGrantFrom describes trusted namespaces and kinds.
+ *
+ * @schema ReferenceGrantV1Beta1SpecFrom
+ */
+export interface ReferenceGrantV1Beta1SpecFrom {
+  /**
+   * Group is the group of the referent.
+   * When empty, the Kubernetes core API group is inferred.
+   *
+   * Support: Core
+   *
+   * @schema ReferenceGrantV1Beta1SpecFrom#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is the kind of the referent. Although implementations may support
+   * additional resources, the following types are part of the "Core"
+   * support level for this field.
+   *
+   * When used to permit a SecretObjectReference:
+   *
+   * * Gateway
+   *
+   * When used to permit a BackendObjectReference:
+   *
+   * * GRPCRoute
+   * * HTTPRoute
+   * * TCPRoute
+   * * TLSRoute
+   * * UDPRoute
+   *
+   * @schema ReferenceGrantV1Beta1SpecFrom#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Namespace is the namespace of the referent.
+   *
+   * Support: Core
+   *
+   * @schema ReferenceGrantV1Beta1SpecFrom#namespace
+   */
+  readonly namespace: string;
+}
+
+/**
+ * Converts an object of type 'ReferenceGrantV1Beta1SpecFrom' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ReferenceGrantV1Beta1SpecFrom(obj: ReferenceGrantV1Beta1SpecFrom | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ReferenceGrantTo describes what Kinds are allowed as targets of the
+ * references.
+ *
+ * @schema ReferenceGrantV1Beta1SpecTo
+ */
+export interface ReferenceGrantV1Beta1SpecTo {
+  /**
+   * Group is the group of the referent.
+   * When empty, the Kubernetes core API group is inferred.
+   *
+   * Support: Core
+   *
+   * @schema ReferenceGrantV1Beta1SpecTo#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is the kind of the referent. Although implementations may support
+   * additional resources, the following types are part of the "Core"
+   * support level for this field:
+   *
+   * * Secret when used to permit a SecretObjectReference
+   * * Service when used to permit a BackendObjectReference
+   *
+   * @schema ReferenceGrantV1Beta1SpecTo#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent. When unspecified, this policy
+   * refers to all resources of the specified Group and Kind in the local
+   * namespace.
+   *
+   * @schema ReferenceGrantV1Beta1SpecTo#name
+   */
+  readonly name?: string;
+}
+
+/**
+ * Converts an object of type 'ReferenceGrantV1Beta1SpecTo' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ReferenceGrantV1Beta1SpecTo(obj: ReferenceGrantV1Beta1SpecTo | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+
+/**
  * TCPRoute provides a way to route TCP requests. When combined with a Gateway
 listener, it can be used to forward connections on the port specified by the
 listener to a set of backends specified by the TCPRoute.
@@ -16086,7 +20845,7 @@ export class TcpRoute extends ApiObject {
    * Returns the apiVersion and kind for "TCPRoute"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+    apiVersion: 'gateway.networking.k8s.io/v1',
     kind: 'TCPRoute',
   }
 
@@ -16245,6 +21004,24 @@ export interface TcpRouteSpec {
    * @schema TcpRouteSpec#rules
    */
   readonly rules: TcpRouteSpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema TcpRouteSpec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: TcpRouteSpecUseDefaultGateways;
 }
 
 /**
@@ -16256,6 +21033,7 @@ export function toJson_TcpRouteSpec(obj: TcpRouteSpec | undefined): Record<strin
   const result = {
     'parentRefs': obj.parentRefs?.map(y => toJson_TcpRouteSpecParentRefs(y)),
     'rules': obj.rules?.map(y => toJson_TcpRouteSpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -16444,20 +21222,12 @@ export interface TcpRouteSpecRules {
    *
    * Support: Core for Kubernetes Service
    *
-   * Support: Extended for Kubernetes ServiceImport
-   *
-   * Support: Implementation-specific for any other resource
-   *
-   * Support for weight: Extended
-   *
    * @schema TcpRouteSpecRules#backendRefs
    */
-  readonly backendRefs?: TcpRouteSpecRulesBackendRefs[];
+  readonly backendRefs: TcpRouteSpecRulesBackendRefs[];
 
   /**
    * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
-   *
-   * Support: Extended
    *
    * @schema TcpRouteSpecRules#name
    */
@@ -16478,6 +21248,29 @@ export function toJson_TcpRouteSpecRules(obj: TcpRouteSpecRules | undefined): Re
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema TcpRouteSpecUseDefaultGateways
+ */
+export enum TcpRouteSpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
 
 /**
  * BackendRef defines how a Route should forward a request to a Kubernetes
@@ -16614,6 +21407,579 @@ export function toJson_TcpRouteSpecRulesBackendRefs(obj: TcpRouteSpecRulesBacken
 
 
 /**
+ * TCPRoute provides a way to route TCP requests. When combined with a Gateway
+listener, it can be used to forward connections on the port specified by the
+listener to a set of backends specified by the TCPRoute.
+ *
+ * @schema TCPRouteV1Alpha2
+ */
+export class TcpRouteV1Alpha2 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "TCPRouteV1Alpha2"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+    kind: 'TCPRoute',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "TCPRouteV1Alpha2".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: TcpRouteV1Alpha2Props): any {
+    return {
+      ...TcpRouteV1Alpha2.GVK,
+      ...toJson_TcpRouteV1Alpha2Props(props),
+    };
+  }
+
+  /**
+   * Defines a "TCPRouteV1Alpha2" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: TcpRouteV1Alpha2Props) {
+    super(scope, id, {
+      ...TcpRouteV1Alpha2.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...TcpRouteV1Alpha2.GVK,
+      ...toJson_TcpRouteV1Alpha2Props(resolved),
+    };
+  }
+}
+
+/**
+ * TCPRoute provides a way to route TCP requests. When combined with a Gateway
+ * listener, it can be used to forward connections on the port specified by the
+ * listener to a set of backends specified by the TCPRoute.
+ *
+ * @schema TCPRouteV1Alpha2
+ */
+export interface TcpRouteV1Alpha2Props {
+  /**
+   * @schema TCPRouteV1Alpha2#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of TCPRoute.
+   *
+   * @schema TCPRouteV1Alpha2#spec
+   */
+  readonly spec: TcpRouteV1Alpha2Spec;
+}
+
+/**
+ * Converts an object of type 'TcpRouteV1Alpha2Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TcpRouteV1Alpha2Props(obj: TcpRouteV1Alpha2Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_TcpRouteV1Alpha2Spec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of TCPRoute.
+ *
+ * @schema TcpRouteV1Alpha2Spec
+ */
+export interface TcpRouteV1Alpha2Spec {
+  /**
+   * ParentRefs references the resources (usually Gateways) that a Route wants
+   * to be attached to. Note that the referenced parent resource needs to
+   * allow this for the attachment to be complete. For Gateways, that means
+   * the Gateway needs to allow attachment from Routes of this kind and
+   * namespace. For Services, that means the Service must either be in the same
+   * namespace for a "producer" route, or the mesh implementation must support
+   * and allow "consumer" routes for the referenced Service. ReferenceGrant is
+   * not applicable for governing ParentRefs to Services - it is not possible to
+   * create a "producer" route for a Service in a different namespace from the
+   * Route.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * This API may be extended in the future to support additional kinds of parent
+   * resources.
+   *
+   * ParentRefs must be _distinct_. This means either that:
+   *
+   * * They select different objects.  If this is the case, then parentRef
+   * entries are distinct. In terms of fields, this means that the
+   * multi-part key defined by `group`, `kind`, `namespace`, and `name` must
+   * be unique across all parentRef entries in the Route.
+   * * They do not select different objects, but for each optional field used,
+   * each ParentRef that selects the same object must set the same set of
+   * optional fields to different values. If one ParentRef sets a
+   * combination of optional fields, all must set the same combination.
+   *
+   * Some examples:
+   *
+   * * If one ParentRef sets `sectionName`, all ParentRefs referencing the
+   * same object must also set `sectionName`.
+   * * If one ParentRef sets `port`, all ParentRefs referencing the same
+   * object must also set `port`.
+   * * If one ParentRef sets `sectionName` and `port`, all ParentRefs
+   * referencing the same object must also set `sectionName` and `port`.
+   *
+   * It is possible to separately reference multiple distinct objects that may
+   * be collapsed by an implementation. For example, some implementations may
+   * choose to merge compatible Gateway Listeners together. If that is the
+   * case, the list of routes attached to those resources should also be
+   * merged.
+   *
+   * Note that for ParentRefs that cross namespace boundaries, there are specific
+   * rules. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example,
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable other kinds of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   * @schema TcpRouteV1Alpha2Spec#parentRefs
+   */
+  readonly parentRefs?: TcpRouteV1Alpha2SpecParentRefs[];
+
+  /**
+   * Rules are a list of TCP matchers and actions.
+   *
+   * @schema TcpRouteV1Alpha2Spec#rules
+   */
+  readonly rules: TcpRouteV1Alpha2SpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema TcpRouteV1Alpha2Spec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: TcpRouteV1Alpha2SpecUseDefaultGateways;
+}
+
+/**
+ * Converts an object of type 'TcpRouteV1Alpha2Spec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TcpRouteV1Alpha2Spec(obj: TcpRouteV1Alpha2Spec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'parentRefs': obj.parentRefs?.map(y => toJson_TcpRouteV1Alpha2SpecParentRefs(y)),
+    'rules': obj.rules?.map(y => toJson_TcpRouteV1Alpha2SpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParentReference identifies an API object (usually a Gateway) that can be considered
+ * a parent of this resource (usually a route). There are two kinds of parent resources
+ * with "Core" support:
+ *
+ * * Gateway (Gateway conformance profile)
+ * * Service (Mesh conformance profile, ClusterIP Services only)
+ *
+ * This API may be extended in the future to support additional kinds of parent
+ * resources.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * @schema TcpRouteV1Alpha2SpecParentRefs
+ */
+export interface TcpRouteV1Alpha2SpecParentRefs {
+  /**
+   * Group is the group of the referent.
+   * When unspecified, "gateway.networking.k8s.io" is inferred.
+   * To set the core API group (such as for a "Service" kind referent),
+   * Group must be explicitly set to "" (empty string).
+   *
+   * Support: Core
+   *
+   * @schema TcpRouteV1Alpha2SpecParentRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * Support for other resources is Implementation-Specific.
+   *
+   * @schema TcpRouteV1Alpha2SpecParentRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * Support: Core
+   *
+   * @schema TcpRouteV1Alpha2SpecParentRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referent. When unspecified, this refers
+   * to the local namespace of the Route.
+   *
+   * Note that there are specific rules for ParentRefs which cross namespace
+   * boundaries. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example:
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable any other kind of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   *
+   * Support: Core
+   *
+   * @schema TcpRouteV1Alpha2SpecParentRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port is the network port this Route targets. It can be interpreted
+   * differently based on the type of parent resource.
+   *
+   * When the parent resource is a Gateway, this targets all listeners
+   * listening on the specified port that also support this kind of Route(and
+   * select this Route). It's not recommended to set `Port` unless the
+   * networking behaviors specified in a Route must apply to a specific port
+   * as opposed to a listener(s) whose port(s) may be changed. When both Port
+   * and SectionName are specified, the name and port of the selected listener
+   * must match both specified values.
+   *
+   *
+   * When the parent resource is a Service, this targets a specific port in the
+   * Service spec. When both Port (experimental) and SectionName are specified,
+   * the name and port of the selected port must match both specified values.
+   *
+   *
+   * Implementations MAY choose to support other parent resources.
+   * Implementations supporting other types of parent resources MUST clearly
+   * document how/if Port is interpreted.
+   *
+   * For the purpose of status, an attachment is considered successful as
+   * long as the parent resource accepts it partially. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+   * from the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route,
+   * the Route MUST be considered detached from the Gateway.
+   *
+   * Support: Extended
+   *
+   * @schema TcpRouteV1Alpha2SpecParentRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * SectionName is the name of a section within the target resource. In the
+   * following resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   * * Service: Port name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   *
+   * Implementations MAY choose to support attaching Routes to other resources.
+   * If that is the case, they MUST clearly document how SectionName is
+   * interpreted.
+   *
+   * When unspecified (empty string), this will reference the entire resource.
+   * For the purpose of status, an attachment is considered successful if at
+   * least one section in the parent resource accepts it. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+   * the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route, the
+   * Route MUST be considered detached from the Gateway.
+   *
+   * Support: Core
+   *
+   * @schema TcpRouteV1Alpha2SpecParentRefs#sectionName
+   */
+  readonly sectionName?: string;
+}
+
+/**
+ * Converts an object of type 'TcpRouteV1Alpha2SpecParentRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TcpRouteV1Alpha2SpecParentRefs(obj: TcpRouteV1Alpha2SpecParentRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'sectionName': obj.sectionName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TCPRouteRule is the configuration for a given rule.
+ *
+ * @schema TcpRouteV1Alpha2SpecRules
+ */
+export interface TcpRouteV1Alpha2SpecRules {
+  /**
+   * BackendRefs defines the backend(s) where matching requests should be
+   * sent. If unspecified or invalid (refers to a nonexistent resource or a
+   * Service with no endpoints), the underlying implementation MUST actively
+   * reject connection attempts to this backend. Connection rejections must
+   * respect weight; if an invalid backend is requested to have 80% of
+   * connections, then 80% of connections must be rejected instead.
+   *
+   * Support: Core for Kubernetes Service
+   *
+   * @schema TcpRouteV1Alpha2SpecRules#backendRefs
+   */
+  readonly backendRefs: TcpRouteV1Alpha2SpecRulesBackendRefs[];
+
+  /**
+   * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
+   *
+   * @schema TcpRouteV1Alpha2SpecRules#name
+   */
+  readonly name?: string;
+}
+
+/**
+ * Converts an object of type 'TcpRouteV1Alpha2SpecRules' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TcpRouteV1Alpha2SpecRules(obj: TcpRouteV1Alpha2SpecRules | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRefs': obj.backendRefs?.map(y => toJson_TcpRouteV1Alpha2SpecRulesBackendRefs(y)),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema TcpRouteV1Alpha2SpecUseDefaultGateways
+ */
+export enum TcpRouteV1Alpha2SpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
+ * BackendRef defines how a Route should forward a request to a Kubernetes
+ * resource.
+ *
+ * Note that when a namespace different than the local namespace is specified, a
+ * ReferenceGrant object is required in the referent namespace to allow that
+ * namespace's owner to accept the reference. See the ReferenceGrant
+ * documentation for details.
+ *
+ *
+ * When the BackendRef points to a Kubernetes Service, implementations SHOULD
+ * honor the appProtocol field if it is set for the target Service Port.
+ *
+ * Implementations supporting appProtocol SHOULD recognize the Kubernetes
+ * Standard Application Protocols defined in KEP-3726.
+ *
+ * If a Service appProtocol isn't specified, an implementation MAY infer the
+ * backend protocol through its own means. Implementations MAY infer the
+ * protocol from the Route type referring to the backend Service.
+ *
+ * If a Route is not able to send traffic to the backend using the specified
+ * protocol then the backend is considered invalid. Implementations MUST set the
+ * "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
+ *
+ *
+ * Note that when the BackendTLSPolicy object is enabled by the implementation,
+ * there are some extra rules about validity to consider here. See the fields
+ * where this struct is used for more information about the exact behavior.
+ *
+ * @schema TcpRouteV1Alpha2SpecRulesBackendRefs
+ */
+export interface TcpRouteV1Alpha2SpecRulesBackendRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema TcpRouteV1Alpha2SpecRulesBackendRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema TcpRouteV1Alpha2SpecRulesBackendRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema TcpRouteV1Alpha2SpecRulesBackendRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema TcpRouteV1Alpha2SpecRulesBackendRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema TcpRouteV1Alpha2SpecRulesBackendRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema TcpRouteV1Alpha2SpecRulesBackendRefs#weight
+   */
+  readonly weight?: number;
+}
+
+/**
+ * Converts an object of type 'TcpRouteV1Alpha2SpecRulesBackendRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TcpRouteV1Alpha2SpecRulesBackendRefs(obj: TcpRouteV1Alpha2SpecRulesBackendRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+
+/**
  * The TLSRoute resource is similar to TCPRoute, but can be configured
 to match against TLS-specific metadata. This allows more flexibility
 in matching streams for a given TLS listener.
@@ -16628,7 +21994,7 @@ export class TlsRoute extends ApiObject {
    * Returns the apiVersion and kind for "TLSRoute"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+    apiVersion: 'gateway.networking.k8s.io/v1',
     kind: 'TLSRoute',
   }
 
@@ -16718,43 +22084,17 @@ export function toJson_TlsRouteProps(obj: TlsRouteProps | undefined): Record<str
  */
 export interface TlsRouteSpec {
   /**
-   * Hostnames defines a set of SNI names that should match against the
+   * Hostnames defines a set of SNI hostnames that should match against the
    * SNI attribute of TLS ClientHello message in TLS handshake. This matches
    * the RFC 1123 definition of a hostname with 2 notable exceptions:
    *
-   * 1. IPs are not allowed in SNI names per RFC 6066.
+   * 1. IPs are not allowed in SNI hostnames per RFC 6066.
    * 2. A hostname may be prefixed with a wildcard label (`*.`). The wildcard
    * label must appear by itself as the first label.
    *
-   * If a hostname is specified by both the Listener and TLSRoute, there
-   * must be at least one intersecting hostname for the TLSRoute to be
-   * attached to the Listener. For example:
-   *
-   * * A Listener with `test.example.com` as the hostname matches TLSRoutes
-   * that have either not specified any hostnames, or have specified at
-   * least one of `test.example.com` or `*.example.com`.
-   * * A Listener with `*.example.com` as the hostname matches TLSRoutes
-   * that have either not specified any hostnames or have specified at least
-   * one hostname that matches the Listener hostname. For example,
-   * `test.example.com` and `*.example.com` would both match. On the other
-   * hand, `example.com` and `test.example.net` would not match.
-   *
-   * If both the Listener and TLSRoute have specified hostnames, any
-   * TLSRoute hostnames that do not match the Listener hostname MUST be
-   * ignored. For example, if a Listener specified `*.example.com`, and the
-   * TLSRoute specified `test.example.com` and `test.example.net`,
-   * `test.example.net` must not be considered for a match.
-   *
-   * If both the Listener and TLSRoute have specified hostnames, and none
-   * match with the criteria above, then the TLSRoute is not accepted. The
-   * implementation must raise an 'Accepted' Condition with a status of
-   * `False` in the corresponding RouteParentStatus.
-   *
-   * Support: Core
-   *
    * @schema TlsRouteSpec#hostnames
    */
-  readonly hostnames?: string[];
+  readonly hostnames: string[];
 
   /**
    * ParentRefs references the resources (usually Gateways) that a Route wants
@@ -16824,11 +22164,29 @@ export interface TlsRouteSpec {
   readonly parentRefs?: TlsRouteSpecParentRefs[];
 
   /**
-   * Rules are a list of TLS matchers and actions.
+   * Rules are a list of actions.
    *
    * @schema TlsRouteSpec#rules
    */
   readonly rules: TlsRouteSpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema TlsRouteSpec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: TlsRouteSpecUseDefaultGateways;
 }
 
 /**
@@ -16841,6 +22199,7 @@ export function toJson_TlsRouteSpec(obj: TlsRouteSpec | undefined): Record<strin
     'hostnames': obj.hostnames?.map(y => y),
     'parentRefs': obj.parentRefs?.map(y => toJson_TlsRouteSpecParentRefs(y)),
     'rules': obj.rules?.map(y => toJson_TlsRouteSpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -17025,10 +22384,12 @@ export interface TlsRouteSpecRules {
    * a Service with no endpoints), the rule performs no forwarding; if no
    * filters are specified that would result in a response being sent, the
    * underlying implementation must actively reject request attempts to this
-   * backend, by rejecting the connection or returning a 500 status code.
-   * Request rejections must respect weight; if an invalid backend is
-   * requested to have 80% of requests, then 80% of requests must be rejected
-   * instead.
+   * backend, by rejecting the connection. Request rejections must respect
+   * weight; if an invalid backend is requested to have 80% of requests, then
+   * 80% of requests must be rejected instead.
+   *
+   * When a TLSRoute is attached to a listener in Terminate mode, a BackendTLSPolicy
+   * can be used to enable re-encryption of the traffic to the backends.
    *
    * Support: Core for Kubernetes Service
    *
@@ -17038,14 +22399,14 @@ export interface TlsRouteSpecRules {
    *
    * Support for weight: Extended
    *
+   * Support for BackendTLSPolicy: Extended
+   *
    * @schema TlsRouteSpecRules#backendRefs
    */
-  readonly backendRefs?: TlsRouteSpecRulesBackendRefs[];
+  readonly backendRefs: TlsRouteSpecRulesBackendRefs[];
 
   /**
    * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
-   *
-   * Support: Extended
    *
    * @schema TlsRouteSpecRules#name
    */
@@ -17066,6 +22427,29 @@ export function toJson_TlsRouteSpecRules(obj: TlsRouteSpecRules | undefined): Re
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema TlsRouteSpecUseDefaultGateways
+ */
+export enum TlsRouteSpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
 
 /**
  * BackendRef defines how a Route should forward a request to a Kubernetes
@@ -17202,6 +22586,1238 @@ export function toJson_TlsRouteSpecRulesBackendRefs(obj: TlsRouteSpecRulesBacken
 
 
 /**
+ * The TLSRoute resource is similar to TCPRoute, but can be configured
+to match against TLS-specific metadata. This allows more flexibility
+in matching streams for a given TLS listener.
+ *
+ * @schema TLSRouteV1Alpha2
+ */
+export class TlsRouteV1Alpha2 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "TLSRouteV1Alpha2"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+    kind: 'TLSRoute',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "TLSRouteV1Alpha2".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: TlsRouteV1Alpha2Props): any {
+    return {
+      ...TlsRouteV1Alpha2.GVK,
+      ...toJson_TlsRouteV1Alpha2Props(props),
+    };
+  }
+
+  /**
+   * Defines a "TLSRouteV1Alpha2" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: TlsRouteV1Alpha2Props) {
+    super(scope, id, {
+      ...TlsRouteV1Alpha2.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...TlsRouteV1Alpha2.GVK,
+      ...toJson_TlsRouteV1Alpha2Props(resolved),
+    };
+  }
+}
+
+/**
+ * The TLSRoute resource is similar to TCPRoute, but can be configured
+ * to match against TLS-specific metadata. This allows more flexibility
+ * in matching streams for a given TLS listener.
+ *
+ * @schema TLSRouteV1Alpha2
+ */
+export interface TlsRouteV1Alpha2Props {
+  /**
+   * @schema TLSRouteV1Alpha2#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of TLSRoute.
+   *
+   * @schema TLSRouteV1Alpha2#spec
+   */
+  readonly spec: TlsRouteV1Alpha2Spec;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha2Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha2Props(obj: TlsRouteV1Alpha2Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_TlsRouteV1Alpha2Spec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of TLSRoute.
+ *
+ * @schema TlsRouteV1Alpha2Spec
+ */
+export interface TlsRouteV1Alpha2Spec {
+  /**
+   * Hostnames defines a set of SNI names that should match against the
+   * SNI attribute of TLS ClientHello message in TLS handshake. This matches
+   * the RFC 1123 definition of a hostname with 2 notable exceptions:
+   *
+   * 1. IPs are not allowed in SNI names per RFC 6066.
+   * 2. A hostname may be prefixed with a wildcard label (`*.`). The wildcard
+   * label must appear by itself as the first label.
+   *
+   * If a hostname is specified by both the Listener and TLSRoute, there
+   * must be at least one intersecting hostname for the TLSRoute to be
+   * attached to the Listener. For example:
+   *
+   * * A Listener with `test.example.com` as the hostname matches TLSRoutes
+   * that have either not specified any hostnames, or have specified at
+   * least one of `test.example.com` or `*.example.com`.
+   * * A Listener with `*.example.com` as the hostname matches TLSRoutes
+   * that have either not specified any hostnames or have specified at least
+   * one hostname that matches the Listener hostname. For example,
+   * `test.example.com` and `*.example.com` would both match. On the other
+   * hand, `example.com` and `test.example.net` would not match.
+   *
+   * If both the Listener and TLSRoute have specified hostnames, any
+   * TLSRoute hostnames that do not match the Listener hostname MUST be
+   * ignored. For example, if a Listener specified `*.example.com`, and the
+   * TLSRoute specified `test.example.com` and `test.example.net`,
+   * `test.example.net` must not be considered for a match.
+   *
+   * If both the Listener and TLSRoute have specified hostnames, and none
+   * match with the criteria above, then the TLSRoute is not accepted. The
+   * implementation must raise an 'Accepted' Condition with a status of
+   * `False` in the corresponding RouteParentStatus.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha2Spec#hostnames
+   */
+  readonly hostnames?: string[];
+
+  /**
+   * ParentRefs references the resources (usually Gateways) that a Route wants
+   * to be attached to. Note that the referenced parent resource needs to
+   * allow this for the attachment to be complete. For Gateways, that means
+   * the Gateway needs to allow attachment from Routes of this kind and
+   * namespace. For Services, that means the Service must either be in the same
+   * namespace for a "producer" route, or the mesh implementation must support
+   * and allow "consumer" routes for the referenced Service. ReferenceGrant is
+   * not applicable for governing ParentRefs to Services - it is not possible to
+   * create a "producer" route for a Service in a different namespace from the
+   * Route.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * This API may be extended in the future to support additional kinds of parent
+   * resources.
+   *
+   * ParentRefs must be _distinct_. This means either that:
+   *
+   * * They select different objects.  If this is the case, then parentRef
+   * entries are distinct. In terms of fields, this means that the
+   * multi-part key defined by `group`, `kind`, `namespace`, and `name` must
+   * be unique across all parentRef entries in the Route.
+   * * They do not select different objects, but for each optional field used,
+   * each ParentRef that selects the same object must set the same set of
+   * optional fields to different values. If one ParentRef sets a
+   * combination of optional fields, all must set the same combination.
+   *
+   * Some examples:
+   *
+   * * If one ParentRef sets `sectionName`, all ParentRefs referencing the
+   * same object must also set `sectionName`.
+   * * If one ParentRef sets `port`, all ParentRefs referencing the same
+   * object must also set `port`.
+   * * If one ParentRef sets `sectionName` and `port`, all ParentRefs
+   * referencing the same object must also set `sectionName` and `port`.
+   *
+   * It is possible to separately reference multiple distinct objects that may
+   * be collapsed by an implementation. For example, some implementations may
+   * choose to merge compatible Gateway Listeners together. If that is the
+   * case, the list of routes attached to those resources should also be
+   * merged.
+   *
+   * Note that for ParentRefs that cross namespace boundaries, there are specific
+   * rules. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example,
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable other kinds of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   * @schema TlsRouteV1Alpha2Spec#parentRefs
+   */
+  readonly parentRefs?: TlsRouteV1Alpha2SpecParentRefs[];
+
+  /**
+   * Rules are a list of TLS matchers and actions.
+   *
+   * @schema TlsRouteV1Alpha2Spec#rules
+   */
+  readonly rules: TlsRouteV1Alpha2SpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema TlsRouteV1Alpha2Spec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: TlsRouteV1Alpha2SpecUseDefaultGateways;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha2Spec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha2Spec(obj: TlsRouteV1Alpha2Spec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'hostnames': obj.hostnames?.map(y => y),
+    'parentRefs': obj.parentRefs?.map(y => toJson_TlsRouteV1Alpha2SpecParentRefs(y)),
+    'rules': obj.rules?.map(y => toJson_TlsRouteV1Alpha2SpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParentReference identifies an API object (usually a Gateway) that can be considered
+ * a parent of this resource (usually a route). There are two kinds of parent resources
+ * with "Core" support:
+ *
+ * * Gateway (Gateway conformance profile)
+ * * Service (Mesh conformance profile, ClusterIP Services only)
+ *
+ * This API may be extended in the future to support additional kinds of parent
+ * resources.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * @schema TlsRouteV1Alpha2SpecParentRefs
+ */
+export interface TlsRouteV1Alpha2SpecParentRefs {
+  /**
+   * Group is the group of the referent.
+   * When unspecified, "gateway.networking.k8s.io" is inferred.
+   * To set the core API group (such as for a "Service" kind referent),
+   * Group must be explicitly set to "" (empty string).
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha2SpecParentRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * Support for other resources is Implementation-Specific.
+   *
+   * @schema TlsRouteV1Alpha2SpecParentRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha2SpecParentRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referent. When unspecified, this refers
+   * to the local namespace of the Route.
+   *
+   * Note that there are specific rules for ParentRefs which cross namespace
+   * boundaries. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example:
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable any other kind of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha2SpecParentRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port is the network port this Route targets. It can be interpreted
+   * differently based on the type of parent resource.
+   *
+   * When the parent resource is a Gateway, this targets all listeners
+   * listening on the specified port that also support this kind of Route(and
+   * select this Route). It's not recommended to set `Port` unless the
+   * networking behaviors specified in a Route must apply to a specific port
+   * as opposed to a listener(s) whose port(s) may be changed. When both Port
+   * and SectionName are specified, the name and port of the selected listener
+   * must match both specified values.
+   *
+   *
+   * When the parent resource is a Service, this targets a specific port in the
+   * Service spec. When both Port (experimental) and SectionName are specified,
+   * the name and port of the selected port must match both specified values.
+   *
+   *
+   * Implementations MAY choose to support other parent resources.
+   * Implementations supporting other types of parent resources MUST clearly
+   * document how/if Port is interpreted.
+   *
+   * For the purpose of status, an attachment is considered successful as
+   * long as the parent resource accepts it partially. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+   * from the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route,
+   * the Route MUST be considered detached from the Gateway.
+   *
+   * Support: Extended
+   *
+   * @schema TlsRouteV1Alpha2SpecParentRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * SectionName is the name of a section within the target resource. In the
+   * following resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   * * Service: Port name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   *
+   * Implementations MAY choose to support attaching Routes to other resources.
+   * If that is the case, they MUST clearly document how SectionName is
+   * interpreted.
+   *
+   * When unspecified (empty string), this will reference the entire resource.
+   * For the purpose of status, an attachment is considered successful if at
+   * least one section in the parent resource accepts it. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+   * the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route, the
+   * Route MUST be considered detached from the Gateway.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha2SpecParentRefs#sectionName
+   */
+  readonly sectionName?: string;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha2SpecParentRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha2SpecParentRefs(obj: TlsRouteV1Alpha2SpecParentRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'sectionName': obj.sectionName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLSRouteRule is the configuration for a given rule.
+ *
+ * @schema TlsRouteV1Alpha2SpecRules
+ */
+export interface TlsRouteV1Alpha2SpecRules {
+  /**
+   * BackendRefs defines the backend(s) where matching requests should be
+   * sent. If unspecified or invalid (refers to a nonexistent resource or
+   * a Service with no endpoints), the rule performs no forwarding; if no
+   * filters are specified that would result in a response being sent, the
+   * underlying implementation must actively reject request attempts to this
+   * backend, by rejecting the connection. Request rejections must respect
+   * weight; if an invalid backend is requested to have 80% of requests, then
+   * 80% of requests must be rejected instead.
+   *
+   * When a TLSRoute is attached to a listener in Terminate mode, a BackendTLSPolicy
+   * can be used to enable re-encryption of the traffic to the backends.
+   *
+   * Support: Core for Kubernetes Service
+   *
+   * Support: Extended for Kubernetes ServiceImport
+   *
+   * Support: Implementation-specific for any other resource
+   *
+   * Support for weight: Extended
+   *
+   * Support for BackendTLSPolicy: Extended
+   *
+   * @schema TlsRouteV1Alpha2SpecRules#backendRefs
+   */
+  readonly backendRefs: TlsRouteV1Alpha2SpecRulesBackendRefs[];
+
+  /**
+   * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
+   *
+   * @schema TlsRouteV1Alpha2SpecRules#name
+   */
+  readonly name?: string;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha2SpecRules' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha2SpecRules(obj: TlsRouteV1Alpha2SpecRules | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRefs': obj.backendRefs?.map(y => toJson_TlsRouteV1Alpha2SpecRulesBackendRefs(y)),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema TlsRouteV1Alpha2SpecUseDefaultGateways
+ */
+export enum TlsRouteV1Alpha2SpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
+ * BackendRef defines how a Route should forward a request to a Kubernetes
+ * resource.
+ *
+ * Note that when a namespace different than the local namespace is specified, a
+ * ReferenceGrant object is required in the referent namespace to allow that
+ * namespace's owner to accept the reference. See the ReferenceGrant
+ * documentation for details.
+ *
+ *
+ * When the BackendRef points to a Kubernetes Service, implementations SHOULD
+ * honor the appProtocol field if it is set for the target Service Port.
+ *
+ * Implementations supporting appProtocol SHOULD recognize the Kubernetes
+ * Standard Application Protocols defined in KEP-3726.
+ *
+ * If a Service appProtocol isn't specified, an implementation MAY infer the
+ * backend protocol through its own means. Implementations MAY infer the
+ * protocol from the Route type referring to the backend Service.
+ *
+ * If a Route is not able to send traffic to the backend using the specified
+ * protocol then the backend is considered invalid. Implementations MUST set the
+ * "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
+ *
+ *
+ * Note that when the BackendTLSPolicy object is enabled by the implementation,
+ * there are some extra rules about validity to consider here. See the fields
+ * where this struct is used for more information about the exact behavior.
+ *
+ * @schema TlsRouteV1Alpha2SpecRulesBackendRefs
+ */
+export interface TlsRouteV1Alpha2SpecRulesBackendRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema TlsRouteV1Alpha2SpecRulesBackendRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema TlsRouteV1Alpha2SpecRulesBackendRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema TlsRouteV1Alpha2SpecRulesBackendRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha2SpecRulesBackendRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema TlsRouteV1Alpha2SpecRulesBackendRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema TlsRouteV1Alpha2SpecRulesBackendRefs#weight
+   */
+  readonly weight?: number;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha2SpecRulesBackendRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha2SpecRulesBackendRefs(obj: TlsRouteV1Alpha2SpecRulesBackendRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+
+/**
+ * The TLSRoute resource is similar to TCPRoute, but can be configured
+to match against TLS-specific metadata. This allows more flexibility
+in matching streams for a given TLS listener.
+
+If you need to forward traffic to a single target for a TLS listener, you
+could choose to use a TCPRoute with a TLS listener.
+ *
+ * @schema TLSRouteV1Alpha3
+ */
+export class TlsRouteV1Alpha3 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "TLSRouteV1Alpha3"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1alpha3',
+    kind: 'TLSRoute',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "TLSRouteV1Alpha3".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: TlsRouteV1Alpha3Props): any {
+    return {
+      ...TlsRouteV1Alpha3.GVK,
+      ...toJson_TlsRouteV1Alpha3Props(props),
+    };
+  }
+
+  /**
+   * Defines a "TLSRouteV1Alpha3" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: TlsRouteV1Alpha3Props) {
+    super(scope, id, {
+      ...TlsRouteV1Alpha3.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...TlsRouteV1Alpha3.GVK,
+      ...toJson_TlsRouteV1Alpha3Props(resolved),
+    };
+  }
+}
+
+/**
+ * The TLSRoute resource is similar to TCPRoute, but can be configured
+ * to match against TLS-specific metadata. This allows more flexibility
+ * in matching streams for a given TLS listener.
+ *
+ * If you need to forward traffic to a single target for a TLS listener, you
+ * could choose to use a TCPRoute with a TLS listener.
+ *
+ * @schema TLSRouteV1Alpha3
+ */
+export interface TlsRouteV1Alpha3Props {
+  /**
+   * @schema TLSRouteV1Alpha3#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of TLSRoute.
+   *
+   * @schema TLSRouteV1Alpha3#spec
+   */
+  readonly spec: TlsRouteV1Alpha3Spec;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha3Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha3Props(obj: TlsRouteV1Alpha3Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_TlsRouteV1Alpha3Spec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of TLSRoute.
+ *
+ * @schema TlsRouteV1Alpha3Spec
+ */
+export interface TlsRouteV1Alpha3Spec {
+  /**
+   * Hostnames defines a set of SNI hostnames that should match against the
+   * SNI attribute of TLS ClientHello message in TLS handshake. This matches
+   * the RFC 1123 definition of a hostname with 2 notable exceptions:
+   *
+   * 1. IPs are not allowed in SNI hostnames per RFC 6066.
+   * 2. A hostname may be prefixed with a wildcard label (`*.`). The wildcard
+   * label must appear by itself as the first label.
+   *
+   * @schema TlsRouteV1Alpha3Spec#hostnames
+   */
+  readonly hostnames: string[];
+
+  /**
+   * ParentRefs references the resources (usually Gateways) that a Route wants
+   * to be attached to. Note that the referenced parent resource needs to
+   * allow this for the attachment to be complete. For Gateways, that means
+   * the Gateway needs to allow attachment from Routes of this kind and
+   * namespace. For Services, that means the Service must either be in the same
+   * namespace for a "producer" route, or the mesh implementation must support
+   * and allow "consumer" routes for the referenced Service. ReferenceGrant is
+   * not applicable for governing ParentRefs to Services - it is not possible to
+   * create a "producer" route for a Service in a different namespace from the
+   * Route.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * This API may be extended in the future to support additional kinds of parent
+   * resources.
+   *
+   * ParentRefs must be _distinct_. This means either that:
+   *
+   * * They select different objects.  If this is the case, then parentRef
+   * entries are distinct. In terms of fields, this means that the
+   * multi-part key defined by `group`, `kind`, `namespace`, and `name` must
+   * be unique across all parentRef entries in the Route.
+   * * They do not select different objects, but for each optional field used,
+   * each ParentRef that selects the same object must set the same set of
+   * optional fields to different values. If one ParentRef sets a
+   * combination of optional fields, all must set the same combination.
+   *
+   * Some examples:
+   *
+   * * If one ParentRef sets `sectionName`, all ParentRefs referencing the
+   * same object must also set `sectionName`.
+   * * If one ParentRef sets `port`, all ParentRefs referencing the same
+   * object must also set `port`.
+   * * If one ParentRef sets `sectionName` and `port`, all ParentRefs
+   * referencing the same object must also set `sectionName` and `port`.
+   *
+   * It is possible to separately reference multiple distinct objects that may
+   * be collapsed by an implementation. For example, some implementations may
+   * choose to merge compatible Gateway Listeners together. If that is the
+   * case, the list of routes attached to those resources should also be
+   * merged.
+   *
+   * Note that for ParentRefs that cross namespace boundaries, there are specific
+   * rules. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example,
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable other kinds of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   * @schema TlsRouteV1Alpha3Spec#parentRefs
+   */
+  readonly parentRefs?: TlsRouteV1Alpha3SpecParentRefs[];
+
+  /**
+   * Rules are a list of actions.
+   *
+   * @schema TlsRouteV1Alpha3Spec#rules
+   */
+  readonly rules: TlsRouteV1Alpha3SpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema TlsRouteV1Alpha3Spec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: TlsRouteV1Alpha3SpecUseDefaultGateways;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha3Spec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha3Spec(obj: TlsRouteV1Alpha3Spec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'hostnames': obj.hostnames?.map(y => y),
+    'parentRefs': obj.parentRefs?.map(y => toJson_TlsRouteV1Alpha3SpecParentRefs(y)),
+    'rules': obj.rules?.map(y => toJson_TlsRouteV1Alpha3SpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParentReference identifies an API object (usually a Gateway) that can be considered
+ * a parent of this resource (usually a route). There are two kinds of parent resources
+ * with "Core" support:
+ *
+ * * Gateway (Gateway conformance profile)
+ * * Service (Mesh conformance profile, ClusterIP Services only)
+ *
+ * This API may be extended in the future to support additional kinds of parent
+ * resources.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * @schema TlsRouteV1Alpha3SpecParentRefs
+ */
+export interface TlsRouteV1Alpha3SpecParentRefs {
+  /**
+   * Group is the group of the referent.
+   * When unspecified, "gateway.networking.k8s.io" is inferred.
+   * To set the core API group (such as for a "Service" kind referent),
+   * Group must be explicitly set to "" (empty string).
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha3SpecParentRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * Support for other resources is Implementation-Specific.
+   *
+   * @schema TlsRouteV1Alpha3SpecParentRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha3SpecParentRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referent. When unspecified, this refers
+   * to the local namespace of the Route.
+   *
+   * Note that there are specific rules for ParentRefs which cross namespace
+   * boundaries. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example:
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable any other kind of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha3SpecParentRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port is the network port this Route targets. It can be interpreted
+   * differently based on the type of parent resource.
+   *
+   * When the parent resource is a Gateway, this targets all listeners
+   * listening on the specified port that also support this kind of Route(and
+   * select this Route). It's not recommended to set `Port` unless the
+   * networking behaviors specified in a Route must apply to a specific port
+   * as opposed to a listener(s) whose port(s) may be changed. When both Port
+   * and SectionName are specified, the name and port of the selected listener
+   * must match both specified values.
+   *
+   *
+   * When the parent resource is a Service, this targets a specific port in the
+   * Service spec. When both Port (experimental) and SectionName are specified,
+   * the name and port of the selected port must match both specified values.
+   *
+   *
+   * Implementations MAY choose to support other parent resources.
+   * Implementations supporting other types of parent resources MUST clearly
+   * document how/if Port is interpreted.
+   *
+   * For the purpose of status, an attachment is considered successful as
+   * long as the parent resource accepts it partially. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+   * from the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route,
+   * the Route MUST be considered detached from the Gateway.
+   *
+   * Support: Extended
+   *
+   * @schema TlsRouteV1Alpha3SpecParentRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * SectionName is the name of a section within the target resource. In the
+   * following resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   * * Service: Port name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   *
+   * Implementations MAY choose to support attaching Routes to other resources.
+   * If that is the case, they MUST clearly document how SectionName is
+   * interpreted.
+   *
+   * When unspecified (empty string), this will reference the entire resource.
+   * For the purpose of status, an attachment is considered successful if at
+   * least one section in the parent resource accepts it. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+   * the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route, the
+   * Route MUST be considered detached from the Gateway.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha3SpecParentRefs#sectionName
+   */
+  readonly sectionName?: string;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha3SpecParentRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha3SpecParentRefs(obj: TlsRouteV1Alpha3SpecParentRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'sectionName': obj.sectionName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLSRouteRule is the configuration for a given rule.
+ *
+ * @schema TlsRouteV1Alpha3SpecRules
+ */
+export interface TlsRouteV1Alpha3SpecRules {
+  /**
+   * BackendRefs defines the backend(s) where matching requests should be
+   * sent. If unspecified or invalid (refers to a nonexistent resource or
+   * a Service with no endpoints), the rule performs no forwarding; if no
+   * filters are specified that would result in a response being sent, the
+   * underlying implementation must actively reject request attempts to this
+   * backend, by rejecting the connection. Request rejections must respect
+   * weight; if an invalid backend is requested to have 80% of requests, then
+   * 80% of requests must be rejected instead.
+   *
+   * When a TLSRoute is attached to a listener in Terminate mode, a BackendTLSPolicy
+   * can be used to enable re-encryption of the traffic to the backends.
+   *
+   * Support: Core for Kubernetes Service
+   *
+   * Support: Extended for Kubernetes ServiceImport
+   *
+   * Support: Implementation-specific for any other resource
+   *
+   * Support for weight: Extended
+   *
+   * Support for BackendTLSPolicy: Extended
+   *
+   * @schema TlsRouteV1Alpha3SpecRules#backendRefs
+   */
+  readonly backendRefs: TlsRouteV1Alpha3SpecRulesBackendRefs[];
+
+  /**
+   * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
+   *
+   * @schema TlsRouteV1Alpha3SpecRules#name
+   */
+  readonly name?: string;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha3SpecRules' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha3SpecRules(obj: TlsRouteV1Alpha3SpecRules | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRefs': obj.backendRefs?.map(y => toJson_TlsRouteV1Alpha3SpecRulesBackendRefs(y)),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema TlsRouteV1Alpha3SpecUseDefaultGateways
+ */
+export enum TlsRouteV1Alpha3SpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
+ * BackendRef defines how a Route should forward a request to a Kubernetes
+ * resource.
+ *
+ * Note that when a namespace different than the local namespace is specified, a
+ * ReferenceGrant object is required in the referent namespace to allow that
+ * namespace's owner to accept the reference. See the ReferenceGrant
+ * documentation for details.
+ *
+ *
+ * When the BackendRef points to a Kubernetes Service, implementations SHOULD
+ * honor the appProtocol field if it is set for the target Service Port.
+ *
+ * Implementations supporting appProtocol SHOULD recognize the Kubernetes
+ * Standard Application Protocols defined in KEP-3726.
+ *
+ * If a Service appProtocol isn't specified, an implementation MAY infer the
+ * backend protocol through its own means. Implementations MAY infer the
+ * protocol from the Route type referring to the backend Service.
+ *
+ * If a Route is not able to send traffic to the backend using the specified
+ * protocol then the backend is considered invalid. Implementations MUST set the
+ * "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
+ *
+ *
+ * Note that when the BackendTLSPolicy object is enabled by the implementation,
+ * there are some extra rules about validity to consider here. See the fields
+ * where this struct is used for more information about the exact behavior.
+ *
+ * @schema TlsRouteV1Alpha3SpecRulesBackendRefs
+ */
+export interface TlsRouteV1Alpha3SpecRulesBackendRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema TlsRouteV1Alpha3SpecRulesBackendRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema TlsRouteV1Alpha3SpecRulesBackendRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema TlsRouteV1Alpha3SpecRulesBackendRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema TlsRouteV1Alpha3SpecRulesBackendRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema TlsRouteV1Alpha3SpecRulesBackendRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema TlsRouteV1Alpha3SpecRulesBackendRefs#weight
+   */
+  readonly weight?: number;
+}
+
+/**
+ * Converts an object of type 'TlsRouteV1Alpha3SpecRulesBackendRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_TlsRouteV1Alpha3SpecRulesBackendRefs(obj: TlsRouteV1Alpha3SpecRulesBackendRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+
+/**
  * UDPRoute provides a way to route UDP traffic. When combined with a Gateway
 listener, it can be used to forward traffic on the port specified by the
 listener to a set of backends specified by the UDPRoute.
@@ -17213,7 +23829,7 @@ export class UdpRoute extends ApiObject {
    * Returns the apiVersion and kind for "UDPRoute"
    */
   public static readonly GVK: GroupVersionKind = {
-    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+    apiVersion: 'gateway.networking.k8s.io/v1',
     kind: 'UDPRoute',
   }
 
@@ -17372,6 +23988,24 @@ export interface UdpRouteSpec {
    * @schema UdpRouteSpec#rules
    */
   readonly rules: UdpRouteSpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema UdpRouteSpec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: UdpRouteSpecUseDefaultGateways;
 }
 
 /**
@@ -17383,6 +24017,7 @@ export function toJson_UdpRouteSpec(obj: UdpRouteSpec | undefined): Record<strin
   const result = {
     'parentRefs': obj.parentRefs?.map(y => toJson_UdpRouteSpecParentRefs(y)),
     'rules': obj.rules?.map(y => toJson_UdpRouteSpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -17569,22 +24204,14 @@ export interface UdpRouteSpecRules {
    * respect weight; if an invalid backend is requested to have 80% of
    * the packets, then 80% of packets must be dropped instead.
    *
-   * Support: Core for Kubernetes Service
-   *
-   * Support: Extended for Kubernetes ServiceImport
-   *
-   * Support: Implementation-specific for any other resource
-   *
-   * Support for weight: Extended
+   * Support: Extended for Kubernetes Service
    *
    * @schema UdpRouteSpecRules#backendRefs
    */
-  readonly backendRefs?: UdpRouteSpecRulesBackendRefs[];
+  readonly backendRefs: UdpRouteSpecRulesBackendRefs[];
 
   /**
    * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
-   *
-   * Support: Extended
    *
    * @schema UdpRouteSpecRules#name
    */
@@ -17605,6 +24232,29 @@ export function toJson_UdpRouteSpecRules(obj: UdpRouteSpecRules | undefined): Re
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema UdpRouteSpecUseDefaultGateways
+ */
+export enum UdpRouteSpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
 
 /**
  * BackendRef defines how a Route should forward a request to a Kubernetes
@@ -17725,6 +24375,579 @@ export interface UdpRouteSpecRulesBackendRefs {
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_UdpRouteSpecRulesBackendRefs(obj: UdpRouteSpecRulesBackendRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'weight': obj.weight,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+
+/**
+ * UDPRoute provides a way to route UDP traffic. When combined with a Gateway
+listener, it can be used to forward traffic on the port specified by the
+listener to a set of backends specified by the UDPRoute.
+ *
+ * @schema UDPRouteV1Alpha2
+ */
+export class UdpRouteV1Alpha2 extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "UDPRouteV1Alpha2"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+    kind: 'UDPRoute',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "UDPRouteV1Alpha2".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: UdpRouteV1Alpha2Props): any {
+    return {
+      ...UdpRouteV1Alpha2.GVK,
+      ...toJson_UdpRouteV1Alpha2Props(props),
+    };
+  }
+
+  /**
+   * Defines a "UDPRouteV1Alpha2" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: UdpRouteV1Alpha2Props) {
+    super(scope, id, {
+      ...UdpRouteV1Alpha2.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...UdpRouteV1Alpha2.GVK,
+      ...toJson_UdpRouteV1Alpha2Props(resolved),
+    };
+  }
+}
+
+/**
+ * UDPRoute provides a way to route UDP traffic. When combined with a Gateway
+ * listener, it can be used to forward traffic on the port specified by the
+ * listener to a set of backends specified by the UDPRoute.
+ *
+ * @schema UDPRouteV1Alpha2
+ */
+export interface UdpRouteV1Alpha2Props {
+  /**
+   * @schema UDPRouteV1Alpha2#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of UDPRoute.
+   *
+   * @schema UDPRouteV1Alpha2#spec
+   */
+  readonly spec: UdpRouteV1Alpha2Spec;
+}
+
+/**
+ * Converts an object of type 'UdpRouteV1Alpha2Props' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_UdpRouteV1Alpha2Props(obj: UdpRouteV1Alpha2Props | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_UdpRouteV1Alpha2Spec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of UDPRoute.
+ *
+ * @schema UdpRouteV1Alpha2Spec
+ */
+export interface UdpRouteV1Alpha2Spec {
+  /**
+   * ParentRefs references the resources (usually Gateways) that a Route wants
+   * to be attached to. Note that the referenced parent resource needs to
+   * allow this for the attachment to be complete. For Gateways, that means
+   * the Gateway needs to allow attachment from Routes of this kind and
+   * namespace. For Services, that means the Service must either be in the same
+   * namespace for a "producer" route, or the mesh implementation must support
+   * and allow "consumer" routes for the referenced Service. ReferenceGrant is
+   * not applicable for governing ParentRefs to Services - it is not possible to
+   * create a "producer" route for a Service in a different namespace from the
+   * Route.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * This API may be extended in the future to support additional kinds of parent
+   * resources.
+   *
+   * ParentRefs must be _distinct_. This means either that:
+   *
+   * * They select different objects.  If this is the case, then parentRef
+   * entries are distinct. In terms of fields, this means that the
+   * multi-part key defined by `group`, `kind`, `namespace`, and `name` must
+   * be unique across all parentRef entries in the Route.
+   * * They do not select different objects, but for each optional field used,
+   * each ParentRef that selects the same object must set the same set of
+   * optional fields to different values. If one ParentRef sets a
+   * combination of optional fields, all must set the same combination.
+   *
+   * Some examples:
+   *
+   * * If one ParentRef sets `sectionName`, all ParentRefs referencing the
+   * same object must also set `sectionName`.
+   * * If one ParentRef sets `port`, all ParentRefs referencing the same
+   * object must also set `port`.
+   * * If one ParentRef sets `sectionName` and `port`, all ParentRefs
+   * referencing the same object must also set `sectionName` and `port`.
+   *
+   * It is possible to separately reference multiple distinct objects that may
+   * be collapsed by an implementation. For example, some implementations may
+   * choose to merge compatible Gateway Listeners together. If that is the
+   * case, the list of routes attached to those resources should also be
+   * merged.
+   *
+   * Note that for ParentRefs that cross namespace boundaries, there are specific
+   * rules. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example,
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable other kinds of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   * @schema UdpRouteV1Alpha2Spec#parentRefs
+   */
+  readonly parentRefs?: UdpRouteV1Alpha2SpecParentRefs[];
+
+  /**
+   * Rules are a list of UDP matchers and actions.
+   *
+   * @schema UdpRouteV1Alpha2Spec#rules
+   */
+  readonly rules: UdpRouteV1Alpha2SpecRules[];
+
+  /**
+   * UseDefaultGateways indicates the default Gateway scope to use for this
+   * Route. If unset (the default) or set to None, the Route will not be
+   * attached to any default Gateway; if set, it will be attached to any
+   * default Gateway supporting the named scope, subject to the usual rules
+   * about which Routes a Gateway is allowed to claim.
+   *
+   * Think carefully before using this functionality! The set of default
+   * Gateways supporting the requested scope can change over time without
+   * any notice to the Route author, and in many situations it will not be
+   * appropriate to request a default Gateway for a given Route -- for
+   * example, a Route with specific security requirements should almost
+   * certainly not use a default Gateway.
+   *
+   * @schema UdpRouteV1Alpha2Spec#useDefaultGateways
+   */
+  readonly useDefaultGateways?: UdpRouteV1Alpha2SpecUseDefaultGateways;
+}
+
+/**
+ * Converts an object of type 'UdpRouteV1Alpha2Spec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_UdpRouteV1Alpha2Spec(obj: UdpRouteV1Alpha2Spec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'parentRefs': obj.parentRefs?.map(y => toJson_UdpRouteV1Alpha2SpecParentRefs(y)),
+    'rules': obj.rules?.map(y => toJson_UdpRouteV1Alpha2SpecRules(y)),
+    'useDefaultGateways': obj.useDefaultGateways,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ParentReference identifies an API object (usually a Gateway) that can be considered
+ * a parent of this resource (usually a route). There are two kinds of parent resources
+ * with "Core" support:
+ *
+ * * Gateway (Gateway conformance profile)
+ * * Service (Mesh conformance profile, ClusterIP Services only)
+ *
+ * This API may be extended in the future to support additional kinds of parent
+ * resources.
+ *
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * @schema UdpRouteV1Alpha2SpecParentRefs
+ */
+export interface UdpRouteV1Alpha2SpecParentRefs {
+  /**
+   * Group is the group of the referent.
+   * When unspecified, "gateway.networking.k8s.io" is inferred.
+   * To set the core API group (such as for a "Service" kind referent),
+   * Group must be explicitly set to "" (empty string).
+   *
+   * Support: Core
+   *
+   * @schema UdpRouteV1Alpha2SpecParentRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent.
+   *
+   * There are two kinds of parent resources with "Core" support:
+   *
+   * * Gateway (Gateway conformance profile)
+   * * Service (Mesh conformance profile, ClusterIP Services only)
+   *
+   * Support for other resources is Implementation-Specific.
+   *
+   * @schema UdpRouteV1Alpha2SpecParentRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * Support: Core
+   *
+   * @schema UdpRouteV1Alpha2SpecParentRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referent. When unspecified, this refers
+   * to the local namespace of the Route.
+   *
+   * Note that there are specific rules for ParentRefs which cross namespace
+   * boundaries. Cross-namespace references are only valid if they are explicitly
+   * allowed by something in the namespace they are referring to. For example:
+   * Gateway has the AllowedRoutes field, and ReferenceGrant provides a
+   * generic way to enable any other kind of cross-namespace reference.
+   *
+   *
+   * ParentRefs from a Route to a Service in the same namespace are "producer"
+   * routes, which apply default routing rules to inbound connections from
+   * any namespace to the Service.
+   *
+   * ParentRefs from a Route to a Service in a different namespace are
+   * "consumer" routes, and these routing rules are only applied to outbound
+   * connections originating from the same namespace as the Route, for which
+   * the intended destination of the connections are a Service targeted as a
+   * ParentRef of the Route.
+   *
+   *
+   * Support: Core
+   *
+   * @schema UdpRouteV1Alpha2SpecParentRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port is the network port this Route targets. It can be interpreted
+   * differently based on the type of parent resource.
+   *
+   * When the parent resource is a Gateway, this targets all listeners
+   * listening on the specified port that also support this kind of Route(and
+   * select this Route). It's not recommended to set `Port` unless the
+   * networking behaviors specified in a Route must apply to a specific port
+   * as opposed to a listener(s) whose port(s) may be changed. When both Port
+   * and SectionName are specified, the name and port of the selected listener
+   * must match both specified values.
+   *
+   *
+   * When the parent resource is a Service, this targets a specific port in the
+   * Service spec. When both Port (experimental) and SectionName are specified,
+   * the name and port of the selected port must match both specified values.
+   *
+   *
+   * Implementations MAY choose to support other parent resources.
+   * Implementations supporting other types of parent resources MUST clearly
+   * document how/if Port is interpreted.
+   *
+   * For the purpose of status, an attachment is considered successful as
+   * long as the parent resource accepts it partially. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment
+   * from the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route,
+   * the Route MUST be considered detached from the Gateway.
+   *
+   * Support: Extended
+   *
+   * @schema UdpRouteV1Alpha2SpecParentRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * SectionName is the name of a section within the target resource. In the
+   * following resources, SectionName is interpreted as the following:
+   *
+   * * Gateway: Listener name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   * * Service: Port name. When both Port (experimental) and SectionName
+   * are specified, the name and port of the selected listener must match
+   * both specified values.
+   *
+   * Implementations MAY choose to support attaching Routes to other resources.
+   * If that is the case, they MUST clearly document how SectionName is
+   * interpreted.
+   *
+   * When unspecified (empty string), this will reference the entire resource.
+   * For the purpose of status, an attachment is considered successful if at
+   * least one section in the parent resource accepts it. For example, Gateway
+   * listeners can restrict which Routes can attach to them by Route kind,
+   * namespace, or hostname. If 1 of 2 Gateway listeners accept attachment from
+   * the referencing Route, the Route MUST be considered successfully
+   * attached. If no Gateway listeners accept attachment from this Route, the
+   * Route MUST be considered detached from the Gateway.
+   *
+   * Support: Core
+   *
+   * @schema UdpRouteV1Alpha2SpecParentRefs#sectionName
+   */
+  readonly sectionName?: string;
+}
+
+/**
+ * Converts an object of type 'UdpRouteV1Alpha2SpecParentRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_UdpRouteV1Alpha2SpecParentRefs(obj: UdpRouteV1Alpha2SpecParentRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+    'port': obj.port,
+    'sectionName': obj.sectionName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UDPRouteRule is the configuration for a given rule.
+ *
+ * @schema UdpRouteV1Alpha2SpecRules
+ */
+export interface UdpRouteV1Alpha2SpecRules {
+  /**
+   * BackendRefs defines the backend(s) where matching requests should be
+   * sent. If unspecified or invalid (refers to a nonexistent resource or a
+   * Service with no endpoints), the underlying implementation MUST actively
+   * reject connection attempts to this backend. Packet drops must
+   * respect weight; if an invalid backend is requested to have 80% of
+   * the packets, then 80% of packets must be dropped instead.
+   *
+   * Support: Extended for Kubernetes Service
+   *
+   * @schema UdpRouteV1Alpha2SpecRules#backendRefs
+   */
+  readonly backendRefs: UdpRouteV1Alpha2SpecRulesBackendRefs[];
+
+  /**
+   * Name is the name of the route rule. This name MUST be unique within a Route if it is set.
+   *
+   * @schema UdpRouteV1Alpha2SpecRules#name
+   */
+  readonly name?: string;
+}
+
+/**
+ * Converts an object of type 'UdpRouteV1Alpha2SpecRules' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_UdpRouteV1Alpha2SpecRules(obj: UdpRouteV1Alpha2SpecRules | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'backendRefs': obj.backendRefs?.map(y => toJson_UdpRouteV1Alpha2SpecRulesBackendRefs(y)),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * UseDefaultGateways indicates the default Gateway scope to use for this
+ * Route. If unset (the default) or set to None, the Route will not be
+ * attached to any default Gateway; if set, it will be attached to any
+ * default Gateway supporting the named scope, subject to the usual rules
+ * about which Routes a Gateway is allowed to claim.
+ *
+ * Think carefully before using this functionality! The set of default
+ * Gateways supporting the requested scope can change over time without
+ * any notice to the Route author, and in many situations it will not be
+ * appropriate to request a default Gateway for a given Route -- for
+ * example, a Route with specific security requirements should almost
+ * certainly not use a default Gateway.
+ *
+ * @schema UdpRouteV1Alpha2SpecUseDefaultGateways
+ */
+export enum UdpRouteV1Alpha2SpecUseDefaultGateways {
+  /** All */
+  ALL = "All",
+  /** None */
+  NONE = "None",
+}
+
+/**
+ * BackendRef defines how a Route should forward a request to a Kubernetes
+ * resource.
+ *
+ * Note that when a namespace different than the local namespace is specified, a
+ * ReferenceGrant object is required in the referent namespace to allow that
+ * namespace's owner to accept the reference. See the ReferenceGrant
+ * documentation for details.
+ *
+ *
+ * When the BackendRef points to a Kubernetes Service, implementations SHOULD
+ * honor the appProtocol field if it is set for the target Service Port.
+ *
+ * Implementations supporting appProtocol SHOULD recognize the Kubernetes
+ * Standard Application Protocols defined in KEP-3726.
+ *
+ * If a Service appProtocol isn't specified, an implementation MAY infer the
+ * backend protocol through its own means. Implementations MAY infer the
+ * protocol from the Route type referring to the backend Service.
+ *
+ * If a Route is not able to send traffic to the backend using the specified
+ * protocol then the backend is considered invalid. Implementations MUST set the
+ * "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
+ *
+ *
+ * Note that when the BackendTLSPolicy object is enabled by the implementation,
+ * there are some extra rules about validity to consider here. See the fields
+ * where this struct is used for more information about the exact behavior.
+ *
+ * @schema UdpRouteV1Alpha2SpecRulesBackendRefs
+ */
+export interface UdpRouteV1Alpha2SpecRulesBackendRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema UdpRouteV1Alpha2SpecRulesBackendRefs#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is the Kubernetes resource kind of the referent. For example
+   * "Service".
+   *
+   * Defaults to "Service" when not specified.
+   *
+   * ExternalName services can refer to CNAME DNS records that may live
+   * outside of the cluster and as such are difficult to reason about in
+   * terms of conformance. They also may not be safe to forward to (see
+   * CVE-2021-25740 for more information). Implementations SHOULD NOT
+   * support ExternalName Services.
+   *
+   * Support: Core (Services with a type other than ExternalName)
+   *
+   * Support: Implementation-specific (Services with type ExternalName)
+   *
+   * @default Service" when not specified.
+   * @schema UdpRouteV1Alpha2SpecRulesBackendRefs#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema UdpRouteV1Alpha2SpecRulesBackendRefs#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the backend. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema UdpRouteV1Alpha2SpecRulesBackendRefs#namespace
+   */
+  readonly namespace?: string;
+
+  /**
+   * Port specifies the destination port number to use for this resource.
+   * Port is required when the referent is a Kubernetes Service. In this
+   * case, the port number is the service port number, not the target port.
+   * For other resources, destination port might be derived from the referent
+   * resource or this field.
+   *
+   * @schema UdpRouteV1Alpha2SpecRulesBackendRefs#port
+   */
+  readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema UdpRouteV1Alpha2SpecRulesBackendRefs#weight
+   */
+  readonly weight?: number;
+}
+
+/**
+ * Converts an object of type 'UdpRouteV1Alpha2SpecRulesBackendRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_UdpRouteV1Alpha2SpecRulesBackendRefs(obj: UdpRouteV1Alpha2SpecRulesBackendRefs | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'group': obj.group,

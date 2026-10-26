@@ -4,6 +4,681 @@ import { Construct } from 'constructs';
 
 
 /**
+ * XBackend is a Gateway API resource that represents a backend destination for
+routing traffic. It serves as a Gateway-native way to define where and how a
+Gateway should connect to a backend.
+
+Support: Extended
+ *
+ * @schema XBackend
+ */
+export class XBackend extends ApiObject {
+  /**
+   * Returns the apiVersion and kind for "XBackend"
+   */
+  public static readonly GVK: GroupVersionKind = {
+    apiVersion: 'gateway.networking.x-k8s.io/v1alpha1',
+    kind: 'XBackend',
+  }
+
+  /**
+   * Renders a Kubernetes manifest for "XBackend".
+   *
+   * This can be used to inline resource manifests inside other objects (e.g. as templates).
+   *
+   * @param props initialization props
+   */
+  public static manifest(props: XBackendProps): any {
+    return {
+      ...XBackend.GVK,
+      ...toJson_XBackendProps(props),
+    };
+  }
+
+  /**
+   * Defines a "XBackend" API object
+   * @param scope the scope in which to define this object
+   * @param id a scope-local name for the object
+   * @param props initialization props
+   */
+  public constructor(scope: Construct, id: string, props: XBackendProps) {
+    super(scope, id, {
+      ...XBackend.GVK,
+      ...props,
+    });
+  }
+
+  /**
+   * Renders the object to Kubernetes JSON.
+   */
+  public override toJson(): any {
+    const resolved = super.toJson();
+
+    return {
+      ...XBackend.GVK,
+      ...toJson_XBackendProps(resolved),
+    };
+  }
+}
+
+/**
+ * XBackend is a Gateway API resource that represents a backend destination for
+ * routing traffic. It serves as a Gateway-native way to define where and how a
+ * Gateway should connect to a backend.
+ *
+ * Support: Extended
+ *
+ * @schema XBackend
+ */
+export interface XBackendProps {
+  /**
+   * @schema XBackend#metadata
+   */
+  readonly metadata?: ApiObjectMetadata;
+
+  /**
+   * Spec defines the desired state of XBackend.
+   *
+   * @schema XBackend#spec
+   */
+  readonly spec: XBackendSpec;
+}
+
+/**
+ * Converts an object of type 'XBackendProps' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendProps(obj: XBackendProps | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'metadata': obj.metadata,
+    'spec': toJson_XBackendSpec(obj.spec),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Spec defines the desired state of XBackend.
+ *
+ * @schema XBackendSpec
+ */
+export interface XBackendSpec {
+  /**
+   * ExternalHostname specifies the configuration for an ExternalHostname
+   * backend. This field must be set when type is ExternalHostname and must
+   * be unset otherwise.
+   *
+   * Support: Extended
+   *
+   * @schema XBackendSpec#externalHostname
+   */
+  readonly externalHostname?: XBackendSpecExternalHostname;
+
+  /**
+   * Port defines the port that the implementation should use when connecting
+   * to this backend.
+   *
+   * @schema XBackendSpec#port
+   */
+  readonly port: XBackendSpecPort;
+
+  /**
+   * Protocol defines the protocol for backend communication.
+   *
+   * In the common case, the underlying transport protocol for the
+   * proxied traffic will already have been determined and processed
+   * by the dataplane at the routing step. Where this field is useful
+   * is either for higher level protocols or asymmetrical protocol
+   * configurations (e.g. version upgrades or h2c).
+   *
+   * When set, the implementation uses the specified protocol when connecting
+   * to this backend. When not set, the implementation will use the protocol
+   * determined by the route or listener configuration.
+   *
+   * Support: Core - HTTP, HTTP2, H2C, and HTTP11
+   *
+   * Support: Extended - GRPC, MCP, TCP
+   *
+   * @schema XBackendSpec#protocol
+   */
+  readonly protocol?: XBackendSpecProtocol;
+
+  /**
+   * TLS defines the TLS configuration that the implementation should use
+   * when connecting to the backend.
+   *
+   * ExternalHostname backends SHOULD have TLS configured; the lack of TLS
+   * for external hostnames should be considered insecure and a security risk.
+   *
+   * Support: Extended
+   *
+   * @schema XBackendSpec#tls
+   */
+  readonly tls?: XBackendSpecTls;
+
+  /**
+   * Type defines the backend type.
+   *
+   * @schema XBackendSpec#type
+   */
+  readonly type: XBackendSpecType;
+}
+
+/**
+ * Converts an object of type 'XBackendSpec' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpec(obj: XBackendSpec | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'externalHostname': toJson_XBackendSpecExternalHostname(obj.externalHostname),
+    'port': toJson_XBackendSpecPort(obj.port),
+    'protocol': obj.protocol,
+    'tls': toJson_XBackendSpecTls(obj.tls),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ExternalHostname specifies the configuration for an ExternalHostname
+ * backend. This field must be set when type is ExternalHostname and must
+ * be unset otherwise.
+ *
+ * Support: Extended
+ *
+ * @schema XBackendSpecExternalHostname
+ */
+export interface XBackendSpecExternalHostname {
+  /**
+   * Hostname specifies the FQDN used to reach this backend.
+   * IP addresses are not allowed in this field.
+   *
+   * @schema XBackendSpecExternalHostname#hostname
+   */
+  readonly hostname: string;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecExternalHostname' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecExternalHostname(obj: XBackendSpecExternalHostname | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'hostname': obj.hostname,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Port defines the port that the implementation should use when connecting
+ * to this backend.
+ *
+ * @schema XBackendSpecPort
+ */
+export interface XBackendSpecPort {
+  /**
+   * Name represents the name of this port. All ports in a Backend must have
+   * a unique name. Name must either be an empty string or pass DNS_LABEL
+   * validation (lowercase alphanumeric or '-', starting and ending with an
+   * alphanumeric character, at most 63 characters).
+   *
+   * @schema XBackendSpecPort#name
+   */
+  readonly name?: string;
+
+  /**
+   * Port represents the port number of the endpoint.
+   *
+   * @schema XBackendSpecPort#port
+   */
+  readonly port: number;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecPort' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecPort(obj: XBackendSpecPort | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'port': obj.port,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Protocol defines the protocol for backend communication.
+ *
+ * In the common case, the underlying transport protocol for the
+ * proxied traffic will already have been determined and processed
+ * by the dataplane at the routing step. Where this field is useful
+ * is either for higher level protocols or asymmetrical protocol
+ * configurations (e.g. version upgrades or h2c).
+ *
+ * When set, the implementation uses the specified protocol when connecting
+ * to this backend. When not set, the implementation will use the protocol
+ * determined by the route or listener configuration.
+ *
+ * Support: Core - HTTP, HTTP2, H2C, and HTTP11
+ *
+ * Support: Extended - GRPC, MCP, TCP
+ *
+ * @schema XBackendSpecProtocol
+ */
+export enum XBackendSpecProtocol {
+  /** TCP */
+  TCP = "TCP",
+  /** HTTP */
+  HTTP = "HTTP",
+  /** HTTP2 */
+  HTTP2 = "HTTP2",
+  /** HTTP11 */
+  HTTP11 = "HTTP11",
+  /** H2C */
+  H2_C = "H2C",
+  /** MCP */
+  MCP = "MCP",
+}
+
+/**
+ * TLS defines the TLS configuration that the implementation should use
+ * when connecting to the backend.
+ *
+ * ExternalHostname backends SHOULD have TLS configured; the lack of TLS
+ * for external hostnames should be considered insecure and a security risk.
+ *
+ * Support: Extended
+ *
+ * @schema XBackendSpecTls
+ */
+export interface XBackendSpecTls {
+  /**
+   * ClientCertificateRef is a reference to a Secret containing the client
+   * TLS certificate and private key for mutual TLS. This field is required
+   * when mode is ClientAndServer and must be unset otherwise.
+   *
+   * @schema XBackendSpecTls#clientCertificateRef
+   */
+  readonly clientCertificateRef?: XBackendSpecTlsClientCertificateRef;
+
+  /**
+   * Mode defines the TLS mode for the backend connection.
+   *
+   * @schema XBackendSpecTls#mode
+   */
+  readonly mode: XBackendSpecTlsMode;
+
+  /**
+   * Validation contains TLS validation configuration for the backend connection.
+   *
+   * @schema XBackendSpecTls#validation
+   */
+  readonly validation?: XBackendSpecTlsValidation;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecTls' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecTls(obj: XBackendSpecTls | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'clientCertificateRef': toJson_XBackendSpecTlsClientCertificateRef(obj.clientCertificateRef),
+    'mode': obj.mode,
+    'validation': toJson_XBackendSpecTlsValidation(obj.validation),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the backend type.
+ *
+ * @schema XBackendSpecType
+ */
+export enum XBackendSpecType {
+  /** ExternalHostname */
+  EXTERNAL_HOSTNAME = "ExternalHostname",
+}
+
+/**
+ * ClientCertificateRef is a reference to a Secret containing the client
+ * TLS certificate and private key for mutual TLS. This field is required
+ * when mode is ClientAndServer and must be unset otherwise.
+ *
+ * @schema XBackendSpecTlsClientCertificateRef
+ */
+export interface XBackendSpecTlsClientCertificateRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema XBackendSpecTlsClientCertificateRef#group
+   */
+  readonly group?: string;
+
+  /**
+   * Kind is kind of the referent. For example "Secret".
+   *
+   * @schema XBackendSpecTlsClientCertificateRef#kind
+   */
+  readonly kind?: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema XBackendSpecTlsClientCertificateRef#name
+   */
+  readonly name: string;
+
+  /**
+   * Namespace is the namespace of the referenced object. When unspecified, the local
+   * namespace is inferred.
+   *
+   * Note that when a namespace different than the local namespace is specified,
+   * a ReferenceGrant object is required in the referent namespace to allow that
+   * namespace's owner to accept the reference. See the ReferenceGrant
+   * documentation for details.
+   *
+   * Support: Core
+   *
+   * @schema XBackendSpecTlsClientCertificateRef#namespace
+   */
+  readonly namespace?: string;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecTlsClientCertificateRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecTlsClientCertificateRef(obj: XBackendSpecTlsClientCertificateRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Mode defines the TLS mode for the backend connection.
+ *
+ * @schema XBackendSpecTlsMode
+ */
+export enum XBackendSpecTlsMode {
+  /** None */
+  NONE = "None",
+  /** ServerOnly */
+  SERVER_ONLY = "ServerOnly",
+  /** ClientAndServer */
+  CLIENT_AND_SERVER = "ClientAndServer",
+}
+
+/**
+ * Validation contains TLS validation configuration for the backend connection.
+ *
+ * @schema XBackendSpecTlsValidation
+ */
+export interface XBackendSpecTlsValidation {
+  /**
+   * CACertificateRefs contains one or more references to Kubernetes objects that
+   * contain a PEM-encoded TLS CA certificate bundle, which is used to
+   * validate a TLS handshake between the Gateway and backend Pod.
+   *
+   * If CACertificateRefs is empty or unspecified, then WellKnownCACertificates must be
+   * specified. Only one of CACertificateRefs or WellKnownCACertificates may be specified,
+   * not both. If CACertificateRefs is empty or unspecified, the configuration for
+   * WellKnownCACertificates MUST be honored instead if supported by the implementation.
+   *
+   * A CACertificateRef is invalid if:
+   *
+   * * It refers to a resource that cannot be resolved (e.g., the referenced resource
+   * does not exist) or is misconfigured (e.g., a ConfigMap does not contain a key
+   * named `ca.crt`). In this case, the Reason must be set to `InvalidCACertificateRef`
+   * and the Message of the Condition must indicate which reference is invalid and why.
+   *
+   * * It refers to an unknown or unsupported kind of resource. In this case, the Reason
+   * must be set to `InvalidKind` and the Message of the Condition must explain which
+   * kind of resource is unknown or unsupported.
+   *
+   * * It refers to a resource in another namespace. This may change in future
+   * spec updates.
+   *
+   * Implementations MAY choose to perform further validation of the certificate
+   * content (e.g., checking expiry or enforcing specific formats). In such cases,
+   * an implementation-specific Reason and Message must be set for the invalid reference.
+   *
+   * In all cases, the implementation MUST ensure the `ResolvedRefs` Condition on
+   * the BackendTLSPolicy is set to `status: False`, with a Reason and Message
+   * that indicate the cause of the error. Connections using an invalid
+   * CACertificateRef MUST fail, and the client MUST receive an HTTP 5xx error
+   * response. If ALL CACertificateRefs are invalid, the implementation MUST also
+   * ensure the `Accepted` Condition on the BackendTLSPolicy is set to
+   * `status: False`, with a Reason `NoValidCACertificate`.
+   *
+   * A single CACertificateRef to a Kubernetes ConfigMap kind has "Core" support.
+   * Implementations MAY choose to support attaching multiple certificates to
+   * a backend, but this behavior is implementation-specific.
+   *
+   * Support: Core - An optional single reference to a Kubernetes ConfigMap,
+   * with the CA certificate in a key named `ca.crt`.
+   *
+   * Support: Implementation-specific - More than one reference, other kinds
+   * of resources, or a single reference that includes multiple certificates.
+   *
+   * @schema XBackendSpecTlsValidation#caCertificateRefs
+   */
+  readonly caCertificateRefs?: XBackendSpecTlsValidationCaCertificateRefs[];
+
+  /**
+   * Hostname is used for two purposes in the connection between Gateways and
+   * backends:
+   *
+   * 1. Hostname MUST be used as the SNI to connect to the backend (RFC 6066).
+   * 2. Hostname MUST be used for authentication and MUST match the certificate
+   * served by the matching backend, unless SubjectAltNames is specified.
+   * 3. If SubjectAltNames are specified, Hostname can be used for certificate selection
+   * but MUST NOT be used for authentication. If you want to use the value
+   * of the Hostname field for authentication, you MUST add it to the SubjectAltNames list.
+   *
+   * Support: Core
+   *
+   * @schema XBackendSpecTlsValidation#hostname
+   */
+  readonly hostname: string;
+
+  /**
+   * SubjectAltNames contains one or more Subject Alternative Names.
+   * When specified the certificate served from the backend MUST
+   * have at least one Subject Alternate Name matching one of the specified SubjectAltNames.
+   *
+   * Support: Extended
+   *
+   * @schema XBackendSpecTlsValidation#subjectAltNames
+   */
+  readonly subjectAltNames?: XBackendSpecTlsValidationSubjectAltNames[];
+
+  /**
+   * WellKnownCACertificates specifies whether a well-known set of CA certificates
+   * may be used in the TLS handshake between the gateway and backend pod.
+   *
+   * If WellKnownCACertificates is unspecified or empty (""), then CACertificateRefs
+   * must be specified with at least one entry for a valid configuration. Only one of
+   * CACertificateRefs or WellKnownCACertificates may be specified, not both.
+   * If an implementation does not support the WellKnownCACertificates field, or
+   * the supplied value is not recognized, the implementation MUST ensure the
+   * `Accepted` Condition on the BackendTLSPolicy is set to `status: False`, with
+   * a Reason `Invalid`.
+   *
+   * Valid values include:
+   * * "System" - indicates that well-known system CA certificates should be used.
+   *
+   * Implementations MAY define their own sets of CA certificates. Such definitions
+   * MUST use an implementation-specific, prefixed name, such as
+   * `mycompany.com/my-custom-ca-certificates`.
+   *
+   * Support: Implementation-specific
+   *
+   * @schema XBackendSpecTlsValidation#wellKnownCACertificates
+   */
+  readonly wellKnownCaCertificates?: string;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecTlsValidation' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecTlsValidation(obj: XBackendSpecTlsValidation | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_XBackendSpecTlsValidationCaCertificateRefs(y)),
+    'hostname': obj.hostname,
+    'subjectAltNames': obj.subjectAltNames?.map(y => toJson_XBackendSpecTlsValidationSubjectAltNames(y)),
+    'wellKnownCACertificates': obj.wellKnownCaCertificates,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * LocalObjectReference identifies an API object within the namespace of the
+ * referrer.
+ * The API object must be valid in the cluster; the Group and Kind must
+ * be registered in the cluster for this reference to be valid.
+ *
+ * References to objects with invalid Group and Kind are not valid, and must
+ * be rejected by the implementation, with appropriate Conditions set
+ * on the containing object.
+ *
+ * @schema XBackendSpecTlsValidationCaCertificateRefs
+ */
+export interface XBackendSpecTlsValidationCaCertificateRefs {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema XBackendSpecTlsValidationCaCertificateRefs#group
+   */
+  readonly group: string;
+
+  /**
+   * Kind is kind of the referent. For example "HTTPRoute" or "Service".
+   *
+   * @schema XBackendSpecTlsValidationCaCertificateRefs#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema XBackendSpecTlsValidationCaCertificateRefs#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecTlsValidationCaCertificateRefs' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecTlsValidationCaCertificateRefs(obj: XBackendSpecTlsValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'kind': obj.kind,
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SubjectAltName represents Subject Alternative Name.
+ *
+ * @schema XBackendSpecTlsValidationSubjectAltNames
+ */
+export interface XBackendSpecTlsValidationSubjectAltNames {
+  /**
+   * Hostname contains Subject Alternative Name specified in DNS name format.
+   * Required when Type is set to Hostname, ignored otherwise.
+   *
+   * Support: Core
+   *
+   * @schema XBackendSpecTlsValidationSubjectAltNames#hostname
+   */
+  readonly hostname?: string;
+
+  /**
+   * Type determines the format of the Subject Alternative Name. Always required.
+   *
+   * Support: Core
+   *
+   * @schema XBackendSpecTlsValidationSubjectAltNames#type
+   */
+  readonly type: XBackendSpecTlsValidationSubjectAltNamesType;
+
+  /**
+   * URI contains Subject Alternative Name specified in a full URI format.
+   * It MUST include both a scheme (e.g., "http" or "ftp") and a scheme-specific-part.
+   * Common values include SPIFFE IDs like "spiffe://mycluster.example.com/ns/myns/sa/svc1sa".
+   * Required when Type is set to URI, ignored otherwise.
+   *
+   * Support: Core
+   *
+   * @schema XBackendSpecTlsValidationSubjectAltNames#uri
+   */
+  readonly uri?: string;
+}
+
+/**
+ * Converts an object of type 'XBackendSpecTlsValidationSubjectAltNames' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_XBackendSpecTlsValidationSubjectAltNames(obj: XBackendSpecTlsValidationSubjectAltNames | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'hostname': obj.hostname,
+    'type': obj.type,
+    'uri': obj.uri,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type determines the format of the Subject Alternative Name. Always required.
+ *
+ * Support: Core
+ *
+ * @schema XBackendSpecTlsValidationSubjectAltNamesType
+ */
+export enum XBackendSpecTlsValidationSubjectAltNamesType {
+  /** Hostname */
+  HOSTNAME = "Hostname",
+  /** URI */
+  URI = "URI",
+}
+
+
+/**
  * XBackendTrafficPolicy defines the configuration for how traffic to a
 target backend should be handled.
  *
@@ -150,7 +825,7 @@ export interface XBackendTrafficPolicySpec {
    * ServiceImport, or any implementation-specific backendRef) are the only
    * valid API target references.
    *
-   * Currently, a TargetRef can not be scoped to a specific port on a
+   * Currently, a TargetRef cannot be scoped to a specific port on a
    * Service.
    *
    * @schema XBackendTrafficPolicySpec#targetRefs
@@ -280,17 +955,6 @@ export interface XBackendTrafficPolicySpecSessionPersistence {
   readonly cookieConfig?: XBackendTrafficPolicySpecSessionPersistenceCookieConfig;
 
   /**
-   * IdleTimeout defines the idle timeout of the persistent session.
-   * Once the session has been idle for more than the specified
-   * IdleTimeout duration, the session becomes invalid.
-   *
-   * Support: Extended
-   *
-   * @schema XBackendTrafficPolicySpecSessionPersistence#idleTimeout
-   */
-  readonly idleTimeout?: string;
-
-  /**
    * SessionName defines the name of the persistent session token
    * which may be reflected in the cookie or the header. Users
    * should avoid reusing session names to prevent unintended
@@ -304,7 +968,7 @@ export interface XBackendTrafficPolicySpecSessionPersistence {
 
   /**
    * Type defines the type of session persistence such as through
-   * the use a header or cookie. Defaults to cookie based session
+   * the use of a header or cookie. Defaults to cookie based session
    * persistence.
    *
    * Support: Core for "Cookie" type
@@ -326,7 +990,6 @@ export function toJson_XBackendTrafficPolicySpecSessionPersistence(obj: XBackend
   const result = {
     'absoluteTimeout': obj.absoluteTimeout,
     'cookieConfig': toJson_XBackendTrafficPolicySpecSessionPersistenceCookieConfig(obj.cookieConfig),
-    'idleTimeout': obj.idleTimeout,
     'sessionName': obj.sessionName,
     'type': obj.type,
   };
@@ -529,7 +1192,7 @@ export function toJson_XBackendTrafficPolicySpecSessionPersistenceCookieConfig(o
 
 /**
  * Type defines the type of session persistence such as through
- * the use a header or cookie. Defaults to cookie based session
+ * the use of a header or cookie. Defaults to cookie based session
  * persistence.
  *
  * Support: Core for "Cookie" type
@@ -579,43 +1242,42 @@ export enum XBackendTrafficPolicySpecSessionPersistenceCookieConfigLifetimeType 
 
 
 /**
- * XListenerSet defines a set of additional listeners
-to attach to an existing Gateway.
+ * XMesh defines mesh-wide characteristics of a GAMMA-compliant service mesh.
  *
- * @schema XListenerSet
+ * @schema XMesh
  */
-export class XListenerSet extends ApiObject {
+export class XMesh extends ApiObject {
   /**
-   * Returns the apiVersion and kind for "XListenerSet"
+   * Returns the apiVersion and kind for "XMesh"
    */
   public static readonly GVK: GroupVersionKind = {
     apiVersion: 'gateway.networking.x-k8s.io/v1alpha1',
-    kind: 'XListenerSet',
+    kind: 'XMesh',
   }
 
   /**
-   * Renders a Kubernetes manifest for "XListenerSet".
+   * Renders a Kubernetes manifest for "XMesh".
    *
    * This can be used to inline resource manifests inside other objects (e.g. as templates).
    *
    * @param props initialization props
    */
-  public static manifest(props: XListenerSetProps): any {
+  public static manifest(props: XMeshProps): any {
     return {
-      ...XListenerSet.GVK,
-      ...toJson_XListenerSetProps(props),
+      ...XMesh.GVK,
+      ...toJson_XMeshProps(props),
     };
   }
 
   /**
-   * Defines a "XListenerSet" API object
+   * Defines a "XMesh" API object
    * @param scope the scope in which to define this object
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: XListenerSetProps) {
+  public constructor(scope: Construct, id: string, props: XMeshProps) {
     super(scope, id, {
-      ...XListenerSet.GVK,
+      ...XMesh.GVK,
       ...props,
     });
   }
@@ -627,41 +1289,40 @@ export class XListenerSet extends ApiObject {
     const resolved = super.toJson();
 
     return {
-      ...XListenerSet.GVK,
-      ...toJson_XListenerSetProps(resolved),
+      ...XMesh.GVK,
+      ...toJson_XMeshProps(resolved),
     };
   }
 }
 
 /**
- * XListenerSet defines a set of additional listeners
- * to attach to an existing Gateway.
+ * XMesh defines mesh-wide characteristics of a GAMMA-compliant service mesh.
  *
- * @schema XListenerSet
+ * @schema XMesh
  */
-export interface XListenerSetProps {
+export interface XMeshProps {
   /**
-   * @schema XListenerSet#metadata
+   * @schema XMesh#metadata
    */
   readonly metadata?: ApiObjectMetadata;
 
   /**
-   * Spec defines the desired state of ListenerSet.
+   * Spec defines the desired state of XMesh.
    *
-   * @schema XListenerSet#spec
+   * @schema XMesh#spec
    */
-  readonly spec: XListenerSetSpec;
+  readonly spec: XMeshSpec;
 }
 
 /**
- * Converts an object of type 'XListenerSetProps' to JSON representation.
+ * Converts an object of type 'XMeshProps' to JSON representation.
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetProps(obj: XListenerSetProps | undefined): Record<string, any> | undefined {
+export function toJson_XMeshProps(obj: XMeshProps | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'metadata': obj.metadata,
-    'spec': toJson_XListenerSetSpec(obj.spec),
+    'spec': toJson_XMeshSpec(obj.spec),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -669,418 +1330,65 @@ export function toJson_XListenerSetProps(obj: XListenerSetProps | undefined): Re
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Spec defines the desired state of ListenerSet.
+ * Spec defines the desired state of XMesh.
  *
- * @schema XListenerSetSpec
+ * @schema XMeshSpec
  */
-export interface XListenerSetSpec {
+export interface XMeshSpec {
   /**
-   * Listeners associated with this ListenerSet. Listeners define
-   * logical endpoints that are bound on this referenced parent Gateway's addresses.
+   * ControllerName is the name of a controller that is managing Gateway API
+   * resources for mesh traffic management. The value of this field MUST be a
+   * domain prefixed path.
    *
-   * Listeners in a `Gateway` and their attached `ListenerSets` are concatenated
-   * as a list when programming the underlying infrastructure. Each listener
-   * name does not need to be unique across the Gateway and ListenerSets.
-   * See ListenerEntry.Name for more details.
+   * Example: "example.com/awesome-mesh".
    *
-   * Implementations MUST treat the parent Gateway as having the merged
-   * list of all listeners from itself and attached ListenerSets using
-   * the following precedence:
-   *
-   * 1. "parent" Gateway
-   * 2. ListenerSet ordered by creation time (oldest first)
-   * 3. ListenerSet ordered alphabetically by “{namespace}/{name}”.
-   *
-   * An implementation MAY reject listeners by setting the ListenerEntryStatus
-   * `Accepted`` condition to False with the Reason `TooManyListeners`
-   *
-   * If a listener has a conflict, this will be reported in the
-   * Status.ListenerEntryStatus setting the `Conflicted` condition to True.
-   *
-   * Implementations SHOULD be cautious about what information from the
-   * parent or siblings are reported to avoid accidentally leaking
-   * sensitive information that the child would not otherwise have access
-   * to. This can include contents of secrets etc.
-   *
-   * @schema XListenerSetSpec#listeners
-   */
-  readonly listeners: XListenerSetSpecListeners[];
-
-  /**
-   * ParentRef references the Gateway that the listeners are attached to.
-   *
-   * @schema XListenerSetSpec#parentRef
-   */
-  readonly parentRef: XListenerSetSpecParentRef;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpec' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpec(obj: XListenerSetSpec | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'listeners': obj.listeners?.map(y => toJson_XListenerSetSpecListeners(y)),
-    'parentRef': toJson_XListenerSetSpecParentRef(obj.parentRef),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * @schema XListenerSetSpecListeners
- */
-export interface XListenerSetSpecListeners {
-  /**
-   * AllowedRoutes defines the types of routes that MAY be attached to a
-   * Listener and the trusted namespaces where those Route resources MAY be
-   * present.
-   *
-   * Although a client request may match multiple route rules, only one rule
-   * may ultimately receive the request. Matching precedence MUST be
-   * determined in order of the following criteria:
-   *
-   * * The most specific match as defined by the Route type.
-   * * The oldest Route based on creation timestamp. For example, a Route with
-   * a creation timestamp of "2020-09-08 01:02:03" is given precedence over
-   * a Route with a creation timestamp of "2020-09-08 01:02:04".
-   * * If everything else is equivalent, the Route appearing first in
-   * alphabetical order (namespace/name) should be given precedence. For
-   * example, foo/bar is given precedence over foo/baz.
-   *
-   * All valid rules within a Route attached to this Listener should be
-   * implemented. Invalid Route rules can be ignored (sometimes that will mean
-   * the full Route). If a Route rule transitions from valid to invalid,
-   * support for that Route rule should be dropped to ensure consistency. For
-   * example, even if a filter specified by a Route rule is invalid, the rest
-   * of the rules within that Route should still be supported.
-   *
-   * @schema XListenerSetSpecListeners#allowedRoutes
-   */
-  readonly allowedRoutes?: XListenerSetSpecListenersAllowedRoutes;
-
-  /**
-   * Hostname specifies the virtual hostname to match for protocol types that
-   * define this concept. When unspecified, all hostnames are matched. This
-   * field is ignored for protocols that don't require hostname based
-   * matching.
-   *
-   * Implementations MUST apply Hostname matching appropriately for each of
-   * the following protocols:
-   *
-   * * TLS: The Listener Hostname MUST match the SNI.
-   * * HTTP: The Listener Hostname MUST match the Host header of the request.
-   * * HTTPS: The Listener Hostname SHOULD match at both the TLS and HTTP
-   * protocol layers as described above. If an implementation does not
-   * ensure that both the SNI and Host header match the Listener hostname,
-   * it MUST clearly document that.
-   *
-   * For HTTPRoute and TLSRoute resources, there is an interaction with the
-   * `spec.hostnames` array. When both listener and route specify hostnames,
-   * there MUST be an intersection between the values for a Route to be
-   * accepted. For more information, refer to the Route specific Hostnames
-   * documentation.
-   *
-   * Hostnames that are prefixed with a wildcard label (`*.`) are interpreted
-   * as a suffix match. That means that a match for `*.example.com` would match
-   * both `test.example.com`, and `foo.test.example.com`, but not `example.com`.
-   *
-   * @schema XListenerSetSpecListeners#hostname
-   */
-  readonly hostname?: string;
-
-  /**
-   * Name is the name of the Listener. This name MUST be unique within a
-   * ListenerSet.
-   *
-   * Name is not required to be unique across a Gateway and ListenerSets.
-   * Routes can attach to a Listener by having a ListenerSet as a parentRef
-   * and setting the SectionName
-   *
-   * @schema XListenerSetSpecListeners#name
-   */
-  readonly name: string;
-
-  /**
-   * Port is the network port. Multiple listeners may use the
-   * same port, subject to the Listener compatibility rules.
-   *
-   * @schema XListenerSetSpecListeners#port
-   */
-  readonly port: number;
-
-  /**
-   * Protocol specifies the network protocol this listener expects to receive.
-   *
-   * @schema XListenerSetSpecListeners#protocol
-   */
-  readonly protocol: string;
-
-  /**
-   * TLS is the TLS configuration for the Listener. This field is required if
-   * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
-   * if the Protocol field is "HTTP", "TCP", or "UDP".
-   *
-   * The association of SNIs to Certificate defined in GatewayTLSConfig is
-   * defined based on the Hostname field for this listener.
-   *
-   * The GatewayClass MUST use the longest matching SNI out of all
-   * available certificates for any TLS handshake.
-   *
-   * @schema XListenerSetSpecListeners#tls
-   */
-  readonly tls?: XListenerSetSpecListenersTls;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListeners' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListeners(obj: XListenerSetSpecListeners | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'allowedRoutes': toJson_XListenerSetSpecListenersAllowedRoutes(obj.allowedRoutes),
-    'hostname': obj.hostname,
-    'name': obj.name,
-    'port': obj.port,
-    'protocol': obj.protocol,
-    'tls': toJson_XListenerSetSpecListenersTls(obj.tls),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * ParentRef references the Gateway that the listeners are attached to.
- *
- * @schema XListenerSetSpecParentRef
- */
-export interface XListenerSetSpecParentRef {
-  /**
-   * Group is the group of the referent.
-   *
-   * @schema XListenerSetSpecParentRef#group
-   */
-  readonly group?: string;
-
-  /**
-   * Kind is kind of the referent. For example "Gateway".
-   *
-   * @schema XListenerSetSpecParentRef#kind
-   */
-  readonly kind?: string;
-
-  /**
-   * Name is the name of the referent.
-   *
-   * @schema XListenerSetSpecParentRef#name
-   */
-  readonly name: string;
-
-  /**
-   * Namespace is the namespace of the referent.  If not present,
-   * the namespace of the referent is assumed to be the same as
-   * the namespace of the referring object.
-   *
-   * @schema XListenerSetSpecParentRef#namespace
-   */
-  readonly namespace?: string;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecParentRef' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecParentRef(obj: XListenerSetSpecParentRef | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * AllowedRoutes defines the types of routes that MAY be attached to a
- * Listener and the trusted namespaces where those Route resources MAY be
- * present.
- *
- * Although a client request may match multiple route rules, only one rule
- * may ultimately receive the request. Matching precedence MUST be
- * determined in order of the following criteria:
- *
- * * The most specific match as defined by the Route type.
- * * The oldest Route based on creation timestamp. For example, a Route with
- * a creation timestamp of "2020-09-08 01:02:03" is given precedence over
- * a Route with a creation timestamp of "2020-09-08 01:02:04".
- * * If everything else is equivalent, the Route appearing first in
- * alphabetical order (namespace/name) should be given precedence. For
- * example, foo/bar is given precedence over foo/baz.
- *
- * All valid rules within a Route attached to this Listener should be
- * implemented. Invalid Route rules can be ignored (sometimes that will mean
- * the full Route). If a Route rule transitions from valid to invalid,
- * support for that Route rule should be dropped to ensure consistency. For
- * example, even if a filter specified by a Route rule is invalid, the rest
- * of the rules within that Route should still be supported.
- *
- * @schema XListenerSetSpecListenersAllowedRoutes
- */
-export interface XListenerSetSpecListenersAllowedRoutes {
-  /**
-   * Kinds specifies the groups and kinds of Routes that are allowed to bind
-   * to this Gateway Listener. When unspecified or empty, the kinds of Routes
-   * selected are determined using the Listener protocol.
-   *
-   * A RouteGroupKind MUST correspond to kinds of Routes that are compatible
-   * with the application protocol specified in the Listener's Protocol field.
-   * If an implementation does not support or recognize this resource type, it
-   * MUST set the "ResolvedRefs" condition to False for this Listener with the
-   * "InvalidRouteKinds" reason.
+   * This field is not mutable and cannot be empty.
    *
    * Support: Core
    *
-   * @schema XListenerSetSpecListenersAllowedRoutes#kinds
+   * @schema XMeshSpec#controllerName
    */
-  readonly kinds?: XListenerSetSpecListenersAllowedRoutesKinds[];
+  readonly controllerName: string;
 
   /**
-   * Namespaces indicates namespaces from which Routes may be attached to this
-   * Listener. This is restricted to the namespace of this Gateway by default.
+   * Description optionally provides a human-readable description of a Mesh.
    *
-   * Support: Core
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutes#namespaces
+   * @schema XMeshSpec#description
    */
-  readonly namespaces?: XListenerSetSpecListenersAllowedRoutesNamespaces;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersAllowedRoutes' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersAllowedRoutes(obj: XListenerSetSpecListenersAllowedRoutes | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'kinds': obj.kinds?.map(y => toJson_XListenerSetSpecListenersAllowedRoutesKinds(y)),
-    'namespaces': toJson_XListenerSetSpecListenersAllowedRoutesNamespaces(obj.namespaces),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * TLS is the TLS configuration for the Listener. This field is required if
- * the Protocol field is "HTTPS" or "TLS". It is invalid to set this field
- * if the Protocol field is "HTTP", "TCP", or "UDP".
- *
- * The association of SNIs to Certificate defined in GatewayTLSConfig is
- * defined based on the Hostname field for this listener.
- *
- * The GatewayClass MUST use the longest matching SNI out of all
- * available certificates for any TLS handshake.
- *
- * @schema XListenerSetSpecListenersTls
- */
-export interface XListenerSetSpecListenersTls {
-  /**
-   * CertificateRefs contains a series of references to Kubernetes objects that
-   * contains TLS certificates and private keys. These certificates are used to
-   * establish a TLS handshake for requests that match the hostname of the
-   * associated listener.
-   *
-   * A single CertificateRef to a Kubernetes Secret has "Core" support.
-   * Implementations MAY choose to support attaching multiple certificates to
-   * a Listener, but this behavior is implementation-specific.
-   *
-   * References to a resource in different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
-   *
-   * This field is required to have at least one element when the mode is set
-   * to "Terminate" (default) and is optional otherwise.
-   *
-   * CertificateRefs can reference to standard Kubernetes resources, i.e.
-   * Secret, or implementation-specific custom resources.
-   *
-   * Support: Core - A single reference to a Kubernetes Secret of type kubernetes.io/tls
-   *
-   * Support: Implementation-specific (More than one reference or other resource types)
-   *
-   * @schema XListenerSetSpecListenersTls#certificateRefs
-   */
-  readonly certificateRefs?: XListenerSetSpecListenersTlsCertificateRefs[];
+  readonly description?: string;
 
   /**
-   * FrontendValidation holds configuration information for validating the frontend (client).
-   * Setting this field will require clients to send a client certificate
-   * required for validation during the TLS handshake. In browsers this may result in a dialog appearing
-   * that requests a user to specify the client certificate.
-   * The maximum depth of a certificate chain accepted in verification is Implementation specific.
+   * ParametersRef is an optional reference to a resource that contains
+   * implementation-specific configuration for this Mesh. If no
+   * implementation-specific parameters are needed, this field MUST be
+   * omitted.
    *
-   * Support: Extended
+   * ParametersRef can reference a standard Kubernetes resource, i.e.
+   * ConfigMap, or an implementation-specific custom resource. The resource
+   * can be cluster-scoped or namespace-scoped.
    *
-   * @schema XListenerSetSpecListenersTls#frontendValidation
-   */
-  readonly frontendValidation?: XListenerSetSpecListenersTlsFrontendValidation;
-
-  /**
-   * Mode defines the TLS behavior for the TLS session initiated by the client.
-   * There are two possible modes:
-   *
-   * - Terminate: The TLS session between the downstream client and the
-   * Gateway is terminated at the Gateway. This mode requires certificates
-   * to be specified in some way, such as populating the certificateRefs
-   * field.
-   * - Passthrough: The TLS session is NOT terminated by the Gateway. This
-   * implies that the Gateway can't decipher the TLS stream except for
-   * the ClientHello message of the TLS protocol. The certificateRefs field
-   * is ignored in this mode.
-   *
-   * Support: Core
-   *
-   * @schema XListenerSetSpecListenersTls#mode
-   */
-  readonly mode?: XListenerSetSpecListenersTlsMode;
-
-  /**
-   * Options are a list of key/value pairs to enable extended TLS
-   * configuration for each implementation. For example, configuring the
-   * minimum TLS version or supported cipher suites.
-   *
-   * A set of common keys MAY be defined by the API in the future. To avoid
-   * any ambiguity, implementation-specific definitions MUST use
-   * domain-prefixed names, such as `example.com/my-custom-option`.
-   * Un-prefixed names are reserved for key names defined by Gateway API.
+   * If the referent cannot be found, refers to an unsupported kind, or when
+   * the data within that resource is malformed, the Mesh MUST be rejected
+   * with the "Accepted" status condition set to "False" and an
+   * "InvalidParameters" reason.
    *
    * Support: Implementation-specific
    *
-   * @schema XListenerSetSpecListenersTls#options
+   * @schema XMeshSpec#parametersRef
    */
-  readonly options?: { [key: string]: string };
+  readonly parametersRef?: XMeshSpecParametersRef;
 }
 
 /**
- * Converts an object of type 'XListenerSetSpecListenersTls' to JSON representation.
+ * Converts an object of type 'XMeshSpec' to JSON representation.
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersTls(obj: XListenerSetSpecListenersTls | undefined): Record<string, any> | undefined {
+export function toJson_XMeshSpec(obj: XMeshSpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
-    'certificateRefs': obj.certificateRefs?.map(y => toJson_XListenerSetSpecListenersTlsCertificateRefs(y)),
-    'frontendValidation': toJson_XListenerSetSpecListenersTlsFrontendValidation(obj.frontendValidation),
-    'mode': obj.mode,
-    'options': ((obj.options) === undefined) ? undefined : (Object.entries(obj.options).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'controllerName': obj.controllerName,
+    'description': obj.description,
+    'parametersRef': toJson_XMeshSpecParametersRef(obj.parametersRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1088,414 +1396,67 @@ export function toJson_XListenerSetSpecListenersTls(obj: XListenerSetSpecListene
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * RouteGroupKind indicates the group and kind of a Route resource.
+ * ParametersRef is an optional reference to a resource that contains
+ * implementation-specific configuration for this Mesh. If no
+ * implementation-specific parameters are needed, this field MUST be
+ * omitted.
  *
- * @schema XListenerSetSpecListenersAllowedRoutesKinds
+ * ParametersRef can reference a standard Kubernetes resource, i.e.
+ * ConfigMap, or an implementation-specific custom resource. The resource
+ * can be cluster-scoped or namespace-scoped.
+ *
+ * If the referent cannot be found, refers to an unsupported kind, or when
+ * the data within that resource is malformed, the Mesh MUST be rejected
+ * with the "Accepted" status condition set to "False" and an
+ * "InvalidParameters" reason.
+ *
+ * Support: Implementation-specific
+ *
+ * @schema XMeshSpecParametersRef
  */
-export interface XListenerSetSpecListenersAllowedRoutesKinds {
+export interface XMeshSpecParametersRef {
   /**
-   * Group is the group of the Route.
+   * Group is the group of the referent.
    *
-   * @schema XListenerSetSpecListenersAllowedRoutesKinds#group
-   */
-  readonly group?: string;
-
-  /**
-   * Kind is the kind of the Route.
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesKinds#kind
-   */
-  readonly kind: string;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersAllowedRoutesKinds' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersAllowedRoutesKinds(obj: XListenerSetSpecListenersAllowedRoutesKinds | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Namespaces indicates namespaces from which Routes may be attached to this
- * Listener. This is restricted to the namespace of this Gateway by default.
- *
- * Support: Core
- *
- * @schema XListenerSetSpecListenersAllowedRoutesNamespaces
- */
-export interface XListenerSetSpecListenersAllowedRoutesNamespaces {
-  /**
-   * From indicates where Routes will be selected for this Gateway. Possible
-   * values are:
-   *
-   * * All: Routes in all namespaces may be used by this Gateway.
-   * * Selector: Routes in namespaces selected by the selector may be used by
-   * this Gateway.
-   * * Same: Only Routes in the same namespace may be used by this Gateway.
-   *
-   * Support: Core
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespaces#from
-   */
-  readonly from?: XListenerSetSpecListenersAllowedRoutesNamespacesFrom;
-
-  /**
-   * Selector must be specified when From is set to "Selector". In that case,
-   * only Routes in Namespaces matching this Selector will be selected by this
-   * Gateway. This field is ignored for other values of "From".
-   *
-   * Support: Core
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespaces#selector
-   */
-  readonly selector?: XListenerSetSpecListenersAllowedRoutesNamespacesSelector;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersAllowedRoutesNamespaces' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersAllowedRoutesNamespaces(obj: XListenerSetSpecListenersAllowedRoutesNamespaces | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'from': obj.from,
-    'selector': toJson_XListenerSetSpecListenersAllowedRoutesNamespacesSelector(obj.selector),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * SecretObjectReference identifies an API object including its namespace,
- * defaulting to Secret.
- *
- * The API object must be valid in the cluster; the Group and Kind must
- * be registered in the cluster for this reference to be valid.
- *
- * References to objects with invalid Group and Kind are not valid, and must
- * be rejected by the implementation, with appropriate Conditions set
- * on the containing object.
- *
- * @schema XListenerSetSpecListenersTlsCertificateRefs
- */
-export interface XListenerSetSpecListenersTlsCertificateRefs {
-  /**
-   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
-   * When unspecified or empty string, core API group is inferred.
-   *
-   * @schema XListenerSetSpecListenersTlsCertificateRefs#group
-   */
-  readonly group?: string;
-
-  /**
-   * Kind is kind of the referent. For example "Secret".
-   *
-   * @schema XListenerSetSpecListenersTlsCertificateRefs#kind
-   */
-  readonly kind?: string;
-
-  /**
-   * Name is the name of the referent.
-   *
-   * @schema XListenerSetSpecListenersTlsCertificateRefs#name
-   */
-  readonly name: string;
-
-  /**
-   * Namespace is the namespace of the referenced object. When unspecified, the local
-   * namespace is inferred.
-   *
-   * Note that when a namespace different than the local namespace is specified,
-   * a ReferenceGrant object is required in the referent namespace to allow that
-   * namespace's owner to accept the reference. See the ReferenceGrant
-   * documentation for details.
-   *
-   * Support: Core
-   *
-   * @schema XListenerSetSpecListenersTlsCertificateRefs#namespace
-   */
-  readonly namespace?: string;
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersTlsCertificateRefs' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersTlsCertificateRefs(obj: XListenerSetSpecListenersTlsCertificateRefs | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'group': obj.group,
-    'kind': obj.kind,
-    'name': obj.name,
-    'namespace': obj.namespace,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * FrontendValidation holds configuration information for validating the frontend (client).
- * Setting this field will require clients to send a client certificate
- * required for validation during the TLS handshake. In browsers this may result in a dialog appearing
- * that requests a user to specify the client certificate.
- * The maximum depth of a certificate chain accepted in verification is Implementation specific.
- *
- * Support: Extended
- *
- * @schema XListenerSetSpecListenersTlsFrontendValidation
- */
-export interface XListenerSetSpecListenersTlsFrontendValidation {
-  /**
-   * CACertificateRefs contains one or more references to
-   * Kubernetes objects that contain TLS certificates of
-   * the Certificate Authorities that can be used
-   * as a trust anchor to validate the certificates presented by the client.
-   *
-   * A single CA certificate reference to a Kubernetes ConfigMap
-   * has "Core" support.
-   * Implementations MAY choose to support attaching multiple CA certificates to
-   * a Listener, but this behavior is implementation-specific.
-   *
-   * Support: Core - A single reference to a Kubernetes ConfigMap
-   * with the CA certificate in a key named `ca.crt`.
-   *
-   * Support: Implementation-specific (More than one reference, or other kinds
-   * of resources).
-   *
-   * References to a resource in a different namespace are invalid UNLESS there
-   * is a ReferenceGrant in the target namespace that allows the certificate
-   * to be attached. If a ReferenceGrant does not allow this reference, the
-   * "ResolvedRefs" condition MUST be set to False for this listener with the
-   * "RefNotPermitted" reason.
-   *
-   * @schema XListenerSetSpecListenersTlsFrontendValidation#caCertificateRefs
-   */
-  readonly caCertificateRefs?: XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs[];
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersTlsFrontendValidation' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersTlsFrontendValidation(obj: XListenerSetSpecListenersTlsFrontendValidation | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs(y)),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * Mode defines the TLS behavior for the TLS session initiated by the client.
- * There are two possible modes:
- *
- * - Terminate: The TLS session between the downstream client and the
- * Gateway is terminated at the Gateway. This mode requires certificates
- * to be specified in some way, such as populating the certificateRefs
- * field.
- * - Passthrough: The TLS session is NOT terminated by the Gateway. This
- * implies that the Gateway can't decipher the TLS stream except for
- * the ClientHello message of the TLS protocol. The certificateRefs field
- * is ignored in this mode.
- *
- * Support: Core
- *
- * @schema XListenerSetSpecListenersTlsMode
- */
-export enum XListenerSetSpecListenersTlsMode {
-  /** Terminate */
-  TERMINATE = "Terminate",
-  /** Passthrough */
-  PASSTHROUGH = "Passthrough",
-}
-
-/**
- * From indicates where Routes will be selected for this Gateway. Possible
- * values are:
- *
- * * All: Routes in all namespaces may be used by this Gateway.
- * * Selector: Routes in namespaces selected by the selector may be used by
- * this Gateway.
- * * Same: Only Routes in the same namespace may be used by this Gateway.
- *
- * Support: Core
- *
- * @schema XListenerSetSpecListenersAllowedRoutesNamespacesFrom
- */
-export enum XListenerSetSpecListenersAllowedRoutesNamespacesFrom {
-  /** All */
-  ALL = "All",
-  /** Selector */
-  SELECTOR = "Selector",
-  /** Same */
-  SAME = "Same",
-}
-
-/**
- * Selector must be specified when From is set to "Selector". In that case,
- * only Routes in Namespaces matching this Selector will be selected by this
- * Gateway. This field is ignored for other values of "From".
- *
- * Support: Core
- *
- * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelector
- */
-export interface XListenerSetSpecListenersAllowedRoutesNamespacesSelector {
-  /**
-   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelector#matchExpressions
-   */
-  readonly matchExpressions?: XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions[];
-
-  /**
-   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
-   * map is equivalent to an element of matchExpressions, whose key field is "key", the
-   * operator is "In", and the values array contains only "value". The requirements are ANDed.
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelector#matchLabels
-   */
-  readonly matchLabels?: { [key: string]: string };
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersAllowedRoutesNamespacesSelector' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersAllowedRoutesNamespacesSelector(obj: XListenerSetSpecListenersAllowedRoutesNamespacesSelector | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'matchExpressions': obj.matchExpressions?.map(y => toJson_XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions(y)),
-    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * ObjectReference identifies an API object including its namespace.
- *
- * The API object must be valid in the cluster; the Group and Kind must
- * be registered in the cluster for this reference to be valid.
- *
- * References to objects with invalid Group and Kind are not valid, and must
- * be rejected by the implementation, with appropriate Conditions set
- * on the containing object.
- *
- * @schema XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs
- */
-export interface XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs {
-  /**
-   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
-   * When set to the empty string, core API group is inferred.
-   *
-   * @schema XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs#group
+   * @schema XMeshSpecParametersRef#group
    */
   readonly group: string;
 
   /**
-   * Kind is kind of the referent. For example "ConfigMap" or "Service".
+   * Kind is kind of the referent.
    *
-   * @schema XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs#kind
+   * @schema XMeshSpecParametersRef#kind
    */
   readonly kind: string;
 
   /**
    * Name is the name of the referent.
    *
-   * @schema XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs#name
+   * @schema XMeshSpecParametersRef#name
    */
   readonly name: string;
 
   /**
-   * Namespace is the namespace of the referenced object. When unspecified, the local
-   * namespace is inferred.
+   * Namespace is the namespace of the referent.
+   * This field is required when referring to a Namespace-scoped resource and
+   * MUST be unset when referring to a Cluster-scoped resource.
    *
-   * Note that when a namespace different than the local namespace is specified,
-   * a ReferenceGrant object is required in the referent namespace to allow that
-   * namespace's owner to accept the reference. See the ReferenceGrant
-   * documentation for details.
-   *
-   * Support: Core
-   *
-   * @schema XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs#namespace
+   * @schema XMeshSpecParametersRef#namespace
    */
   readonly namespace?: string;
 }
 
 /**
- * Converts an object of type 'XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs' to JSON representation.
+ * Converts an object of type 'XMeshSpecParametersRef' to JSON representation.
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs(obj: XListenerSetSpecListenersTlsFrontendValidationCaCertificateRefs | undefined): Record<string, any> | undefined {
+export function toJson_XMeshSpecParametersRef(obj: XMeshSpecParametersRef | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'group': obj.group,
     'kind': obj.kind,
     'name': obj.name,
     'namespace': obj.namespace,
-  };
-  // filter undefined values
-  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
-}
-/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-
-/**
- * A label selector requirement is a selector that contains values, a key, and an operator that
- * relates the key and values.
- *
- * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions
- */
-export interface XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions {
-  /**
-   * key is the label key that the selector applies to.
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions#key
-   */
-  readonly key: string;
-
-  /**
-   * operator represents a key's relationship to a set of values.
-   * Valid operators are In, NotIn, Exists and DoesNotExist.
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions#operator
-   */
-  readonly operator: string;
-
-  /**
-   * values is an array of string values. If the operator is In or NotIn,
-   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
-   * the values array must be empty. This array is replaced during a strategic
-   * merge patch.
-   *
-   * @schema XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions#values
-   */
-  readonly values?: string[];
-}
-
-/**
- * Converts an object of type 'XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions' to JSON representation.
- */
-/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
-export function toJson_XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions(obj: XListenerSetSpecListenersAllowedRoutesNamespacesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
-  if (obj === undefined) { return undefined; }
-  const result = {
-    'key': obj.key,
-    'operator': obj.operator,
-    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});

@@ -52,12 +52,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm`, context.getAsset("chart.tar.gz"), {
     backend: {
-      extraArgs,
-      extraEnv,
-      persistence,
-      replicas: 1,
+      replicas: 0,
     },
-    deploymentMode: "SimpleScalable",
+    deploymentMode: "SingleBinary",
     gateway: {
       containerSecurityContext: securityContext.container,
       podSecurityContext: securityContext.pod,
@@ -138,6 +135,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       resources: { requests: { memory: "3072Mi" }, limits: null },
     },
     read: {
+      replicas: 0,
+    },
+    singleBinary: {
       extraArgs,
       extraEnv,
       persistence,
@@ -147,10 +147,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       enabled: false,
     },
     write: {
-      extraArgs,
-      extraEnv,
-      persistence,
-      replicas: 1,
+      replicas: 0,
     },
   });
 
@@ -159,7 +156,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     findApiObject(chart, {
       apiVersion: "apps/v1",
       kind: "StatefulSet",
-      name: "loki-backend",
+      name: "loki-chunks-cache",
     }),
   );
 
@@ -168,7 +165,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     findApiObject(chart, {
       apiVersion: "apps/v1",
       kind: "StatefulSet",
-      name: "loki-chunks-cache",
+      name: "loki",
     }),
   );
 
@@ -185,26 +182,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     chart,
     findApiObject(chart, {
       apiVersion: "apps/v1",
-      kind: "Deployment",
-      name: "loki-read",
-    }),
-  );
-
-  new VerticalPodAutoscaler(
-    chart,
-    findApiObject(chart, {
-      apiVersion: "apps/v1",
       kind: "StatefulSet",
       name: "loki-results-cache",
-    }),
-  );
-
-  new VerticalPodAutoscaler(
-    chart,
-    findApiObject(chart, {
-      apiVersion: "apps/v1",
-      kind: "StatefulSet",
-      name: "loki-write",
     }),
   );
 

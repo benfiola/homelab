@@ -267,6 +267,19 @@ export interface BackendSpecTls {
   readonly alpnProtocols?: string[];
 
   /**
+   * AutoSNIFromEndpointHostname indicates whether the upstream endpoint's hostname should be used as the SNI value
+   * when establishing a TLS connection to the backend.
+   * This uses the resolved hostname of the upstream endpoint (e.g., from the Backend Endpoints list),
+   * rather than a static value.
+   *
+   * Mutually exclusive with SNI. When a BackendTLSPolicy is attached, its Hostname value takes
+   * precedence and AutoSNIFromEndpointHostname is ignored.
+   *
+   * @schema BackendSpecTls#autoSNIFromEndpointHostname
+   */
+  readonly autoSniFromEndpointHostname?: boolean;
+
+  /**
    * CACertificateRefs contains one or more references to Kubernetes objects that
    * contain TLS certificates of the Certificate Authorities that can be used
    * as a trust anchor to validate the certificates presented by the backend.
@@ -285,6 +298,39 @@ export interface BackendSpecTls {
   /**
    * Ciphers specifies the set of cipher suites supported when
    * negotiating TLS 1.0 - 1.2. This setting has no effect for TLS 1.3.
+   * For Envoy TLS cipher suite configuration semantics and default cipher
+   * lists, see the Envoy documentation:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/transport_sockets/tls/v3/common.proto#extensions-transport-sockets-tls-v3-tlsparameters
+   * Supported cipher suite names:
+   * - ECDHE-ECDSA-AES128-GCM-SHA256
+   * - ECDHE-RSA-AES128-GCM-SHA256
+   * - ECDHE-ECDSA-AES256-GCM-SHA384
+   * - ECDHE-RSA-AES256-GCM-SHA384
+   * - ECDHE-ECDSA-CHACHA20-POLY1305
+   * - ECDHE-RSA-CHACHA20-POLY1305
+   * - ECDHE-ECDSA-AES128-SHA
+   * - ECDHE-RSA-AES128-SHA
+   * - AES128-GCM-SHA256
+   * - AES128-SHA
+   * - ECDHE-ECDSA-AES256-SHA
+   * - ECDHE-RSA-AES256-SHA
+   * - AES256-GCM-SHA384
+   * - AES256-SHA
+   * Supported IANA/RFC aliases:
+   * - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+   * - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+   * - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+   * - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+   * - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+   * - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+   * - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+   * - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+   * - TLS_RSA_WITH_AES_128_GCM_SHA256
+   * - TLS_RSA_WITH_AES_128_CBC_SHA
+   * - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+   * - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+   * - TLS_RSA_WITH_AES_256_GCM_SHA384
+   * - TLS_RSA_WITH_AES_256_CBC_SHA
    * In non-FIPS Envoy Proxy builds the default cipher list is:
    * - [ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]
    * - [ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]
@@ -323,6 +369,22 @@ export interface BackendSpecTls {
   readonly ecdhCurves?: string[];
 
   /**
+   * Fingerprints specifies TLS client fingerprinting.
+   * When specified, a JAX fingerprint derived from the client’s TLS handshake
+   * is generated. The fingerprint can be logged in access logs or
+   * forwarded to upstream services using request headers.
+   *
+   * Fingerprinting is disabled if not specified.
+   *
+   * Supported values are:
+   * - JA3
+   * - JA4
+   *
+   * @schema BackendSpecTls#fingerprints
+   */
+  readonly fingerprints?: BackendSpecTlsFingerprints[];
+
+  /**
    * InsecureSkipVerify indicates whether the upstream's certificate verification
    * should be skipped. Defaults to "false".
    *
@@ -356,14 +418,17 @@ export interface BackendSpecTls {
   readonly signatureAlgorithms?: string[];
 
   /**
-   * SNI is specifies the SNI value used when establishing an upstream TLS connection to the backend.
+   * SNI specifies the fixed SNI value used when establishing an upstream TLS connection to the backend.
    *
    * Envoy Gateway will use the HTTP host header value for SNI, when all resources referenced in BackendRefs are:
    * 1. Backend resources that do not set SNI, or
    * 2. Service/ServiceImport resources that do not have a BackendTLSPolicy attached to them
    *
-   * When a BackendTLSPolicy attaches to a Backend resource, the BackendTLSPolicy's Hostname value takes precedence
-   * over this value.
+   * If a BackendTLSPolicy is attached to the Backend resource, the BackendTLSPolicy's validation.hostname
+   * value takes precedence over this field.
+   *
+   * If no BackendTLSPolicy validation.hostname applies and both this field and AutoSNIFromEndpointHostname
+   * are unset, Envoy Gateway configures Envoy to set the upstream SNI from the downstream HTTP host/authority header.
    *
    * @schema BackendSpecTls#sni
    */
@@ -379,7 +444,7 @@ export interface BackendSpecTls {
    *
    * @schema BackendSpecTls#wellKnownCACertificates
    */
-  readonly wellKnownCaCertificates?: BackendSpecTlsWellKnownCaCertificates;
+  readonly wellKnownCaCertificates?: string;
 }
 
 /**
@@ -390,10 +455,12 @@ export function toJson_BackendSpecTls(obj: BackendSpecTls | undefined): Record<s
   if (obj === undefined) { return undefined; }
   const result = {
     'alpnProtocols': obj.alpnProtocols?.map(y => y),
+    'autoSNIFromEndpointHostname': obj.autoSniFromEndpointHostname,
     'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_BackendSpecTlsCaCertificateRefs(y)),
     'ciphers': obj.ciphers?.map(y => y),
     'clientCertificateRef': toJson_BackendSpecTlsClientCertificateRef(obj.clientCertificateRef),
     'ecdhCurves': obj.ecdhCurves?.map(y => y),
+    'fingerprints': obj.fingerprints?.map(y => y),
     'insecureSkipVerify': obj.insecureSkipVerify,
     'maxVersion': obj.maxVersion,
     'minVersion': obj.minVersion,
@@ -638,6 +705,18 @@ export function toJson_BackendSpecTlsClientCertificateRef(obj: BackendSpecTlsCli
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * TLSFingerprintType specifies the TLS client fingerprinting mode.
+ *
+ * @schema BackendSpecTlsFingerprints
+ */
+export enum BackendSpecTlsFingerprints {
+  /** JA3 */
+  JA3 = "JA3",
+  /** JA4 */
+  JA4 = "JA4",
+}
+
+/**
  * Max specifies the maximal TLS protocol version to allow
  * The default is TLS 1.3 if this is not specified.
  *
@@ -673,21 +752,6 @@ export enum BackendSpecTlsMinVersion {
   VALUE_1_2 = "1.2",
   /** 1.3 */
   VALUE_1_3 = "1.3",
-}
-
-/**
- * WellKnownCACertificates specifies whether system CA certificates may be used in
- * the TLS handshake between the gateway and backend pod.
- *
- * If WellKnownCACertificates is unspecified or empty (""), then CACertificateRefs
- * must be specified with at least one entry for a valid configuration. Only one of
- * CACertificateRefs or WellKnownCACertificates may be specified, not both.
- *
- * @schema BackendSpecTlsWellKnownCaCertificates
- */
-export enum BackendSpecTlsWellKnownCaCertificates {
-  /** System */
-  SYSTEM = "System",
 }
 
 
@@ -788,6 +852,23 @@ export function toJson_BackendTrafficPolicyProps(obj: BackendTrafficPolicyProps 
  */
 export interface BackendTrafficPolicySpec {
   /**
+   * AdmissionControl defines the admission control policy to be applied. This configuration
+   * probabilistically rejects requests based on the success rate of previous requests in a
+   * configurable sliding time window.
+   *
+   * @schema BackendTrafficPolicySpec#admissionControl
+   */
+  readonly admissionControl?: BackendTrafficPolicySpecAdmissionControl;
+
+  /**
+   * BandwidthLimit allows the user to limit the bandwidth of traffic
+   * sent to and received from the backend.
+   *
+   * @schema BackendTrafficPolicySpec#bandwidthLimit
+   */
+  readonly bandwidthLimit?: BackendTrafficPolicySpecBandwidthLimit;
+
+  /**
    * Circuit Breaker settings for the upstream connections and requests.
    * If not set, circuit breakers will be enabled with the default thresholds
    *
@@ -797,6 +878,7 @@ export interface BackendTrafficPolicySpec {
 
   /**
    * The compression config for the http streams.
+   *
    * Deprecated: Use Compressor instead.
    *
    * @schema BackendTrafficPolicySpec#compression
@@ -806,6 +888,7 @@ export interface BackendTrafficPolicySpec {
   /**
    * The compressor config for the http streams.
    * This provides more granular control over compression configuration.
+   * Order matters: The first compressor in the list is preferred when q-values in Accept-Encoding are equal.
    *
    * @schema BackendTrafficPolicySpec#compressor
    */
@@ -849,7 +932,9 @@ export interface BackendTrafficPolicySpec {
 
   /**
    * HTTPUpgrade defines the configuration for HTTP protocol upgrades.
-   * If not specified, the default upgrade configuration(websocket) will be used.
+   * If not specified, the default upgrade configuration (websocket) will be used.
+   * However, if requestBuffer is configured, the default upgrade configuration
+   * will be ignored.
    *
    * @schema BackendTrafficPolicySpec#httpUpgrade
    */
@@ -867,8 +952,9 @@ export interface BackendTrafficPolicySpec {
   /**
    * MergeType determines how this configuration is merged with existing BackendTrafficPolicy
    * configurations targeting a parent resource. When set, this configuration will be merged
-   * into a parent BackendTrafficPolicy (i.e. the one targeting a Gateway or Listener).
-   * This field cannot be set when targeting a parent resource (Gateway).
+   * into the closest parent BackendTrafficPolicy in the route's attachment hierarchy (for
+   * example, one targeting a Gateway, Gateway listener, ListenerSet, or ListenerSet listener).
+   * Currently, this field can only be set when targeting xRoute resources.
    * If unset, no merging occurs, and only the most specific configuration takes effect.
    *
    * @schema BackendTrafficPolicySpec#mergeType
@@ -900,6 +986,9 @@ export interface BackendTrafficPolicySpec {
    * When enabling this option, you should also configure your connection buffer size to account for these request buffers. There will also be an
    * increase in memory usage for Envoy that should be accounted for in your deployment settings.
    *
+   * Request buffering is incompatible with streaming APIs and protocol upgrades such as gRPC streaming and WebSocket. Do not enable this option
+   * on routes that need those protocols, because requests can hang instead of being forwarded upstream.
+   *
    * @schema BackendTrafficPolicySpec#requestBuffer
    */
   readonly requestBuffer?: BackendTrafficPolicySpecRequestBuffer;
@@ -919,6 +1008,16 @@ export interface BackendTrafficPolicySpec {
    * @schema BackendTrafficPolicySpec#retry
    */
   readonly retry?: BackendTrafficPolicySpecRetry;
+
+  /**
+   * RoutingType can be set to "Service" to use the Service Cluster IP for routing to the backend,
+   * or it can be set to "Endpoint" to use Endpoint routing.
+   * When specified, this overrides the EnvoyProxy-level setting for the relevant targetRefs.
+   * If not specified, the EnvoyProxy-level setting is used.
+   *
+   * @schema BackendTrafficPolicySpec#routingType
+   */
+  readonly routingType?: string;
 
   /**
    * TargetRef is the name of the resource this policy is being attached to.
@@ -987,6 +1086,8 @@ export interface BackendTrafficPolicySpec {
 export function toJson_BackendTrafficPolicySpec(obj: BackendTrafficPolicySpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'admissionControl': toJson_BackendTrafficPolicySpecAdmissionControl(obj.admissionControl),
+    'bandwidthLimit': toJson_BackendTrafficPolicySpecBandwidthLimit(obj.bandwidthLimit),
     'circuitBreaker': toJson_BackendTrafficPolicySpecCircuitBreaker(obj.circuitBreaker),
     'compression': obj.compression?.map(y => toJson_BackendTrafficPolicySpecCompression(y)),
     'compressor': obj.compressor?.map(y => toJson_BackendTrafficPolicySpecCompressor(y)),
@@ -1003,6 +1104,7 @@ export function toJson_BackendTrafficPolicySpec(obj: BackendTrafficPolicySpec | 
     'requestBuffer': toJson_BackendTrafficPolicySpecRequestBuffer(obj.requestBuffer),
     'responseOverride': obj.responseOverride?.map(y => toJson_BackendTrafficPolicySpecResponseOverride(y)),
     'retry': toJson_BackendTrafficPolicySpecRetry(obj.retry),
+    'routingType': obj.routingType,
     'targetRef': toJson_BackendTrafficPolicySpecTargetRef(obj.targetRef),
     'targetRefs': obj.targetRefs?.map(y => toJson_BackendTrafficPolicySpecTargetRefs(y)),
     'targetSelectors': obj.targetSelectors?.map(y => toJson_BackendTrafficPolicySpecTargetSelectors(y)),
@@ -1010,6 +1112,129 @@ export function toJson_BackendTrafficPolicySpec(obj: BackendTrafficPolicySpec | 
     'telemetry': toJson_BackendTrafficPolicySpecTelemetry(obj.telemetry),
     'timeout': toJson_BackendTrafficPolicySpecTimeout(obj.timeout),
     'useClientProtocol': obj.useClientProtocol,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * AdmissionControl defines the admission control policy to be applied. This configuration
+ * probabilistically rejects requests based on the success rate of previous requests in a
+ * configurable sliding time window.
+ *
+ * @schema BackendTrafficPolicySpecAdmissionControl
+ */
+export interface BackendTrafficPolicySpecAdmissionControl {
+  /**
+   * MaxRejectionPercent represents the upper limit of the rejection probability,
+   * expressed as a percentage in the range [0, 100]. Defaults to 80 if not specified.
+   *
+   * @default 80 if not specified.
+   * @schema BackendTrafficPolicySpecAdmissionControl#maxRejectionPercent
+   */
+  readonly maxRejectionPercent?: number;
+
+  /**
+   * MinRequestRate defines the minimum requests per second below which requests will
+   * pass through the filter without rejection. Defaults to 0 if not specified.
+   *
+   * @default 0 if not specified.
+   * @schema BackendTrafficPolicySpecAdmissionControl#minRequestRate
+   */
+  readonly minRequestRate?: number;
+
+  /**
+   * MinSuccessRate is the lowest request success rate, as a percentage in the
+   * range [1, 100], at which the filter will not reject requests. Defaults to 95 if
+   * not specified. Envoy rejects values below 1%, so values lower than 1 are not allowed.
+   *
+   * @default 95 if
+   * @schema BackendTrafficPolicySpecAdmissionControl#minSuccessRate
+   */
+  readonly minSuccessRate?: number;
+
+  /**
+   * RejectionAggression controls how steeply the rejection probability rises
+   * as the observed success rate falls below MinSuccessRate. A value of 1
+   * produces a linear curve; higher values reject more aggressively for a
+   * given drop in success rate. Must be greater than 0; values below 1 are
+   * clamped to 1. Defaults to 1.
+   *
+   * @default 1.
+   * @schema BackendTrafficPolicySpecAdmissionControl#rejectionAggression
+   */
+  readonly rejectionAggression?: number;
+
+  /**
+   * SamplingWindow defines the time window over which request success rates are calculated.
+   * Must be at least 1s; Envoy truncates the window to whole seconds and uses it as the
+   * denominator in RPS calculations, so sub-second values would produce a zero denominator.
+   * Defaults to 30s if not specified.
+   *
+   * @default 30s if not specified.
+   * @schema BackendTrafficPolicySpecAdmissionControl#samplingWindow
+   */
+  readonly samplingWindow?: string;
+
+  /**
+   * SuccessCriteria defines what constitutes a successful request for both HTTP and gRPC.
+   *
+   * @schema BackendTrafficPolicySpecAdmissionControl#successCriteria
+   */
+  readonly successCriteria?: BackendTrafficPolicySpecAdmissionControlSuccessCriteria;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecAdmissionControl' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecAdmissionControl(obj: BackendTrafficPolicySpecAdmissionControl | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'maxRejectionPercent': obj.maxRejectionPercent,
+    'minRequestRate': obj.minRequestRate,
+    'minSuccessRate': obj.minSuccessRate,
+    'rejectionAggression': obj.rejectionAggression,
+    'samplingWindow': obj.samplingWindow,
+    'successCriteria': toJson_BackendTrafficPolicySpecAdmissionControlSuccessCriteria(obj.successCriteria),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * BandwidthLimit allows the user to limit the bandwidth of traffic
+ * sent to and received from the backend.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimit
+ */
+export interface BackendTrafficPolicySpecBandwidthLimit {
+  /**
+   * Request configures bandwidth limits for traffic sent to the backend.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimit#request
+   */
+  readonly request?: BackendTrafficPolicySpecBandwidthLimitRequest;
+
+  /**
+   * Response configures bandwidth limits for traffic sent from the backend.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimit#response
+   */
+  readonly response?: BackendTrafficPolicySpecBandwidthLimitResponse;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecBandwidthLimit' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecBandwidthLimit(obj: BackendTrafficPolicySpecBandwidthLimit | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'request': toJson_BackendTrafficPolicySpecBandwidthLimitRequest(obj.request),
+    'response': toJson_BackendTrafficPolicySpecBandwidthLimitResponse(obj.response),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1065,6 +1290,14 @@ export interface BackendTrafficPolicySpecCircuitBreaker {
    * @schema BackendTrafficPolicySpecCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: BackendTrafficPolicySpecCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema BackendTrafficPolicySpecCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: BackendTrafficPolicySpecCircuitBreakerRetryBudget;
 }
 
 /**
@@ -1080,6 +1313,7 @@ export function toJson_BackendTrafficPolicySpecCircuitBreaker(obj: BackendTraffi
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_BackendTrafficPolicySpecCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_BackendTrafficPolicySpecCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1108,6 +1342,17 @@ export interface BackendTrafficPolicySpecCompression {
   readonly gzip?: any;
 
   /**
+   * MinContentLength defines the minimum response size in bytes to apply compression.
+   * Responses smaller than this threshold will not be compressed.
+   * Must be at least 30 bytes as enforced by Envoy Proxy.
+   * Note that when the suffix is not provided, the value is interpreted as bytes.
+   * Default: 30 bytes
+   *
+   * @schema BackendTrafficPolicySpecCompression#minContentLength
+   */
+  readonly minContentLength?: BackendTrafficPolicySpecCompressionMinContentLength;
+
+  /**
    * CompressorType defines the compressor type to use for compression.
    *
    * @schema BackendTrafficPolicySpecCompression#type
@@ -1131,6 +1376,7 @@ export function toJson_BackendTrafficPolicySpecCompression(obj: BackendTrafficPo
   const result = {
     'brotli': obj.brotli,
     'gzip': obj.gzip,
+    'minContentLength': obj.minContentLength?.value,
     'type': obj.type,
     'zstd': obj.zstd,
   };
@@ -1161,6 +1407,17 @@ export interface BackendTrafficPolicySpecCompressor {
   readonly gzip?: any;
 
   /**
+   * MinContentLength defines the minimum response size in bytes to apply compression.
+   * Responses smaller than this threshold will not be compressed.
+   * Must be at least 30 bytes as enforced by Envoy Proxy.
+   * Note that when the suffix is not provided, the value is interpreted as bytes.
+   * Default: 30 bytes
+   *
+   * @schema BackendTrafficPolicySpecCompressor#minContentLength
+   */
+  readonly minContentLength?: BackendTrafficPolicySpecCompressorMinContentLength;
+
+  /**
    * CompressorType defines the compressor type to use for compression.
    *
    * @schema BackendTrafficPolicySpecCompressor#type
@@ -1184,6 +1441,7 @@ export function toJson_BackendTrafficPolicySpecCompressor(obj: BackendTrafficPol
   const result = {
     'brotli': obj.brotli,
     'gzip': obj.gzip,
+    'minContentLength': obj.minContentLength?.value,
     'type': obj.type,
     'zstd': obj.zstd,
   };
@@ -1388,6 +1646,13 @@ export function toJson_BackendTrafficPolicySpecHealthCheck(obj: BackendTrafficPo
  */
 export interface BackendTrafficPolicySpecHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema BackendTrafficPolicySpecHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: BackendTrafficPolicySpecHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -1429,6 +1694,7 @@ export interface BackendTrafficPolicySpecHttp2 {
 export function toJson_BackendTrafficPolicySpecHttp2(obj: BackendTrafficPolicySpecHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_BackendTrafficPolicySpecHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -1486,12 +1752,29 @@ export function toJson_BackendTrafficPolicySpecHttpUpgrade(obj: BackendTrafficPo
  */
 export interface BackendTrafficPolicySpecLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: BackendTrafficPolicySpecLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema BackendTrafficPolicySpecLoadBalancer#consistentHash
    */
   readonly consistentHash?: BackendTrafficPolicySpecLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: BackendTrafficPolicySpecLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -1506,7 +1789,7 @@ export interface BackendTrafficPolicySpecLoadBalancer {
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema BackendTrafficPolicySpecLoadBalancer#slowStart
    */
@@ -1518,7 +1801,9 @@ export interface BackendTrafficPolicySpecLoadBalancer {
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema BackendTrafficPolicySpecLoadBalancer#type
    */
@@ -1539,7 +1824,9 @@ export interface BackendTrafficPolicySpecLoadBalancer {
 export function toJson_BackendTrafficPolicySpecLoadBalancer(obj: BackendTrafficPolicySpecLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_BackendTrafficPolicySpecLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_BackendTrafficPolicySpecLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_BackendTrafficPolicySpecLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_BackendTrafficPolicySpecLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_BackendTrafficPolicySpecLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -1557,7 +1844,7 @@ export function toJson_BackendTrafficPolicySpecLoadBalancer(obj: BackendTrafficP
  */
 export interface BackendTrafficPolicySpecProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -1639,6 +1926,9 @@ export function toJson_BackendTrafficPolicySpecRateLimit(obj: BackendTrafficPoli
  * When enabling this option, you should also configure your connection buffer size to account for these request buffers. There will also be an
  * increase in memory usage for Envoy that should be accounted for in your deployment settings.
  *
+ * Request buffering is incompatible with streaming APIs and protocol upgrades such as gRPC streaming and WebSocket. Do not enable this option
+ * on routes that need those protocols, because requests can hang instead of being forwarded upstream.
+ *
  * @schema BackendTrafficPolicySpecRequestBuffer
  */
 export interface BackendTrafficPolicySpecRequestBuffer {
@@ -1693,6 +1983,16 @@ export interface BackendTrafficPolicySpecResponseOverride {
    * @schema BackendTrafficPolicySpecResponseOverride#response
    */
   readonly response?: BackendTrafficPolicySpecResponseOverrideResponse;
+
+  /**
+   * Source specifies which responses this rule applies to.
+   * Local overrides only Envoy-generated responses (e.g. auth failures).
+   * Backend overrides only upstream responses.
+   * All (default) overrides both.
+   *
+   * @schema BackendTrafficPolicySpecResponseOverride#source
+   */
+  readonly source?: BackendTrafficPolicySpecResponseOverrideSource;
 }
 
 /**
@@ -1705,6 +2005,7 @@ export function toJson_BackendTrafficPolicySpecResponseOverride(obj: BackendTraf
     'match': toJson_BackendTrafficPolicySpecResponseOverrideMatch(obj.match),
     'redirect': toJson_BackendTrafficPolicySpecResponseOverrideRedirect(obj.redirect),
     'response': toJson_BackendTrafficPolicySpecResponseOverrideResponse(obj.response),
+    'source': obj.source,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1932,11 +2233,27 @@ export interface BackendTrafficPolicySpecTargetSelectors {
   readonly matchExpressions?: BackendTrafficPolicySpecTargetSelectorsMatchExpressions[];
 
   /**
-   * MatchLabels are the set of label selectors for identifying the targeted resource
+   * MatchLabels are the set of label selectors for identifying the targeted resource.
    *
    * @schema BackendTrafficPolicySpecTargetSelectors#matchLabels
    */
   readonly matchLabels?: { [key: string]: string };
+
+  /**
+   * Namespaces determines which namespaces are considered for target selection.
+   *
+   * If unspecified, only targets in the same namespace as this policy are considered.
+   *
+   * When specified, the effective set of namespaces is always constrained to the
+   * namespaces watched by Envoy Gateway.
+   *
+   * Selecting targets across namespaces requires a ReferenceGrant in the target
+   * namespace that allows this policy kind to reference the selected target kind.
+   * Cross-namespace targets without a matching ReferenceGrant are ignored.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectors#namespaces
+   */
+  readonly namespaces?: BackendTrafficPolicySpecTargetSelectorsNamespaces;
 }
 
 /**
@@ -1950,6 +2267,7 @@ export function toJson_BackendTrafficPolicySpecTargetSelectors(obj: BackendTraff
     'kind': obj.kind,
     'matchExpressions': obj.matchExpressions?.map(y => toJson_BackendTrafficPolicySpecTargetSelectorsMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'namespaces': toJson_BackendTrafficPolicySpecTargetSelectorsNamespaces(obj.namespaces),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2018,7 +2336,16 @@ export function toJson_BackendTrafficPolicySpecTcpKeepalive(obj: BackendTrafficP
  */
 export interface BackendTrafficPolicySpecTelemetry {
   /**
+   * Metrics defines metrics configuration for the backend or Route.
+   *
+   * @schema BackendTrafficPolicySpecTelemetry#metrics
+   */
+  readonly metrics?: BackendTrafficPolicySpecTelemetryMetrics;
+
+  /**
    * Tracing configures the tracing settings for the backend or HTTPRoute.
+   *
+   * This takes precedence over EnvoyProxy tracing when set.
    *
    * @schema BackendTrafficPolicySpecTelemetry#tracing
    */
@@ -2032,6 +2359,7 @@ export interface BackendTrafficPolicySpecTelemetry {
 export function toJson_BackendTrafficPolicySpecTelemetry(obj: BackendTrafficPolicySpecTelemetry | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'metrics': toJson_BackendTrafficPolicySpecTelemetryMetrics(obj.metrics),
     'tracing': toJson_BackendTrafficPolicySpecTelemetryTracing(obj.tracing),
   };
   // filter undefined values
@@ -2076,6 +2404,107 @@ export function toJson_BackendTrafficPolicySpecTimeout(obj: BackendTrafficPolicy
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * SuccessCriteria defines what constitutes a successful request for both HTTP and gRPC.
+ *
+ * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteria
+ */
+export interface BackendTrafficPolicySpecAdmissionControlSuccessCriteria {
+  /**
+   * GRPC defines success criteria for gRPC requests.
+   *
+   * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteria#grpc
+   */
+  readonly grpc?: BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc;
+
+  /**
+   * HTTP defines success criteria for HTTP requests.
+   *
+   * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteria#http
+   */
+  readonly http?: BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecAdmissionControlSuccessCriteria' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecAdmissionControlSuccessCriteria(obj: BackendTrafficPolicySpecAdmissionControlSuccessCriteria | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'grpc': toJson_BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc(obj.grpc),
+    'http': toJson_BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp(obj.http),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Request configures bandwidth limits for traffic sent to the backend.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitRequest
+ */
+export interface BackendTrafficPolicySpecBandwidthLimitRequest {
+  /**
+   * Limit specifies the bandwidth limit as a bytes-per-unit throughput rate.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitRequest#limit
+   */
+  readonly limit: BackendTrafficPolicySpecBandwidthLimitRequestLimit;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecBandwidthLimitRequest' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecBandwidthLimitRequest(obj: BackendTrafficPolicySpecBandwidthLimitRequest | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'limit': toJson_BackendTrafficPolicySpecBandwidthLimitRequestLimit(obj.limit),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Response configures bandwidth limits for traffic sent from the backend.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitResponse
+ */
+export interface BackendTrafficPolicySpecBandwidthLimitResponse {
+  /**
+   * Limit specifies the bandwidth limit as a bytes-per-unit throughput rate.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitResponse#limit
+   */
+  readonly limit: BackendTrafficPolicySpecBandwidthLimitResponseLimit;
+
+  /**
+   * ResponseTrailers configures the trailer headers appended to responses
+   * when bandwidth limiting introduces delays.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitResponse#responseTrailers
+   */
+  readonly responseTrailers?: BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecBandwidthLimitResponse' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecBandwidthLimitResponse(obj: BackendTrafficPolicySpecBandwidthLimitResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'limit': toJson_BackendTrafficPolicySpecBandwidthLimitResponseLimit(obj.limit),
+    'responseTrailers': toJson_BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers(obj.responseTrailers),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * PerEndpoint defines Circuit Breakers that will apply per-endpoint for an upstream cluster
  *
  * @schema BackendTrafficPolicySpecCircuitBreakerPerEndpoint
@@ -2104,6 +2533,70 @@ export function toJson_BackendTrafficPolicySpecCircuitBreakerPerEndpoint(obj: Ba
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema BackendTrafficPolicySpecCircuitBreakerRetryBudget
+ */
+export interface BackendTrafficPolicySpecCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema BackendTrafficPolicySpecCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema BackendTrafficPolicySpecCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecCircuitBreakerRetryBudget(obj: BackendTrafficPolicySpecCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent(obj.percent),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * MinContentLength defines the minimum response size in bytes to apply compression.
+ * Responses smaller than this threshold will not be compressed.
+ * Must be at least 30 bytes as enforced by Envoy Proxy.
+ * Note that when the suffix is not provided, the value is interpreted as bytes.
+ * Default: 30 bytes
+ *
+ * @schema BackendTrafficPolicySpecCompressionMinContentLength
+ */
+export class BackendTrafficPolicySpecCompressionMinContentLength {
+  public static fromNumber(value: number): BackendTrafficPolicySpecCompressionMinContentLength {
+    return new BackendTrafficPolicySpecCompressionMinContentLength(value);
+  }
+  public static fromString(value: string): BackendTrafficPolicySpecCompressionMinContentLength {
+    return new BackendTrafficPolicySpecCompressionMinContentLength(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
+
+/**
  * CompressorType defines the compressor type to use for compression.
  *
  * @schema BackendTrafficPolicySpecCompressionType
@@ -2115,6 +2608,26 @@ export enum BackendTrafficPolicySpecCompressionType {
   BROTLI = "Brotli",
   /** Zstd */
   ZSTD = "Zstd",
+}
+
+/**
+ * MinContentLength defines the minimum response size in bytes to apply compression.
+ * Responses smaller than this threshold will not be compressed.
+ * Must be at least 30 bytes as enforced by Envoy Proxy.
+ * Note that when the suffix is not provided, the value is interpreted as bytes.
+ * Default: 30 bytes
+ *
+ * @schema BackendTrafficPolicySpecCompressorMinContentLength
+ */
+export class BackendTrafficPolicySpecCompressorMinContentLength {
+  public static fromNumber(value: number): BackendTrafficPolicySpecCompressorMinContentLength {
+    return new BackendTrafficPolicySpecCompressorMinContentLength(value);
+  }
+  public static fromString(value: string): BackendTrafficPolicySpecCompressorMinContentLength {
+    return new BackendTrafficPolicySpecCompressorMinContentLength(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
 }
 
 /**
@@ -2338,6 +2851,15 @@ export interface BackendTrafficPolicySpecHealthCheckActive {
   readonly grpc?: BackendTrafficPolicySpecHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema BackendTrafficPolicySpecHealthCheckActive#healthyThreshold
@@ -2368,6 +2890,15 @@ export interface BackendTrafficPolicySpecHealthCheckActive {
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActive#overrides
+   */
+  readonly overrides?: BackendTrafficPolicySpecHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -2391,6 +2922,9 @@ export interface BackendTrafficPolicySpecHealthCheckActive {
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema BackendTrafficPolicySpecHealthCheckActive#unhealthyThreshold
    */
@@ -2405,10 +2939,12 @@ export function toJson_BackendTrafficPolicySpecHealthCheckActive(obj: BackendTra
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_BackendTrafficPolicySpecHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_BackendTrafficPolicySpecHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_BackendTrafficPolicySpecHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_BackendTrafficPolicySpecHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -2425,6 +2961,14 @@ export function toJson_BackendTrafficPolicySpecHealthCheckActive(obj: BackendTra
  * @schema BackendTrafficPolicySpecHealthCheckPassive
  */
 export interface BackendTrafficPolicySpecHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -2493,6 +3037,7 @@ export interface BackendTrafficPolicySpecHealthCheckPassive {
 export function toJson_BackendTrafficPolicySpecHealthCheckPassive(obj: BackendTrafficPolicySpecHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -2501,6 +3046,60 @@ export function toJson_BackendTrafficPolicySpecHealthCheckPassive(obj: BackendTr
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema BackendTrafficPolicySpecHttp2ConnectionKeepalive
+ */
+export interface BackendTrafficPolicySpecHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema BackendTrafficPolicySpecHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema BackendTrafficPolicySpecHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema BackendTrafficPolicySpecHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema BackendTrafficPolicySpecHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecHttp2ConnectionKeepalive(obj: BackendTrafficPolicySpecHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2571,6 +3170,103 @@ export function toJson_BackendTrafficPolicySpecHttpUpgradeConnect(obj: BackendTr
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization
+ */
+export interface BackendTrafficPolicySpecLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecLoadBalancerBackendUtilization(obj: BackendTrafficPolicySpecLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -2601,6 +3297,13 @@ export interface BackendTrafficPolicySpecLoadBalancerConsistentHash {
   readonly headers?: BackendTrafficPolicySpecLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema BackendTrafficPolicySpecLoadBalancerConsistentHash#tableSize
@@ -2613,6 +3316,7 @@ export interface BackendTrafficPolicySpecLoadBalancerConsistentHash {
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema BackendTrafficPolicySpecLoadBalancerConsistentHash#type
    */
@@ -2629,8 +3333,62 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerConsistentHash(obj: B
     'cookie': toJson_BackendTrafficPolicySpecLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_BackendTrafficPolicySpecLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_BackendTrafficPolicySpecLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema BackendTrafficPolicySpecLoadBalancerDynamicModule
+ */
+export interface BackendTrafficPolicySpecLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecLoadBalancerDynamicModule(obj: BackendTrafficPolicySpecLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2671,7 +3429,7 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerEndpointOverride(obj:
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema BackendTrafficPolicySpecLoadBalancerSlowStart
  */
@@ -2707,7 +3465,9 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerSlowStart(obj: Backen
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema BackendTrafficPolicySpecLoadBalancerType
  */
@@ -2720,6 +3480,10 @@ export enum BackendTrafficPolicySpecLoadBalancerType {
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -2734,6 +3498,14 @@ export interface BackendTrafficPolicySpecLoadBalancerZoneAware {
    * @schema BackendTrafficPolicySpecLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: BackendTrafficPolicySpecLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -2744,6 +3516,7 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerZoneAware(obj: Backen
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_BackendTrafficPolicySpecLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2751,7 +3524,7 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerZoneAware(obj: Backen
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -2872,11 +3645,18 @@ export class BackendTrafficPolicySpecRequestBufferLimit {
  */
 export interface BackendTrafficPolicySpecResponseOverrideMatch {
   /**
+   * Response headers to match on. The match evaluates to true if all matches are successful.
+   *
+   * @schema BackendTrafficPolicySpecResponseOverrideMatch#responseHeaders
+   */
+  readonly responseHeaders?: BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders[];
+
+  /**
    * Status code to match on. The match evaluates to true if any of the matches are successful.
    *
    * @schema BackendTrafficPolicySpecResponseOverrideMatch#statusCodes
    */
-  readonly statusCodes: BackendTrafficPolicySpecResponseOverrideMatchStatusCodes[];
+  readonly statusCodes?: BackendTrafficPolicySpecResponseOverrideMatchStatusCodes[];
 }
 
 /**
@@ -2886,6 +3666,7 @@ export interface BackendTrafficPolicySpecResponseOverrideMatch {
 export function toJson_BackendTrafficPolicySpecResponseOverrideMatch(obj: BackendTrafficPolicySpecResponseOverrideMatch | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'responseHeaders': obj.responseHeaders?.map(y => toJson_BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders(y)),
     'statusCodes': obj.statusCodes?.map(y => toJson_BackendTrafficPolicySpecResponseOverrideMatchStatusCodes(y)),
   };
   // filter undefined values
@@ -3025,6 +3806,23 @@ export function toJson_BackendTrafficPolicySpecResponseOverrideResponse(obj: Bac
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Source specifies which responses this rule applies to.
+ * Local overrides only Envoy-generated responses (e.g. auth failures).
+ * Backend overrides only upstream responses.
+ * All (default) overrides both.
+ *
+ * @schema BackendTrafficPolicySpecResponseOverrideSource
+ */
+export enum BackendTrafficPolicySpecResponseOverrideSource {
+  /** All */
+  ALL = "All",
+  /** Local */
+  LOCAL = "Local",
+  /** Backend */
+  BACKEND = "Backend",
+}
+
+/**
  * PerRetry is the retry policy to be applied per retry attempt.
  *
  * @schema BackendTrafficPolicySpecRetryPerRetry
@@ -3151,28 +3949,156 @@ export function toJson_BackendTrafficPolicySpecTargetSelectorsMatchExpressions(o
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Namespaces determines which namespaces are considered for target selection.
+ *
+ * If unspecified, only targets in the same namespace as this policy are considered.
+ *
+ * When specified, the effective set of namespaces is always constrained to the
+ * namespaces watched by Envoy Gateway.
+ *
+ * Selecting targets across namespaces requires a ReferenceGrant in the target
+ * namespace that allows this policy kind to reference the selected target kind.
+ * Cross-namespace targets without a matching ReferenceGrant are ignored.
+ *
+ * @schema BackendTrafficPolicySpecTargetSelectorsNamespaces
+ */
+export interface BackendTrafficPolicySpecTargetSelectorsNamespaces {
+  /**
+   * From indicates how namespaces are selected for this target selector.
+   *
+   * All means all namespaces watched by Envoy Gateway.
+   * Selector means namespaces watched by Envoy Gateway that match Selector.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespaces#from
+   */
+  readonly from: BackendTrafficPolicySpecTargetSelectorsNamespacesFrom;
+
+  /**
+   * Selector selects namespaces when From is set to Selector.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespaces#selector
+   */
+  readonly selector?: BackendTrafficPolicySpecTargetSelectorsNamespacesSelector;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTargetSelectorsNamespaces' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTargetSelectorsNamespaces(obj: BackendTrafficPolicySpecTargetSelectorsNamespaces | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'from': obj.from,
+    'selector': toJson_BackendTrafficPolicySpecTargetSelectorsNamespacesSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Metrics defines metrics configuration for the backend or Route.
+ *
+ * @schema BackendTrafficPolicySpecTelemetryMetrics
+ */
+export interface BackendTrafficPolicySpecTelemetryMetrics {
+  /**
+   * RouteStatName defines the value of the Route stat_prefix, determining how the route stats are named.
+   * For more details, see envoy docs: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#config-route-v3-route
+   * The supported operators for this pattern are:
+   * %ROUTE_NAME%: name of Gateway API xRoute resource
+   * %ROUTE_NAMESPACE%: namespace of Gateway API xRoute resource
+   * %ROUTE_KIND%: kind of Gateway API xRoute resource
+   * Example: %ROUTE_KIND%/%ROUTE_NAMESPACE%/%ROUTE_NAME% => httproute/my-ns/my-route
+   * Disabled by default.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryMetrics#routeStatName
+   */
+  readonly routeStatName?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTelemetryMetrics' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTelemetryMetrics(obj: BackendTrafficPolicySpecTelemetryMetrics | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'routeStatName': obj.routeStatName,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Tracing configures the tracing settings for the backend or HTTPRoute.
+ *
+ * This takes precedence over EnvoyProxy tracing when set.
  *
  * @schema BackendTrafficPolicySpecTelemetryTracing
  */
 export interface BackendTrafficPolicySpecTelemetryTracing {
   /**
+   * ClientSamplingFraction represents the fraction of requests that should be
+   * selected for tracing when requested by the client.
+   * If unspecified, client-forced tracing is disabled by default and users must
+   * set this field to opt in.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryTracing#clientSamplingFraction
+   */
+  readonly clientSamplingFraction?: BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction;
+
+  /**
    * CustomTags defines the custom tags to add to each span.
    * If provider is kubernetes, pod name and namespace are added by default.
+   *
+   * Deprecated: Use Tags instead.
    *
    * @schema BackendTrafficPolicySpecTelemetryTracing#customTags
    */
   readonly customTags?: { [key: string]: BackendTrafficPolicySpecTelemetryTracingCustomTags };
 
   /**
+   * OverallSamplingFraction represents the fraction of requests that should be
+   * selected for tracing after all other sampling checks have been applied.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryTracing#overallSamplingFraction
+   */
+  readonly overallSamplingFraction?: BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction;
+
+  /**
    * SamplingFraction represents the fraction of requests that should be
    * selected for tracing if no prior sampling decision has been made.
-   *
-   * This will take precedence over sampling fraction on EnvoyProxy if set.
    *
    * @schema BackendTrafficPolicySpecTelemetryTracing#samplingFraction
    */
   readonly samplingFraction?: BackendTrafficPolicySpecTelemetryTracingSamplingFraction;
+
+  /**
+   * SpanName defines the name of the span which will be used for tracing.
+   * Envoy [command operators](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators) may be used in the value.
+   * The [format string documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings) provides more information.
+   *
+   * If not set, the span name is provider specific.
+   * e.g. Datadog use `ingress` as the default client span name,
+   * and `router <UPSTREAM_CLUSTER> egress` as the server span name.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryTracing#spanName
+   */
+  readonly spanName?: BackendTrafficPolicySpecTelemetryTracingSpanName;
+
+  /**
+   * Tags defines the custom tags to add to each span.
+   * Envoy [command operators](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators) may be used in the value.
+   * The [format string documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings) provides more information.
+   * If provider is kubernetes, pod name and namespace are added by default.
+   *
+   * Same keys take precedence over CustomTags.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryTracing#tags
+   */
+  readonly tags?: { [key: string]: string };
 }
 
 /**
@@ -3182,8 +4108,12 @@ export interface BackendTrafficPolicySpecTelemetryTracing {
 export function toJson_BackendTrafficPolicySpecTelemetryTracing(obj: BackendTrafficPolicySpecTelemetryTracing | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'clientSamplingFraction': toJson_BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction(obj.clientSamplingFraction),
     'customTags': ((obj.customTags) === undefined) ? undefined : (Object.entries(obj.customTags).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: toJson_BackendTrafficPolicySpecTelemetryTracingCustomTags(i[1]) }), {})),
+    'overallSamplingFraction': toJson_BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction(obj.overallSamplingFraction),
     'samplingFraction': toJson_BackendTrafficPolicySpecTelemetryTracingSamplingFraction(obj.samplingFraction),
+    'spanName': toJson_BackendTrafficPolicySpecTelemetryTracingSpanName(obj.spanName),
+    'tags': ((obj.tags) === undefined) ? undefined : (Object.entries(obj.tags).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3228,6 +4158,14 @@ export interface BackendTrafficPolicySpecTimeoutHttp {
    * @schema BackendTrafficPolicySpecTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema BackendTrafficPolicySpecTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -3241,6 +4179,7 @@ export function toJson_BackendTrafficPolicySpecTimeoutHttp(obj: BackendTrafficPo
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3270,6 +4209,208 @@ export function toJson_BackendTrafficPolicySpecTimeoutTcp(obj: BackendTrafficPol
   if (obj === undefined) { return undefined; }
   const result = {
     'connectTimeout': obj.connectTimeout,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GRPC defines success criteria for gRPC requests.
+ *
+ * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc
+ */
+export interface BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc {
+  /**
+   * StatusCodes defines gRPC status codes that are considered successful.
+   * Status codes are defined in https://github.com/grpc/grpc/blob/master/doc/statuscodes.md#status-codes-and-their-use-in-grpc.
+   *
+   * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc#statusCodes
+   */
+  readonly statusCodes?: BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpcStatusCodes[];
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc(obj: BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpc | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'statusCodes': obj.statusCodes?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTP defines success criteria for HTTP requests.
+ *
+ * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp
+ */
+export interface BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp {
+  /**
+   * StatusCodes defines HTTP status codes that are considered successful.
+   *
+   * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp#statusCodes
+   */
+  readonly statusCodes?: number[];
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp(obj: BackendTrafficPolicySpecAdmissionControlSuccessCriteriaHttp | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'statusCodes': obj.statusCodes?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Limit specifies the bandwidth limit as a bytes-per-unit throughput rate.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitRequestLimit
+ */
+export interface BackendTrafficPolicySpecBandwidthLimitRequestLimit {
+  /**
+   * Unit specifies the time unit for the bandwidth limit (e.g. Second, Minute, Hour).
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitRequestLimit#unit
+   */
+  readonly unit: BackendTrafficPolicySpecBandwidthLimitRequestLimitUnit;
+
+  /**
+   * Value specifies the bandwidth limit.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitRequestLimit#value
+   */
+  readonly value: BackendTrafficPolicySpecBandwidthLimitRequestLimitValue;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecBandwidthLimitRequestLimit' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecBandwidthLimitRequestLimit(obj: BackendTrafficPolicySpecBandwidthLimitRequestLimit | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'unit': obj.unit,
+    'value': obj.value?.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Limit specifies the bandwidth limit as a bytes-per-unit throughput rate.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitResponseLimit
+ */
+export interface BackendTrafficPolicySpecBandwidthLimitResponseLimit {
+  /**
+   * Unit specifies the time unit for the bandwidth limit (e.g. Second, Minute, Hour).
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitResponseLimit#unit
+   */
+  readonly unit: BackendTrafficPolicySpecBandwidthLimitResponseLimitUnit;
+
+  /**
+   * Value specifies the bandwidth limit.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitResponseLimit#value
+   */
+  readonly value: BackendTrafficPolicySpecBandwidthLimitResponseLimitValue;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecBandwidthLimitResponseLimit' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecBandwidthLimitResponseLimit(obj: BackendTrafficPolicySpecBandwidthLimitResponseLimit | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'unit': obj.unit,
+    'value': obj.value?.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResponseTrailers configures the trailer headers appended to responses
+ * when bandwidth limiting introduces delays.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers
+ */
+export interface BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers {
+  /**
+   * Prefix is prepended to each trailer header name.
+   * If not set, no prefix is added and the trailers are named as-is.
+   * For example, setting "x-eg" produces trailers such as "x-eg-bandwidth-request-delay-ms",
+   * while leaving it unset produces "bandwidth-request-delay-ms".
+   *
+   * The following four trailers can be added:
+   * "bandwidth-request-delay-ms" is delay time in milliseconds it took for the request stream transfer
+   * including request body transfer time and the time added by the filter.
+   * "bandwidth-response-delay-ms" is delay time in milliseconds it took for the response stream transfer
+   * including response body transfer time and the time added by the filter.
+   * "bandwidth-request-filter-delay-ms" is delay time in milliseconds in request stream transfer added by the filter.
+   * "bandwidth-response-filter-delay-ms" is delay time in milliseconds that added by the filter.
+   *
+   * @schema BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers#prefix
+   */
+  readonly prefix?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers(obj: BackendTrafficPolicySpecBandwidthLimitResponseResponseTrailers | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'prefix': obj.prefix,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent
+ */
+export interface BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent(obj: BackendTrafficPolicySpecCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3308,6 +4449,49 @@ export function toJson_BackendTrafficPolicySpecHealthCheckActiveGrpc(obj: Backen
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog
+ */
+export interface BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog(obj: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -3331,8 +4515,9 @@ export interface BackendTrafficPolicySpecHealthCheckActiveHttp {
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema BackendTrafficPolicySpecHealthCheckActiveHttp#hostname
    */
@@ -3353,6 +4538,23 @@ export interface BackendTrafficPolicySpecHealthCheckActiveHttp {
    * @schema BackendTrafficPolicySpecHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -3367,6 +4569,41 @@ export function toJson_BackendTrafficPolicySpecHealthCheckActiveHttp(obj: Backen
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveOverrides
+ */
+export interface BackendTrafficPolicySpecHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecHealthCheckActiveOverrides(obj: BackendTrafficPolicySpecHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3404,6 +4641,62 @@ export function toJson_BackendTrafficPolicySpecHealthCheckActiveTcp(obj: Backend
   const result = {
     'receive': toJson_BackendTrafficPolicySpecHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_BackendTrafficPolicySpecHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand(obj: BackendTrafficPolicySpecLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3519,11 +4812,41 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerConsistentHashHeaders
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams
+ */
+export interface BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams(obj: BackendTrafficPolicySpecLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema BackendTrafficPolicySpecLoadBalancerConsistentHashType
  */
@@ -3536,6 +4859,8 @@ export enum BackendTrafficPolicySpecLoadBalancerConsistentHashType {
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -3615,6 +4940,47 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerZoneAwarePreferLocal(
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones
+ */
+export interface BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones(obj: BackendTrafficPolicySpecLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * RateLimitRule defines the semantics for matching attributes
  * from the incoming requests, and setting limits for them.
  *
@@ -3662,6 +5028,18 @@ export interface BackendTrafficPolicySpecRateLimitGlobalRules {
   readonly limit: BackendTrafficPolicySpecRateLimitGlobalRulesLimit;
 
   /**
+   * ShadowMode indicates whether this rate-limit rule runs in shadow mode.
+   * When enabled, all rate-limiting operations are performed (cache lookups,
+   * counter updates, telemetry generation), but the outcome is never enforced.
+   * The request always succeeds, even if the configured limit is exceeded.
+   *
+   * Only supported for Global Rate Limits.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRules#shadowMode
+   */
+  readonly shadowMode?: boolean;
+
+  /**
    * Shared determines whether this rate limit rule applies across all the policy targets.
    * If set to true, the rule is treated as a common bucket and is shared across all policy targets (xRoutes).
    * Default: false.
@@ -3669,6 +5047,15 @@ export interface BackendTrafficPolicySpecRateLimitGlobalRules {
    * @schema BackendTrafficPolicySpecRateLimitGlobalRules#shared
    */
   readonly shared?: boolean;
+
+  /**
+   * XRateLimitHeaders controls whether X-RateLimit response headers are emitted for this rate limit rule.
+   * When set, this overrides the global DisableRateLimitHeaders setting in ClientTrafficPolicy for this rule.
+   * If not set, the rule inherits the listener-level setting (default behavior).
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRules#xRateLimitHeaders
+   */
+  readonly xRateLimitHeaders?: BackendTrafficPolicySpecRateLimitGlobalRulesXRateLimitHeaders;
 }
 
 /**
@@ -3681,7 +5068,9 @@ export function toJson_BackendTrafficPolicySpecRateLimitGlobalRules(obj: Backend
     'clientSelectors': obj.clientSelectors?.map(y => toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectors(y)),
     'cost': toJson_BackendTrafficPolicySpecRateLimitGlobalRulesCost(obj.cost),
     'limit': toJson_BackendTrafficPolicySpecRateLimitGlobalRulesLimit(obj.limit),
+    'shadowMode': obj.shadowMode,
     'shared': obj.shared,
+    'xRateLimitHeaders': obj.xRateLimitHeaders,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3736,6 +5125,18 @@ export interface BackendTrafficPolicySpecRateLimitLocalRules {
   readonly limit: BackendTrafficPolicySpecRateLimitLocalRulesLimit;
 
   /**
+   * ShadowMode indicates whether this rate-limit rule runs in shadow mode.
+   * When enabled, all rate-limiting operations are performed (cache lookups,
+   * counter updates, telemetry generation), but the outcome is never enforced.
+   * The request always succeeds, even if the configured limit is exceeded.
+   *
+   * Only supported for Global Rate Limits.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRules#shadowMode
+   */
+  readonly shadowMode?: boolean;
+
+  /**
    * Shared determines whether this rate limit rule applies across all the policy targets.
    * If set to true, the rule is treated as a common bucket and is shared across all policy targets (xRoutes).
    * Default: false.
@@ -3743,6 +5144,15 @@ export interface BackendTrafficPolicySpecRateLimitLocalRules {
    * @schema BackendTrafficPolicySpecRateLimitLocalRules#shared
    */
   readonly shared?: boolean;
+
+  /**
+   * XRateLimitHeaders controls whether X-RateLimit response headers are emitted for this rate limit rule.
+   * When set, this overrides the global DisableRateLimitHeaders setting in ClientTrafficPolicy for this rule.
+   * If not set, the rule inherits the listener-level setting (default behavior).
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRules#xRateLimitHeaders
+   */
+  readonly xRateLimitHeaders?: BackendTrafficPolicySpecRateLimitLocalRulesXRateLimitHeaders;
 }
 
 /**
@@ -3755,7 +5165,47 @@ export function toJson_BackendTrafficPolicySpecRateLimitLocalRules(obj: BackendT
     'clientSelectors': obj.clientSelectors?.map(y => toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectors(y)),
     'cost': toJson_BackendTrafficPolicySpecRateLimitLocalRulesCost(obj.cost),
     'limit': toJson_BackendTrafficPolicySpecRateLimitLocalRulesLimit(obj.limit),
+    'shadowMode': obj.shadowMode,
     'shared': obj.shared,
+    'xRateLimitHeaders': obj.xRateLimitHeaders,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ResponseOverrideHeaderMatch defines the configuration for matching a response header.
+ *
+ * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders
+ */
+export interface BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders {
+  /**
+   * Name of the HTTP header.
+   * The header name is case-insensitive.
+   * For example, "Foo" and "foo" are considered the same header.
+   *
+   * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders#name
+   */
+  readonly name: string;
+
+  /**
+   * Value within the HTTP header to match against.
+   *
+   * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders#value
+   */
+  readonly value: BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders(obj: BackendTrafficPolicySpecResponseOverrideMatchResponseHeaders | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': toJson_BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue(obj.value),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -4120,6 +5570,96 @@ export enum BackendTrafficPolicySpecRetryRetryOnTriggers {
 }
 
 /**
+ * From indicates how namespaces are selected for this target selector.
+ *
+ * All means all namespaces watched by Envoy Gateway.
+ * Selector means namespaces watched by Envoy Gateway that match Selector.
+ *
+ * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesFrom
+ */
+export enum BackendTrafficPolicySpecTargetSelectorsNamespacesFrom {
+  /** Same */
+  SAME = "Same",
+  /** All */
+  ALL = "All",
+  /** Selector */
+  SELECTOR = "Selector",
+}
+
+/**
+ * Selector selects namespaces when From is set to Selector.
+ *
+ * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelector
+ */
+export interface BackendTrafficPolicySpecTargetSelectorsNamespacesSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelector#matchExpressions
+   */
+  readonly matchExpressions?: BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTargetSelectorsNamespacesSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTargetSelectorsNamespacesSelector(obj: BackendTrafficPolicySpecTargetSelectorsNamespacesSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ClientSamplingFraction represents the fraction of requests that should be
+ * selected for tracing when requested by the client.
+ * If unspecified, client-forced tracing is disabled by default and users must
+ * set this field to opt in.
+ *
+ * @schema BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction
+ */
+export interface BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction {
+  /**
+   * @schema BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction(obj: BackendTrafficPolicySpecTelemetryTracingClientSamplingFraction | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * @schema BackendTrafficPolicySpecTelemetryTracingCustomTags
  */
 export interface BackendTrafficPolicySpecTelemetryTracingCustomTags {
@@ -4173,10 +5713,41 @@ export function toJson_BackendTrafficPolicySpecTelemetryTracingCustomTags(obj: B
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * OverallSamplingFraction represents the fraction of requests that should be
+ * selected for tracing after all other sampling checks have been applied.
+ *
+ * @schema BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction
+ */
+export interface BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction {
+  /**
+   * @schema BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction(obj: BackendTrafficPolicySpecTelemetryTracingOverallSamplingFraction | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * SamplingFraction represents the fraction of requests that should be
  * selected for tracing if no prior sampling decision has been made.
- *
- * This will take precedence over sampling fraction on EnvoyProxy if set.
  *
  * @schema BackendTrafficPolicySpecTelemetryTracingSamplingFraction
  */
@@ -4201,6 +5772,204 @@ export function toJson_BackendTrafficPolicySpecTelemetryTracingSamplingFraction(
   const result = {
     'denominator': obj.denominator,
     'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SpanName defines the name of the span which will be used for tracing.
+ * Envoy [command operators](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators) may be used in the value.
+ * The [format string documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings) provides more information.
+ *
+ * If not set, the span name is provider specific.
+ * e.g. Datadog use `ingress` as the default client span name,
+ * and `router <UPSTREAM_CLUSTER> egress` as the server span name.
+ *
+ * @schema BackendTrafficPolicySpecTelemetryTracingSpanName
+ */
+export interface BackendTrafficPolicySpecTelemetryTracingSpanName {
+  /**
+   * Client defines operation name of the span which will be used for tracing.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryTracingSpanName#client
+   */
+  readonly client: string;
+
+  /**
+   * Server defines the operation name of the upstream span which will be used for tracing.
+   *
+   * @schema BackendTrafficPolicySpecTelemetryTracingSpanName#server
+   */
+  readonly server: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTelemetryTracingSpanName' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTelemetryTracingSpanName(obj: BackendTrafficPolicySpecTelemetryTracingSpanName | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'client': obj.client,
+    'server': obj.server,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GRPCSuccessCode defines gRPC status codes as defined in
+ * https://github.com/grpc/grpc/blob/master/doc/statuscodes.md#status-codes-and-their-use-in-grpc.
+ *
+ * @schema BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpcStatusCodes
+ */
+export enum BackendTrafficPolicySpecAdmissionControlSuccessCriteriaGrpcStatusCodes {
+  /** Ok */
+  OK = "Ok",
+  /** Cancelled */
+  CANCELLED = "Cancelled",
+  /** Unknown */
+  UNKNOWN = "Unknown",
+  /** InvalidArgument */
+  INVALID_ARGUMENT = "InvalidArgument",
+  /** DeadlineExceeded */
+  DEADLINE_EXCEEDED = "DeadlineExceeded",
+  /** NotFound */
+  NOT_FOUND = "NotFound",
+  /** AlreadyExists */
+  ALREADY_EXISTS = "AlreadyExists",
+  /** PermissionDenied */
+  PERMISSION_DENIED = "PermissionDenied",
+  /** ResourceExhausted */
+  RESOURCE_EXHAUSTED = "ResourceExhausted",
+  /** FailedPrecondition */
+  FAILED_PRECONDITION = "FailedPrecondition",
+  /** Aborted */
+  ABORTED = "Aborted",
+  /** OutOfRange */
+  OUT_OF_RANGE = "OutOfRange",
+  /** Unimplemented */
+  UNIMPLEMENTED = "Unimplemented",
+  /** Internal */
+  INTERNAL = "Internal",
+  /** Unavailable */
+  UNAVAILABLE = "Unavailable",
+  /** DataLoss */
+  DATA_LOSS = "DataLoss",
+  /** Unauthenticated */
+  UNAUTHENTICATED = "Unauthenticated",
+}
+
+/**
+ * Unit specifies the time unit for the bandwidth limit (e.g. Second, Minute, Hour).
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitRequestLimitUnit
+ */
+export enum BackendTrafficPolicySpecBandwidthLimitRequestLimitUnit {
+  /** Second */
+  SECOND = "Second",
+  /** Minute */
+  MINUTE = "Minute",
+  /** Hour */
+  HOUR = "Hour",
+}
+
+/**
+ * Value specifies the bandwidth limit.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitRequestLimitValue
+ */
+export class BackendTrafficPolicySpecBandwidthLimitRequestLimitValue {
+  public static fromNumber(value: number): BackendTrafficPolicySpecBandwidthLimitRequestLimitValue {
+    return new BackendTrafficPolicySpecBandwidthLimitRequestLimitValue(value);
+  }
+  public static fromString(value: string): BackendTrafficPolicySpecBandwidthLimitRequestLimitValue {
+    return new BackendTrafficPolicySpecBandwidthLimitRequestLimitValue(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
+
+/**
+ * Unit specifies the time unit for the bandwidth limit (e.g. Second, Minute, Hour).
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitResponseLimitUnit
+ */
+export enum BackendTrafficPolicySpecBandwidthLimitResponseLimitUnit {
+  /** Second */
+  SECOND = "Second",
+  /** Minute */
+  MINUTE = "Minute",
+  /** Hour */
+  HOUR = "Hour",
+}
+
+/**
+ * Value specifies the bandwidth limit.
+ *
+ * @schema BackendTrafficPolicySpecBandwidthLimitResponseLimitValue
+ */
+export class BackendTrafficPolicySpecBandwidthLimitResponseLimitValue {
+  public static fromNumber(value: number): BackendTrafficPolicySpecBandwidthLimitResponseLimitValue {
+    return new BackendTrafficPolicySpecBandwidthLimitResponseLimitValue(value);
+  }
+  public static fromString(value: string): BackendTrafficPolicySpecBandwidthLimitResponseLimitValue {
+    return new BackendTrafficPolicySpecBandwidthLimitResponseLimitValue(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
+}
+
+/**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogMatches
+ */
+export enum BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks
+ */
+export interface BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks(obj: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -4240,6 +6009,50 @@ export interface BackendTrafficPolicySpecHealthCheckActiveHttpExpectedResponse {
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_BackendTrafficPolicySpecHealthCheckActiveHttpExpectedResponse(obj: BackendTrafficPolicySpecHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody
+ */
+export interface BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody(obj: BackendTrafficPolicySpecHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -4373,7 +6186,7 @@ export function toJson_BackendTrafficPolicySpecLoadBalancerZoneAwarePreferLocalF
  * RateLimitSelectCondition specifies the attributes within the traffic flow that can
  * be used to select a subset of clients to be ratelimited.
  * All the individual conditions must hold True for the overall condition to hold True.
- * And, at least one of headers or methods or path or sourceCIDR condition must be specified.
+ * And, at least one of headers or methods or path or sourceCIDR or queryParams condition must be specified.
  *
  * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectors
  */
@@ -4403,6 +6216,14 @@ export interface BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectors {
   readonly path?: BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsPath;
 
   /**
+   * QueryParams is a list of query parameters to match. Multiple query parameter values are ANDed together,
+   * meaning, a request MUST match all the specified query parameters.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectors#queryParams
+   */
+  readonly queryParams?: BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams[];
+
+  /**
    * SourceCIDR is the client IP Address range to match on.
    *
    * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectors#sourceCIDR
@@ -4420,6 +6241,7 @@ export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelecto
     'headers': obj.headers?.map(y => toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsHeaders(y)),
     'methods': obj.methods?.map(y => toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsMethods(y)),
     'path': toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsPath(obj.path),
+    'queryParams': obj.queryParams?.map(y => toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams(y)),
     'sourceCIDR': toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr(obj.sourceCidr),
   };
   // filter undefined values
@@ -4494,13 +6316,31 @@ export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesCost(obj: Bac
  */
 export interface BackendTrafficPolicySpecRateLimitGlobalRulesLimit {
   /**
+   * FromMetadata sources the limit value from per-request dynamic metadata.
+   * When the referenced metadata value is present, it overrides Requests/Unit for that
+   * request; otherwise Requests/Unit are used as the default.
+   *
+   * The referenced metadata value must be a struct containing an integer "requests_per_unit"
+   * property and a "unit" property with a value parseable to a RateLimitUnit. An upstream
+   * filter (e.g. ext_proc) is responsible for writing this struct into dynamic metadata.
+   *
+   * Only supported for Global Rate Limits.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimit#fromMetadata
+   */
+  readonly fromMetadata?: BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata;
+
+  /**
+   * Requests is the number of requests (or cost units, when used with
+   * cost-based rate limiting) allowed per Unit.
+   *
    * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimit#requests
    */
   readonly requests: number;
 
   /**
    * RateLimitUnit specifies the intervals for setting rate limits.
-   * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Month" and "Year".
+   * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Week", "Month" and "Year".
    *
    * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimit#unit
    */
@@ -4514,6 +6354,7 @@ export interface BackendTrafficPolicySpecRateLimitGlobalRulesLimit {
 export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesLimit(obj: BackendTrafficPolicySpecRateLimitGlobalRulesLimit | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'fromMetadata': toJson_BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata(obj.fromMetadata),
     'requests': obj.requests,
     'unit': obj.unit,
   };
@@ -4523,10 +6364,24 @@ export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesLimit(obj: Ba
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * XRateLimitHeaders controls whether X-RateLimit response headers are emitted for this rate limit rule.
+ * When set, this overrides the global DisableRateLimitHeaders setting in ClientTrafficPolicy for this rule.
+ * If not set, the rule inherits the listener-level setting (default behavior).
+ *
+ * @schema BackendTrafficPolicySpecRateLimitGlobalRulesXRateLimitHeaders
+ */
+export enum BackendTrafficPolicySpecRateLimitGlobalRulesXRateLimitHeaders {
+  /** Off */
+  OFF = "Off",
+  /** DraftVersion03 */
+  DRAFT_VERSION03 = "DraftVersion03",
+}
+
+/**
  * RateLimitSelectCondition specifies the attributes within the traffic flow that can
  * be used to select a subset of clients to be ratelimited.
  * All the individual conditions must hold True for the overall condition to hold True.
- * And, at least one of headers or methods or path or sourceCIDR condition must be specified.
+ * And, at least one of headers or methods or path or sourceCIDR or queryParams condition must be specified.
  *
  * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectors
  */
@@ -4556,6 +6411,14 @@ export interface BackendTrafficPolicySpecRateLimitLocalRulesClientSelectors {
   readonly path?: BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsPath;
 
   /**
+   * QueryParams is a list of query parameters to match. Multiple query parameter values are ANDed together,
+   * meaning, a request MUST match all the specified query parameters.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectors#queryParams
+   */
+  readonly queryParams?: BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams[];
+
+  /**
    * SourceCIDR is the client IP Address range to match on.
    *
    * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectors#sourceCIDR
@@ -4573,6 +6436,7 @@ export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelector
     'headers': obj.headers?.map(y => toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsHeaders(y)),
     'methods': obj.methods?.map(y => toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsMethods(y)),
     'path': toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsPath(obj.path),
+    'queryParams': obj.queryParams?.map(y => toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams(y)),
     'sourceCIDR': toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr(obj.sourceCidr),
   };
   // filter undefined values
@@ -4647,13 +6511,31 @@ export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesCost(obj: Back
  */
 export interface BackendTrafficPolicySpecRateLimitLocalRulesLimit {
   /**
+   * FromMetadata sources the limit value from per-request dynamic metadata.
+   * When the referenced metadata value is present, it overrides Requests/Unit for that
+   * request; otherwise Requests/Unit are used as the default.
+   *
+   * The referenced metadata value must be a struct containing an integer "requests_per_unit"
+   * property and a "unit" property with a value parseable to a RateLimitUnit. An upstream
+   * filter (e.g. ext_proc) is responsible for writing this struct into dynamic metadata.
+   *
+   * Only supported for Global Rate Limits.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimit#fromMetadata
+   */
+  readonly fromMetadata?: BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata;
+
+  /**
+   * Requests is the number of requests (or cost units, when used with
+   * cost-based rate limiting) allowed per Unit.
+   *
    * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimit#requests
    */
   readonly requests: number;
 
   /**
    * RateLimitUnit specifies the intervals for setting rate limits.
-   * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Month" and "Year".
+   * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Week", "Month" and "Year".
    *
    * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimit#unit
    */
@@ -4667,8 +6549,59 @@ export interface BackendTrafficPolicySpecRateLimitLocalRulesLimit {
 export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesLimit(obj: BackendTrafficPolicySpecRateLimitLocalRulesLimit | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'fromMetadata': toJson_BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata(obj.fromMetadata),
     'requests': obj.requests,
     'unit': obj.unit,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * XRateLimitHeaders controls whether X-RateLimit response headers are emitted for this rate limit rule.
+ * When set, this overrides the global DisableRateLimitHeaders setting in ClientTrafficPolicy for this rule.
+ * If not set, the rule inherits the listener-level setting (default behavior).
+ *
+ * @schema BackendTrafficPolicySpecRateLimitLocalRulesXRateLimitHeaders
+ */
+export enum BackendTrafficPolicySpecRateLimitLocalRulesXRateLimitHeaders {
+  /** Off */
+  OFF = "Off",
+  /** DraftVersion03 */
+  DRAFT_VERSION03 = "DraftVersion03",
+}
+
+/**
+ * Value within the HTTP header to match against.
+ *
+ * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue
+ */
+export interface BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue {
+  /**
+   * Type specifies how to match against a string.
+   *
+   * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue#type
+   */
+  readonly type?: BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValueType;
+
+  /**
+   * Value specifies the string value that the match must have.
+   *
+   * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue(obj: BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValue | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'type': obj.type,
+    'value': obj.value,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -4803,6 +6736,12 @@ export interface BackendTrafficPolicySpecResponseOverrideResponseHeaderAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema BackendTrafficPolicySpecResponseOverrideResponseHeaderAdd#value
    */
@@ -4846,6 +6785,12 @@ export interface BackendTrafficPolicySpecResponseOverrideResponseHeaderSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema BackendTrafficPolicySpecResponseOverrideResponseHeaderSet#value
    */
@@ -4861,6 +6806,55 @@ export function toJson_BackendTrafficPolicySpecResponseOverrideResponseHeaderSet
   const result = {
     'name': obj.name,
     'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions
+ */
+export interface BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(obj: BackendTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -4982,6 +6976,46 @@ export enum BackendTrafficPolicySpecTelemetryTracingCustomTagsType {
   ENVIRONMENT = "Environment",
   /** RequestHeader */
   REQUEST_HEADER = "RequestHeader",
+}
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile(obj: BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum BackendTrafficPolicySpecHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
 }
 
 /**
@@ -5124,11 +7158,75 @@ export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelecto
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParamMatch defines the match attributes within the query parameters of the request.
+ *
+ * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams
+ */
+export interface BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams {
+  /**
+   * Invert specifies whether the value match result will be inverted.
+   * Do not set this field when Type="Distinct", implying matching on any/all unique
+   * values within the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams#invert
+   */
+  readonly invert?: boolean;
+
+  /**
+   * Name of the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams#name
+   */
+  readonly name: string;
+
+  /**
+   * Type specifies how to match against the value of the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams#type
+   */
+  readonly type?: BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParamsType;
+
+  /**
+   * Value of the query parameter.
+   * Do not set this field when Type="Distinct", implying matching on any/all unique
+   * values within the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams#value
+   */
+  readonly value?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams(obj: BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'invert': obj.invert,
+    'name': obj.name,
+    'type': obj.type,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * SourceCIDR is the client IP Address range to match on.
  *
  * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr
  */
 export interface BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr {
+  /**
+   * Invert specifies whether the source range match result will be inverted.
+   * When true, the rule matches when the client IP is not in the specified range(s).
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr#invert
+   */
+  readonly invert?: boolean;
+
   /**
    * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr#type
    */
@@ -5151,6 +7249,7 @@ export interface BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSour
 export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr(obj: BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsSourceCidr | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'invert': obj.invert,
     'type': obj.type,
     'value': obj.value,
   };
@@ -5266,8 +7365,52 @@ export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesCostResponse(
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * FromMetadata sources the limit value from per-request dynamic metadata.
+ * When the referenced metadata value is present, it overrides Requests/Unit for that
+ * request; otherwise Requests/Unit are used as the default.
+ *
+ * The referenced metadata value must be a struct containing an integer "requests_per_unit"
+ * property and a "unit" property with a value parseable to a RateLimitUnit. An upstream
+ * filter (e.g. ext_proc) is responsible for writing this struct into dynamic metadata.
+ *
+ * Only supported for Global Rate Limits.
+ *
+ * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata
+ */
+export interface BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata {
+  /**
+   * Key is the key to retrieve the limit value from within the namespaced filter metadata.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata#key
+   */
+  readonly key: string;
+
+  /**
+   * Namespace is the namespace of the dynamic metadata.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata#namespace
+   */
+  readonly namespace: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata(obj: BackendTrafficPolicySpecRateLimitGlobalRulesLimitFromMetadata | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * RateLimitUnit specifies the intervals for setting rate limits.
- * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Month" and "Year".
+ * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Week", "Month" and "Year".
  *
  * @schema BackendTrafficPolicySpecRateLimitGlobalRulesLimitUnit
  */
@@ -5280,6 +7423,8 @@ export enum BackendTrafficPolicySpecRateLimitGlobalRulesLimitUnit {
   HOUR = "Hour",
   /** Day */
   DAY = "Day",
+  /** Week */
+  WEEK = "Week",
   /** Month */
   MONTH = "Month",
   /** Year */
@@ -5426,11 +7571,75 @@ export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelector
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParamMatch defines the match attributes within the query parameters of the request.
+ *
+ * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams
+ */
+export interface BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams {
+  /**
+   * Invert specifies whether the value match result will be inverted.
+   * Do not set this field when Type="Distinct", implying matching on any/all unique
+   * values within the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams#invert
+   */
+  readonly invert?: boolean;
+
+  /**
+   * Name of the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams#name
+   */
+  readonly name: string;
+
+  /**
+   * Type specifies how to match against the value of the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams#type
+   */
+  readonly type?: BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParamsType;
+
+  /**
+   * Value of the query parameter.
+   * Do not set this field when Type="Distinct", implying matching on any/all unique
+   * values within the query parameter.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams#value
+   */
+  readonly value?: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams(obj: BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'invert': obj.invert,
+    'name': obj.name,
+    'type': obj.type,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * SourceCIDR is the client IP Address range to match on.
  *
  * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr
  */
 export interface BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr {
+  /**
+   * Invert specifies whether the source range match result will be inverted.
+   * When true, the rule matches when the client IP is not in the specified range(s).
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr#invert
+   */
+  readonly invert?: boolean;
+
   /**
    * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr#type
    */
@@ -5453,6 +7662,7 @@ export interface BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourc
 export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr(obj: BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsSourceCidr | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'invert': obj.invert,
     'type': obj.type,
     'value': obj.value,
   };
@@ -5568,8 +7778,52 @@ export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesCostResponse(o
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * FromMetadata sources the limit value from per-request dynamic metadata.
+ * When the referenced metadata value is present, it overrides Requests/Unit for that
+ * request; otherwise Requests/Unit are used as the default.
+ *
+ * The referenced metadata value must be a struct containing an integer "requests_per_unit"
+ * property and a "unit" property with a value parseable to a RateLimitUnit. An upstream
+ * filter (e.g. ext_proc) is responsible for writing this struct into dynamic metadata.
+ *
+ * Only supported for Global Rate Limits.
+ *
+ * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata
+ */
+export interface BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata {
+  /**
+   * Key is the key to retrieve the limit value from within the namespaced filter metadata.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata#key
+   */
+  readonly key: string;
+
+  /**
+   * Namespace is the namespace of the dynamic metadata.
+   *
+   * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata#namespace
+   */
+  readonly namespace: string;
+}
+
+/**
+ * Converts an object of type 'BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata(obj: BackendTrafficPolicySpecRateLimitLocalRulesLimitFromMetadata | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'namespace': obj.namespace,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * RateLimitUnit specifies the intervals for setting rate limits.
- * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Month" and "Year".
+ * Valid RateLimitUnit values are "Second", "Minute", "Hour", "Day", "Week", "Month" and "Year".
  *
  * @schema BackendTrafficPolicySpecRateLimitLocalRulesLimitUnit
  */
@@ -5582,10 +7836,28 @@ export enum BackendTrafficPolicySpecRateLimitLocalRulesLimitUnit {
   HOUR = "Hour",
   /** Day */
   DAY = "Day",
+  /** Week */
+  WEEK = "Week",
   /** Month */
   MONTH = "Month",
   /** Year */
   YEAR = "Year",
+}
+
+/**
+ * Type specifies how to match against a string.
+ *
+ * @schema BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValueType
+ */
+export enum BackendTrafficPolicySpecResponseOverrideMatchResponseHeadersValueType {
+  /** Exact */
+  EXACT = "Exact",
+  /** Prefix */
+  PREFIX = "Prefix",
+  /** Suffix */
+  SUFFIX = "Suffix",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
 }
 
 /**
@@ -5640,6 +7912,20 @@ export enum BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsPathType 
   PATH_PREFIX = "PathPrefix",
   /** RegularExpression */
   REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * Type specifies how to match against the value of the query parameter.
+ *
+ * @schema BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParamsType
+ */
+export enum BackendTrafficPolicySpecRateLimitGlobalRulesClientSelectorsQueryParamsType {
+  /** Exact */
+  EXACT = "Exact",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+  /** Distinct */
+  DISTINCT = "Distinct",
 }
 
 /**
@@ -5800,6 +8086,20 @@ export enum BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsPathType {
   PATH_PREFIX = "PathPrefix",
   /** RegularExpression */
   REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * Type specifies how to match against the value of the query parameter.
+ *
+ * @schema BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParamsType
+ */
+export enum BackendTrafficPolicySpecRateLimitLocalRulesClientSelectorsQueryParamsType {
+  /** Exact */
+  EXACT = "Exact",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+  /** Distinct */
+  DISTINCT = "Distinct",
 }
 
 /**
@@ -6032,6 +8332,13 @@ export interface ClientTrafficPolicySpec {
   readonly enableProxyProtocol?: boolean;
 
   /**
+   * GRPC provides gRPC configuration on the listener.
+   *
+   * @schema ClientTrafficPolicySpec#grpc
+   */
+  readonly grpc?: ClientTrafficPolicySpecGrpc;
+
+  /**
    * HeaderSettings provides configuration for header management.
    *
    * @schema ClientTrafficPolicySpec#headers
@@ -6082,6 +8389,21 @@ export interface ClientTrafficPolicySpec {
    * @schema ClientTrafficPolicySpec#proxyProtocol
    */
   readonly proxyProtocol?: ClientTrafficPolicySpecProxyProtocol;
+
+  /**
+   * Scheme configures how the :scheme pseudo-header is set for requests forwarded to backends.
+   *
+   * - Preserve (default): Preserves the :scheme from the original client request.
+   * Use this when backends need to know the original client scheme for URL generation or redirects.
+   *
+   * - MatchBackend: Sets the :scheme to match the backend transport protocol.
+   * If the backend uses TLS, the scheme is "https", otherwise "http".
+   * Use this when backends require the scheme to match the actual transport protocol,
+   * such as strictly HTTPS services that validate the :scheme header.
+   *
+   * @schema ClientTrafficPolicySpec#scheme
+   */
+  readonly scheme?: ClientTrafficPolicySpecScheme;
 
   /**
    * TargetRef is the name of the resource this policy is being attached to.
@@ -6143,6 +8465,7 @@ export function toJson_ClientTrafficPolicySpec(obj: ClientTrafficPolicySpec | un
     'clientIPDetection': toJson_ClientTrafficPolicySpecClientIpDetection(obj.clientIpDetection),
     'connection': toJson_ClientTrafficPolicySpecConnection(obj.connection),
     'enableProxyProtocol': obj.enableProxyProtocol,
+    'grpc': toJson_ClientTrafficPolicySpecGrpc(obj.grpc),
     'headers': toJson_ClientTrafficPolicySpecHeaders(obj.headers),
     'healthCheck': toJson_ClientTrafficPolicySpecHealthCheck(obj.healthCheck),
     'http1': toJson_ClientTrafficPolicySpecHttp1(obj.http1),
@@ -6150,6 +8473,7 @@ export function toJson_ClientTrafficPolicySpec(obj: ClientTrafficPolicySpec | un
     'http3': obj.http3,
     'path': toJson_ClientTrafficPolicySpecPath(obj.path),
     'proxyProtocol': toJson_ClientTrafficPolicySpecProxyProtocol(obj.proxyProtocol),
+    'scheme': obj.scheme,
     'targetRef': toJson_ClientTrafficPolicySpecTargetRef(obj.targetRef),
     'targetRefs': obj.targetRefs?.map(y => toJson_ClientTrafficPolicySpecTargetRefs(y)),
     'targetSelectors': obj.targetSelectors?.map(y => toJson_ClientTrafficPolicySpecTargetSelectors(y)),
@@ -6179,6 +8503,21 @@ export interface ClientTrafficPolicySpecClientIpDetection {
   readonly customHeader?: ClientTrafficPolicySpecClientIpDetectionCustomHeader;
 
   /**
+   * DirectSourceIP configures the geoip filter to use the downstream connection
+   * source address (the TCP peer of the connection terminated by Envoy) as the client IP.
+   *
+   * Use this in L4-transparent topologies where a load balancer preserves the original
+   * client source IP at TCP level and does not populate XFF or a custom header — for
+   * example, AWS NLB with target-type=instance + externalTrafficPolicy=Local, or
+   * Azure Standard Load Balancer.
+   *
+   * Mutually exclusive with XForwardedFor and CustomHeader.
+   *
+   * @schema ClientTrafficPolicySpecClientIpDetection#directSourceIP
+   */
+  readonly directSourceIp?: any;
+
+  /**
    * XForwardedForSettings provides configuration for using X-Forwarded-For headers for determining the client IP address.
    *
    * @schema ClientTrafficPolicySpecClientIpDetection#xForwardedFor
@@ -6194,6 +8533,7 @@ export function toJson_ClientTrafficPolicySpecClientIpDetection(obj: ClientTraff
   if (obj === undefined) { return undefined; }
   const result = {
     'customHeader': toJson_ClientTrafficPolicySpecClientIpDetectionCustomHeader(obj.customHeader),
+    'directSourceIP': obj.directSourceIp,
     'xForwardedFor': toJson_ClientTrafficPolicySpecClientIpDetectionXForwardedFor(obj.xForwardedFor),
   };
   // filter undefined values
@@ -6265,6 +8605,41 @@ export function toJson_ClientTrafficPolicySpecConnection(obj: ClientTrafficPolic
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * GRPC provides gRPC configuration on the listener.
+ *
+ * @schema ClientTrafficPolicySpecGrpc
+ */
+export interface ClientTrafficPolicySpecGrpc {
+  /**
+   * EnableWeb configures the gRPC-web filter on the listener.
+   * The gRPC-web filter allows clients (typically browsers) to make gRPC calls
+   * using HTTP/1.1 or HTTP/2.
+   *
+   * This is enabled by default for GRPCRoute and opt-in for HTTPRoute.
+   * In general, gRPC traffic should be handled via GRPCRoute, but there are cases where
+   * users want to route gRPC using HTTPRoute for its richer matching capabilities.
+   * Therefore, we enable this behavior only when it is explicitly opted in.
+   *
+   * @schema ClientTrafficPolicySpecGrpc#enableWeb
+   */
+  readonly enableWeb?: boolean;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecGrpc' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecGrpc(obj: ClientTrafficPolicySpecGrpc | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'enableWeb': obj.enableWeb,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HeaderSettings provides configuration for header management.
  *
  * @schema ClientTrafficPolicySpecHeaders
@@ -6295,6 +8670,13 @@ export interface ClientTrafficPolicySpecHeaders {
   readonly enableEnvoyHeaders?: boolean;
 
   /**
+   * Host enables managing how the Host/Authority header set by clients can be normalized.
+   *
+   * @schema ClientTrafficPolicySpecHeaders#host
+   */
+  readonly host?: ClientTrafficPolicySpecHeadersHost;
+
+  /**
    * LateResponseHeaders defines settings for global response header modification.
    *
    * @schema ClientTrafficPolicySpecHeaders#lateResponseHeaders
@@ -6305,6 +8687,7 @@ export interface ClientTrafficPolicySpecHeaders {
    * PreserveXRequestID configures Envoy to keep the X-Request-ID header if passed for a request that is edge
    * (Edge request is the request from external clients to front Envoy) and not reset it, which is the current Envoy behaviour.
    * Defaults to false and cannot be combined with RequestID.
+   *
    * Deprecated: use RequestID=PreserveOrGenerate instead
    *
    * @default false and cannot be combined with RequestID.
@@ -6356,6 +8739,7 @@ export function toJson_ClientTrafficPolicySpecHeaders(obj: ClientTrafficPolicySp
     'disableRateLimitHeaders': obj.disableRateLimitHeaders,
     'earlyRequestHeaders': toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeaders(obj.earlyRequestHeaders),
     'enableEnvoyHeaders': obj.enableEnvoyHeaders,
+    'host': toJson_ClientTrafficPolicySpecHeadersHost(obj.host),
     'lateResponseHeaders': toJson_ClientTrafficPolicySpecHeadersLateResponseHeaders(obj.lateResponseHeaders),
     'preserveXRequestID': obj.preserveXRequestId,
     'requestID': obj.requestId,
@@ -6427,6 +8811,20 @@ export interface ClientTrafficPolicySpecHttp1 {
   readonly http10?: ClientTrafficPolicySpecHttp1Http10;
 
   /**
+   * IgnoredUpgradeTypes specifies a list of upgrade types for which
+   * HTTP/1.1 Upgrade requests should be ignored by Envoy instead of being
+   * rejected with a 403 response. When a client sends an HTTP/1.1 request
+   * with Connection: Upgrade and an Upgrade header matching one of these
+   * matchers, Envoy will strip the upgrade headers and process the request
+   * as a normal HTTP/1.1 request.
+   *
+   * Example: To ignore TLS upgrade requests (RFC 2817), use a Prefix match with value "TLS/".
+   *
+   * @schema ClientTrafficPolicySpecHttp1#ignoredUpgradeTypes
+   */
+  readonly ignoredUpgradeTypes?: ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes[];
+
+  /**
    * PreserveHeaderCase defines if Envoy should preserve the letter case of headers.
    * By default, Envoy will lowercase all the headers.
    *
@@ -6445,6 +8843,7 @@ export function toJson_ClientTrafficPolicySpecHttp1(obj: ClientTrafficPolicySpec
     'disableSafeMaxConnectionDuration': obj.disableSafeMaxConnectionDuration,
     'enableTrailers': obj.enableTrailers,
     'http10': toJson_ClientTrafficPolicySpecHttp1Http10(obj.http10),
+    'ignoredUpgradeTypes': obj.ignoredUpgradeTypes?.map(y => toJson_ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes(y)),
     'preserveHeaderCase': obj.preserveHeaderCase,
   };
   // filter undefined values
@@ -6458,6 +8857,13 @@ export function toJson_ClientTrafficPolicySpecHttp1(obj: ClientTrafficPolicySpec
  * @schema ClientTrafficPolicySpecHttp2
  */
 export interface ClientTrafficPolicySpecHttp2 {
+  /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema ClientTrafficPolicySpecHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: ClientTrafficPolicySpecHttp2ConnectionKeepalive;
+
   /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
@@ -6500,6 +8906,7 @@ export interface ClientTrafficPolicySpecHttp2 {
 export function toJson_ClientTrafficPolicySpecHttp2(obj: ClientTrafficPolicySpecHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_ClientTrafficPolicySpecHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -6585,6 +8992,26 @@ export function toJson_ClientTrafficPolicySpecProxyProtocol(obj: ClientTrafficPo
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Scheme configures how the :scheme pseudo-header is set for requests forwarded to backends.
+ *
+ * - Preserve (default): Preserves the :scheme from the original client request.
+ * Use this when backends need to know the original client scheme for URL generation or redirects.
+ *
+ * - MatchBackend: Sets the :scheme to match the backend transport protocol.
+ * If the backend uses TLS, the scheme is "https", otherwise "http".
+ * Use this when backends require the scheme to match the actual transport protocol,
+ * such as strictly HTTPS services that validate the :scheme header.
+ *
+ * @schema ClientTrafficPolicySpecScheme
+ */
+export enum ClientTrafficPolicySpecScheme {
+  /** Preserve */
+  PRESERVE = "Preserve",
+  /** MatchBackend */
+  MATCH_BACKEND = "MatchBackend",
+}
 
 /**
  * TargetRef is the name of the resource this policy is being attached to.
@@ -6749,11 +9176,27 @@ export interface ClientTrafficPolicySpecTargetSelectors {
   readonly matchExpressions?: ClientTrafficPolicySpecTargetSelectorsMatchExpressions[];
 
   /**
-   * MatchLabels are the set of label selectors for identifying the targeted resource
+   * MatchLabels are the set of label selectors for identifying the targeted resource.
    *
    * @schema ClientTrafficPolicySpecTargetSelectors#matchLabels
    */
   readonly matchLabels?: { [key: string]: string };
+
+  /**
+   * Namespaces determines which namespaces are considered for target selection.
+   *
+   * If unspecified, only targets in the same namespace as this policy are considered.
+   *
+   * When specified, the effective set of namespaces is always constrained to the
+   * namespaces watched by Envoy Gateway.
+   *
+   * Selecting targets across namespaces requires a ReferenceGrant in the target
+   * namespace that allows this policy kind to reference the selected target kind.
+   * Cross-namespace targets without a matching ReferenceGrant are ignored.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectors#namespaces
+   */
+  readonly namespaces?: ClientTrafficPolicySpecTargetSelectorsNamespaces;
 }
 
 /**
@@ -6767,6 +9210,7 @@ export function toJson_ClientTrafficPolicySpecTargetSelectors(obj: ClientTraffic
     'kind': obj.kind,
     'matchExpressions': obj.matchExpressions?.map(y => toJson_ClientTrafficPolicySpecTargetSelectorsMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'namespaces': toJson_ClientTrafficPolicySpecTargetSelectorsNamespaces(obj.namespaces),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -6894,6 +9338,39 @@ export interface ClientTrafficPolicySpecTls {
   /**
    * Ciphers specifies the set of cipher suites supported when
    * negotiating TLS 1.0 - 1.2. This setting has no effect for TLS 1.3.
+   * For Envoy TLS cipher suite configuration semantics and default cipher
+   * lists, see the Envoy documentation:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/transport_sockets/tls/v3/common.proto#extensions-transport-sockets-tls-v3-tlsparameters
+   * Supported cipher suite names:
+   * - ECDHE-ECDSA-AES128-GCM-SHA256
+   * - ECDHE-RSA-AES128-GCM-SHA256
+   * - ECDHE-ECDSA-AES256-GCM-SHA384
+   * - ECDHE-RSA-AES256-GCM-SHA384
+   * - ECDHE-ECDSA-CHACHA20-POLY1305
+   * - ECDHE-RSA-CHACHA20-POLY1305
+   * - ECDHE-ECDSA-AES128-SHA
+   * - ECDHE-RSA-AES128-SHA
+   * - AES128-GCM-SHA256
+   * - AES128-SHA
+   * - ECDHE-ECDSA-AES256-SHA
+   * - ECDHE-RSA-AES256-SHA
+   * - AES256-GCM-SHA384
+   * - AES256-SHA
+   * Supported IANA/RFC aliases:
+   * - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+   * - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+   * - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+   * - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+   * - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+   * - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+   * - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+   * - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+   * - TLS_RSA_WITH_AES_128_GCM_SHA256
+   * - TLS_RSA_WITH_AES_128_CBC_SHA
+   * - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+   * - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+   * - TLS_RSA_WITH_AES_256_GCM_SHA384
+   * - TLS_RSA_WITH_AES_256_CBC_SHA
    * In non-FIPS Envoy Proxy builds the default cipher list is:
    * - [ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]
    * - [ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]
@@ -6928,6 +9405,22 @@ export interface ClientTrafficPolicySpecTls {
    * @schema ClientTrafficPolicySpecTls#ecdhCurves
    */
   readonly ecdhCurves?: string[];
+
+  /**
+   * Fingerprints specifies TLS client fingerprinting.
+   * When specified, a JAX fingerprint derived from the client’s TLS handshake
+   * is generated. The fingerprint can be logged in access logs or
+   * forwarded to upstream services using request headers.
+   *
+   * Fingerprinting is disabled if not specified.
+   *
+   * Supported values are:
+   * - JA3
+   * - JA4
+   *
+   * @schema ClientTrafficPolicySpecTls#fingerprints
+   */
+  readonly fingerprints?: ClientTrafficPolicySpecTlsFingerprints[];
 
   /**
    * Max specifies the maximal TLS protocol version to allow
@@ -6972,6 +9465,7 @@ export function toJson_ClientTrafficPolicySpecTls(obj: ClientTrafficPolicySpecTl
     'ciphers': obj.ciphers?.map(y => y),
     'clientValidation': toJson_ClientTrafficPolicySpecTlsClientValidation(obj.clientValidation),
     'ecdhCurves': obj.ecdhCurves?.map(y => y),
+    'fingerprints': obj.fingerprints?.map(y => y),
     'maxVersion': obj.maxVersion,
     'minVersion': obj.minVersion,
     'session': toJson_ClientTrafficPolicySpecTlsSession(obj.session),
@@ -7030,6 +9524,17 @@ export function toJson_ClientTrafficPolicySpecClientIpDetectionCustomHeader(obj:
  */
 export interface ClientTrafficPolicySpecClientIpDetectionXForwardedFor {
   /**
+   * DisableXForwardedForAppend configures Envoy Proxy to stop appending the downstream address
+   * to the X-Forwarded-For header.
+   *
+   * This only disables the automatic append behavior. It does not remove or sanitize
+   * an incoming X-Forwarded-For header.
+   *
+   * @schema ClientTrafficPolicySpecClientIpDetectionXForwardedFor#disableXForwardedForAppend
+   */
+  readonly disableXForwardedForAppend?: boolean;
+
+  /**
    * NumTrustedHops specifies how many trusted hops to count from the rightmost side of
    * the X-Forwarded-For (XFF) header when determining the original client’s IP address.
    *
@@ -7068,6 +9573,7 @@ export interface ClientTrafficPolicySpecClientIpDetectionXForwardedFor {
 export function toJson_ClientTrafficPolicySpecClientIpDetectionXForwardedFor(obj: ClientTrafficPolicySpecClientIpDetectionXForwardedFor | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'disableXForwardedForAppend': obj.disableXForwardedForAppend,
     'numTrustedHops': obj.numTrustedHops,
     'trustedCIDRs': obj.trustedCidRs?.map(y => y),
   };
@@ -7142,7 +9648,7 @@ export interface ClientTrafficPolicySpecConnectionConnectionLimit {
    *
    * @schema ClientTrafficPolicySpecConnectionConnectionLimit#value
    */
-  readonly value: number;
+  readonly value?: number;
 }
 
 /**
@@ -7212,6 +9718,28 @@ export interface ClientTrafficPolicySpecHeadersEarlyRequestHeaders {
   readonly add?: ClientTrafficPolicySpecHeadersEarlyRequestHeadersAdd[];
 
   /**
+   * AddIfAbsent adds the given header(s) (name, value) to the request/response
+   * only if the header does not already exist. Unlike Add which appends to
+   * existing values, this is a no-op if the header is already present.
+   *
+   * Input:
+   * GET /foo HTTP/1.1
+   * my-header: foo
+   *
+   * Config:
+   * addIfAbsent:
+   * - name: "my-header"
+   * value: "bar"
+   *
+   * Output:
+   * GET /foo HTTP/1.1
+   * my-header: foo
+   *
+   * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeaders#addIfAbsent
+   */
+  readonly addIfAbsent?: ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent[];
+
+  /**
    * Remove the given header(s) from the HTTP request before the action. The
    * value of Remove is a list of HTTP header names. Note that the header
    * names are case-insensitive (see
@@ -7233,6 +9761,14 @@ export interface ClientTrafficPolicySpecHeadersEarlyRequestHeaders {
    * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeaders#remove
    */
   readonly remove?: string[];
+
+  /**
+   * RemoveOnMatch removes headers whose names match the specified string matchers.
+   * Matching is performed on the header name (case-insensitive).
+   *
+   * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeaders#removeOnMatch
+   */
+  readonly removeOnMatch?: ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch[];
 
   /**
    * Set overwrites the request with the given header (name, value)
@@ -7264,8 +9800,45 @@ export function toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeaders(obj: Cl
   if (obj === undefined) { return undefined; }
   const result = {
     'add': obj.add?.map(y => toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersAdd(y)),
+    'addIfAbsent': obj.addIfAbsent?.map(y => toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent(y)),
     'remove': obj.remove?.map(y => y),
+    'removeOnMatch': obj.removeOnMatch?.map(y => toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch(y)),
     'set': obj.set?.map(y => toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersSet(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Host enables managing how the Host/Authority header set by clients can be normalized.
+ *
+ * @schema ClientTrafficPolicySpecHeadersHost
+ */
+export interface ClientTrafficPolicySpecHeadersHost {
+  /**
+   * StripTrailingHostDot determines if the trailing dot of the host should be removed
+   * from the Host/Authority header before any processing of the request.
+   * This affects the upstream host header as well. Without this option, incoming requests
+   * with host "example.com." will not match routes with domains set to "example.com".
+   * When the host includes a port (for example "example.com.:443"), only the trailing dot
+   * from the host section is stripped, leaving the port as-is ("example.com:443").
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema ClientTrafficPolicySpecHeadersHost#stripTrailingHostDot
+   */
+  readonly stripTrailingHostDot?: boolean;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHeadersHost' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHeadersHost(obj: ClientTrafficPolicySpecHeadersHost | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'stripTrailingHostDot': obj.stripTrailingHostDot,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -7301,6 +9874,28 @@ export interface ClientTrafficPolicySpecHeadersLateResponseHeaders {
   readonly add?: ClientTrafficPolicySpecHeadersLateResponseHeadersAdd[];
 
   /**
+   * AddIfAbsent adds the given header(s) (name, value) to the request/response
+   * only if the header does not already exist. Unlike Add which appends to
+   * existing values, this is a no-op if the header is already present.
+   *
+   * Input:
+   * GET /foo HTTP/1.1
+   * my-header: foo
+   *
+   * Config:
+   * addIfAbsent:
+   * - name: "my-header"
+   * value: "bar"
+   *
+   * Output:
+   * GET /foo HTTP/1.1
+   * my-header: foo
+   *
+   * @schema ClientTrafficPolicySpecHeadersLateResponseHeaders#addIfAbsent
+   */
+  readonly addIfAbsent?: ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent[];
+
+  /**
    * Remove the given header(s) from the HTTP request before the action. The
    * value of Remove is a list of HTTP header names. Note that the header
    * names are case-insensitive (see
@@ -7322,6 +9917,14 @@ export interface ClientTrafficPolicySpecHeadersLateResponseHeaders {
    * @schema ClientTrafficPolicySpecHeadersLateResponseHeaders#remove
    */
   readonly remove?: string[];
+
+  /**
+   * RemoveOnMatch removes headers whose names match the specified string matchers.
+   * Matching is performed on the header name (case-insensitive).
+   *
+   * @schema ClientTrafficPolicySpecHeadersLateResponseHeaders#removeOnMatch
+   */
+  readonly removeOnMatch?: ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch[];
 
   /**
    * Set overwrites the request with the given header (name, value)
@@ -7353,7 +9956,9 @@ export function toJson_ClientTrafficPolicySpecHeadersLateResponseHeaders(obj: Cl
   if (obj === undefined) { return undefined; }
   const result = {
     'add': obj.add?.map(y => toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersAdd(y)),
+    'addIfAbsent': obj.addIfAbsent?.map(y => toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent(y)),
     'remove': obj.remove?.map(y => y),
+    'removeOnMatch': obj.removeOnMatch?.map(y => toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch(y)),
     'set': obj.set?.map(y => toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersSet(y)),
   };
   // filter undefined values
@@ -7486,6 +10091,98 @@ export function toJson_ClientTrafficPolicySpecHttp1Http10(obj: ClientTrafficPoli
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * StringMatch defines how to match any strings.
+ * This is a general purpose match condition that can be used by other EG APIs
+ * that need to match against a string.
+ *
+ * @schema ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes
+ */
+export interface ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes {
+  /**
+   * Type specifies how to match against a string.
+   *
+   * @schema ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes#type
+   */
+  readonly type?: ClientTrafficPolicySpecHttp1IgnoredUpgradeTypesType;
+
+  /**
+   * Value specifies the string value that the match must have.
+   *
+   * @schema ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes(obj: ClientTrafficPolicySpecHttp1IgnoredUpgradeTypes | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'type': obj.type,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema ClientTrafficPolicySpecHttp2ConnectionKeepalive
+ */
+export interface ClientTrafficPolicySpecHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema ClientTrafficPolicySpecHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema ClientTrafficPolicySpecHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema ClientTrafficPolicySpecHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema ClientTrafficPolicySpecHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHttp2ConnectionKeepalive(obj: ClientTrafficPolicySpecHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
  * If not set, the default value is 1 MiB.
  *
@@ -7587,6 +10284,54 @@ export function toJson_ClientTrafficPolicySpecTargetSelectorsMatchExpressions(ob
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Namespaces determines which namespaces are considered for target selection.
+ *
+ * If unspecified, only targets in the same namespace as this policy are considered.
+ *
+ * When specified, the effective set of namespaces is always constrained to the
+ * namespaces watched by Envoy Gateway.
+ *
+ * Selecting targets across namespaces requires a ReferenceGrant in the target
+ * namespace that allows this policy kind to reference the selected target kind.
+ * Cross-namespace targets without a matching ReferenceGrant are ignored.
+ *
+ * @schema ClientTrafficPolicySpecTargetSelectorsNamespaces
+ */
+export interface ClientTrafficPolicySpecTargetSelectorsNamespaces {
+  /**
+   * From indicates how namespaces are selected for this target selector.
+   *
+   * All means all namespaces watched by Envoy Gateway.
+   * Selector means namespaces watched by Envoy Gateway that match Selector.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespaces#from
+   */
+  readonly from: ClientTrafficPolicySpecTargetSelectorsNamespacesFrom;
+
+  /**
+   * Selector selects namespaces when From is set to Selector.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespaces#selector
+   */
+  readonly selector?: ClientTrafficPolicySpecTargetSelectorsNamespacesSelector;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecTargetSelectorsNamespaces' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecTargetSelectorsNamespaces(obj: ClientTrafficPolicySpecTargetSelectorsNamespaces | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'from': obj.from,
+    'selector': toJson_ClientTrafficPolicySpecTargetSelectorsNamespacesSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Timeout settings for HTTP.
  *
  * @schema ClientTrafficPolicySpecTimeoutHttp
@@ -7599,6 +10344,16 @@ export interface ClientTrafficPolicySpecTimeoutHttp {
    * @schema ClientTrafficPolicySpecTimeoutHttp#idleTimeout
    */
   readonly idleTimeout?: string;
+
+  /**
+   * RequestHeadersReceivedTimeout is the duration envoy waits for the request headers to arrive.
+   * The timer is activated when the first byte of the headers is received,
+   * and is disarmed when the last byte of the headers has been received.
+   * If not specified or set to 0, this timeout is disabled.
+   *
+   * @schema ClientTrafficPolicySpecTimeoutHttp#requestHeadersReceivedTimeout
+   */
+  readonly requestHeadersReceivedTimeout?: string;
 
   /**
    * RequestReceivedTimeout is the duration envoy waits for the complete request reception. This timer starts upon request
@@ -7625,6 +10380,7 @@ export function toJson_ClientTrafficPolicySpecTimeoutHttp(obj: ClientTrafficPoli
   if (obj === undefined) { return undefined; }
   const result = {
     'idleTimeout': obj.idleTimeout,
+    'requestHeadersReceivedTimeout': obj.requestHeadersReceivedTimeout,
     'requestReceivedTimeout': obj.requestReceivedTimeout,
     'streamIdleTimeout': obj.streamIdleTimeout,
   };
@@ -7640,6 +10396,16 @@ export function toJson_ClientTrafficPolicySpecTimeoutHttp(obj: ClientTrafficPoli
  */
 export interface ClientTrafficPolicySpecTimeoutTcp {
   /**
+   * ConnectionInspectionTimeout is the maximum time to wait for initial inspection
+   * (TLS / SNI and protocol detection, or HTTP protocol parsing) of an incoming connection on the listener socket.
+   * If exceeded, the connection is dropped.
+   * Default: 15 seconds.
+   *
+   * @schema ClientTrafficPolicySpecTimeoutTcp#connectionInspectionTimeout
+   */
+  readonly connectionInspectionTimeout?: string;
+
+  /**
    * IdleTimeout for a TCP connection. Idle time is defined as a period in which there are no
    * bytes sent or received on either the upstream or downstream connection.
    * Default: 1 hour.
@@ -7647,6 +10413,15 @@ export interface ClientTrafficPolicySpecTimeoutTcp {
    * @schema ClientTrafficPolicySpecTimeoutTcp#idleTimeout
    */
   readonly idleTimeout?: string;
+
+  /**
+   * TLSHandshakeTimeout for a TCP connection. The maximum time to complete transport level connection negotiation
+   * (e.g. the TLS handshake) after a connection is accepted.
+   * If this expires before the transport reports connection establishment, the connection is summarily closed.
+   *
+   * @schema ClientTrafficPolicySpecTimeoutTcp#tlsHandshakeTimeout
+   */
+  readonly tlsHandshakeTimeout?: string;
 }
 
 /**
@@ -7656,7 +10431,9 @@ export interface ClientTrafficPolicySpecTimeoutTcp {
 export function toJson_ClientTrafficPolicySpecTimeoutTcp(obj: ClientTrafficPolicySpecTimeoutTcp | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionInspectionTimeout': obj.connectionInspectionTimeout,
     'idleTimeout': obj.idleTimeout,
+    'tlsHandshakeTimeout': obj.tlsHandshakeTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -7670,6 +10447,17 @@ export function toJson_ClientTrafficPolicySpecTimeoutTcp(obj: ClientTrafficPolic
  * @schema ClientTrafficPolicySpecTlsClientValidation
  */
 export interface ClientTrafficPolicySpecTlsClientValidation {
+  /**
+   * AllowExpiredCertificate permits client certificates that have expired
+   * but are otherwise valid (CA chain, signature). When true, Envoy skips
+   * the NotAfter check during client certificate validation.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema ClientTrafficPolicySpecTlsClientValidation#allowExpiredCertificate
+   */
+  readonly allowExpiredCertificate?: boolean;
+
   /**
    * CACertificateRefs contains one or more references to
    * Kubernetes objects that contain TLS certificates of
@@ -7704,8 +10492,18 @@ export interface ClientTrafficPolicySpecTlsClientValidation {
   readonly crl?: ClientTrafficPolicySpecTlsClientValidationCrl;
 
   /**
+   * Mode defines how the Gateway or Listener validates client certificates.
+   * If not specified, defaults to RequireAndVerify.
+   *
+   * @schema ClientTrafficPolicySpecTlsClientValidation#mode
+   */
+  readonly mode?: ClientTrafficPolicySpecTlsClientValidationMode;
+
+  /**
    * Optional set to true accepts connections even when a client doesn't present a certificate.
    * Defaults to false, which rejects connections without a valid client certificate.
+   *
+   * Deprecated: Use Mode instead.
    *
    * @default false, which rejects connections without a valid client certificate.
    * @schema ClientTrafficPolicySpecTlsClientValidation#optional
@@ -7738,9 +10536,11 @@ export interface ClientTrafficPolicySpecTlsClientValidation {
 export function toJson_ClientTrafficPolicySpecTlsClientValidation(obj: ClientTrafficPolicySpecTlsClientValidation | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'allowExpiredCertificate': obj.allowExpiredCertificate,
     'caCertificateRefs': obj.caCertificateRefs?.map(y => toJson_ClientTrafficPolicySpecTlsClientValidationCaCertificateRefs(y)),
     'certificateHashes': obj.certificateHashes?.map(y => y),
     'crl': toJson_ClientTrafficPolicySpecTlsClientValidationCrl(obj.crl),
+    'mode': obj.mode,
     'optional': obj.optional,
     'spkiHashes': obj.spkiHashes?.map(y => y),
     'subjectAltNames': toJson_ClientTrafficPolicySpecTlsClientValidationSubjectAltNames(obj.subjectAltNames),
@@ -7749,6 +10549,18 @@ export function toJson_ClientTrafficPolicySpecTlsClientValidation(obj: ClientTra
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLSFingerprintType specifies the TLS client fingerprinting mode.
+ *
+ * @schema ClientTrafficPolicySpecTlsFingerprints
+ */
+export enum ClientTrafficPolicySpecTlsFingerprints {
+  /** JA3 */
+  JA3 = "JA3",
+  /** JA4 */
+  JA4 = "JA4",
+}
 
 /**
  * Max specifies the maximal TLS protocol version to allow
@@ -7842,6 +10654,12 @@ export interface ClientTrafficPolicySpecHeadersEarlyRequestHeadersAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersAdd#value
    */
@@ -7856,6 +10674,93 @@ export function toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersAdd(obj:
   if (obj === undefined) { return undefined; }
   const result = {
     'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
+ *
+ * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent
+ */
+export interface ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent {
+  /**
+   * Name is the name of the HTTP Header to be matched. Name matching MUST be
+   * case-insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
+   *
+   * If multiple entries specify equivalent header names, the first entry with
+   * an equivalent name MUST be considered for a match. Subsequent entries
+   * with an equivalent header name MUST be ignored. Due to the
+   * case-insensitivity of header names, "foo" and "Foo" are considered
+   * equivalent.
+   *
+   * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent#name
+   */
+  readonly name: string;
+
+  /**
+   * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
+   *
+   * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent(obj: ClientTrafficPolicySpecHeadersEarlyRequestHeadersAddIfAbsent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * StringMatch defines how to match any strings.
+ * This is a general purpose match condition that can be used by other EG APIs
+ * that need to match against a string.
+ *
+ * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch
+ */
+export interface ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch {
+  /**
+   * Type specifies how to match against a string.
+   *
+   * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch#type
+   */
+  readonly type?: ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatchType;
+
+  /**
+   * Value specifies the string value that the match must have.
+   *
+   * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch(obj: ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatch | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'type': obj.type,
     'value': obj.value,
   };
   // filter undefined values
@@ -7885,6 +10790,12 @@ export interface ClientTrafficPolicySpecHeadersEarlyRequestHeadersSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersSet#value
    */
@@ -7928,6 +10839,12 @@ export interface ClientTrafficPolicySpecHeadersLateResponseHeadersAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersAdd#value
    */
@@ -7942,6 +10859,93 @@ export function toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersAdd(obj:
   if (obj === undefined) { return undefined; }
   const result = {
     'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
+ *
+ * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent
+ */
+export interface ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent {
+  /**
+   * Name is the name of the HTTP Header to be matched. Name matching MUST be
+   * case-insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
+   *
+   * If multiple entries specify equivalent header names, the first entry with
+   * an equivalent name MUST be considered for a match. Subsequent entries
+   * with an equivalent header name MUST be ignored. Due to the
+   * case-insensitivity of header names, "foo" and "Foo" are considered
+   * equivalent.
+   *
+   * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent#name
+   */
+  readonly name: string;
+
+  /**
+   * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
+   *
+   * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent(obj: ClientTrafficPolicySpecHeadersLateResponseHeadersAddIfAbsent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * StringMatch defines how to match any strings.
+ * This is a general purpose match condition that can be used by other EG APIs
+ * that need to match against a string.
+ *
+ * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch
+ */
+export interface ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch {
+  /**
+   * Type specifies how to match against a string.
+   *
+   * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch#type
+   */
+  readonly type?: ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatchType;
+
+  /**
+   * Value specifies the string value that the match must have.
+   *
+   * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch(obj: ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatch | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'type': obj.type,
     'value': obj.value,
   };
   // filter undefined values
@@ -7971,6 +10975,12 @@ export interface ClientTrafficPolicySpecHeadersLateResponseHeadersSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersSet#value
    */
@@ -8028,6 +11038,77 @@ export enum ClientTrafficPolicySpecHeadersXForwardedClientCertMode {
   /** AlwaysForwardOnly */
   ALWAYS_FORWARD_ONLY = "AlwaysForwardOnly",
 }
+
+/**
+ * Type specifies how to match against a string.
+ *
+ * @schema ClientTrafficPolicySpecHttp1IgnoredUpgradeTypesType
+ */
+export enum ClientTrafficPolicySpecHttp1IgnoredUpgradeTypesType {
+  /** Exact */
+  EXACT = "Exact",
+  /** Prefix */
+  PREFIX = "Prefix",
+  /** Suffix */
+  SUFFIX = "Suffix",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * From indicates how namespaces are selected for this target selector.
+ *
+ * All means all namespaces watched by Envoy Gateway.
+ * Selector means namespaces watched by Envoy Gateway that match Selector.
+ *
+ * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesFrom
+ */
+export enum ClientTrafficPolicySpecTargetSelectorsNamespacesFrom {
+  /** Same */
+  SAME = "Same",
+  /** All */
+  ALL = "All",
+  /** Selector */
+  SELECTOR = "Selector",
+}
+
+/**
+ * Selector selects namespaces when From is set to Selector.
+ *
+ * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelector
+ */
+export interface ClientTrafficPolicySpecTargetSelectorsNamespacesSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelector#matchExpressions
+   */
+  readonly matchExpressions?: ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecTargetSelectorsNamespacesSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecTargetSelectorsNamespacesSelector(obj: ClientTrafficPolicySpecTargetSelectorsNamespacesSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * SecretObjectReference identifies an API object including its namespace,
@@ -8143,6 +11224,23 @@ export function toJson_ClientTrafficPolicySpecTlsClientValidationCrl(obj: Client
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Mode defines how the Gateway or Listener validates client certificates.
+ * If not specified, defaults to RequireAndVerify.
+ *
+ * @schema ClientTrafficPolicySpecTlsClientValidationMode
+ */
+export enum ClientTrafficPolicySpecTlsClientValidationMode {
+  /** Request */
+  REQUEST = "Request",
+  /** RequireAny */
+  REQUIRE_ANY = "RequireAny",
+  /** VerifyIfGiven */
+  VERIFY_IF_GIVEN = "VerifyIfGiven",
+  /** RequireAndVerify */
+  REQUIRE_AND_VERIFY = "RequireAndVerify",
+}
+
+/**
  * An optional list of Subject Alternative name matchers. If specified, Envoy
  * will verify that the Subject Alternative Name of the presented certificate
  * matches one of the specified matchers
@@ -8238,6 +11336,87 @@ export function toJson_ClientTrafficPolicySpecTlsSessionResumption(obj: ClientTr
   const result = {
     'stateful': obj.stateful,
     'stateless': obj.stateless,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type specifies how to match against a string.
+ *
+ * @schema ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatchType
+ */
+export enum ClientTrafficPolicySpecHeadersEarlyRequestHeadersRemoveOnMatchType {
+  /** Exact */
+  EXACT = "Exact",
+  /** Prefix */
+  PREFIX = "Prefix",
+  /** Suffix */
+  SUFFIX = "Suffix",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * Type specifies how to match against a string.
+ *
+ * @schema ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatchType
+ */
+export enum ClientTrafficPolicySpecHeadersLateResponseHeadersRemoveOnMatchType {
+  /** Exact */
+  EXACT = "Exact",
+  /** Prefix */
+  PREFIX = "Prefix",
+  /** Suffix */
+  SUFFIX = "Suffix",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions
+ */
+export interface ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(obj: ClientTrafficPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -8683,6 +11862,18 @@ export function toJson_EnvoyExtensionPolicyProps(obj: EnvoyExtensionPolicyProps 
  */
 export interface EnvoyExtensionPolicySpec {
   /**
+   * DynamicModule is an ordered list of dynamic module HTTP filters
+   * that should be added to the envoy filter chain.
+   * Each module must be registered in the EnvoyProxy resource's dynamicModules
+   * allowlist.
+   * Order matters, as the filters will be loaded in the order they are
+   * defined in this list.
+   *
+   * @schema EnvoyExtensionPolicySpec#dynamicModule
+   */
+  readonly dynamicModule?: EnvoyExtensionPolicySpecDynamicModule[];
+
+  /**
    * ExtProc is an ordered list of external processing filters
    * that should be added to the envoy filter chain
    *
@@ -8697,6 +11888,19 @@ export interface EnvoyExtensionPolicySpec {
    * @schema EnvoyExtensionPolicySpec#lua
    */
   readonly lua?: EnvoyExtensionPolicySpecLua[];
+
+  /**
+   * MergeType determines how this configuration is merged with existing EnvoyExtensionPolicy
+   * configurations targeting a parent resource. When set, this configuration will be merged
+   * into the closest parent EnvoyExtensionPolicy in the route's attachment hierarchy (for
+   * example, one targeting a Gateway, Gateway listener, ListenerSet, or ListenerSet
+   * listener).
+   * Currently, this field can only be set when targeting xRoute resources.
+   * If unset, no merging occurs, and only the most specific configuration takes effect.
+   *
+   * @schema EnvoyExtensionPolicySpec#mergeType
+   */
+  readonly mergeType?: string;
 
   /**
    * TargetRef is the name of the resource this policy is being attached to.
@@ -8741,12 +11945,79 @@ export interface EnvoyExtensionPolicySpec {
 export function toJson_EnvoyExtensionPolicySpec(obj: EnvoyExtensionPolicySpec | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'dynamicModule': obj.dynamicModule?.map(y => toJson_EnvoyExtensionPolicySpecDynamicModule(y)),
     'extProc': obj.extProc?.map(y => toJson_EnvoyExtensionPolicySpecExtProc(y)),
     'lua': obj.lua?.map(y => toJson_EnvoyExtensionPolicySpecLua(y)),
+    'mergeType': obj.mergeType,
     'targetRef': toJson_EnvoyExtensionPolicySpecTargetRef(obj.targetRef),
     'targetRefs': obj.targetRefs?.map(y => toJson_EnvoyExtensionPolicySpecTargetRefs(y)),
     'targetSelectors': obj.targetSelectors?.map(y => toJson_EnvoyExtensionPolicySpecTargetSelectors(y)),
     'wasm': obj.wasm?.map(y => toJson_EnvoyExtensionPolicySpecWasm(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines a dynamic module HTTP filter to be loaded by Envoy.
+ * The module must be registered in the EnvoyProxy resource's dynamicModules
+ * allowlist by the infrastructure operator.
+ *
+ * @schema EnvoyExtensionPolicySpecDynamicModule
+ */
+export interface EnvoyExtensionPolicySpecDynamicModule {
+  /**
+   * Config is the configuration for the dynamic module filter.
+   * This is serialized as JSON and passed to the module's initialization function.
+   *
+   * @schema EnvoyExtensionPolicySpecDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * FilterName identifies a specific filter implementation within the dynamic
+   * module. A single shared library can contain multiple filter implementations.
+   * This value is passed to the module's HTTP filter config init function to
+   * select the appropriate implementation.
+   * If not specified, defaults to an empty string.
+   *
+   * @schema EnvoyExtensionPolicySpecDynamicModule#filterName
+   */
+  readonly filterName?: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema EnvoyExtensionPolicySpecDynamicModule#name
+   */
+  readonly name: string;
+
+  /**
+   * TerminalFilter indicates that this dynamic module handles requests without
+   * requiring an upstream backend. The module is responsible for generating and
+   * sending the response to downstream directly.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyExtensionPolicySpecDynamicModule#terminalFilter
+   */
+  readonly terminalFilter?: boolean;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecDynamicModule(obj: EnvoyExtensionPolicySpecDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'filterName': obj.filterName,
+    'name': obj.name,
+    'terminalFilter': obj.terminalFilter,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -8826,6 +12097,28 @@ export interface EnvoyExtensionPolicySpecExtProc {
    * @schema EnvoyExtensionPolicySpecExtProc#processingMode
    */
   readonly processingMode?: EnvoyExtensionPolicySpecExtProcProcessingMode;
+
+  /**
+   * ShadowMode sets if envoy gateway should treat this external processor as "send and go".
+   * When enabled, Envoy forwards request/response data to the external processor but does
+   * not wait for or apply any response from it. This maps to Envoy's `observability_mode`
+   * on the ext_proc filter.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyExtensionPolicySpecExtProc#shadowMode
+   */
+  readonly shadowMode?: boolean;
+
+  /**
+   * Sets the HTTP status that is returned to the client when the external processor returns an error
+   * or cannot be reached. Defaults to 500 Internal Server Error.
+   * Only 4xx and 5xx status codes are supported.
+   *
+   * @default 500 Internal Server Error.
+   * @schema EnvoyExtensionPolicySpecExtProc#statusOnError
+   */
+  readonly statusOnError?: EnvoyExtensionPolicySpecExtProcStatusOnError;
 }
 
 /**
@@ -8842,6 +12135,8 @@ export function toJson_EnvoyExtensionPolicySpecExtProc(obj: EnvoyExtensionPolicy
     'messageTimeout': obj.messageTimeout,
     'metadata': toJson_EnvoyExtensionPolicySpecExtProcMetadata(obj.metadata),
     'processingMode': toJson_EnvoyExtensionPolicySpecExtProcProcessingMode(obj.processingMode),
+    'shadowMode': obj.shadowMode,
+    'statusOnError': obj.statusOnError,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -8855,6 +12150,16 @@ export function toJson_EnvoyExtensionPolicySpecExtProc(obj: EnvoyExtensionPolicy
  * @schema EnvoyExtensionPolicySpecLua
  */
 export interface EnvoyExtensionPolicySpecLua {
+  /**
+   * FilterContext is the filter context configuration for the Lua script.
+   * This must be a JSON object (key/value pairs). The values are made available
+   * to the Lua script via request_handle:filterContext(). This allows a shared
+   * script to be parameterized differently per EnvoyExtensionPolicy/route.
+   *
+   * @schema EnvoyExtensionPolicySpecLua#filterContext
+   */
+  readonly filterContext?: any;
+
   /**
    * Inline contains the source code as an inline string.
    *
@@ -8888,6 +12193,7 @@ export interface EnvoyExtensionPolicySpecLua {
 export function toJson_EnvoyExtensionPolicySpecLua(obj: EnvoyExtensionPolicySpecLua | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'filterContext': obj.filterContext,
     'inline': obj.inline,
     'type': obj.type,
     'valueRef': toJson_EnvoyExtensionPolicySpecLuaValueRef(obj.valueRef),
@@ -9060,11 +12366,27 @@ export interface EnvoyExtensionPolicySpecTargetSelectors {
   readonly matchExpressions?: EnvoyExtensionPolicySpecTargetSelectorsMatchExpressions[];
 
   /**
-   * MatchLabels are the set of label selectors for identifying the targeted resource
+   * MatchLabels are the set of label selectors for identifying the targeted resource.
    *
    * @schema EnvoyExtensionPolicySpecTargetSelectors#matchLabels
    */
   readonly matchLabels?: { [key: string]: string };
+
+  /**
+   * Namespaces determines which namespaces are considered for target selection.
+   *
+   * If unspecified, only targets in the same namespace as this policy are considered.
+   *
+   * When specified, the effective set of namespaces is always constrained to the
+   * namespaces watched by Envoy Gateway.
+   *
+   * Selecting targets across namespaces requires a ReferenceGrant in the target
+   * namespace that allows this policy kind to reference the selected target kind.
+   * Cross-namespace targets without a matching ReferenceGrant are ignored.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectors#namespaces
+   */
+  readonly namespaces?: EnvoyExtensionPolicySpecTargetSelectorsNamespaces;
 }
 
 /**
@@ -9078,6 +12400,7 @@ export function toJson_EnvoyExtensionPolicySpecTargetSelectors(obj: EnvoyExtensi
     'kind': obj.kind,
     'matchExpressions': obj.matchExpressions?.map(y => toJson_EnvoyExtensionPolicySpecTargetSelectorsMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'namespaces': toJson_EnvoyExtensionPolicySpecTargetSelectorsNamespaces(obj.namespaces),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -9340,6 +12663,25 @@ export interface EnvoyExtensionPolicySpecExtProcBackendRefs {
    * @schema EnvoyExtensionPolicySpecExtProcBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -9355,6 +12697,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendRefs(obj: EnvoyExte
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -9557,6 +12900,91 @@ export function toJson_EnvoyExtensionPolicySpecExtProcProcessingMode(obj: EnvoyE
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Sets the HTTP status that is returned to the client when the external processor returns an error
+ * or cannot be reached. Defaults to 500 Internal Server Error.
+ * Only 4xx and 5xx status codes are supported.
+ *
+ * @default 500 Internal Server Error.
+ * @schema EnvoyExtensionPolicySpecExtProcStatusOnError
+ */
+export enum EnvoyExtensionPolicySpecExtProcStatusOnError {
+  /** 400 */
+  VALUE_400 = 400,
+  /** 401 */
+  VALUE_401 = 401,
+  /** 402 */
+  VALUE_402 = 402,
+  /** 403 */
+  VALUE_403 = 403,
+  /** 404 */
+  VALUE_404 = 404,
+  /** 405 */
+  VALUE_405 = 405,
+  /** 406 */
+  VALUE_406 = 406,
+  /** 407 */
+  VALUE_407 = 407,
+  /** 408 */
+  VALUE_408 = 408,
+  /** 409 */
+  VALUE_409 = 409,
+  /** 410 */
+  VALUE_410 = 410,
+  /** 411 */
+  VALUE_411 = 411,
+  /** 412 */
+  VALUE_412 = 412,
+  /** 413 */
+  VALUE_413 = 413,
+  /** 414 */
+  VALUE_414 = 414,
+  /** 415 */
+  VALUE_415 = 415,
+  /** 416 */
+  VALUE_416 = 416,
+  /** 417 */
+  VALUE_417 = 417,
+  /** 421 */
+  VALUE_421 = 421,
+  /** 422 */
+  VALUE_422 = 422,
+  /** 423 */
+  VALUE_423 = 423,
+  /** 424 */
+  VALUE_424 = 424,
+  /** 426 */
+  VALUE_426 = 426,
+  /** 428 */
+  VALUE_428 = 428,
+  /** 429 */
+  VALUE_429 = 429,
+  /** 431 */
+  VALUE_431 = 431,
+  /** 500 */
+  VALUE_500 = 500,
+  /** 501 */
+  VALUE_501 = 501,
+  /** 502 */
+  VALUE_502 = 502,
+  /** 503 */
+  VALUE_503 = 503,
+  /** 504 */
+  VALUE_504 = 504,
+  /** 505 */
+  VALUE_505 = 505,
+  /** 506 */
+  VALUE_506 = 506,
+  /** 507 */
+  VALUE_507 = 507,
+  /** 508 */
+  VALUE_508 = 508,
+  /** 510 */
+  VALUE_510 = 510,
+  /** 511 */
+  VALUE_511 = 511,
+}
+
+/**
  * Type is the type of method to use to read the Lua value.
  * Valid values are Inline and ValueRef, default is Inline.
  *
@@ -9660,6 +13088,54 @@ export function toJson_EnvoyExtensionPolicySpecTargetSelectorsMatchExpressions(o
     'key': obj.key,
     'operator': obj.operator,
     'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Namespaces determines which namespaces are considered for target selection.
+ *
+ * If unspecified, only targets in the same namespace as this policy are considered.
+ *
+ * When specified, the effective set of namespaces is always constrained to the
+ * namespaces watched by Envoy Gateway.
+ *
+ * Selecting targets across namespaces requires a ReferenceGrant in the target
+ * namespace that allows this policy kind to reference the selected target kind.
+ * Cross-namespace targets without a matching ReferenceGrant are ignored.
+ *
+ * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespaces
+ */
+export interface EnvoyExtensionPolicySpecTargetSelectorsNamespaces {
+  /**
+   * From indicates how namespaces are selected for this target selector.
+   *
+   * All means all namespaces watched by Envoy Gateway.
+   * Selector means namespaces watched by Envoy Gateway that match Selector.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespaces#from
+   */
+  readonly from: EnvoyExtensionPolicySpecTargetSelectorsNamespacesFrom;
+
+  /**
+   * Selector selects namespaces when From is set to Selector.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespaces#selector
+   */
+  readonly selector?: EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecTargetSelectorsNamespaces' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecTargetSelectorsNamespaces(obj: EnvoyExtensionPolicySpecTargetSelectorsNamespaces | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'from': obj.from,
+    'selector': toJson_EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector(obj.selector),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -9808,6 +13284,14 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreaker {
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -9823,6 +13307,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBrea
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -9988,6 +13473,13 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
  */
 export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -10029,6 +13521,7 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2 {
 export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -10048,12 +13541,29 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2(obj: 
  */
 export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -10068,7 +13578,7 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer {
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer#slowStart
    */
@@ -10080,7 +13590,9 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer {
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer#type
    */
@@ -10101,7 +13613,9 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer {
 export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -10119,7 +13633,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
  */
 export interface EnvoyExtensionPolicySpecExtProcBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -10372,6 +13886,61 @@ export function toJson_EnvoyExtensionPolicySpecExtProcProcessingModeResponse(obj
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * From indicates how namespaces are selected for this target selector.
+ *
+ * All means all namespaces watched by Envoy Gateway.
+ * Selector means namespaces watched by Envoy Gateway that match Selector.
+ *
+ * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesFrom
+ */
+export enum EnvoyExtensionPolicySpecTargetSelectorsNamespacesFrom {
+  /** Same */
+  SAME = "Same",
+  /** All */
+  ALL = "All",
+  /** Selector */
+  SELECTOR = "Selector",
+}
+
+/**
+ * Selector selects namespaces when From is set to Selector.
+ *
+ * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector
+ */
+export interface EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector#matchExpressions
+   */
+  readonly matchExpressions?: EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector(obj: EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP is the HTTP URL containing the Wasm code.
  *
  * Note that the HTTP server must be accessible from the Envoy proxy.
@@ -10391,6 +13960,7 @@ export interface EnvoyExtensionPolicySpecWasmCodeHttp {
 
   /**
    * TLS configuration when connecting to the Wasm code source.
+   * If unset, system trust store is used for HTTPS url.
    *
    * @schema EnvoyExtensionPolicySpecWasmCodeHttp#tls
    */
@@ -10430,7 +14000,6 @@ export function toJson_EnvoyExtensionPolicySpecWasmCodeHttp(obj: EnvoyExtensionP
 export interface EnvoyExtensionPolicySpecWasmCodeImage {
   /**
    * PullSecretRef is a reference to the secret containing the credentials to pull the image.
-   * Only support Kubernetes Secret resource from the same namespace.
    *
    * @schema EnvoyExtensionPolicySpecWasmCodeImage#pullSecretRef
    */
@@ -10450,6 +14019,7 @@ export interface EnvoyExtensionPolicySpecWasmCodeImage {
 
   /**
    * TLS configuration when connecting to the Wasm code source.
+   * If unset, system trust store is used.
    *
    * @schema EnvoyExtensionPolicySpecWasmCodeImage#tls
    */
@@ -10522,6 +14092,50 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBrea
   if (obj === undefined) { return undefined; }
   const result = {
     'maxConnections': obj.maxConnections,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -10655,6 +14269,15 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive
   readonly grpc?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive#healthyThreshold
@@ -10685,6 +14308,15 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -10708,6 +14340,9 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -10722,10 +14357,12 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -10742,6 +14379,14 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
  * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckPassive
  */
 export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -10810,6 +14455,7 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckPassiv
 export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckPassive(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -10818,6 +14464,60 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -10859,6 +14559,103 @@ export class EnvoyExtensionPolicySpecExtProcBackendSettingsHttp2InitialStreamWin
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -10889,6 +14686,13 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsi
   readonly headers?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -10901,6 +14705,7 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsi
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -10917,8 +14722,62 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
     'cookie': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -10959,7 +14818,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerSlowStart
  */
@@ -10995,7 +14854,9 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerType
  */
@@ -11008,6 +14869,10 @@ export enum EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerType {
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -11022,6 +14887,14 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneA
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -11032,6 +14905,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11039,7 +14913,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -11168,6 +15042,14 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsTimeoutHttp {
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -11181,6 +15063,7 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsTimeoutHttp
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11249,19 +15132,68 @@ export enum EnvoyExtensionPolicySpecExtProcProcessingModeResponseBody {
 }
 
 /**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions
+ */
+export interface EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(obj: EnvoyExtensionPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * TLS configuration when connecting to the Wasm code source.
+ * If unset, system trust store is used for HTTPS url.
  *
  * @schema EnvoyExtensionPolicySpecWasmCodeHttpTls
  */
 export interface EnvoyExtensionPolicySpecWasmCodeHttpTls {
   /**
-   * CACertificateRef contains a references to
+   * CACertificateRef contains a reference to
    * Kubernetes objects that contain TLS certificates of
    * the Certificate Authorities that can be used
    * as a trust anchor to validate the certificates presented by the Wasm code source.
    *
-   * Kubernetes ConfigMap and Kubernetes Secret are supported.
-   * Note: The ConfigMap or Secret must be in the same namespace as the EnvoyExtensionPolicy.
+   * Kubernetes ConfigMap, Kubernetes Secret, and Kubernetes ClusterTrustBundle are supported.
    *
    * @schema EnvoyExtensionPolicySpecWasmCodeHttpTls#caCertificateRef
    */
@@ -11284,7 +15216,6 @@ export function toJson_EnvoyExtensionPolicySpecWasmCodeHttpTls(obj: EnvoyExtensi
 
 /**
  * PullSecretRef is a reference to the secret containing the credentials to pull the image.
- * Only support Kubernetes Secret resource from the same namespace.
  *
  * @schema EnvoyExtensionPolicySpecWasmCodeImagePullSecretRef
  */
@@ -11346,18 +15277,18 @@ export function toJson_EnvoyExtensionPolicySpecWasmCodeImagePullSecretRef(obj: E
 
 /**
  * TLS configuration when connecting to the Wasm code source.
+ * If unset, system trust store is used.
  *
  * @schema EnvoyExtensionPolicySpecWasmCodeImageTls
  */
 export interface EnvoyExtensionPolicySpecWasmCodeImageTls {
   /**
-   * CACertificateRef contains a references to
+   * CACertificateRef contains a reference to
    * Kubernetes objects that contain TLS certificates of
    * the Certificate Authorities that can be used
    * as a trust anchor to validate the certificates presented by the Wasm code source.
    *
-   * Kubernetes ConfigMap and Kubernetes Secret are supported.
-   * Note: The ConfigMap or Secret must be in the same namespace as the EnvoyExtensionPolicy.
+   * Kubernetes ConfigMap, Kubernetes Secret, and Kubernetes ClusterTrustBundle are supported.
    *
    * @schema EnvoyExtensionPolicySpecWasmCodeImageTls#caCertificateRef
    */
@@ -11372,6 +15303,39 @@ export function toJson_EnvoyExtensionPolicySpecWasmCodeImageTls(obj: EnvoyExtens
   if (obj === undefined) { return undefined; }
   const result = {
     'caCertificateRef': toJson_EnvoyExtensionPolicySpecWasmCodeImageTlsCaCertificateRef(obj.caCertificateRef),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11410,6 +15374,49 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -11433,8 +15440,9 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -11455,6 +15463,23 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive
    * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -11469,6 +15494,41 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11506,6 +15566,62 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheck
   const result = {
     'receive': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11621,11 +15737,41 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistentHashType
  */
@@ -11638,6 +15784,8 @@ export enum EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerConsistent
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -11710,6 +15858,47 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
     'force': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11790,13 +15979,12 @@ export enum EnvoyExtensionPolicySpecExtProcBackendSettingsRetryRetryOnTriggers {
 }
 
 /**
- * CACertificateRef contains a references to
+ * CACertificateRef contains a reference to
  * Kubernetes objects that contain TLS certificates of
  * the Certificate Authorities that can be used
  * as a trust anchor to validate the certificates presented by the Wasm code source.
  *
- * Kubernetes ConfigMap and Kubernetes Secret are supported.
- * Note: The ConfigMap or Secret must be in the same namespace as the EnvoyExtensionPolicy.
+ * Kubernetes ConfigMap, Kubernetes Secret, and Kubernetes ClusterTrustBundle are supported.
  *
  * @schema EnvoyExtensionPolicySpecWasmCodeHttpTlsCaCertificateRef
  */
@@ -11857,13 +16045,12 @@ export function toJson_EnvoyExtensionPolicySpecWasmCodeHttpTlsCaCertificateRef(o
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CACertificateRef contains a references to
+ * CACertificateRef contains a reference to
  * Kubernetes objects that contain TLS certificates of
  * the Certificate Authorities that can be used
  * as a trust anchor to validate the certificates presented by the Wasm code source.
  *
- * Kubernetes ConfigMap and Kubernetes Secret are supported.
- * Note: The ConfigMap or Secret must be in the same namespace as the EnvoyExtensionPolicy.
+ * Kubernetes ConfigMap, Kubernetes Secret, and Kubernetes ClusterTrustBundle are supported.
  *
  * @schema EnvoyExtensionPolicySpecWasmCodeImageTlsCaCertificateRef
  */
@@ -11924,6 +16111,59 @@ export function toJson_EnvoyExtensionPolicySpecWasmCodeImageTlsCaCertificateRef(
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -11956,6 +16196,50 @@ export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActive
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -12084,6 +16368,46 @@ export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsLoadBalance
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum EnvoyExtensionPolicySpecExtProcBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
 
 
 /**
@@ -12476,7 +16800,7 @@ export class EnvoyProxy extends ApiObject {
    *
    * @param props initialization props
    */
-  public static manifest(props: EnvoyProxyProps = {}): any {
+  public static manifest(props: EnvoyProxyProps): any {
     return {
       ...EnvoyProxy.GVK,
       ...toJson_EnvoyProxyProps(props),
@@ -12489,7 +16813,7 @@ export class EnvoyProxy extends ApiObject {
    * @param id a scope-local name for the object
    * @param props initialization props
    */
-  public constructor(scope: Construct, id: string, props: EnvoyProxyProps = {}) {
+  public constructor(scope: Construct, id: string, props: EnvoyProxyProps) {
     super(scope, id, {
       ...EnvoyProxy.GVK,
       ...props,
@@ -12525,7 +16849,7 @@ export interface EnvoyProxyProps {
    *
    * @schema EnvoyProxy#spec
    */
-  readonly spec?: EnvoyProxySpec;
+  readonly spec: EnvoyProxySpec;
 }
 
 /**
@@ -12582,6 +16906,20 @@ export interface EnvoyProxySpec {
   readonly concurrency?: number;
 
   /**
+   * DynamicModules defines the set of dynamic modules that are allowed to be
+   * used by EnvoyExtensionPolicy resources and dynamic module load balancer
+   * policies. Each entry registers a module by a logical name and specifies
+   * the shared library that Envoy will load.
+   *
+   * The EnvoyProxy owner is responsible for ensuring the module .so files are available
+   * on the proxy container's filesystem (e.g., via init containers, custom images,
+   * or shared volumes).
+   *
+   * @schema EnvoyProxySpec#dynamicModules
+   */
+  readonly dynamicModules?: EnvoyProxySpecDynamicModules[];
+
+  /**
    * ExtraArgs defines additional command line options that are provided to Envoy.
    * More info: https://www.envoyproxy.io/docs/envoy/latest/operations/cli#command-line-options
    * Note: some command line options are used internally(e.g. --log-level) so they cannot be provided here.
@@ -12596,11 +16934,15 @@ export interface EnvoyProxySpec {
    * If unspecified, the default filter order is applied.
    * Default filter order is:
    *
+   * - envoy.filters.http.custom_response
+   *
    * - envoy.filters.http.health_check
    *
    * - envoy.filters.http.fault
    *
    * - envoy.filters.http.cors
+   *
+   * - envoy.filters.http.header_mutation
    *
    * - envoy.filters.http.ext_authz
    *
@@ -12622,21 +16964,27 @@ export interface EnvoyProxySpec {
    *
    * - envoy.filters.http.wasm
    *
+   * - envoy.filters.http.dynamic_modules
+   *
+   * - envoy.filters.http.geoip
+   *
    * - envoy.filters.http.rbac
    *
    * - envoy.filters.http.local_ratelimit
    *
    * - envoy.filters.http.ratelimit
    *
+   * - envoy.filters.http.bandwidth_limit
+   *
    * - envoy.filters.http.grpc_web
    *
    * - envoy.filters.http.grpc_stats
    *
-   * - envoy.filters.http.custom_response
-   *
    * - envoy.filters.http.credential_injector
    *
    * - envoy.filters.http.compressor
+   *
+   * - envoy.filters.http.dynamic_forward_proxy
    *
    * - envoy.filters.http.router
    *
@@ -12645,6 +16993,13 @@ export interface EnvoyProxySpec {
    * @schema EnvoyProxySpec#filterOrder
    */
   readonly filterOrder?: EnvoyProxySpecFilterOrder[];
+
+  /**
+   * GeoIP defines shared GeoIP provider configuration for this EnvoyProxy fleet.
+   *
+   * @schema EnvoyProxySpec#geoIP
+   */
+  readonly geoIp?: EnvoyProxySpecGeoIp;
 
   /**
    * IPFamily specifies the IP family for the EnvoyProxy fleet.
@@ -12675,18 +17030,43 @@ export interface EnvoyProxySpec {
   readonly luaValidation?: EnvoyProxySpecLuaValidation;
 
   /**
+   * MergeBackends configures cluster deduplication: routes that reference the same backend
+   * share a single Envoy cluster instead of Envoy Gateway generating one cluster per route
+   * rule. This reduces xDS size, active health-check traffic, and stats cardinality, and
+   * improves upstream connection pooling.
+   *
+   * Disabled when unset; specifying this field at all (even without further configuration)
+   * enables it. Mutually exclusive with MergeGateways.
+   *
+   * @schema EnvoyProxySpec#mergeBackends
+   */
+  readonly mergeBackends?: EnvoyProxySpecMergeBackends;
+
+  /**
    * MergeGateways defines if Gateway resources should be merged onto the same Envoy Proxy Infrastructure.
    * Setting this field to true would merge all Gateway Listeners under the parent Gateway Class.
    * This means that the port, protocol and hostname tuple must be unique for every listener.
    * If a duplicate listener is detected, the newer listener (based on timestamp) will be rejected and its status will be updated with a "Accepted=False" condition.
+   *
+   * Mutually exclusive with MergeBackends.
    *
    * @schema EnvoyProxySpec#mergeGateways
    */
   readonly mergeGateways?: boolean;
 
   /**
+   * MergeType controls how this EnvoyProxy merges with less specific configurations
+   * in the hierarchy (EnvoyGateway defaults < GatewayClass < Gateway).
+   * If unset, this EnvoyProxy completely replaces less specific settings.
+   * Note: this field has no effect when set in EnvoyGateway's default EnvoyProxySpec.
+   *
+   * @schema EnvoyProxySpec#mergeType
+   */
+  readonly mergeType?: EnvoyProxySpecMergeType;
+
+  /**
    * PreserveRouteOrder determines if the order of matching for HTTPRoutes is determined by Gateway-API
-   * specification (https://gateway-api.sigs.k8s.io/reference/1.4/spec/#httprouterule)
+   * specification (https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#httprouterule)
    * or preserves the order defined by users in the HTTPRoute's HTTPRouteRule list.
    * Default: False
    *
@@ -12736,12 +17116,16 @@ export function toJson_EnvoyProxySpec(obj: EnvoyProxySpec | undefined): Record<s
     'backendTLS': toJson_EnvoyProxySpecBackendTls(obj.backendTls),
     'bootstrap': toJson_EnvoyProxySpecBootstrap(obj.bootstrap),
     'concurrency': obj.concurrency,
+    'dynamicModules': obj.dynamicModules?.map(y => toJson_EnvoyProxySpecDynamicModules(y)),
     'extraArgs': obj.extraArgs?.map(y => y),
     'filterOrder': obj.filterOrder?.map(y => toJson_EnvoyProxySpecFilterOrder(y)),
+    'geoIP': toJson_EnvoyProxySpecGeoIp(obj.geoIp),
     'ipFamily': obj.ipFamily,
     'logging': toJson_EnvoyProxySpecLogging(obj.logging),
     'luaValidation': obj.luaValidation,
+    'mergeBackends': toJson_EnvoyProxySpecMergeBackends(obj.mergeBackends),
     'mergeGateways': obj.mergeGateways,
+    'mergeType': obj.mergeType,
     'preserveRouteOrder': obj.preserveRouteOrder,
     'provider': toJson_EnvoyProxySpecProvider(obj.provider),
     'routingType': obj.routingType,
@@ -12784,6 +17168,39 @@ export interface EnvoyProxySpecBackendTls {
   /**
    * Ciphers specifies the set of cipher suites supported when
    * negotiating TLS 1.0 - 1.2. This setting has no effect for TLS 1.3.
+   * For Envoy TLS cipher suite configuration semantics and default cipher
+   * lists, see the Envoy documentation:
+   * https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/transport_sockets/tls/v3/common.proto#extensions-transport-sockets-tls-v3-tlsparameters
+   * Supported cipher suite names:
+   * - ECDHE-ECDSA-AES128-GCM-SHA256
+   * - ECDHE-RSA-AES128-GCM-SHA256
+   * - ECDHE-ECDSA-AES256-GCM-SHA384
+   * - ECDHE-RSA-AES256-GCM-SHA384
+   * - ECDHE-ECDSA-CHACHA20-POLY1305
+   * - ECDHE-RSA-CHACHA20-POLY1305
+   * - ECDHE-ECDSA-AES128-SHA
+   * - ECDHE-RSA-AES128-SHA
+   * - AES128-GCM-SHA256
+   * - AES128-SHA
+   * - ECDHE-ECDSA-AES256-SHA
+   * - ECDHE-RSA-AES256-SHA
+   * - AES256-GCM-SHA384
+   * - AES256-SHA
+   * Supported IANA/RFC aliases:
+   * - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+   * - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+   * - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+   * - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+   * - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+   * - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+   * - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+   * - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+   * - TLS_RSA_WITH_AES_128_GCM_SHA256
+   * - TLS_RSA_WITH_AES_128_CBC_SHA
+   * - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+   * - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+   * - TLS_RSA_WITH_AES_256_GCM_SHA384
+   * - TLS_RSA_WITH_AES_256_CBC_SHA
    * In non-FIPS Envoy Proxy builds the default cipher list is:
    * - [ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]
    * - [ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]
@@ -12822,6 +17239,22 @@ export interface EnvoyProxySpecBackendTls {
   readonly ecdhCurves?: string[];
 
   /**
+   * Fingerprints specifies TLS client fingerprinting.
+   * When specified, a JAX fingerprint derived from the client’s TLS handshake
+   * is generated. The fingerprint can be logged in access logs or
+   * forwarded to upstream services using request headers.
+   *
+   * Fingerprinting is disabled if not specified.
+   *
+   * Supported values are:
+   * - JA3
+   * - JA4
+   *
+   * @schema EnvoyProxySpecBackendTls#fingerprints
+   */
+  readonly fingerprints?: EnvoyProxySpecBackendTlsFingerprints[];
+
+  /**
    * Max specifies the maximal TLS protocol version to allow
    * The default is TLS 1.3 if this is not specified.
    *
@@ -12857,6 +17290,7 @@ export function toJson_EnvoyProxySpecBackendTls(obj: EnvoyProxySpecBackendTls | 
     'ciphers': obj.ciphers?.map(y => y),
     'clientCertificateRef': toJson_EnvoyProxySpecBackendTlsClientCertificateRef(obj.clientCertificateRef),
     'ecdhCurves': obj.ecdhCurves?.map(y => y),
+    'fingerprints': obj.fingerprints?.map(y => y),
     'maxVersion': obj.maxVersion,
     'minVersion': obj.minVersion,
     'signatureAlgorithms': obj.signatureAlgorithms?.map(y => y),
@@ -12922,6 +17356,69 @@ export function toJson_EnvoyProxySpecBootstrap(obj: EnvoyProxySpecBootstrap | un
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * DynamicModuleEntry defines a dynamic module that is registered and allowed
+ * for use by EnvoyExtensionPolicy resources.
+ *
+ * @schema EnvoyProxySpecDynamicModules
+ */
+export interface EnvoyProxySpecDynamicModules {
+  /**
+   * DoNotClose prevents the module from being unloaded with dlclose when no
+   * more references exist. This is useful for modules that maintain global
+   * state that should not be destroyed on configuration updates.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyProxySpecDynamicModules#doNotClose
+   */
+  readonly doNotClose?: boolean;
+
+  /**
+   * LoadGlobally loads the dynamic module with the RTLD_GLOBAL flag.
+   * By default, modules are loaded with RTLD_LOCAL to avoid symbol conflicts.
+   * Set this to true when the module needs to share symbols with other
+   * dynamic libraries it loads.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyProxySpecDynamicModules#loadGlobally
+   */
+  readonly loadGlobally?: boolean;
+
+  /**
+   * Name is the logical name for this module. EnvoyExtensionPolicy resources
+   * reference modules by this name.
+   *
+   * @schema EnvoyProxySpecDynamicModules#name
+   */
+  readonly name: string;
+
+  /**
+   * Source defines where the dynamic module code is loaded from.
+   *
+   * @schema EnvoyProxySpecDynamicModules#source
+   */
+  readonly source: EnvoyProxySpecDynamicModulesSource;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecDynamicModules' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecDynamicModules(obj: EnvoyProxySpecDynamicModules | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'doNotClose': obj.doNotClose,
+    'loadGlobally': obj.loadGlobally,
+    'name': obj.name,
+    'source': toJson_EnvoyProxySpecDynamicModulesSource(obj.source),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * FilterPosition defines the position of an Envoy HTTP filter in the filter chain.
  *
  * @schema EnvoyProxySpecFilterOrder
@@ -12961,6 +17458,34 @@ export function toJson_EnvoyProxySpecFilterOrder(obj: EnvoyProxySpecFilterOrder 
     'after': obj.after,
     'before': obj.before,
     'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GeoIP defines shared GeoIP provider configuration for this EnvoyProxy fleet.
+ *
+ * @schema EnvoyProxySpecGeoIp
+ */
+export interface EnvoyProxySpecGeoIp {
+  /**
+   * Provider defines the GeoIP provider configuration used by GeoIP filter instances.
+   *
+   * @schema EnvoyProxySpecGeoIp#provider
+   */
+  readonly provider: EnvoyProxySpecGeoIpProvider;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIp' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIp(obj: EnvoyProxySpecGeoIp | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'provider': toJson_EnvoyProxySpecGeoIpProvider(obj.provider),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -13025,8 +17550,64 @@ export function toJson_EnvoyProxySpecLogging(obj: EnvoyProxySpecLogging | undefi
 export enum EnvoyProxySpecLuaValidation {
   /** Strict */
   STRICT = "Strict",
+  /** InsecureSyntax */
+  INSECURE_SYNTAX = "InsecureSyntax",
   /** Disabled */
   DISABLED = "Disabled",
+}
+
+/**
+ * MergeBackends configures cluster deduplication: routes that reference the same backend
+ * share a single Envoy cluster instead of Envoy Gateway generating one cluster per route
+ * rule. This reduces xDS size, active health-check traffic, and stats cardinality, and
+ * improves upstream connection pooling.
+ *
+ * Disabled when unset; specifying this field at all (even without further configuration)
+ * enables it. Mutually exclusive with MergeGateways.
+ *
+ * @schema EnvoyProxySpecMergeBackends
+ */
+export interface EnvoyProxySpecMergeBackends {
+  /**
+   * Selector restricts cluster deduplication to backends whose target Service, ServiceImport,
+   * or Backend resource matches this label selector. When unset, every otherwise-eligible
+   * backend is merged. Use this to opt individual backends into deduplication gradually
+   * instead of enabling it for every backend at once.
+   *
+   * @schema EnvoyProxySpecMergeBackends#selector
+   */
+  readonly selector?: EnvoyProxySpecMergeBackendsSelector;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecMergeBackends' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecMergeBackends(obj: EnvoyProxySpecMergeBackends | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'selector': toJson_EnvoyProxySpecMergeBackendsSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * MergeType controls how this EnvoyProxy merges with less specific configurations
+ * in the hierarchy (EnvoyGateway defaults < GatewayClass < Gateway).
+ * If unset, this EnvoyProxy completely replaces less specific settings.
+ * Note: this field has no effect when set in EnvoyGateway's default EnvoyProxySpec.
+ *
+ * @schema EnvoyProxySpecMergeType
+ */
+export enum EnvoyProxySpecMergeType {
+  /** Replace */
+  REPLACE = "Replace",
+  /** StrategicMerge */
+  STRATEGIC_MERGE = "StrategicMerge",
+  /** JSONMerge */
+  JSON_MERGE = "JSONMerge",
 }
 
 /**
@@ -13060,7 +17641,7 @@ export interface EnvoyProxySpecProvider {
   /**
    * Type is the type of resource provider to use. A resource provider provides
    * infrastructure resources for running the data plane, e.g. Envoy proxy, and
-   * optional auxiliary control planes. Supported types are "Kubernetes"and "Host".
+   * optional auxiliary control planes. Supported types are "Kubernetes" and "Host".
    *
    * @schema EnvoyProxySpecProvider#type
    */
@@ -13098,6 +17679,14 @@ export interface EnvoyProxySpecShutdown {
   readonly drainTimeout?: string;
 
   /**
+   * HealthCheckFailureDelay defines the delay before failing health checks during the graceful drain process.
+   * If unspecified, defaults to 0 seconds.
+   *
+   * @schema EnvoyProxySpecShutdown#healthCheckFailureDelay
+   */
+  readonly healthCheckFailureDelay?: string;
+
+  /**
    * MinDrainDuration defines the minimum drain duration allowing time for endpoint deprogramming to complete.
    * If unspecified, defaults to 10 seconds.
    *
@@ -13114,6 +17703,7 @@ export function toJson_EnvoyProxySpecShutdown(obj: EnvoyProxySpecShutdown | unde
   if (obj === undefined) { return undefined; }
   const result = {
     'drainTimeout': obj.drainTimeout,
+    'healthCheckFailureDelay': obj.healthCheckFailureDelay,
     'minDrainDuration': obj.minDrainDuration,
   };
   // filter undefined values
@@ -13136,11 +17726,25 @@ export interface EnvoyProxySpecTelemetry {
   readonly accessLog?: EnvoyProxySpecTelemetryAccessLog;
 
   /**
+   * HealthCheckLog defines health check event logging for xRoute-backed clusters.
+   *
+   * @schema EnvoyProxySpecTelemetry#healthCheckLog
+   */
+  readonly healthCheckLog?: EnvoyProxySpecTelemetryHealthCheckLog;
+
+  /**
    * Metrics defines metrics configuration for managed proxies.
    *
    * @schema EnvoyProxySpecTelemetry#metrics
    */
   readonly metrics?: EnvoyProxySpecTelemetryMetrics;
+
+  /**
+   * RequestID configures Envoy request ID behavior.
+   *
+   * @schema EnvoyProxySpecTelemetry#requestID
+   */
+  readonly requestId?: EnvoyProxySpecTelemetryRequestId;
 
   /**
    * Tracing defines tracing configuration for managed proxies.
@@ -13159,7 +17763,9 @@ export function toJson_EnvoyProxySpecTelemetry(obj: EnvoyProxySpecTelemetry | un
   if (obj === undefined) { return undefined; }
   const result = {
     'accessLog': toJson_EnvoyProxySpecTelemetryAccessLog(obj.accessLog),
+    'healthCheckLog': toJson_EnvoyProxySpecTelemetryHealthCheckLog(obj.healthCheckLog),
     'metrics': toJson_EnvoyProxySpecTelemetryMetrics(obj.metrics),
+    'requestID': toJson_EnvoyProxySpecTelemetryRequestId(obj.requestId),
     'tracing': toJson_EnvoyProxySpecTelemetryTracing(obj.tracing),
   };
   // filter undefined values
@@ -13230,6 +17836,18 @@ export function toJson_EnvoyProxySpecBackendTlsClientCertificateRef(obj: EnvoyPr
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TLSFingerprintType specifies the TLS client fingerprinting mode.
+ *
+ * @schema EnvoyProxySpecBackendTlsFingerprints
+ */
+export enum EnvoyProxySpecBackendTlsFingerprints {
+  /** JA3 */
+  JA3 = "JA3",
+  /** JA4 */
+  JA4 = "JA4",
+}
 
 /**
  * Max specifies the maximal TLS protocol version to allow
@@ -13355,18 +17973,72 @@ export enum EnvoyProxySpecBootstrapType {
 }
 
 /**
+ * Source defines where the dynamic module code is loaded from.
+ *
+ * @schema EnvoyProxySpecDynamicModulesSource
+ */
+export interface EnvoyProxySpecDynamicModulesSource {
+  /**
+   * Local specifies a module loaded from the proxy's local filesystem
+   * by absolute path.
+   *
+   * @schema EnvoyProxySpecDynamicModulesSource#local
+   */
+  readonly local?: EnvoyProxySpecDynamicModulesSourceLocal;
+
+  /**
+   * Remote specifies a module fetched from a remote source.
+   * The module binary is downloaded and cached by Envoy.
+   *
+   * @schema EnvoyProxySpecDynamicModulesSource#remote
+   */
+  readonly remote?: EnvoyProxySpecDynamicModulesSourceRemote;
+
+  /**
+   * Type is the type of the source of the dynamic module code.
+   * Defaults to Local.
+   *
+   * @default Local.
+   * @schema EnvoyProxySpecDynamicModulesSource#type
+   */
+  readonly type?: EnvoyProxySpecDynamicModulesSourceType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecDynamicModulesSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecDynamicModulesSource(obj: EnvoyProxySpecDynamicModulesSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'local': toJson_EnvoyProxySpecDynamicModulesSourceLocal(obj.local),
+    'remote': toJson_EnvoyProxySpecDynamicModulesSourceRemote(obj.remote),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * After defines the filter that should come after the filter.
  * Only one of Before or After must be set.
  *
  * @schema EnvoyProxySpecFilterOrderAfter
  */
 export enum EnvoyProxySpecFilterOrderAfter {
+  /** envoy.filters.http.custom_response */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CUSTOM_UNDERSCORE_RESPONSE = "envoy.filters.http.custom_response",
   /** envoy.filters.http.health_check */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_HEALTH_UNDERSCORE_CHECK = "envoy.filters.http.health_check",
   /** envoy.filters.http.fault */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_FAULT = "envoy.filters.http.fault",
   /** envoy.filters.http.cors */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CORS = "envoy.filters.http.cors",
+  /** envoy.filters.http.csrf */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CSRF = "envoy.filters.http.csrf",
+  /** envoy.filters.http.header_mutation */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_HEADER_UNDERSCORE_MUTATION = "envoy.filters.http.header_mutation",
   /** envoy.filters.http.ext_authz */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_EXT_UNDERSCORE_AUTHZ = "envoy.filters.http.ext_authz",
   /** envoy.filters.http.api_key_auth */
@@ -13387,22 +18059,28 @@ export enum EnvoyProxySpecFilterOrderAfter {
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_EXT_UNDERSCORE_PROC = "envoy.filters.http.ext_proc",
   /** envoy.filters.http.wasm */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_WASM = "envoy.filters.http.wasm",
+  /** envoy.filters.http.dynamic_modules */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_DYNAMIC_UNDERSCORE_MODULES = "envoy.filters.http.dynamic_modules",
+  /** envoy.filters.http.geoip */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GEOIP = "envoy.filters.http.geoip",
   /** envoy.filters.http.rbac */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_RBAC = "envoy.filters.http.rbac",
   /** envoy.filters.http.local_ratelimit */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_LOCAL_UNDERSCORE_RATELIMIT = "envoy.filters.http.local_ratelimit",
   /** envoy.filters.http.ratelimit */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_RATELIMIT = "envoy.filters.http.ratelimit",
+  /** envoy.filters.http.bandwidth_limit */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_BANDWIDTH_UNDERSCORE_LIMIT = "envoy.filters.http.bandwidth_limit",
   /** envoy.filters.http.grpc_web */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GRPC_UNDERSCORE_WEB = "envoy.filters.http.grpc_web",
   /** envoy.filters.http.grpc_stats */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GRPC_UNDERSCORE_STATS = "envoy.filters.http.grpc_stats",
-  /** envoy.filters.http.custom_response */
-  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CUSTOM_UNDERSCORE_RESPONSE = "envoy.filters.http.custom_response",
   /** envoy.filters.http.credential_injector */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CREDENTIAL_UNDERSCORE_INJECTOR = "envoy.filters.http.credential_injector",
   /** envoy.filters.http.compressor */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_COMPRESSOR = "envoy.filters.http.compressor",
+  /** envoy.filters.http.dynamic_forward_proxy */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_DYNAMIC_UNDERSCORE_FORWARD_UNDERSCORE_PROXY = "envoy.filters.http.dynamic_forward_proxy",
 }
 
 /**
@@ -13412,12 +18090,18 @@ export enum EnvoyProxySpecFilterOrderAfter {
  * @schema EnvoyProxySpecFilterOrderBefore
  */
 export enum EnvoyProxySpecFilterOrderBefore {
+  /** envoy.filters.http.custom_response */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CUSTOM_UNDERSCORE_RESPONSE = "envoy.filters.http.custom_response",
   /** envoy.filters.http.health_check */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_HEALTH_UNDERSCORE_CHECK = "envoy.filters.http.health_check",
   /** envoy.filters.http.fault */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_FAULT = "envoy.filters.http.fault",
   /** envoy.filters.http.cors */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CORS = "envoy.filters.http.cors",
+  /** envoy.filters.http.csrf */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CSRF = "envoy.filters.http.csrf",
+  /** envoy.filters.http.header_mutation */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_HEADER_UNDERSCORE_MUTATION = "envoy.filters.http.header_mutation",
   /** envoy.filters.http.ext_authz */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_EXT_UNDERSCORE_AUTHZ = "envoy.filters.http.ext_authz",
   /** envoy.filters.http.api_key_auth */
@@ -13438,22 +18122,28 @@ export enum EnvoyProxySpecFilterOrderBefore {
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_EXT_UNDERSCORE_PROC = "envoy.filters.http.ext_proc",
   /** envoy.filters.http.wasm */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_WASM = "envoy.filters.http.wasm",
+  /** envoy.filters.http.dynamic_modules */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_DYNAMIC_UNDERSCORE_MODULES = "envoy.filters.http.dynamic_modules",
+  /** envoy.filters.http.geoip */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GEOIP = "envoy.filters.http.geoip",
   /** envoy.filters.http.rbac */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_RBAC = "envoy.filters.http.rbac",
   /** envoy.filters.http.local_ratelimit */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_LOCAL_UNDERSCORE_RATELIMIT = "envoy.filters.http.local_ratelimit",
   /** envoy.filters.http.ratelimit */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_RATELIMIT = "envoy.filters.http.ratelimit",
+  /** envoy.filters.http.bandwidth_limit */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_BANDWIDTH_UNDERSCORE_LIMIT = "envoy.filters.http.bandwidth_limit",
   /** envoy.filters.http.grpc_web */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GRPC_UNDERSCORE_WEB = "envoy.filters.http.grpc_web",
   /** envoy.filters.http.grpc_stats */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GRPC_UNDERSCORE_STATS = "envoy.filters.http.grpc_stats",
-  /** envoy.filters.http.custom_response */
-  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CUSTOM_UNDERSCORE_RESPONSE = "envoy.filters.http.custom_response",
   /** envoy.filters.http.credential_injector */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CREDENTIAL_UNDERSCORE_INJECTOR = "envoy.filters.http.credential_injector",
   /** envoy.filters.http.compressor */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_COMPRESSOR = "envoy.filters.http.compressor",
+  /** envoy.filters.http.dynamic_forward_proxy */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_DYNAMIC_UNDERSCORE_FORWARD_UNDERSCORE_PROXY = "envoy.filters.http.dynamic_forward_proxy",
 }
 
 /**
@@ -13462,12 +18152,18 @@ export enum EnvoyProxySpecFilterOrderBefore {
  * @schema EnvoyProxySpecFilterOrderName
  */
 export enum EnvoyProxySpecFilterOrderName {
+  /** envoy.filters.http.custom_response */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CUSTOM_UNDERSCORE_RESPONSE = "envoy.filters.http.custom_response",
   /** envoy.filters.http.health_check */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_HEALTH_UNDERSCORE_CHECK = "envoy.filters.http.health_check",
   /** envoy.filters.http.fault */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_FAULT = "envoy.filters.http.fault",
   /** envoy.filters.http.cors */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CORS = "envoy.filters.http.cors",
+  /** envoy.filters.http.csrf */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CSRF = "envoy.filters.http.csrf",
+  /** envoy.filters.http.header_mutation */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_HEADER_UNDERSCORE_MUTATION = "envoy.filters.http.header_mutation",
   /** envoy.filters.http.ext_authz */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_EXT_UNDERSCORE_AUTHZ = "envoy.filters.http.ext_authz",
   /** envoy.filters.http.api_key_auth */
@@ -13488,23 +18184,65 @@ export enum EnvoyProxySpecFilterOrderName {
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_EXT_UNDERSCORE_PROC = "envoy.filters.http.ext_proc",
   /** envoy.filters.http.wasm */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_WASM = "envoy.filters.http.wasm",
+  /** envoy.filters.http.dynamic_modules */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_DYNAMIC_UNDERSCORE_MODULES = "envoy.filters.http.dynamic_modules",
+  /** envoy.filters.http.geoip */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GEOIP = "envoy.filters.http.geoip",
   /** envoy.filters.http.rbac */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_RBAC = "envoy.filters.http.rbac",
   /** envoy.filters.http.local_ratelimit */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_LOCAL_UNDERSCORE_RATELIMIT = "envoy.filters.http.local_ratelimit",
   /** envoy.filters.http.ratelimit */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_RATELIMIT = "envoy.filters.http.ratelimit",
+  /** envoy.filters.http.bandwidth_limit */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_BANDWIDTH_UNDERSCORE_LIMIT = "envoy.filters.http.bandwidth_limit",
   /** envoy.filters.http.grpc_web */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GRPC_UNDERSCORE_WEB = "envoy.filters.http.grpc_web",
   /** envoy.filters.http.grpc_stats */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_GRPC_UNDERSCORE_STATS = "envoy.filters.http.grpc_stats",
-  /** envoy.filters.http.custom_response */
-  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CUSTOM_UNDERSCORE_RESPONSE = "envoy.filters.http.custom_response",
   /** envoy.filters.http.credential_injector */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_CREDENTIAL_UNDERSCORE_INJECTOR = "envoy.filters.http.credential_injector",
   /** envoy.filters.http.compressor */
   ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_COMPRESSOR = "envoy.filters.http.compressor",
+  /** envoy.filters.http.dynamic_forward_proxy */
+  ENVOY_PERIOD_FILTERS_PERIOD_HTTP_PERIOD_DYNAMIC_UNDERSCORE_FORWARD_UNDERSCORE_PROXY = "envoy.filters.http.dynamic_forward_proxy",
 }
+
+/**
+ * Provider defines the GeoIP provider configuration used by GeoIP filter instances.
+ *
+ * @schema EnvoyProxySpecGeoIpProvider
+ */
+export interface EnvoyProxySpecGeoIpProvider {
+  /**
+   * MaxMind configures the MaxMind provider.
+   *
+   * @schema EnvoyProxySpecGeoIpProvider#maxMind
+   */
+  readonly maxMind?: EnvoyProxySpecGeoIpProviderMaxMind;
+
+  /**
+   * GeoIPProviderType enumerates GeoIP providers supported by Envoy Gateway.
+   *
+   * @schema EnvoyProxySpecGeoIpProvider#type
+   */
+  readonly type: EnvoyProxySpecGeoIpProviderType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProvider' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProvider(obj: EnvoyProxySpecGeoIpProvider | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'maxMind': toJson_EnvoyProxySpecGeoIpProviderMaxMind(obj.maxMind),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * LogLevel defines a log level for Envoy Gateway and EnvoyProxy system logs.
@@ -13522,7 +18260,52 @@ export enum EnvoyProxySpecLoggingLevel {
   WARN = "warn",
   /** error */
   ERROR = "error",
+  /** off */
+  OFF = "off",
+  /** critical */
+  CRITICAL = "critical",
 }
+
+/**
+ * Selector restricts cluster deduplication to backends whose target Service, ServiceImport,
+ * or Backend resource matches this label selector. When unset, every otherwise-eligible
+ * backend is merged. Use this to opt individual backends into deduplication gradually
+ * instead of enabling it for every backend at once.
+ *
+ * @schema EnvoyProxySpecMergeBackendsSelector
+ */
+export interface EnvoyProxySpecMergeBackendsSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema EnvoyProxySpecMergeBackendsSelector#matchExpressions
+   */
+  readonly matchExpressions?: EnvoyProxySpecMergeBackendsSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema EnvoyProxySpecMergeBackendsSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecMergeBackendsSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecMergeBackendsSelector(obj: EnvoyProxySpecMergeBackendsSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_EnvoyProxySpecMergeBackendsSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * Host provides runtime deployment of the data plane as a child process on the
@@ -13584,6 +18367,9 @@ export interface EnvoyProxySpecProviderKubernetes {
 
   /**
    * EnvoyHpa defines the Horizontal Pod Autoscaler settings for Envoy Proxy Deployment.
+   * If the HPA is set, the Replicas field from EnvoyDeployment will be ignored, and the
+   * number of replicas is solely managed by the HPA. Use MinReplicas to control the
+   * lower bound of the replica count instead.
    *
    * @schema EnvoyProxySpecProviderKubernetes#envoyHpa
    */
@@ -13645,7 +18431,7 @@ export function toJson_EnvoyProxySpecProviderKubernetes(obj: EnvoyProxySpecProvi
 /**
  * Type is the type of resource provider to use. A resource provider provides
  * infrastructure resources for running the data plane, e.g. Envoy proxy, and
- * optional auxiliary control planes. Supported types are "Kubernetes"and "Host".
+ * optional auxiliary control planes. Supported types are "Kubernetes" and "Host".
  *
  * @schema EnvoyProxySpecProviderType
  */
@@ -13695,6 +18481,47 @@ export function toJson_EnvoyProxySpecTelemetryAccessLog(obj: EnvoyProxySpecTelem
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging for xRoute-backed clusters.
+ *
+ * @schema EnvoyProxySpecTelemetryHealthCheckLog
+ */
+export interface EnvoyProxySpecTelemetryHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema EnvoyProxySpecTelemetryHealthCheckLog#matches
+   */
+  readonly matches?: EnvoyProxySpecTelemetryHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema EnvoyProxySpecTelemetryHealthCheckLog#sinks
+   */
+  readonly sinks?: EnvoyProxySpecTelemetryHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryHealthCheckLog(obj: EnvoyProxySpecTelemetryHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_EnvoyProxySpecTelemetryHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Metrics defines metrics configuration for managed proxies.
  *
  * @schema EnvoyProxySpecTelemetryMetrics
@@ -13704,19 +18531,30 @@ export interface EnvoyProxySpecTelemetryMetrics {
    * ClusterStatName defines the value of cluster alt_stat_name, determining how cluster stats are named.
    * For more details, see envoy docs: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto.html
    * The supported operators for this pattern are:
-   * %ROUTE_NAME%: name of Gateway API xRoute resource
-   * %ROUTE_NAMESPACE%: namespace of Gateway API xRoute resource
-   * %ROUTE_KIND%: kind of Gateway API xRoute resource
-   * %ROUTE_RULE_NAME%: name of the Gateway API xRoute section
-   * %ROUTE_RULE_NUMBER%: name of the Gateway API xRoute section
-   * %BACKEND_REFS%: names of all backends referenced in <NAMESPACE>/<NAME>|<NAMESPACE>/<NAME>|... format
+   * `%ROUTE_NAME%`: name of Gateway API xRoute resource
+   * `%ROUTE_NAMESPACE%`: namespace of Gateway API xRoute resource
+   * `%ROUTE_KIND%`: kind of Gateway API xRoute resource
+   * `%ROUTE_RULE_NAME%`: name of the Gateway API xRoute section
+   * `%ROUTE_RULE_NUMBER%`: name of the Gateway API xRoute section
+   * `%BACKEND_REFS%`: names of all backends referenced in `<NAMESPACE>/<NAME>|<NAMESPACE>/<NAME>|...` format
    * Only xDS Clusters created for HTTPRoute and GRPCRoute are currently supported.
-   * Default: %ROUTE_KIND%/%ROUTE_NAMESPACE%/%ROUTE_NAME%/rule/%ROUTE_RULE_NUMBER%
-   * Example: httproute/my-ns/my-route/rule/0
+   * Default: `%ROUTE_KIND%/%ROUTE_NAMESPACE%/%ROUTE_NAME%/rule/%ROUTE_RULE_NUMBER%`
+   * Example: `httproute/my-ns/my-route/rule/0`
    *
    * @schema EnvoyProxySpecTelemetryMetrics#clusterStatName
    */
   readonly clusterStatName?: string;
+
+  /**
+   * EnableGRPCStats enables the gRPC stats filter on listeners.
+   * This is enabled by default for GRPCRoute and opt-in for HTTPRoute.
+   * In general, gRPC traffic should be handled via GRPCRoute, but there are cases where
+   * users want to route gRPC using HTTPRoute for its richer matching capabilities.
+   * Therefore, we enable this behavior only when it is explicitly opted in.
+   *
+   * @schema EnvoyProxySpecTelemetryMetrics#enableGRPCStats
+   */
+  readonly enableGrpcStats?: boolean;
 
   /**
    * EnablePerEndpointStats enables per endpoint envoy stats metrics.
@@ -13775,12 +18613,47 @@ export function toJson_EnvoyProxySpecTelemetryMetrics(obj: EnvoyProxySpecTelemet
   if (obj === undefined) { return undefined; }
   const result = {
     'clusterStatName': obj.clusterStatName,
+    'enableGRPCStats': obj.enableGrpcStats,
     'enablePerEndpointStats': obj.enablePerEndpointStats,
     'enableRequestResponseSizesStats': obj.enableRequestResponseSizesStats,
     'enableVirtualHostStats': obj.enableVirtualHostStats,
     'matches': obj.matches?.map(y => toJson_EnvoyProxySpecTelemetryMetricsMatches(y)),
     'prometheus': toJson_EnvoyProxySpecTelemetryMetricsPrometheus(obj.prometheus),
     'sinks': obj.sinks?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestID configures Envoy request ID behavior.
+ *
+ * @schema EnvoyProxySpecTelemetryRequestId
+ */
+export interface EnvoyProxySpecTelemetryRequestId {
+  /**
+   * Tracing configures Envoy's behavior for the UUID request ID extension,
+   * including whether the trace sampling decision is packed into the UUID and
+   * whether `X-Request-ID` is used for trace sampling decisions.
+   *
+   * When omitted, the default behavior is `PackAndSample`, which alters the UUID
+   * to contain the trace sampling decision and uses `X-Request-ID` for stable
+   * trace sampling.
+   *
+   * @schema EnvoyProxySpecTelemetryRequestId#tracing
+   */
+  readonly tracing?: EnvoyProxySpecTelemetryRequestIdTracing;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryRequestId' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryRequestId(obj: EnvoyProxySpecTelemetryRequestId | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'tracing': obj.tracing,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -13795,12 +18668,32 @@ export function toJson_EnvoyProxySpecTelemetryMetrics(obj: EnvoyProxySpecTelemet
  */
 export interface EnvoyProxySpecTelemetryTracing {
   /**
+   * ClientSamplingFraction represents the fraction of requests that should be
+   * selected for tracing when requested by the client.
+   * If unspecified, client-forced tracing is disabled by default and users must
+   * set this field to opt in.
+   *
+   * @schema EnvoyProxySpecTelemetryTracing#clientSamplingFraction
+   */
+  readonly clientSamplingFraction?: EnvoyProxySpecTelemetryTracingClientSamplingFraction;
+
+  /**
    * CustomTags defines the custom tags to add to each span.
    * If provider is kubernetes, pod name and namespace are added by default.
+   *
+   * Deprecated: Use Tags instead.
    *
    * @schema EnvoyProxySpecTelemetryTracing#customTags
    */
   readonly customTags?: { [key: string]: EnvoyProxySpecTelemetryTracingCustomTags };
+
+  /**
+   * OverallSamplingFraction represents the fraction of requests that should be
+   * selected for tracing after all other sampling checks have been applied.
+   *
+   * @schema EnvoyProxySpecTelemetryTracing#overallSamplingFraction
+   */
+  readonly overallSamplingFraction?: EnvoyProxySpecTelemetryTracingOverallSamplingFraction;
 
   /**
    * Provider defines the tracing provider.
@@ -13812,9 +18705,6 @@ export interface EnvoyProxySpecTelemetryTracing {
   /**
    * SamplingFraction represents the fraction of requests that should be
    * selected for tracing if no prior sampling decision has been made.
-   *
-   * Only one of SamplingRate or SamplingFraction may be specified.
-   * If neither field is specified, all requests will be sampled.
    *
    * @schema EnvoyProxySpecTelemetryTracing#samplingFraction
    */
@@ -13832,6 +18722,31 @@ export interface EnvoyProxySpecTelemetryTracing {
    * @schema EnvoyProxySpecTelemetryTracing#samplingRate
    */
   readonly samplingRate?: number;
+
+  /**
+   * SpanName defines the name of the span which will be used for tracing.
+   * Envoy [command operators](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators) may be used in the value.
+   * The [format string documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings) provides more information.
+   *
+   * If not set, the span name is provider specific.
+   * e.g. Datadog use `ingress` as the default client span name,
+   * and `router <UPSTREAM_CLUSTER> egress` as the server span name.
+   *
+   * @schema EnvoyProxySpecTelemetryTracing#spanName
+   */
+  readonly spanName?: EnvoyProxySpecTelemetryTracingSpanName;
+
+  /**
+   * Tags defines the custom tags to add to each span.
+   * Envoy [command operators](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators) may be used in the value.
+   * The [format string documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings) provides more information.
+   * If provider is kubernetes, pod name and namespace are added by default.
+   *
+   * Same keys take precedence over CustomTags.
+   *
+   * @schema EnvoyProxySpecTelemetryTracing#tags
+   */
+  readonly tags?: { [key: string]: string };
 }
 
 /**
@@ -13841,10 +18756,14 @@ export interface EnvoyProxySpecTelemetryTracing {
 export function toJson_EnvoyProxySpecTelemetryTracing(obj: EnvoyProxySpecTelemetryTracing | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'clientSamplingFraction': toJson_EnvoyProxySpecTelemetryTracingClientSamplingFraction(obj.clientSamplingFraction),
     'customTags': ((obj.customTags) === undefined) ? undefined : (Object.entries(obj.customTags).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: toJson_EnvoyProxySpecTelemetryTracingCustomTags(i[1]) }), {})),
+    'overallSamplingFraction': toJson_EnvoyProxySpecTelemetryTracingOverallSamplingFraction(obj.overallSamplingFraction),
     'provider': toJson_EnvoyProxySpecTelemetryTracingProvider(obj.provider),
     'samplingFraction': toJson_EnvoyProxySpecTelemetryTracingSamplingFraction(obj.samplingFraction),
     'samplingRate': obj.samplingRate,
+    'spanName': toJson_EnvoyProxySpecTelemetryTracingSpanName(obj.spanName),
+    'tags': ((obj.tags) === undefined) ? undefined : (Object.entries(obj.tags).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -13870,6 +18789,205 @@ export enum EnvoyProxySpecBootstrapJsonPatchesOp {
   /** test */
   TEST = "test",
 }
+
+/**
+ * Local specifies a module loaded from the proxy's local filesystem
+ * by absolute path.
+ *
+ * @schema EnvoyProxySpecDynamicModulesSourceLocal
+ */
+export interface EnvoyProxySpecDynamicModulesSourceLocal {
+  /**
+   * Path is the absolute filesystem path to the dynamic module shared library (.so file).
+   *
+   * @schema EnvoyProxySpecDynamicModulesSourceLocal#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecDynamicModulesSourceLocal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecDynamicModulesSourceLocal(obj: EnvoyProxySpecDynamicModulesSourceLocal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Remote specifies a module fetched from a remote source.
+ * The module binary is downloaded and cached by Envoy.
+ *
+ * @schema EnvoyProxySpecDynamicModulesSourceRemote
+ */
+export interface EnvoyProxySpecDynamicModulesSourceRemote {
+  /**
+   * SHA256 checksum that Envoy will use to verify the downloaded module binary.
+   *
+   * @schema EnvoyProxySpecDynamicModulesSourceRemote#sha256
+   */
+  readonly sha256: string;
+
+  /**
+   * URL is the HTTP or HTTPS URL of the dynamic module shared library (.so file).
+   *
+   * @schema EnvoyProxySpecDynamicModulesSourceRemote#url
+   */
+  readonly url: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecDynamicModulesSourceRemote' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecDynamicModulesSourceRemote(obj: EnvoyProxySpecDynamicModulesSourceRemote | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'sha256': obj.sha256,
+    'url': obj.url,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type is the type of the source of the dynamic module code.
+ * Defaults to Local.
+ *
+ * @default Local.
+ * @schema EnvoyProxySpecDynamicModulesSourceType
+ */
+export enum EnvoyProxySpecDynamicModulesSourceType {
+  /** Local */
+  LOCAL = "Local",
+  /** Remote */
+  REMOTE = "Remote",
+}
+
+/**
+ * MaxMind configures the MaxMind provider.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMind
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMind {
+  /**
+   * AnonymousIPDBSource configures the Anonymous IP database source.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMind#anonymousIpDbSource
+   */
+  readonly anonymousIpDbSource?: EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource;
+
+  /**
+   * ASNDBSource configures the ASN database source.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMind#asnDbSource
+   */
+  readonly asnDbSource?: EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource;
+
+  /**
+   * CityDBSource configures the City database source.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMind#cityDbSource
+   */
+  readonly cityDbSource?: EnvoyProxySpecGeoIpProviderMaxMindCityDbSource;
+
+  /**
+   * CountryDBSource configures the Country database source.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMind#countryDbSource
+   */
+  readonly countryDbSource?: EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource;
+
+  /**
+   * ISPDBSource configures the ISP database source.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMind#ispDbSource
+   */
+  readonly ispDbSource?: EnvoyProxySpecGeoIpProviderMaxMindIspDbSource;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMind' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMind(obj: EnvoyProxySpecGeoIpProviderMaxMind | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'anonymousIpDbSource': toJson_EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource(obj.anonymousIpDbSource),
+    'asnDbSource': toJson_EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource(obj.asnDbSource),
+    'cityDbSource': toJson_EnvoyProxySpecGeoIpProviderMaxMindCityDbSource(obj.cityDbSource),
+    'countryDbSource': toJson_EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource(obj.countryDbSource),
+    'ispDbSource': toJson_EnvoyProxySpecGeoIpProviderMaxMindIspDbSource(obj.ispDbSource),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * GeoIPProviderType enumerates GeoIP providers supported by Envoy Gateway.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderType
+ */
+export enum EnvoyProxySpecGeoIpProviderType {
+  /** MaxMind */
+  MAX_MIND = "MaxMind",
+}
+
+/**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema EnvoyProxySpecMergeBackendsSelectorMatchExpressions
+ */
+export interface EnvoyProxySpecMergeBackendsSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema EnvoyProxySpecMergeBackendsSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema EnvoyProxySpecMergeBackendsSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema EnvoyProxySpecMergeBackendsSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecMergeBackendsSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecMergeBackendsSelectorMatchExpressions(obj: EnvoyProxySpecMergeBackendsSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * EnvoyDaemonSet defines the desired state of the Envoy daemonset resource.
@@ -14016,6 +19134,9 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeployment(obj: Envo
 
 /**
  * EnvoyHpa defines the Horizontal Pod Autoscaler settings for Envoy Proxy Deployment.
+ * If the HPA is set, the Replicas field from EnvoyDeployment will be ignored, and the
+ * number of replicas is solely managed by the HPA. Use MinReplicas to control the
+ * lower bound of the replica count instead.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyHpa
  */
@@ -14361,6 +19482,59 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettings(obj: EnvoyProxyS
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema EnvoyProxySpecTelemetryHealthCheckLogMatches
+ */
+export enum EnvoyProxySpecTelemetryHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema EnvoyProxySpecTelemetryHealthCheckLogSinks
+ */
+export interface EnvoyProxySpecTelemetryHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema EnvoyProxySpecTelemetryHealthCheckLogSinks#file
+   */
+  readonly file?: EnvoyProxySpecTelemetryHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema EnvoyProxySpecTelemetryHealthCheckLogSinks#type
+   */
+  readonly type: EnvoyProxySpecTelemetryHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryHealthCheckLogSinks(obj: EnvoyProxySpecTelemetryHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_EnvoyProxySpecTelemetryHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * StringMatch defines how to match any strings.
  * This is a general purpose match condition that can be used by other EG APIs
  * that need to match against a string.
@@ -14474,6 +19648,63 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinks(obj: EnvoyProxySpecTe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Tracing configures Envoy's behavior for the UUID request ID extension,
+ * including whether the trace sampling decision is packed into the UUID and
+ * whether `X-Request-ID` is used for trace sampling decisions.
+ *
+ * When omitted, the default behavior is `PackAndSample`, which alters the UUID
+ * to contain the trace sampling decision and uses `X-Request-ID` for stable
+ * trace sampling.
+ *
+ * @schema EnvoyProxySpecTelemetryRequestIdTracing
+ */
+export enum EnvoyProxySpecTelemetryRequestIdTracing {
+  /** PackAndSample */
+  PACK_AND_SAMPLE = "PackAndSample",
+  /** Sample */
+  SAMPLE = "Sample",
+  /** Pack */
+  PACK = "Pack",
+  /** Disable */
+  DISABLE = "Disable",
+}
+
+/**
+ * ClientSamplingFraction represents the fraction of requests that should be
+ * selected for tracing when requested by the client.
+ * If unspecified, client-forced tracing is disabled by default and users must
+ * set this field to opt in.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingClientSamplingFraction
+ */
+export interface EnvoyProxySpecTelemetryTracingClientSamplingFraction {
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingClientSamplingFraction#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingClientSamplingFraction#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingClientSamplingFraction' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingClientSamplingFraction(obj: EnvoyProxySpecTelemetryTracingClientSamplingFraction | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * @schema EnvoyProxySpecTelemetryTracingCustomTags
  */
 export interface EnvoyProxySpecTelemetryTracingCustomTags {
@@ -14527,6 +19758,39 @@ export function toJson_EnvoyProxySpecTelemetryTracingCustomTags(obj: EnvoyProxyS
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * OverallSamplingFraction represents the fraction of requests that should be
+ * selected for tracing after all other sampling checks have been applied.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingOverallSamplingFraction
+ */
+export interface EnvoyProxySpecTelemetryTracingOverallSamplingFraction {
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingOverallSamplingFraction#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingOverallSamplingFraction#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingOverallSamplingFraction' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingOverallSamplingFraction(obj: EnvoyProxySpecTelemetryTracingOverallSamplingFraction | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Provider defines the tracing provider.
  *
  * @schema EnvoyProxySpecTelemetryTracingProvider
@@ -14560,6 +19824,7 @@ export interface EnvoyProxySpecTelemetryTracingProvider {
 
   /**
    * Host define the provider service hostname.
+   *
    * Deprecated: Use BackendRefs instead.
    *
    * @schema EnvoyProxySpecTelemetryTracingProvider#host
@@ -14567,7 +19832,15 @@ export interface EnvoyProxySpecTelemetryTracingProvider {
   readonly host?: string;
 
   /**
+   * OpenTelemetry defines the OpenTelemetry tracing provider configuration
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProvider#openTelemetry
+   */
+  readonly openTelemetry?: EnvoyProxySpecTelemetryTracingProviderOpenTelemetry;
+
+  /**
    * Port defines the port the provider service is exposed on.
+   *
    * Deprecated: Use BackendRefs instead.
    *
    * @schema EnvoyProxySpecTelemetryTracingProvider#port
@@ -14612,6 +19885,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProvider(obj: EnvoyProxySpe
     'backendRefs': obj.backendRefs?.map(y => toJson_EnvoyProxySpecTelemetryTracingProviderBackendRefs(y)),
     'backendSettings': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettings(obj.backendSettings),
     'host': obj.host,
+    'openTelemetry': toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetry(obj.openTelemetry),
     'port': obj.port,
     'serviceName': obj.serviceName,
     'type': obj.type,
@@ -14625,9 +19899,6 @@ export function toJson_EnvoyProxySpecTelemetryTracingProvider(obj: EnvoyProxySpe
 /**
  * SamplingFraction represents the fraction of requests that should be
  * selected for tracing if no prior sampling decision has been made.
- *
- * Only one of SamplingRate or SamplingFraction may be specified.
- * If neither field is specified, all requests will be sampled.
  *
  * @schema EnvoyProxySpecTelemetryTracingSamplingFraction
  */
@@ -14652,6 +19923,188 @@ export function toJson_EnvoyProxySpecTelemetryTracingSamplingFraction(obj: Envoy
   const result = {
     'denominator': obj.denominator,
     'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * SpanName defines the name of the span which will be used for tracing.
+ * Envoy [command operators](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators) may be used in the value.
+ * The [format string documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings) provides more information.
+ *
+ * If not set, the span name is provider specific.
+ * e.g. Datadog use `ingress` as the default client span name,
+ * and `router <UPSTREAM_CLUSTER> egress` as the server span name.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingSpanName
+ */
+export interface EnvoyProxySpecTelemetryTracingSpanName {
+  /**
+   * Client defines operation name of the span which will be used for tracing.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingSpanName#client
+   */
+  readonly client: string;
+
+  /**
+   * Server defines the operation name of the upstream span which will be used for tracing.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingSpanName#server
+   */
+  readonly server: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingSpanName' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingSpanName(obj: EnvoyProxySpecTelemetryTracingSpanName | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'client': obj.client,
+    'server': obj.server,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * AnonymousIPDBSource configures the Anonymous IP database source.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource {
+  /**
+   * Local is a database source from a local file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource#local
+   */
+  readonly local: EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource(obj: EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'local': toJson_EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal(obj.local),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ASNDBSource configures the ASN database source.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource {
+  /**
+   * Local is a database source from a local file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource#local
+   */
+  readonly local: EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource(obj: EnvoyProxySpecGeoIpProviderMaxMindAsnDbSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'local': toJson_EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal(obj.local),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * CityDBSource configures the City database source.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindCityDbSource
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindCityDbSource {
+  /**
+   * Local is a database source from a local file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindCityDbSource#local
+   */
+  readonly local: EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindCityDbSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindCityDbSource(obj: EnvoyProxySpecGeoIpProviderMaxMindCityDbSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'local': toJson_EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal(obj.local),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * CountryDBSource configures the Country database source.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource {
+  /**
+   * Local is a database source from a local file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource#local
+   */
+  readonly local: EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource(obj: EnvoyProxySpecGeoIpProviderMaxMindCountryDbSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'local': toJson_EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal(obj.local),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ISPDBSource configures the ISP database source.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindIspDbSource
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindIspDbSource {
+  /**
+   * Local is a database source from a local file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindIspDbSource#local
+   */
+  readonly local: EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindIspDbSource' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindIspDbSource(obj: EnvoyProxySpecGeoIpProviderMaxMindIspDbSource | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'local': toJson_EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal(obj.local),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -14820,6 +20273,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPod {
   readonly nodeSelector?: { [key: string]: string };
 
   /**
+   * PriorityClassName indicates the importance of a Pod relative to other Pods.
+   * If a PriorityClassName is not specified, the pod priority will be default or zero if there is no default.
+   * More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPod#priorityClassName
+   */
+  readonly priorityClassName?: string;
+
+  /**
    * SecurityContext holds pod-level security attributes and common container settings.
    * Optional: Defaults to empty.  See type description for default values of each field.
    *
@@ -14865,6 +20327,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPod(obj: En
     'imagePullSecrets': obj.imagePullSecrets?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodImagePullSecrets(y)),
     'labels': ((obj.labels) === undefined) ? undefined : (Object.entries(obj.labels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'priorityClassName': obj.priorityClassName,
     'securityContext': toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodSecurityContext(obj.securityContext),
     'tolerations': obj.tolerations?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodTolerations(y)),
     'topologySpreadConstraints': obj.topologySpreadConstraints?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodTopologySpreadConstraints(y)),
@@ -15115,6 +20578,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainers {
 
   /**
    * Resources resize policy for the container.
+   * This field cannot be set on ephemeral containers.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainers#resizePolicy
    */
@@ -15401,6 +20865,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPod {
   readonly nodeSelector?: { [key: string]: string };
 
   /**
+   * PriorityClassName indicates the importance of a Pod relative to other Pods.
+   * If a PriorityClassName is not specified, the pod priority will be default or zero if there is no default.
+   * More info: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPod#priorityClassName
+   */
+  readonly priorityClassName?: string;
+
+  /**
    * SecurityContext holds pod-level security attributes and common container settings.
    * Optional: Defaults to empty.  See type description for default values of each field.
    *
@@ -15446,6 +20919,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPod(obj: E
     'imagePullSecrets': obj.imagePullSecrets?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodImagePullSecrets(y)),
     'labels': ((obj.labels) === undefined) ? undefined : (Object.entries(obj.labels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'nodeSelector': ((obj.nodeSelector) === undefined) ? undefined : (Object.entries(obj.nodeSelector).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'priorityClassName': obj.priorityClassName,
     'securityContext': toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodSecurityContext(obj.securityContext),
     'tolerations': obj.tolerations?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodTolerations(y)),
     'topologySpreadConstraints': obj.topologySpreadConstraints?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodTopologySpreadConstraints(y)),
@@ -15838,6 +21312,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsFormat {
 
   /**
    * Type defines the type of accesslog format.
+   * When unset, both text and json can be specified.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsFormat#type
    */
@@ -15926,6 +21401,48 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsType {
   LISTENER = "Listener",
   /** Route */
   ROUTE = "Route",
+  /** Upstream */
+  UPSTREAM = "Upstream",
+}
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema EnvoyProxySpecTelemetryHealthCheckLogSinksFile
+ */
+export interface EnvoyProxySpecTelemetryHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema EnvoyProxySpecTelemetryHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryHealthCheckLogSinksFile(obj: EnvoyProxySpecTelemetryHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema EnvoyProxySpecTelemetryHealthCheckLogSinksType
+ */
+export enum EnvoyProxySpecTelemetryHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
 }
 
 /**
@@ -15965,6 +21482,17 @@ export interface EnvoyProxySpecTelemetryMetricsPrometheusCompression {
   readonly gzip?: any;
 
   /**
+   * MinContentLength defines the minimum response size in bytes to apply compression.
+   * Responses smaller than this threshold will not be compressed.
+   * Must be at least 30 bytes as enforced by Envoy Proxy.
+   * Note that when the suffix is not provided, the value is interpreted as bytes.
+   * Default: 30 bytes
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsPrometheusCompression#minContentLength
+   */
+  readonly minContentLength?: EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength;
+
+  /**
    * CompressorType defines the compressor type to use for compression.
    *
    * @schema EnvoyProxySpecTelemetryMetricsPrometheusCompression#type
@@ -15988,6 +21516,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsPrometheusCompression(obj: 
   const result = {
     'brotli': obj.brotli,
     'gzip': obj.gzip,
+    'minContentLength': obj.minContentLength?.value,
     'type': obj.type,
     'zstd': obj.zstd,
   };
@@ -16030,7 +21559,16 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry {
   readonly backendSettings?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings;
 
   /**
+   * Headers is a list of additional headers to send with OTLP export requests.
+   * These headers are added as gRPC initial metadata for the OTLP gRPC service.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry#headers
+   */
+  readonly headers?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders[];
+
+  /**
    * Host define the service hostname.
+   *
    * Deprecated: Use BackendRefs instead.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry#host
@@ -16039,11 +21577,37 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry {
 
   /**
    * Port defines the port the service is exposed on.
+   *
    * Deprecated: Use BackendRefs instead.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry#port
    */
   readonly port?: number;
+
+  /**
+   * ReportCountersAsDeltas configures the OpenTelemetry sink to report
+   * counters as delta temporality instead of cumulative.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry#reportCountersAsDeltas
+   */
+  readonly reportCountersAsDeltas?: boolean;
+
+  /**
+   * ReportHistogramsAsDeltas configures the OpenTelemetry sink to report
+   * histograms as delta temporality instead of cumulative.
+   * Required for backends like Elastic that drop cumulative histograms.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry#reportHistogramsAsDeltas
+   */
+  readonly reportHistogramsAsDeltas?: boolean;
+
+  /**
+   * ResourceAttributes is a set of labels that describe the source of metrics.
+   * It's recommended to follow semantic conventions: https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry#resourceAttributes
+   */
+  readonly resourceAttributes?: { [key: string]: string };
 }
 
 /**
@@ -16056,8 +21620,12 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetry(obj: Env
     'backendRef': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendRef(obj.backendRef),
     'backendRefs': obj.backendRefs?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendRefs(y)),
     'backendSettings': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings(obj.backendSettings),
+    'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders(y)),
     'host': obj.host,
     'port': obj.port,
+    'reportCountersAsDeltas': obj.reportCountersAsDeltas,
+    'reportHistogramsAsDeltas': obj.reportHistogramsAsDeltas,
+    'resourceAttributes': ((obj.resourceAttributes) === undefined) ? undefined : (Object.entries(obj.resourceAttributes).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -16361,6 +21929,25 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendRefs {
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -16376,6 +21963,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendRefs(obj: En
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -16489,6 +22077,52 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettings(obj
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * OpenTelemetry defines the OpenTelemetry tracing provider configuration
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetry
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderOpenTelemetry {
+  /**
+   * Headers is a list of additional headers to send with OTLP export requests.
+   * These headers are added as gRPC initial metadata for the OTLP gRPC service.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetry#headers
+   */
+  readonly headers?: EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders[];
+
+  /**
+   * ResourceAttributes is a set of labels that describe the source of traces.
+   * It's recommended to follow semantic conventions: https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetry#resourceAttributes
+   */
+  readonly resourceAttributes?: { [key: string]: string };
+
+  /**
+   * Sampler controls whether spans are exported.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetry#sampler
+   */
+  readonly sampler?: EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderOpenTelemetry' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetry(obj: EnvoyProxySpecTelemetryTracingProviderOpenTelemetry | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders(y)),
+    'resourceAttributes': ((obj.resourceAttributes) === undefined) ? undefined : (Object.entries(obj.resourceAttributes).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'sampler': toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler(obj.sampler),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Type defines the tracing provider type.
  *
  * @schema EnvoyProxySpecTelemetryTracingProviderType
@@ -16535,6 +22169,146 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderZipkin(obj: EnvoyPr
   const result = {
     'disableSharedSpanContext': obj.disableSharedSpanContext,
     'enable128BitTraceId': obj.enable128BitTraceId,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Local is a database source from a local file.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal {
+  /**
+   * Path is the path to the database file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal(obj: EnvoyProxySpecGeoIpProviderMaxMindAnonymousIpDbSourceLocal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Local is a database source from a local file.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal {
+  /**
+   * Path is the path to the database file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal(obj: EnvoyProxySpecGeoIpProviderMaxMindAsnDbSourceLocal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Local is a database source from a local file.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal {
+  /**
+   * Path is the path to the database file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal(obj: EnvoyProxySpecGeoIpProviderMaxMindCityDbSourceLocal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Local is a database source from a local file.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal {
+  /**
+   * Path is the path to the database file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal(obj: EnvoyProxySpecGeoIpProviderMaxMindCountryDbSourceLocal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Local is a database source from a local file.
+ *
+ * @schema EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal
+ */
+export interface EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal {
+  /**
+   * Path is the path to the database file.
+   *
+   * @schema EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal(obj: EnvoyProxySpecGeoIpProviderMaxMindIspDbSourceLocal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -16705,7 +22479,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerSecurity
    * procMount denotes the type of proc mount to use for the containers.
    * The default value is Default which uses the container runtime defaults for
    * readonly paths and masked paths.
-   * This requires the ProcMountType feature flag to be enabled.
    * Note that this field cannot be set when spec.os.name is windows.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerSecurityContext#procMount
@@ -16821,8 +22594,19 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerSe
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerVolumeMounts {
   /**
-   * Path within the container at which the volume should be mounted.  Must
-   * not contain ':'.
+   * bindMountOptions is the list of additional bind mount options to apply when
+   * mounting this volume into the container. Allowed values are noexec,
+   * nodev, and nosuid. These are Linux mount options and have no effect on
+   * Windows nodes.
+   * This field is not supported with image volumes.
+   * This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerVolumeMounts#bindMountOptions
+   */
+  readonly bindMountOptions?: string[];
+
+  /**
+   * Path within the container at which the volume should be mounted.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerVolumeMounts#mountPath
    */
@@ -16906,6 +22690,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerVolumeMo
 export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerVolumeMounts(obj: EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerVolumeMounts | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'bindMountOptions': obj.bindMountOptions?.map(y => y),
     'mountPath': obj.mountPath,
     'mountPropagation': obj.mountPropagation,
     'name': obj.name,
@@ -17092,11 +22877,8 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodSecurityContex
    * Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
    * whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
    * CSIDriver instance. Other volumes are always re-labelled recursively.
-   * "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
    *
-   * If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
-   * If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
-   * and "Recursive" for all other volumes.
+   * If not specified, "MountOption" is used.
    *
    * This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
    *
@@ -17224,9 +23006,10 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodTolerations {
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodTolerations#operator
@@ -17624,7 +23407,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumes {
    * A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
    * The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
    * The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
-   * The volume will be mounted read-only (ro) and non-executable files (noexec).
+   * The volume will be mounted read-only (ro).
    * Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
    * The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
    *
@@ -17678,8 +23461,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumes {
   /**
    * portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
    * Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-   * are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-   * is on.
+   * are redirected to the pxd.portworx.com CSI driver.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumes#portworxVolume
    */
@@ -18016,7 +23798,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerSecurit
    * procMount denotes the type of proc mount to use for the containers.
    * The default value is Default which uses the container runtime defaults for
    * readonly paths and masked paths.
-   * This requires the ProcMountType feature flag to be enabled.
    * Note that this field cannot be set when spec.os.name is windows.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerSecurityContext#procMount
@@ -18132,8 +23913,19 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerS
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerVolumeMounts {
   /**
-   * Path within the container at which the volume should be mounted.  Must
-   * not contain ':'.
+   * bindMountOptions is the list of additional bind mount options to apply when
+   * mounting this volume into the container. Allowed values are noexec,
+   * nodev, and nosuid. These are Linux mount options and have no effect on
+   * Windows nodes.
+   * This field is not supported with image volumes.
+   * This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerVolumeMounts#bindMountOptions
+   */
+  readonly bindMountOptions?: string[];
+
+  /**
+   * Path within the container at which the volume should be mounted.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerVolumeMounts#mountPath
    */
@@ -18217,6 +24009,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerVolumeM
 export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerVolumeMounts(obj: EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerVolumeMounts | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'bindMountOptions': obj.bindMountOptions?.map(y => y),
     'mountPath': obj.mountPath,
     'mountPropagation': obj.mountPropagation,
     'name': obj.name,
@@ -18886,7 +24679,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersSe
    * procMount denotes the type of proc mount to use for the containers.
    * The default value is Default which uses the container runtime defaults for
    * readonly paths and masked paths.
-   * This requires the ProcMountType feature flag to be enabled.
    * Note that this field cannot be set when spec.os.name is windows.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersSecurityContext#procMount
@@ -19163,8 +24955,19 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersVolumeMounts {
   /**
-   * Path within the container at which the volume should be mounted.  Must
-   * not contain ':'.
+   * bindMountOptions is the list of additional bind mount options to apply when
+   * mounting this volume into the container. Allowed values are noexec,
+   * nodev, and nosuid. These are Linux mount options and have no effect on
+   * Windows nodes.
+   * This field is not supported with image volumes.
+   * This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersVolumeMounts#bindMountOptions
+   */
+  readonly bindMountOptions?: string[];
+
+  /**
+   * Path within the container at which the volume should be mounted.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersVolumeMounts#mountPath
    */
@@ -19248,6 +25051,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersVo
 export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersVolumeMounts(obj: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersVolumeMounts | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'bindMountOptions': obj.bindMountOptions?.map(y => y),
     'mountPath': obj.mountPath,
     'mountPropagation': obj.mountPropagation,
     'name': obj.name,
@@ -19434,11 +25238,8 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodSecurityConte
    * Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
    * whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
    * CSIDriver instance. Other volumes are always re-labelled recursively.
-   * "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
    *
-   * If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
-   * If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
-   * and "Recursive" for all other volumes.
+   * If not specified, "MountOption" is used.
    *
    * This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
    *
@@ -19566,9 +25367,10 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodTolerations {
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodTolerations#operator
@@ -19966,7 +25768,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes {
    * A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
    * The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
    * The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
-   * The volume will be mounted read-only (ro) and non-executable files (noexec).
+   * The volume will be mounted read-only (ro).
    * Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
    * The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
    *
@@ -20020,8 +25822,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes {
   /**
    * portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
    * Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-   * are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-   * is on.
+   * are redirected to the pxd.portworx.com CSI driver.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes#portworxVolume
    */
@@ -20235,9 +26036,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleDown {
    * and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
    * triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
    *
-   * This is an alpha field and requires enabling the HPAConfigurableTolerance
-   * feature gate.
-   *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleDown#tolerance
    */
   readonly tolerance?: EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleDownTolerance;
@@ -20309,9 +26107,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleUp {
    * For example, if autoscaling is configured with a memory consumption target of 100Mi,
    * and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
    * triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
-   *
-   * This is an alpha field and requires enabling the HPAConfigurableTolerance
-   * feature gate.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleUp#tolerance
    */
@@ -20548,6 +26343,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyHpaMetricsResource(o
 
 /**
  * Type defines the type of accesslog format.
+ * When unset, both text and json can be specified.
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsFormatType
  */
@@ -20694,7 +26490,16 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry {
   readonly backendSettings?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettings;
 
   /**
+   * Headers is a list of additional headers to send with OTLP export requests.
+   * These headers are added as gRPC initial metadata for the OTLP gRPC service.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry#headers
+   */
+  readonly headers?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders[];
+
+  /**
    * Host define the extension service hostname.
+   *
    * Deprecated: Use BackendRefs instead.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry#host
@@ -20703,6 +26508,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry {
 
   /**
    * Port defines the port the extension service is exposed on.
+   *
    * Deprecated: Use BackendRefs instead.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry#port
@@ -20710,8 +26516,18 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry {
   readonly port?: number;
 
   /**
+   * ResourceAttributes is a set of labels that describe the source of a log entry, including envoy node info.
+   * It's recommended to follow [semantic conventions](https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/).
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry#resourceAttributes
+   */
+  readonly resourceAttributes?: { [key: string]: string };
+
+  /**
    * Resources is a set of labels that describe the source of a log entry, including envoy node info.
    * It's recommended to follow [semantic conventions](https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/).
+   *
+   * Deprecated: Use ResourceAttributes instead.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetry#resources
    */
@@ -20728,8 +26544,10 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'backendRef': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendRef(obj.backendRef),
     'backendRefs': obj.backendRefs?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendRefs(y)),
     'backendSettings': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettings(obj.backendSettings),
+    'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders(y)),
     'host': obj.host,
     'port': obj.port,
+    'resourceAttributes': ((obj.resourceAttributes) === undefined) ? undefined : (Object.entries(obj.resourceAttributes).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
     'resources': ((obj.resources) === undefined) ? undefined : (Object.entries(obj.resources).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
@@ -20749,6 +26567,26 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksType {
   FILE = "File",
   /** OpenTelemetry */
   OPEN_TELEMETRY = "OpenTelemetry",
+}
+
+/**
+ * MinContentLength defines the minimum response size in bytes to apply compression.
+ * Responses smaller than this threshold will not be compressed.
+ * Must be at least 30 bytes as enforced by Envoy Proxy.
+ * Note that when the suffix is not provided, the value is interpreted as bytes.
+ * Default: 30 bytes
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength
+ */
+export class EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength {
+  public static fromNumber(value: number): EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength {
+    return new EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength(value);
+  }
+  public static fromString(value: string): EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength {
+    return new EnvoyProxySpecTelemetryMetricsPrometheusCompressionMinContentLength(value);
+  }
+  private constructor(public readonly value: number | string) {
+  }
 }
 
 /**
@@ -20934,6 +26772,25 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendRefs {
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -20949,6 +26806,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendRe
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -21062,6 +26920,55 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders {
+  /**
+   * Name is the name of the HTTP Header to be matched. Name matching MUST be
+   * case-insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
+   *
+   * If multiple entries specify equivalent header names, the first entry with
+   * an equivalent name MUST be considered for a match. Subsequent entries
+   * with an equivalent header name MUST be ignored. Due to the
+   * case-insensitivity of header names, "foo" and "Foo" are considered
+   * equivalent.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders#name
+   */
+  readonly name: string;
+
+  /**
+   * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryHeaders | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Circuit Breaker settings for the upstream connections and requests.
  * If not set, circuit breakers will be enabled with the default thresholds
  *
@@ -21110,6 +27017,14 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBre
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -21125,6 +27040,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCirc
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -21290,6 +27206,13 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
  */
 export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -21331,6 +27254,7 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2 {
 export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -21350,12 +27274,29 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp
  */
 export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -21370,7 +27311,7 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalanc
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer#slowStart
    */
@@ -21382,7 +27323,9 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalanc
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer#type
    */
@@ -21403,7 +27346,9 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalanc
 export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -21421,7 +27366,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
  */
 export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -21587,6 +27532,93 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsTime
   const result = {
     'http': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsTimeoutHttp(obj.http),
     'tcp': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsTimeoutTcp(obj.tcp),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders {
+  /**
+   * Name is the name of the HTTP Header to be matched. Name matching MUST be
+   * case-insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
+   *
+   * If multiple entries specify equivalent header names, the first entry with
+   * an equivalent name MUST be considered for a match. Subsequent entries
+   * with an equivalent header name MUST be ignored. Due to the
+   * case-insensitivity of header names, "foo" and "Foo" are considered
+   * equivalent.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders#name
+   */
+  readonly name: string;
+
+  /**
+   * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders(obj: EnvoyProxySpecTelemetryTracingProviderOpenTelemetryHeaders | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Sampler controls whether spans are exported.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler {
+  /**
+   * SamplingPercentage controls the percentage of traces to sample.
+   * Defaults to 100% when not set.
+   *
+   * @default 100% when not set.
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler#samplingPercentage
+   */
+  readonly samplingPercentage?: EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage;
+
+  /**
+   * Type is the sampler type.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler#type
+   */
+  readonly type: EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler(obj: EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySampler | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'samplingPercentage': toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage(obj.samplingPercentage),
+    'type': obj.type,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -22753,6 +28785,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesConfigM
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesConfigMap#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * items if unspecified, each key-value pair in the Data field of the referenced
    * ConfigMap will be projected into the volume as a file whose name is the
    * key and content is the value. If specified, the listed keys will be
@@ -22792,6 +28833,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesC
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'items': obj.items?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesConfigMapItems(y)),
     'name': obj.name,
     'optional': obj.optional,
@@ -22893,6 +28935,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwar
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApi#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * Items is a list of downward API volume file
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApi#items
@@ -22908,6 +28959,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesD
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'items': obj.items?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApiItems(y)),
   };
   // filter undefined values
@@ -22933,6 +28985,20 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEmptyDi
   readonly medium?: string;
 
   /**
+   * mode specifies the permission bits for the emptyDir directory, in numeric
+   * notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+   * If not specified, defaults to 0777.
+   * This might be in conflict with other options that affect the file
+   * mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+   * will override the mode specified here.
+   * This field has no effect on Windows.
+   * This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEmptyDir#mode
+   */
+  readonly mode?: number;
+
+  /**
    * sizeLimit is the total amount of local storage required for this EmptyDir volume.
    * The size limit is also applicable for memory medium.
    * The maximum usage on memory medium EmptyDir would be the minimum value between
@@ -22953,6 +29019,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesE
   if (obj === undefined) { return undefined; }
   const result = {
     'medium': obj.medium,
+    'mode': obj.mode,
     'sizeLimit': obj.sizeLimit?.value,
   };
   // filter undefined values
@@ -23426,7 +29493,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesH
  * A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
  * The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
  * The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
- * The volume will be mounted read-only (ro) and non-executable files (noexec).
+ * The volume will be mounted read-only (ro).
  * Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
  * The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
  *
@@ -23726,8 +29793,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
 /**
  * portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
  * Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
- * are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
- * is on.
+ * are redirected to the pxd.portworx.com CSI driver.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesPortworxVolume
  */
@@ -23792,6 +29858,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjected#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * sources is the list of volume projections. Each entry in this list
    * handles one source.
    *
@@ -23808,6 +29883,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'sources': obj.sources?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSources(y)),
   };
   // filter undefined values
@@ -24132,6 +30208,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesSecret 
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesSecret#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * items If unspecified, each key-value pair in the Data field of the referenced
    * Secret will be projected into the volume as a file whose name is the
    * key and content is the value. If specified, the listed keys will be
@@ -24168,6 +30253,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesS
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'items': obj.items?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesSecretItems(y)),
     'optional': obj.optional,
     'secretName': obj.secretName,
@@ -25049,6 +31135,16 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeGrpc {
   /**
+   * mode specifies the connection mode for the gRPC health probe.
+   * Set to "TLS" to use TLS without certificate verification.
+   * Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+   * If not specified, the probe uses a plaintext (insecure) connection.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeGrpc#mode
+   */
+  readonly mode?: string;
+
+  /**
    * Port number of the gRPC service. Number must be in the range 1 to 65535.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeGrpc#port
@@ -25073,6 +31169,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLi
 export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeGrpc(obj: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeGrpc | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'mode': obj.mode,
     'port': obj.port,
     'service': obj.service,
   };
@@ -25119,6 +31216,14 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLi
   readonly port: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeHttpGetPort;
 
   /**
+   * Protocol selects the wire protocol for the probe connection.
+   * Nil defaults to HTTP/1.1.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeHttpGet#protocol
+   */
+  readonly protocol?: string;
+
+  /**
    * Scheme to use for connecting to the host.
    * Defaults to HTTP.
    *
@@ -25139,6 +31244,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
     'httpHeaders': obj.httpHeaders?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLivenessProbeHttpGetHttpHeaders(y)),
     'path': obj.path,
     'port': obj.port?.value,
+    'protocol': obj.protocol,
     'scheme': obj.scheme,
   };
   // filter undefined values
@@ -25223,6 +31329,16 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeGrpc {
   /**
+   * mode specifies the connection mode for the gRPC health probe.
+   * Set to "TLS" to use TLS without certificate verification.
+   * Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+   * If not specified, the probe uses a plaintext (insecure) connection.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeGrpc#mode
+   */
+  readonly mode?: string;
+
+  /**
    * Port number of the gRPC service. Number must be in the range 1 to 65535.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeGrpc#port
@@ -25247,6 +31363,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersRe
 export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeGrpc(obj: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeGrpc | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'mode': obj.mode,
     'port': obj.port,
     'service': obj.service,
   };
@@ -25293,6 +31410,14 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersRe
   readonly port: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeHttpGetPort;
 
   /**
+   * Protocol selects the wire protocol for the probe connection.
+   * Nil defaults to HTTP/1.1.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeHttpGet#protocol
+   */
+  readonly protocol?: string;
+
+  /**
    * Scheme to use for connecting to the host.
    * Defaults to HTTP.
    *
@@ -25313,6 +31438,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
     'httpHeaders': obj.httpHeaders?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersReadinessProbeHttpGetHttpHeaders(y)),
     'path': obj.path,
     'port': obj.port?.value,
+    'protocol': obj.protocol,
     'scheme': obj.scheme,
   };
   // filter undefined values
@@ -25758,6 +31884,16 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeGrpc {
   /**
+   * mode specifies the connection mode for the gRPC health probe.
+   * Set to "TLS" to use TLS without certificate verification.
+   * Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+   * If not specified, the probe uses a plaintext (insecure) connection.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeGrpc#mode
+   */
+  readonly mode?: string;
+
+  /**
    * Port number of the gRPC service. Number must be in the range 1 to 65535.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeGrpc#port
@@ -25782,6 +31918,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersSt
 export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeGrpc(obj: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeGrpc | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'mode': obj.mode,
     'port': obj.port,
     'service': obj.service,
   };
@@ -25828,6 +31965,14 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersSt
   readonly port: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeHttpGetPort;
 
   /**
+   * Protocol selects the wire protocol for the probe connection.
+   * Nil defaults to HTTP/1.1.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeHttpGet#protocol
+   */
+  readonly protocol?: string;
+
+  /**
    * Scheme to use for connecting to the host.
    * Defaults to HTTP.
    *
@@ -25848,6 +31993,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
     'httpHeaders': obj.httpHeaders?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersStartupProbeHttpGetHttpHeaders(y)),
     'path': obj.path,
     'port': obj.port?.value,
+    'protocol': obj.protocol,
     'scheme': obj.scheme,
   };
   // filter undefined values
@@ -26671,6 +32817,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesConfig
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesConfigMap#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * items if unspecified, each key-value pair in the Data field of the referenced
    * ConfigMap will be projected into the volume as a file whose name is the
    * key and content is the value. If specified, the listed keys will be
@@ -26710,6 +32865,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'items': obj.items?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesConfigMapItems(y)),
     'name': obj.name,
     'optional': obj.optional,
@@ -26811,6 +32967,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwa
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApi#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * Items is a list of downward API volume file
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApi#items
@@ -26826,6 +32991,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'items': obj.items?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApiItems(y)),
   };
   // filter undefined values
@@ -26851,6 +33017,20 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEmptyD
   readonly medium?: string;
 
   /**
+   * mode specifies the permission bits for the emptyDir directory, in numeric
+   * notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+   * If not specified, defaults to 0777.
+   * This might be in conflict with other options that affect the file
+   * mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+   * will override the mode specified here.
+   * This field has no effect on Windows.
+   * This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEmptyDir#mode
+   */
+  readonly mode?: number;
+
+  /**
    * sizeLimit is the total amount of local storage required for this EmptyDir volume.
    * The size limit is also applicable for memory medium.
    * The maximum usage on memory medium EmptyDir would be the minimum value between
@@ -26871,6 +33051,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
   if (obj === undefined) { return undefined; }
   const result = {
     'medium': obj.medium,
+    'mode': obj.mode,
     'sizeLimit': obj.sizeLimit?.value,
   };
   // filter undefined values
@@ -27344,7 +33525,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
  * A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
  * The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
  * The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
- * The volume will be mounted read-only (ro) and non-executable files (noexec).
+ * The volume will be mounted read-only (ro).
  * Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
  * The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
  *
@@ -27644,8 +33825,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
 /**
  * portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
  * Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
- * are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
- * is on.
+ * are redirected to the pxd.portworx.com CSI driver.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesPortworxVolume
  */
@@ -27710,6 +33890,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjected#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * sources is the list of volume projections. Each entry in this list
    * handles one source.
    *
@@ -27726,6 +33915,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'sources': obj.sources?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSources(y)),
   };
   // filter undefined values
@@ -28050,6 +34240,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesSecret
   readonly defaultMode?: number;
 
   /**
+   * defaultUser is Optional: The owner UID of the created files by default.
+   * The defaultUser field is only used as a fallback when the item-level user field is unset.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesSecret#defaultUser
+   */
+  readonly defaultUser?: number;
+
+  /**
    * items If unspecified, each key-value pair in the Data field of the referenced
    * Secret will be projected into the volume as a file whose name is the
    * key and content is the value. If specified, the listed keys will be
@@ -28086,6 +34285,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
   if (obj === undefined) { return undefined; }
   const result = {
     'defaultMode': obj.defaultMode,
+    'defaultUser': obj.defaultUser,
     'items': obj.items?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesSecretItems(y)),
     'optional': obj.optional,
     'secretName': obj.secretName,
@@ -28331,9 +34531,6 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleDown
  * and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
  * triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
  *
- * This is an alpha field and requires enabling the HPAConfigurableTolerance
- * feature gate.
- *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleDownTolerance
  */
 export class EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleDownTolerance {
@@ -28402,9 +34599,6 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleUpPo
  * For example, if autoscaling is configured with a memory consumption target of 100Mi,
  * and scale-down and scale-up tolerances of 5% and 1% respectively, scaling will be
  * triggered when the actual consumption falls below 95Mi or exceeds 101Mi.
- *
- * This is an alpha field and requires enabling the HPAConfigurableTolerance
- * feature gate.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyHpaBehaviorScaleUpTolerance
  */
@@ -29026,6 +35220,25 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendRefs {
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -29041,6 +35254,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendRe
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -29378,6 +35592,25 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -29393,6 +35626,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -29506,6 +35740,55 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HTTPHeader represents an HTTP Header name and value as defined by RFC 7230.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders {
+  /**
+   * Name is the name of the HTTP Header to be matched. Name matching MUST be
+   * case-insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
+   *
+   * If multiple entries specify equivalent header names, the first entry with
+   * an equivalent name MUST be considered for a match. Subsequent entries
+   * with an equivalent header name MUST be ignored. Due to the
+   * case-insensitivity of header names, "foo" and "Foo" are considered
+   * equivalent.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders#name
+   */
+  readonly name: string;
+
+  /**
+   * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryHeaders | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Circuit Breaker settings for the upstream connections and requests.
  * If not set, circuit breakers will be enabled with the default thresholds
  *
@@ -29554,6 +35837,14 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -29569,6 +35860,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -29734,6 +36026,13 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
  */
 export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -29775,6 +36074,7 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
 export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -29794,12 +36094,29 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
  */
 export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -29814,7 +36131,7 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer#slowStart
    */
@@ -29826,7 +36143,9 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer#type
    */
@@ -29847,7 +36166,9 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
 export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -29865,7 +36186,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
  */
 export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -30066,6 +36387,50 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCirc
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * BufferLimit Soft limit on size of the cluster’s connections read and write buffers.
  * BufferLimit applies to connection streaming (maybe non-streaming) channel between processes, it's in user space.
  * If unspecified, an implementation defined default is applied (32768 bytes).
@@ -30192,6 +36557,15 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
   readonly grpc?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActive#healthyThreshold
@@ -30222,6 +36596,15 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -30245,6 +36628,9 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -30259,10 +36645,12 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -30279,6 +36667,14 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
  * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckPassive
  */
 export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -30347,6 +36743,7 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
 export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckPassive(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -30355,6 +36752,60 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -30396,6 +36847,103 @@ export class EnvoyProxySpecTelemetryTracingProviderBackendSettingsHttp2InitialSt
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -30426,6 +36974,13 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalanc
   readonly headers?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -30438,6 +36993,7 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalanc
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -30454,8 +37010,62 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
     'cookie': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -30496,7 +37106,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerSlowStart
  */
@@ -30532,7 +37142,9 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerType
  */
@@ -30545,6 +37157,10 @@ export enum EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerTyp
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -30559,6 +37175,14 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalanc
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -30569,6 +37193,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -30576,7 +37201,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -30705,6 +37330,14 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsTimeoutHtt
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -30718,6 +37351,7 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsTime
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -30754,13 +37388,68 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsTime
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * SamplingPercentage controls the percentage of traces to sample.
+ * Defaults to 100% when not set.
+ *
+ * @default 100% when not set.
+ * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage {
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage(obj: EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerSamplingPercentage | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type is the sampler type.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerType
+ */
+export enum EnvoyProxySpecTelemetryTracingProviderOpenTelemetrySamplerType {
+  /** AlwaysOn */
+  ALWAYS_ON = "AlwaysOn",
+  /** AlwaysOff */
+  ALWAYS_OFF = "AlwaysOff",
+  /** TraceIdRatio */
+  TRACE_ID_RATIO = "TraceIdRatio",
+  /** ParentBasedAlwaysOn */
+  PARENT_BASED_ALWAYS_ON = "ParentBasedAlwaysOn",
+  /** ParentBasedAlwaysOff */
+  PARENT_BASED_ALWAYS_OFF = "ParentBasedAlwaysOff",
+  /** ParentBasedTraceIdRatio */
+  PARENT_BASED_TRACE_ID_RATIO = "ParentBasedTraceIdRatio",
+}
+
+/**
  * Selects a key of a ConfigMap.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerEnvValueFromConfigMapKeyRef
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerEnvValueFromConfigMapKeyRef {
   /**
-   * The key to select.
+   * The key to select from the ConfigMap's Data field.
+   * Keys in the BinaryData field are not currently propagated to container env vars.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetContainerEnvValueFromConfigMapKeyRef#key
    */
@@ -31483,6 +38172,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesConfigM
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesConfigMapItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesConfigMapItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -31495,6 +38193,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesC
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -31576,6 +38275,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwar
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApiItems#resourceFieldRef
    */
   readonly resourceFieldRef?: EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApiItemsResourceFieldRef;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApiItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -31589,6 +38297,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesD
     'mode': obj.mode,
     'path': obj.path,
     'resourceFieldRef': toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApiItemsResourceFieldRef(obj.resourceFieldRef),
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -31962,6 +38671,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesSecretI
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesSecretItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesSecretItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -31974,6 +38692,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesS
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -32020,7 +38739,8 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesS
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerEnvValueFromConfigMapKeyRef {
   /**
-   * The key to select.
+   * The key to select from the ConfigMap's Data field.
+   * Keys in the BinaryData field are not currently propagated to container env vars.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerEnvValueFromConfigMapKeyRef#key
    */
@@ -32260,7 +38980,8 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentContainerE
  */
 export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersEnvValueFromConfigMapKeyRef {
   /**
-   * The key to select.
+   * The key to select from the ConfigMap's Data field.
+   * Keys in the BinaryData field are not currently propagated to container env vars.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersEnvValueFromConfigMapKeyRef#key
    */
@@ -32563,6 +39284,14 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLi
   readonly port: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLifecyclePostStartHttpGetPort;
 
   /**
+   * Protocol selects the wire protocol for the probe connection.
+   * Nil defaults to HTTP/1.1.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLifecyclePostStartHttpGet#protocol
+   */
+  readonly protocol?: string;
+
+  /**
    * Scheme to use for connecting to the host.
    * Defaults to HTTP.
    *
@@ -32583,6 +39312,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
     'httpHeaders': obj.httpHeaders?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLifecyclePostStartHttpGetHttpHeaders(y)),
     'path': obj.path,
     'port': obj.port?.value,
+    'protocol': obj.protocol,
     'scheme': obj.scheme,
   };
   // filter undefined values
@@ -32728,6 +39458,14 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLi
   readonly port: EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLifecyclePreStopHttpGetPort;
 
   /**
+   * Protocol selects the wire protocol for the probe connection.
+   * Nil defaults to HTTP/1.1.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLifecyclePreStopHttpGet#protocol
+   */
+  readonly protocol?: string;
+
+  /**
    * Scheme to use for connecting to the host.
    * Defaults to HTTP.
    *
@@ -32748,6 +39486,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContai
     'httpHeaders': obj.httpHeaders?.map(y => toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentInitContainersLifecyclePreStopHttpGetHttpHeaders(y)),
     'path': obj.path,
     'port': obj.port?.value,
+    'protocol': obj.protocol,
     'scheme': obj.scheme,
   };
   // filter undefined values
@@ -33532,6 +40271,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesConfig
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesConfigMapItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesConfigMapItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -33544,6 +40292,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -33625,6 +40374,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwa
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApiItems#resourceFieldRef
    */
   readonly resourceFieldRef?: EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApiItemsResourceFieldRef;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApiItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -33638,6 +40396,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'mode': obj.mode,
     'path': obj.path,
     'resourceFieldRef': toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardApiItemsResourceFieldRef(obj.resourceFieldRef),
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -34011,6 +40770,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesSecret
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesSecretItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesSecretItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -34023,6 +40791,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -34396,6 +41165,14 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -34411,6 +41188,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -34576,6 +41354,13 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -34617,6 +41402,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -34636,12 +41422,29 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -34656,7 +41459,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer#slowStart
    */
@@ -34668,7 +41471,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer#type
    */
@@ -34689,7 +41494,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -34707,7 +41514,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -34928,6 +41735,14 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -34943,6 +41758,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -35108,6 +41924,13 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -35149,6 +41972,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -35168,12 +41992,29 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -35188,7 +42029,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer#slowStart
    */
@@ -35200,7 +42041,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer#type
    */
@@ -35221,7 +42064,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -35239,7 +42084,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -35440,6 +42285,50 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * BufferLimit Soft limit on size of the cluster’s connections read and write buffers.
  * BufferLimit applies to connection streaming (maybe non-streaming) channel between processes, it's in user space.
  * If unspecified, an implementation defined default is applied (32768 bytes).
@@ -35566,6 +42455,15 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
   readonly grpc?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActive#healthyThreshold
@@ -35596,6 +42494,15 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -35619,6 +42526,9 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -35633,10 +42543,12 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -35653,6 +42565,14 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
  * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckPassive
  */
 export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -35721,6 +42641,7 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
 export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckPassive(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -35729,6 +42650,60 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -35770,6 +42745,103 @@ export class EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHttp
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -35800,6 +42872,13 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
   readonly headers?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -35812,6 +42891,7 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -35828,8 +42908,62 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
     'cookie': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -35870,7 +43004,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerSlowStart
  */
@@ -35906,7 +43040,9 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerType
  */
@@ -35919,6 +43055,10 @@ export enum EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadB
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -35933,6 +43073,14 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -35943,6 +43091,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -35950,7 +43099,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -36079,6 +43228,14 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -36092,6 +43249,7 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -36121,6 +43279,39 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
   if (obj === undefined) { return undefined; }
   const result = {
     'connectTimeout': obj.connectTimeout,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -36159,6 +43350,49 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -36182,8 +43416,9 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -36204,6 +43439,23 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
    * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -36218,6 +43470,41 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -36255,6 +43542,62 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHeal
   const result = {
     'receive': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -36370,11 +43713,41 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerConsistentHashType
  */
@@ -36387,6 +43760,8 @@ export enum EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerCon
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -36459,6 +43834,47 @@ export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoad
     'force': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -37082,8 +44498,8 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemer
    * * An existing PVC (PersistentVolumeClaim)
    * If the provisioner or an external controller can support the specified data source,
    * it will create a new volume based on the contents of the specified data source.
-   * When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-   * and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+   * dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+   * copied to dataSource when dataSourceRef.namespace is not specified.
    * If the namespace is specified, then dataSourceRef will not be copied to dataSource.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemeralVolumeClaimTemplateSpec#dataSource
@@ -37112,7 +44528,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemer
    * specified.
    * * While dataSource only allows local objects, dataSourceRef allows objects
    * in any namespaces.
-   * (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
    * (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemeralVolumeClaimTemplateSpec#dataSourceRef
@@ -37121,7 +44536,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemer
 
   /**
    * resources represents the minimum resources the volume should have.
-   * If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+   * Users are allowed to specify resource requirements
    * that are lower than previous value but must still be higher than capacity recorded in the
    * status field of the claim.
    * More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -37261,6 +44676,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesClusterTrustBundle#signerName
    */
   readonly signerName?: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesClusterTrustBundle#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -37275,6 +44699,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
     'optional': obj.optional,
     'path': obj.path,
     'signerName': obj.signerName,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -37482,6 +44907,34 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesPodCertificate#signerName
    */
   readonly signerName: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesPodCertificate#user
+   */
+  readonly user?: number;
+
+  /**
+   * userAnnotations allow pod authors to pass additional information to
+   * the signer implementation.  Kubernetes does not restrict or validate this
+   * metadata in any way.
+   *
+   * These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+   * the PodCertificateRequest objects that Kubelet creates.
+   *
+   * Entries are subject to the same validation as object metadata annotations,
+   * with the addition that all keys must be domain-prefixed. No restrictions
+   * are placed on values, except an overall size limitation on the entire field.
+   *
+   * Signers should document the keys and values they support. Signers should
+   * deny requests that contain keys they do not recognize.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesPodCertificate#userAnnotations
+   */
+  readonly userAnnotations?: { [key: string]: string };
 }
 
 /**
@@ -37497,6 +44950,8 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
     'keyType': obj.keyType,
     'maxExpirationSeconds': obj.maxExpirationSeconds,
     'signerName': obj.signerName,
+    'user': obj.user,
+    'userAnnotations': ((obj.userAnnotations) === undefined) ? undefined : (Object.entries(obj.userAnnotations).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -37593,6 +45048,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesServiceAccountToken#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesServiceAccountToken#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -37605,6 +45069,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
     'audience': obj.audience,
     'expirationSeconds': obj.expirationSeconds,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -38317,8 +45782,8 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEpheme
    * * An existing PVC (PersistentVolumeClaim)
    * If the provisioner or an external controller can support the specified data source,
    * it will create a new volume based on the contents of the specified data source.
-   * When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-   * and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+   * dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+   * copied to dataSource when dataSourceRef.namespace is not specified.
    * If the namespace is specified, then dataSourceRef will not be copied to dataSource.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEphemeralVolumeClaimTemplateSpec#dataSource
@@ -38347,7 +45812,6 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEpheme
    * specified.
    * * While dataSource only allows local objects, dataSourceRef allows objects
    * in any namespaces.
-   * (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
    * (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
    *
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEphemeralVolumeClaimTemplateSpec#dataSourceRef
@@ -38356,7 +45820,7 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEpheme
 
   /**
    * resources represents the minimum resources the volume should have.
-   * If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+   * Users are allowed to specify resource requirements
    * that are lower than previous value but must still be higher than capacity recorded in the
    * status field of the claim.
    * More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -38496,6 +45960,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesClusterTrustBundle#signerName
    */
   readonly signerName?: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesClusterTrustBundle#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -38510,6 +45983,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'optional': obj.optional,
     'path': obj.path,
     'signerName': obj.signerName,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -38717,6 +46191,34 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesPodCertificate#signerName
    */
   readonly signerName: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesPodCertificate#user
+   */
+  readonly user?: number;
+
+  /**
+   * userAnnotations allow pod authors to pass additional information to
+   * the signer implementation.  Kubernetes does not restrict or validate this
+   * metadata in any way.
+   *
+   * These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+   * the PodCertificateRequest objects that Kubelet creates.
+   *
+   * Entries are subject to the same validation as object metadata annotations,
+   * with the addition that all keys must be domain-prefixed. No restrictions
+   * are placed on values, except an overall size limitation on the entire field.
+   *
+   * Signers should document the keys and values they support. Signers should
+   * deny requests that contain keys they do not recognize.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesPodCertificate#userAnnotations
+   */
+  readonly userAnnotations?: { [key: string]: string };
 }
 
 /**
@@ -38732,6 +46234,8 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'keyType': obj.keyType,
     'maxExpirationSeconds': obj.maxExpirationSeconds,
     'signerName': obj.signerName,
+    'user': obj.user,
+    'userAnnotations': ((obj.userAnnotations) === undefined) ? undefined : (Object.entries(obj.userAnnotations).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -38828,6 +46332,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesServiceAccountToken#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesServiceAccountToken#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -38840,6 +46353,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'audience': obj.audience,
     'expirationSeconds': obj.expirationSeconds,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -39022,6 +46536,50 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * BufferLimit Soft limit on size of the cluster’s connections read and write buffers.
  * BufferLimit applies to connection streaming (maybe non-streaming) channel between processes, it's in user space.
  * If unspecified, an implementation defined default is applied (32768 bytes).
@@ -39148,6 +46706,15 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
   readonly grpc?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActive#healthyThreshold
@@ -39178,6 +46745,15 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -39201,6 +46777,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -39215,10 +46794,12 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -39235,6 +46816,14 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckPassive
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -39303,6 +46892,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckPassive(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -39311,6 +46901,60 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -39352,6 +46996,103 @@ export class EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHttp
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -39382,6 +47123,13 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
   readonly headers?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -39394,6 +47142,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -39410,8 +47159,62 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
     'cookie': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -39452,7 +47255,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerSlowStart
  */
@@ -39488,7 +47291,9 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerType
  */
@@ -39501,6 +47306,10 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadB
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -39515,6 +47324,14 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -39525,6 +47342,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -39532,7 +47350,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -39661,6 +47479,14 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -39674,6 +47500,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -39731,6 +47558,50 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
   if (obj === undefined) { return undefined; }
   const result = {
     'maxConnections': obj.maxConnections,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -39864,6 +47735,15 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
   readonly grpc?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActive#healthyThreshold
@@ -39894,6 +47774,15 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -39917,6 +47806,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -39931,10 +47823,12 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -39951,6 +47845,14 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckPassive
  */
 export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -40019,6 +47921,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckPassive(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -40027,6 +47930,60 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40068,6 +48025,103 @@ export class EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSe
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -40098,6 +48152,13 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
   readonly headers?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -40110,6 +48171,7 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -40126,8 +48188,62 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'cookie': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40168,7 +48284,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerSlowStart
  */
@@ -40204,7 +48320,9 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerType
  */
@@ -40217,6 +48335,10 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSet
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -40231,6 +48353,14 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -40241,6 +48371,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40248,7 +48379,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -40377,6 +48508,14 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -40390,6 +48529,7 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40419,6 +48559,39 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
   if (obj === undefined) { return undefined; }
   const result = {
     'connectTimeout': obj.connectTimeout,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40457,6 +48630,49 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -40480,8 +48696,9 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -40502,6 +48719,23 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
    * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -40516,6 +48750,41 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40553,6 +48822,62 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
   const result = {
     'receive': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40668,11 +48993,41 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashType
  */
@@ -40685,6 +49040,8 @@ export enum EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadB
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -40757,6 +49114,47 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
     'force': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -40837,6 +49235,59 @@ export enum EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsRetry
 }
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -40869,6 +49320,50 @@ export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthChec
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -41578,8 +50073,8 @@ export class EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesDownwardApi
  * * An existing PVC (PersistentVolumeClaim)
  * If the provisioner or an external controller can support the specified data source,
  * it will create a new volume based on the contents of the specified data source.
- * When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
- * and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+ * dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+ * copied to dataSource when dataSourceRef.namespace is not specified.
  * If the namespace is specified, then dataSourceRef will not be copied to dataSource.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemeralVolumeClaimTemplateSpecDataSource
@@ -41647,7 +50142,6 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesE
  * specified.
  * * While dataSource only allows local objects, dataSourceRef allows objects
  * in any namespaces.
- * (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
  * (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesEphemeralVolumeClaimTemplateSpecDataSourceRef
@@ -41705,7 +50199,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesE
 
 /**
  * resources represents the minimum resources the volume should have.
- * If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+ * Users are allowed to specify resource requirements
  * that are lower than previous value but must still be higher than capacity recorded in the
  * status field of the claim.
  * More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -41860,6 +50354,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesConfigMapItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesConfigMapItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -41872,6 +50375,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -41917,6 +50421,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesDownwardApiItems#resourceFieldRef
    */
   readonly resourceFieldRef?: EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesDownwardApiItemsResourceFieldRef;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesDownwardApiItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -41930,6 +50443,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
     'mode': obj.mode,
     'path': obj.path,
     'resourceFieldRef': toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesDownwardApiItemsResourceFieldRef(obj.resourceFieldRef),
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -41970,6 +50484,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProject
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesSecretItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesSecretItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -41982,6 +50505,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesP
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -42568,8 +51092,8 @@ export class EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesDownwardAp
  * * An existing PVC (PersistentVolumeClaim)
  * If the provisioner or an external controller can support the specified data source,
  * it will create a new volume based on the contents of the specified data source.
- * When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
- * and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+ * dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+ * copied to dataSource when dataSourceRef.namespace is not specified.
  * If the namespace is specified, then dataSourceRef will not be copied to dataSource.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEphemeralVolumeClaimTemplateSpecDataSource
@@ -42637,7 +51161,6 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
  * specified.
  * * While dataSource only allows local objects, dataSourceRef allows objects
  * in any namespaces.
- * (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
  * (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesEphemeralVolumeClaimTemplateSpecDataSourceRef
@@ -42695,7 +51218,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
 
 /**
  * resources represents the minimum resources the volume should have.
- * If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+ * Users are allowed to specify resource requirements
  * that are lower than previous value but must still be higher than capacity recorded in the
  * status field of the claim.
  * More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -42850,6 +51373,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesConfigMapItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesConfigMapItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -42862,6 +51394,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -42907,6 +51440,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesDownwardApiItems#resourceFieldRef
    */
   readonly resourceFieldRef?: EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesDownwardApiItemsResourceFieldRef;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesDownwardApiItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -42920,6 +51462,7 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'mode': obj.mode,
     'path': obj.path,
     'resourceFieldRef': toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesDownwardApiItemsResourceFieldRef(obj.resourceFieldRef),
+    'user': obj.user,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -42960,6 +51503,15 @@ export interface EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjec
    * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesSecretItems#path
    */
   readonly path: string;
+
+  /**
+   * user is Optional: The owner UID of the created file.
+   * If specified, the item-level user field takes precedence over defaultUser.
+   * (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+   *
+   * @schema EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedSourcesSecretItems#user
+   */
+  readonly user?: number;
 }
 
 /**
@@ -42972,6 +51524,40 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
     'key': obj.key,
     'mode': obj.mode,
     'path': obj.path,
+    'user': obj.user,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43010,6 +51596,49 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -43033,8 +51662,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -43055,6 +51685,23 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -43069,6 +51716,41 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43106,6 +51788,62 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
   const result = {
     'receive': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43221,11 +51959,41 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerConsistentHashType
  */
@@ -43238,6 +52006,8 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadB
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -43310,6 +52080,47 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
     'force': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43390,6 +52201,39 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsRetry
 }
 
 /**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * GRPC defines the configuration of the GRPC health checker.
  * It's optional, and can only be used if the specified type is GRPC.
  *
@@ -43421,6 +52265,49 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -43444,8 +52331,9 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -43466,6 +52354,23 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
    * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -43480,6 +52385,41 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43517,6 +52457,62 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
   const result = {
     'receive': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43632,11 +52628,41 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerConsistentHashType
  */
@@ -43649,6 +52675,8 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSet
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -43721,6 +52749,47 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
     'force': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -43801,6 +52870,59 @@ export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSet
 }
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -43833,6 +52955,50 @@ export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettings
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -43961,6 +53127,46 @@ export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSe
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum EnvoyProxySpecTelemetryTracingProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
 
 /**
  * A label selector requirement is a selector that contains values, a key, and an operator that
@@ -44769,6 +53975,59 @@ export function toJson_EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumes
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -44801,6 +54060,50 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettings
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -44931,6 +54234,59 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -44963,6 +54319,50 @@ export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBacke
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -45093,6 +54493,46 @@ export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetr
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum EnvoyProxySpecTelemetryMetricsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
+
+/**
  * Specifies the output format of the exposed resources, defaults to "1"
  *
  * @schema EnvoyProxySpecProviderKubernetesEnvoyDaemonSetPodVolumesProjectedSourcesDownwardApiItemsResourceFieldRefDivisor
@@ -45122,6 +54562,86 @@ export class EnvoyProxySpecProviderKubernetesEnvoyDeploymentPodVolumesProjectedS
   }
   private constructor(public readonly value: number | string) {
   }
+}
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksAlsBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum EnvoyProxySpecTelemetryAccessLogSettingsSinksOpenTelemetryBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
 }
 
 
@@ -45232,11 +54752,28 @@ export interface HttpRouteFilterSpec {
   readonly credentialInjection?: HttpRouteFilterSpecCredentialInjection;
 
   /**
-   * HTTPDirectResponseFilter defines the configuration to return a fixed response.
+   * DirectResponse returns a fixed response for matching requests.
+   *
+   * When this filter is referenced from a GRPCRoute, only a non-2xx status code
+   * is supported. gRPC signals success with a grpc-status trailer and a response
+   * message, which a direct response cannot produce, so a 2xx status code (which
+   * maps to the gRPC OK status) yields an invalid response for gRPC clients. Use a
+   * non-2xx status code to deny or block gRPC requests (e.g. 403 maps to
+   * PERMISSION_DENIED, 404 to UNIMPLEMENTED, 429/503 to UNAVAILABLE).
    *
    * @schema HttpRouteFilterSpec#directResponse
    */
   readonly directResponse?: HttpRouteFilterSpecDirectResponse;
+
+  /**
+   * Matches defines additional matching criteria for the HTTPRoute rule.
+   * As with HTTPRouteRule.Matches, the rule is matched if any one match applies.
+   * When both HTTPRouteRule.Matches and HTTPRouteFilter.Matches are set, the
+   * effective matching is the logical AND of the two sets.
+   *
+   * @schema HttpRouteFilterSpec#matches
+   */
+  readonly matches?: HttpRouteFilterSpecMatches[];
 
   /**
    * HTTPURLRewriteFilter define rewrites of HTTP URL components such as path and host
@@ -45255,6 +54792,7 @@ export function toJson_HttpRouteFilterSpec(obj: HttpRouteFilterSpec | undefined)
   const result = {
     'credentialInjection': toJson_HttpRouteFilterSpecCredentialInjection(obj.credentialInjection),
     'directResponse': toJson_HttpRouteFilterSpecDirectResponse(obj.directResponse),
+    'matches': obj.matches?.map(y => toJson_HttpRouteFilterSpecMatches(y)),
     'urlRewrite': toJson_HttpRouteFilterSpecUrlRewrite(obj.urlRewrite),
   };
   // filter undefined values
@@ -45312,13 +54850,21 @@ export function toJson_HttpRouteFilterSpecCredentialInjection(obj: HttpRouteFilt
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * HTTPDirectResponseFilter defines the configuration to return a fixed response.
+ * DirectResponse returns a fixed response for matching requests.
+ *
+ * When this filter is referenced from a GRPCRoute, only a non-2xx status code
+ * is supported. gRPC signals success with a grpc-status trailer and a response
+ * message, which a direct response cannot produce, so a 2xx status code (which
+ * maps to the gRPC OK status) yields an invalid response for gRPC clients. Use a
+ * non-2xx status code to deny or block gRPC requests (e.g. 403 maps to
+ * PERMISSION_DENIED, 404 to UNIMPLEMENTED, 429/503 to UNAVAILABLE).
  *
  * @schema HttpRouteFilterSpecDirectResponse
  */
 export interface HttpRouteFilterSpecDirectResponse {
   /**
    * Body of the direct response.
+   * Supports Envoy command operators for dynamic content (see https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators).
    *
    * @schema HttpRouteFilterSpecDirectResponse#body
    */
@@ -45341,6 +54887,8 @@ export interface HttpRouteFilterSpecDirectResponse {
   /**
    * Status Code of the HTTP response
    * If unset, defaults to 200.
+   * Note: when this filter is referenced from a GRPCRoute, a 2xx status code
+   * (including the default 200) is rejected; a non-2xx status code must be set.
    *
    * @schema HttpRouteFilterSpecDirectResponse#statusCode
    */
@@ -45365,11 +54913,51 @@ export function toJson_HttpRouteFilterSpecDirectResponse(obj: HttpRouteFilterSpe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HTTPRouteMatchFilter defines additional matching criteria for the HTTPRoute rule.
+ * At least one matcher must be specified.
+ *
+ * @schema HttpRouteFilterSpecMatches
+ */
+export interface HttpRouteFilterSpecMatches {
+  /**
+   * Cookies is a list of cookie matchers evaluated against the HTTP request.
+   * All specified matchers must match.
+   *
+   * @schema HttpRouteFilterSpecMatches#cookies
+   */
+  readonly cookies?: HttpRouteFilterSpecMatchesCookies[];
+}
+
+/**
+ * Converts an object of type 'HttpRouteFilterSpecMatches' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteFilterSpecMatches(obj: HttpRouteFilterSpecMatches | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'cookies': obj.cookies?.map(y => toJson_HttpRouteFilterSpecMatchesCookies(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTPURLRewriteFilter define rewrites of HTTP URL components such as path and host
  *
  * @schema HttpRouteFilterSpecUrlRewrite
  */
 export interface HttpRouteFilterSpecUrlRewrite {
+  /**
+   * AppendXForwardedHost controls whether the original Host header value is
+   * appended to the X-Forwarded-Host header when hostname rewriting is configured.
+   * Defaults to true for backward compatibility.
+   *
+   * @default true for backward compatibility.
+   * @schema HttpRouteFilterSpecUrlRewrite#appendXForwardedHost
+   */
+  readonly appendXForwardedHost?: boolean;
+
   /**
    * Hostname is the value to be used to replace the Host header value during
    * forwarding.
@@ -45393,6 +54981,7 @@ export interface HttpRouteFilterSpecUrlRewrite {
 export function toJson_HttpRouteFilterSpecUrlRewrite(obj: HttpRouteFilterSpecUrlRewrite | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'appendXForwardedHost': obj.appendXForwardedHost,
     'hostname': toJson_HttpRouteFilterSpecUrlRewriteHostname(obj.hostname),
     'path': toJson_HttpRouteFilterSpecUrlRewritePath(obj.path),
   };
@@ -45413,7 +55002,6 @@ export interface HttpRouteFilterSpecCredentialInjectionCredential {
    * "credential", and the value should be the credential to be injected.
    * For example, for basic authentication, the value should be "Basic <base64 encoded username:password>".
    * for bearer token, the value should be "Bearer <token>".
-   * Note: The secret must be in the same namespace as the HTTPRouteFilter.
    *
    * @schema HttpRouteFilterSpecCredentialInjectionCredential#valueRef
    */
@@ -45436,6 +55024,7 @@ export function toJson_HttpRouteFilterSpecCredentialInjectionCredential(obj: Htt
 
 /**
  * Body of the direct response.
+ * Supports Envoy command operators for dynamic content (see https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#command-operators).
  *
  * @schema HttpRouteFilterSpecDirectResponseBody
  */
@@ -45574,6 +55163,50 @@ export function toJson_HttpRouteFilterSpecDirectResponseHeader(obj: HttpRouteFil
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HTTPCookieMatch defines how to match a single cookie.
+ *
+ * @schema HttpRouteFilterSpecMatchesCookies
+ */
+export interface HttpRouteFilterSpecMatchesCookies {
+  /**
+   * Name is the cookie name to evaluate.
+   *
+   * @schema HttpRouteFilterSpecMatchesCookies#name
+   */
+  readonly name: string;
+
+  /**
+   * Type specifies how to match against the value of the cookie.
+   *
+   * @schema HttpRouteFilterSpecMatchesCookies#type
+   */
+  readonly type?: HttpRouteFilterSpecMatchesCookiesType;
+
+  /**
+   * Value is the cookie value to be matched.
+   *
+   * @schema HttpRouteFilterSpecMatchesCookies#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'HttpRouteFilterSpecMatchesCookies' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteFilterSpecMatchesCookies(obj: HttpRouteFilterSpecMatchesCookies | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'type': obj.type,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Hostname is the value to be used to replace the Host header value during
  * forwarding.
  *
@@ -45586,6 +55219,20 @@ export interface HttpRouteFilterSpecUrlRewriteHostname {
    * @schema HttpRouteFilterSpecUrlRewriteHostname#header
    */
   readonly header?: string;
+
+  /**
+   * PathRegex defines a regex match and substitution applied to the request path to compute
+   * the rewritten Host header.
+   * For example, with:
+   * pathRegex:
+   * pattern: "^/tenant/([a-z0-9-]+)/.*"
+   * substitution: "\\1.example.internal"
+   * a request to "http://foo.bar.com/tenant/tenant1/api/v1" has its upstream Host header rewritten
+   * to "tenant1.example.internal" (the request path "/tenant/tenant1/api/v1" is preserved).
+   *
+   * @schema HttpRouteFilterSpecUrlRewriteHostname#pathRegex
+   */
+  readonly pathRegex?: HttpRouteFilterSpecUrlRewriteHostnamePathRegex;
 
   /**
    * HTTPPathModifierType defines the type of Hostname rewrite.
@@ -45603,6 +55250,7 @@ export function toJson_HttpRouteFilterSpecUrlRewriteHostname(obj: HttpRouteFilte
   if (obj === undefined) { return undefined; }
   const result = {
     'header': obj.header,
+    'pathRegex': toJson_HttpRouteFilterSpecUrlRewriteHostnamePathRegex(obj.pathRegex),
     'type': obj.type,
   };
   // filter undefined values
@@ -45670,7 +55318,6 @@ export function toJson_HttpRouteFilterSpecUrlRewritePath(obj: HttpRouteFilterSpe
  * "credential", and the value should be the credential to be injected.
  * For example, for basic authentication, the value should be "Basic <base64 encoded username:password>".
  * for bearer token, the value should be "Bearer <token>".
- * Note: The secret must be in the same namespace as the HTTPRouteFilter.
  *
  * @schema HttpRouteFilterSpecCredentialInjectionCredentialValueRef
  */
@@ -45802,6 +55449,12 @@ export interface HttpRouteFilterSpecDirectResponseHeaderAdd {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema HttpRouteFilterSpecDirectResponseHeaderAdd#value
    */
@@ -45845,6 +55498,12 @@ export interface HttpRouteFilterSpecDirectResponseHeaderSet {
 
   /**
    * Value is the value of HTTP Header to be matched.
+   * <gateway:experimental:description>
+   * Must consist of printable US-ASCII characters, optionally separated
+   * by single tabs or spaces. See: https://tools.ietf.org/html/rfc7230#section-3.2
+   * </gateway:experimental:description>
+   *
+   * <gateway:experimental:validation:Pattern=`^[!-~]+([\t ]?[!-~]+)*$`>
    *
    * @schema HttpRouteFilterSpecDirectResponseHeaderSet#value
    */
@@ -45867,6 +55526,70 @@ export function toJson_HttpRouteFilterSpecDirectResponseHeaderSet(obj: HttpRoute
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Type specifies how to match against the value of the cookie.
+ *
+ * @schema HttpRouteFilterSpecMatchesCookiesType
+ */
+export enum HttpRouteFilterSpecMatchesCookiesType {
+  /** Exact */
+  EXACT = "Exact",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * PathRegex defines a regex match and substitution applied to the request path to compute
+ * the rewritten Host header.
+ * For example, with:
+ * pathRegex:
+ * pattern: "^/tenant/([a-z0-9-]+)/.*"
+ * substitution: "\\1.example.internal"
+ * a request to "http://foo.bar.com/tenant/tenant1/api/v1" has its upstream Host header rewritten
+ * to "tenant1.example.internal" (the request path "/tenant/tenant1/api/v1" is preserved).
+ *
+ * @schema HttpRouteFilterSpecUrlRewriteHostnamePathRegex
+ */
+export interface HttpRouteFilterSpecUrlRewriteHostnamePathRegex {
+  /**
+   * Pattern matches a regular expression against the value of the HTTP Path. The regex string must
+   * adhere to the syntax documented in https://github.com/google/re2/wiki/Syntax.
+   *
+   * @schema HttpRouteFilterSpecUrlRewriteHostnamePathRegex#pattern
+   */
+  readonly pattern: string;
+
+  /**
+   * Substitution is an expression that replaces the matched portion. The expression may include numbered
+   * capture groups that adhere to syntax documented in https://github.com/google/re2/wiki/Syntax.
+   *
+   * The resulting value is used as the upstream Host header and should be constrained to a valid
+   * DNS hostname by using explicit regex capture groups in Pattern.
+   *
+   * The NUL, CR, and LF characters are not allowed: they are invalid in an HTTP header value and are
+   * rejected by the Envoy proto (well_known_regex HTTP_HEADER_VALUE), which would otherwise cause the
+   * generated configuration to be rejected by the data plane.
+   *
+   * @schema HttpRouteFilterSpecUrlRewriteHostnamePathRegex#substitution
+   */
+  readonly substitution: string;
+}
+
+/**
+ * Converts an object of type 'HttpRouteFilterSpecUrlRewriteHostnamePathRegex' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_HttpRouteFilterSpecUrlRewriteHostnamePathRegex(obj: HttpRouteFilterSpecUrlRewriteHostnamePathRegex | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'pattern': obj.pattern,
+    'substitution': obj.substitution,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTPPathModifierType defines the type of Hostname rewrite.
  *
  * @schema HttpRouteFilterSpecUrlRewriteHostnameType
@@ -45876,6 +55599,8 @@ export enum HttpRouteFilterSpecUrlRewriteHostnameType {
   HEADER = "Header",
   /** Backend */
   BACKEND = "Backend",
+  /** PathRegex */
+  PATH_REGEX = "PathRegex",
 }
 
 /**
@@ -46070,6 +55795,15 @@ export interface SecurityPolicySpec {
   readonly cors?: SecurityPolicySpecCors;
 
   /**
+   * CSRF defines the configuration for Cross-Site Request Forgery (CSRF) protection.
+   * When enabled, the CSRF filter checks that the Origin header matches the destination
+   * or one of the additional allowed origins on mutating requests (POST, PUT, DELETE, PATCH).
+   *
+   * @schema SecurityPolicySpec#csrf
+   */
+  readonly csrf?: SecurityPolicySpecCsrf;
+
+  /**
    * ExtAuth defines the configuration for External Authorization.
    *
    * @schema SecurityPolicySpec#extAuth
@@ -46082,6 +55816,19 @@ export interface SecurityPolicySpec {
    * @schema SecurityPolicySpec#jwt
    */
   readonly jwt?: SecurityPolicySpecJwt;
+
+  /**
+   * MergeType determines how this configuration is merged with existing SecurityPolicy
+   * configurations targeting a parent resource. When set, this configuration will be merged
+   * into the closest parent SecurityPolicy in the route's attachment hierarchy (for
+   * example, one targeting a Gateway, Gateway listener, ListenerSet, or ListenerSet
+   * listener).
+   * Currently, this field can only be set when targeting xRoute resources.
+   * If unset, no merging occurs, and only the most specific configuration takes effect.
+   *
+   * @schema SecurityPolicySpec#mergeType
+   */
+  readonly mergeType?: string;
 
   /**
    * OIDC defines the configuration for the OpenID Connect (OIDC) authentication.
@@ -46128,8 +55875,10 @@ export function toJson_SecurityPolicySpec(obj: SecurityPolicySpec | undefined): 
     'authorization': toJson_SecurityPolicySpecAuthorization(obj.authorization),
     'basicAuth': toJson_SecurityPolicySpecBasicAuth(obj.basicAuth),
     'cors': toJson_SecurityPolicySpecCors(obj.cors),
+    'csrf': toJson_SecurityPolicySpecCsrf(obj.csrf),
     'extAuth': toJson_SecurityPolicySpecExtAuth(obj.extAuth),
     'jwt': toJson_SecurityPolicySpecJwt(obj.jwt),
+    'mergeType': obj.mergeType,
     'oidc': toJson_SecurityPolicySpecOidc(obj.oidc),
     'targetRef': toJson_SecurityPolicySpecTargetRef(obj.targetRef),
     'targetRefs': obj.targetRefs?.map(y => toJson_SecurityPolicySpecTargetRefs(y)),
@@ -46267,8 +56016,6 @@ export interface SecurityPolicySpecBasicAuth {
    * Reference to https://httpd.apache.org/docs/2.4/programs/htpasswd.html
    * for more details.
    *
-   * Note: The secret must be in the same namespace as the SecurityPolicy.
-   *
    * @schema SecurityPolicySpecBasicAuth#users
    */
   readonly users: SecurityPolicySpecBasicAuthUsers;
@@ -46370,6 +56117,62 @@ export function toJson_SecurityPolicySpecCors(obj: SecurityPolicySpecCors | unde
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * CSRF defines the configuration for Cross-Site Request Forgery (CSRF) protection.
+ * When enabled, the CSRF filter checks that the Origin header matches the destination
+ * or one of the additional allowed origins on mutating requests (POST, PUT, DELETE, PATCH).
+ *
+ * @schema SecurityPolicySpecCsrf
+ */
+export interface SecurityPolicySpecCsrf {
+  /**
+   * AdditionalOrigins specifies additional origins that are allowed to make mutating
+   * requests, beyond the destination origin. A request whose Origin header matches one
+   * of them is allowed. The value "*" allows any origin, which effectively disables
+   * origin validation.
+   *
+   * Note: Envoy's CSRF filter compares the host and port of the origin only, so the
+   * scheme is ignored: "https://www.example.com" and "http://www.example.com" are
+   * equivalent here, and both allow the request regardless of the scheme the client
+   * used.
+   *
+   * @schema SecurityPolicySpecCsrf#additionalOrigins
+   */
+  readonly additionalOrigins?: string[];
+
+  /**
+   * ShadowFraction represents the fraction of requests for which the CSRF policy is
+   * evaluated in shadow (dry-run) mode. For these requests, the filter records whether
+   * the request would have been allowed or rejected in the `csrf.request_valid` and
+   * `csrf.request_invalid` stats, but always lets the request through. The remaining
+   * requests are enforced, i.e. a mutating request with a missing or non-matching
+   * Origin header is rejected with a 403.
+   *
+   * Defaults to 0% (all requests are enforced) if not specified. Set it to 100% to
+   * dry run the filter, watch the stats to find origins that would be rejected, then
+   * lower it to roll enforcement out gradually.
+   *
+   * @default 0% (all requests are enforced) if not specified. Set it to 100% to
+   * @schema SecurityPolicySpecCsrf#shadowFraction
+   */
+  readonly shadowFraction?: SecurityPolicySpecCsrfShadowFraction;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecCsrf' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecCsrf(obj: SecurityPolicySpecCsrf | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'additionalOrigins': obj.additionalOrigins?.map(y => y),
+    'shadowFraction': toJson_SecurityPolicySpecCsrfShadowFraction(obj.shadowFraction),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExtAuth defines the configuration for External Authorization.
  *
  * @schema SecurityPolicySpecExtAuth
@@ -46381,6 +56184,17 @@ export interface SecurityPolicySpecExtAuth {
    * @schema SecurityPolicySpecExtAuth#bodyToExtAuth
    */
   readonly bodyToExtAuth?: SecurityPolicySpecExtAuthBodyToExtAuth;
+
+  /**
+   * ContextExtensions are analogous to http_request.headers, however these
+   * contents will not be sent to the upstream server. This provides an
+   * extension mechanism for sending additional information to the auth server
+   * without modifying the proto definition. It maps to the internal opaque
+   * context in the filter chain.
+   *
+   * @schema SecurityPolicySpecExtAuth#contextExtensions
+   */
+  readonly contextExtensions?: SecurityPolicySpecExtAuthContextExtensions[];
 
   /**
    * FailOpen is a switch used to control the behavior when a response from the External Authorization service cannot be obtained.
@@ -46430,6 +56244,31 @@ export interface SecurityPolicySpecExtAuth {
   readonly http?: SecurityPolicySpecExtAuthHttp;
 
   /**
+   * IncludeRouteMetadata sends Envoy Gateway's built-in route metadata to the
+   * external authorization service as context.
+   *
+   * This includes Envoy Gateway's built-in metadata for the selected route in
+   * the "envoy-gateway" metadata namespace.
+   *
+   * The metadata is exposed under the "resources" field as a list of route
+   * resource objects. For example:
+   *
+   * envoy-gateway:
+   * resources:
+   * - kind: HTTPRoute
+   * name: backend
+   * namespace: default
+   * annotations:
+   * foo: bar
+   *
+   * The resource object may include fields such as kind, namespace, name,
+   * sectionName, and supported route annotations.
+   *
+   * @schema SecurityPolicySpecExtAuth#includeRouteMetadata
+   */
+  readonly includeRouteMetadata?: boolean;
+
+  /**
    * RecomputeRoute clears the route cache and recalculates the routing decision.
    * This field must be enabled if the headers added or modified by the ExtAuth are used for
    * route matching decisions. If the recomputation selects a new route, features targeting
@@ -46438,6 +56277,16 @@ export interface SecurityPolicySpecExtAuth {
    * @schema SecurityPolicySpecExtAuth#recomputeRoute
    */
   readonly recomputeRoute?: boolean;
+
+  /**
+   * Sets the HTTP status that is returned when the authorization service returns an error
+   * or cannot be reached. Defaults to 403 Forbidden.
+   * Only 4xx and 5xx status codes are supported.
+   *
+   * @default 403 Forbidden.
+   * @schema SecurityPolicySpecExtAuth#statusOnError
+   */
+  readonly statusOnError?: SecurityPolicySpecExtAuthStatusOnError;
 
   /**
    * Timeout defines the timeout for requests to the external authorization service.
@@ -46456,11 +56305,14 @@ export function toJson_SecurityPolicySpecExtAuth(obj: SecurityPolicySpecExtAuth 
   if (obj === undefined) { return undefined; }
   const result = {
     'bodyToExtAuth': toJson_SecurityPolicySpecExtAuthBodyToExtAuth(obj.bodyToExtAuth),
+    'contextExtensions': obj.contextExtensions?.map(y => toJson_SecurityPolicySpecExtAuthContextExtensions(y)),
     'failOpen': obj.failOpen,
     'grpc': toJson_SecurityPolicySpecExtAuthGrpc(obj.grpc),
     'headersToExtAuth': obj.headersToExtAuth?.map(y => y),
     'http': toJson_SecurityPolicySpecExtAuthHttp(obj.http),
+    'includeRouteMetadata': obj.includeRouteMetadata,
     'recomputeRoute': obj.recomputeRoute,
+    'statusOnError': obj.statusOnError,
     'timeout': obj.timeout,
   };
   // filter undefined values
@@ -46475,8 +56327,27 @@ export function toJson_SecurityPolicySpecExtAuth(obj: SecurityPolicySpecExtAuth 
  */
 export interface SecurityPolicySpecJwt {
   /**
+   * FailOpen lets a request pass JWT authentication even when its JWT is
+   * missing or invalid, rather than being rejected. This helps when a header
+   * that clients use to carry a JWT may also legitimately hold a non-JWT value
+   * that the backend relies on.
+   *
+   * A valid JWT is still verified and its claims forwarded as usual; only the
+   * rejection of requests with a missing or invalid JWT is relaxed. Because this
+   * does not enforce authentication on its own, pair it with an Authorization
+   * policy when access needs to be restricted.
+   *
+   * This is broader than Optional (which tolerates a missing JWT but still
+   * rejects an invalid one) and takes precedence over it.
+   *
+   * @schema SecurityPolicySpecJwt#failOpen
+   */
+  readonly failOpen?: boolean;
+
+  /**
    * Optional determines whether a missing JWT is acceptable, defaulting to false if not specified.
-   * Note: Even if optional is set to true, JWT authentication will still fail if an invalid JWT is presented.
+   * Note: Even if optional is set to true, JWT authentication will still fail if an invalid JWT
+   * is presented. See FailOpen if this is necessary for your use case.
    *
    * @schema SecurityPolicySpecJwt#optional
    */
@@ -46500,6 +56371,7 @@ export interface SecurityPolicySpecJwt {
 export function toJson_SecurityPolicySpecJwt(obj: SecurityPolicySpecJwt | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'failOpen': obj.failOpen,
     'optional': obj.optional,
     'providers': obj.providers?.map(y => toJson_SecurityPolicySpecJwtProviders(y)),
   };
@@ -46640,6 +56512,22 @@ export interface SecurityPolicySpecOidc {
   readonly forwardAccessToken?: boolean;
 
   /**
+   * ForwardIDToken configures forwarding of the OIDC ID token to the upstream.
+   *
+   * If the configured header is "Authorization", EG forwards the ID token using
+   * the "Bearer " prefix. For any other header, EG forwards the raw token value.
+   * If not specified, the ID token will not be forwarded.
+   *
+   * Note: when passThroughAuthHeader is enabled, this header must not be the same
+   * as a header a JWT provider extracts from (the "Authorization" header by
+   * default). The forwarded ID token header is owned by Envoy, and Envoy rejects
+   * an OAuth2 configuration whose pass-through matcher keys on it.
+   *
+   * @schema SecurityPolicySpecOidc#forwardIDToken
+   */
+  readonly forwardIdToken?: SecurityPolicySpecOidcForwardIdToken;
+
+  /**
    * The path to log a user out, clearing their credential cookies.
    *
    * If not specified, uses a default logout path "/logout"
@@ -46727,6 +56615,7 @@ export function toJson_SecurityPolicySpecOidc(obj: SecurityPolicySpecOidc | unde
     'denyRedirect': toJson_SecurityPolicySpecOidcDenyRedirect(obj.denyRedirect),
     'disableTokenEncryption': obj.disableTokenEncryption,
     'forwardAccessToken': obj.forwardAccessToken,
+    'forwardIDToken': toJson_SecurityPolicySpecOidcForwardIdToken(obj.forwardIdToken),
     'logoutPath': obj.logoutPath,
     'passThroughAuthHeader': obj.passThroughAuthHeader,
     'provider': toJson_SecurityPolicySpecOidcProvider(obj.provider),
@@ -46903,11 +56792,27 @@ export interface SecurityPolicySpecTargetSelectors {
   readonly matchExpressions?: SecurityPolicySpecTargetSelectorsMatchExpressions[];
 
   /**
-   * MatchLabels are the set of label selectors for identifying the targeted resource
+   * MatchLabels are the set of label selectors for identifying the targeted resource.
    *
    * @schema SecurityPolicySpecTargetSelectors#matchLabels
    */
   readonly matchLabels?: { [key: string]: string };
+
+  /**
+   * Namespaces determines which namespaces are considered for target selection.
+   *
+   * If unspecified, only targets in the same namespace as this policy are considered.
+   *
+   * When specified, the effective set of namespaces is always constrained to the
+   * namespaces watched by Envoy Gateway.
+   *
+   * Selecting targets across namespaces requires a ReferenceGrant in the target
+   * namespace that allows this policy kind to reference the selected target kind.
+   * Cross-namespace targets without a matching ReferenceGrant are ignored.
+   *
+   * @schema SecurityPolicySpecTargetSelectors#namespaces
+   */
+  readonly namespaces?: SecurityPolicySpecTargetSelectorsNamespaces;
 }
 
 /**
@@ -46921,6 +56826,7 @@ export function toJson_SecurityPolicySpecTargetSelectors(obj: SecurityPolicySpec
     'kind': obj.kind,
     'matchExpressions': obj.matchExpressions?.map(y => toJson_SecurityPolicySpecTargetSelectorsMatchExpressions(y)),
     'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+    'namespaces': toJson_SecurityPolicySpecTargetSelectorsNamespaces(obj.namespaces),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -46998,7 +56904,7 @@ export function toJson_SecurityPolicySpecApiKeyAuthCredentialRefs(obj: SecurityP
 
 /**
  * ExtractFrom is where to fetch the key from the coming request.
- * Only one of header, param or cookie is supposed to be specified.
+ * Only one of headers, params or cookies must be specified.
  *
  * @schema SecurityPolicySpecApiKeyAuthExtractFrom
  */
@@ -47006,7 +56912,7 @@ export interface SecurityPolicySpecApiKeyAuthExtractFrom {
   /**
    * Cookies is the names of the cookie to fetch the key from.
    * If multiple cookies are specified, envoy will look for the api key in the order of the list.
-   * This field is optional, but only one of headers, params or cookies is supposed to be specified.
+   * This field is optional, but only one of headers, params or cookies must be specified.
    *
    * @schema SecurityPolicySpecApiKeyAuthExtractFrom#cookies
    */
@@ -47015,7 +56921,7 @@ export interface SecurityPolicySpecApiKeyAuthExtractFrom {
   /**
    * Headers is the names of the header to fetch the key from.
    * If multiple headers are specified, envoy will look for the api key in the order of the list.
-   * This field is optional, but only one of headers, params or cookies is supposed to be specified.
+   * This field is optional, but only one of headers, params or cookies must be specified.
    *
    * @schema SecurityPolicySpecApiKeyAuthExtractFrom#headers
    */
@@ -47024,7 +56930,7 @@ export interface SecurityPolicySpecApiKeyAuthExtractFrom {
   /**
    * Params is the names of the query parameter to fetch the key from.
    * If multiple params are specified, envoy will look for the api key in the order of the list.
-   * This field is optional, but only one of headers, params or cookies is supposed to be specified.
+   * This field is optional, but only one of headers, params or cookies must be specified.
    *
    * @schema SecurityPolicySpecApiKeyAuthExtractFrom#params
    */
@@ -47074,6 +56980,36 @@ export interface SecurityPolicySpecAuthorizationRules {
   readonly action: SecurityPolicySpecAuthorizationRulesAction;
 
   /**
+   * CEL specifies a Common Expression Language expression to evaluate for the
+   * request. If specified, the expression must evaluate to true for the rule to match.
+   *
+   * The expression can use Envoy attributes exposed to the CEL runtime.
+   * Request attributes, such as request.path, request.url_path, request.host,
+   * request.scheme, request.method, request.headers, and request.query, are
+   * generally available during authorization. Connection attributes, such as
+   * source.address, source.port, destination.address, destination.port,
+   * connection.mtls, and connection.requested_server_name, may also be used.
+   * Dynamic metadata and filter state produced by earlier filters may also be
+   * available through attributes such as metadata and filter_state.
+   * Response attributes are only available after the request completes and
+   * should not be used for authorization decisions.
+   *
+   * For more details, see:
+   * https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/advanced/attributes
+   *
+   * The rule matches only when the expression evaluates to a boolean true.
+   * Non-boolean results, false, null, and CEL evaluation errors are treated as
+   * no match.
+   *
+   * Examples:
+   * `request.headers['x-tenant'] == 'team-a'`
+   * `request.method == 'POST' && request.path.startsWith('/admin')`
+   *
+   * @schema SecurityPolicySpecAuthorizationRules#cel
+   */
+  readonly cel?: string;
+
+  /**
    * Name is a user-friendly name for the rule.
    * If not specified, Envoy Gateway will generate a unique name for the rule.
    *
@@ -47097,7 +57033,7 @@ export interface SecurityPolicySpecAuthorizationRules {
    *
    * @schema SecurityPolicySpecAuthorizationRules#principal
    */
-  readonly principal: SecurityPolicySpecAuthorizationRulesPrincipal;
+  readonly principal?: SecurityPolicySpecAuthorizationRulesPrincipal;
 }
 
 /**
@@ -47108,6 +57044,7 @@ export function toJson_SecurityPolicySpecAuthorizationRules(obj: SecurityPolicyS
   if (obj === undefined) { return undefined; }
   const result = {
     'action': obj.action,
+    'cel': obj.cel,
     'name': obj.name,
     'operation': toJson_SecurityPolicySpecAuthorizationRulesOperation(obj.operation),
     'principal': toJson_SecurityPolicySpecAuthorizationRulesPrincipal(obj.principal),
@@ -47128,8 +57065,6 @@ export function toJson_SecurityPolicySpecAuthorizationRules(obj: SecurityPolicyS
  * Right now, only SHA hash algorithm is supported.
  * Reference to https://httpd.apache.org/docs/2.4/programs/htpasswd.html
  * for more details.
- *
- * Note: The secret must be in the same namespace as the SecurityPolicy.
  *
  * @schema SecurityPolicySpecBasicAuthUsers
  */
@@ -47190,6 +57125,48 @@ export function toJson_SecurityPolicySpecBasicAuthUsers(obj: SecurityPolicySpecB
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ShadowFraction represents the fraction of requests for which the CSRF policy is
+ * evaluated in shadow (dry-run) mode. For these requests, the filter records whether
+ * the request would have been allowed or rejected in the `csrf.request_valid` and
+ * `csrf.request_invalid` stats, but always lets the request through. The remaining
+ * requests are enforced, i.e. a mutating request with a missing or non-matching
+ * Origin header is rejected with a 403.
+ *
+ * Defaults to 0% (all requests are enforced) if not specified. Set it to 100% to
+ * dry run the filter, watch the stats to find origins that would be rejected, then
+ * lower it to roll enforcement out gradually.
+ *
+ * @default 0% (all requests are enforced) if not specified. Set it to 100% to
+ * @schema SecurityPolicySpecCsrfShadowFraction
+ */
+export interface SecurityPolicySpecCsrfShadowFraction {
+  /**
+   * @schema SecurityPolicySpecCsrfShadowFraction#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema SecurityPolicySpecCsrfShadowFraction#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecCsrfShadowFraction' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecCsrfShadowFraction(obj: SecurityPolicySpecCsrfShadowFraction | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * BodyToExtAuth defines the Body to Ext Auth configuration.
  *
  * @schema SecurityPolicySpecExtAuthBodyToExtAuth
@@ -47214,6 +57191,63 @@ export function toJson_SecurityPolicySpecExtAuthBodyToExtAuth(obj: SecurityPolic
   if (obj === undefined) { return undefined; }
   const result = {
     'maxRequestBytes': obj.maxRequestBytes,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ContextExtension is analogous to http_request.headers, however these
+ * contents will not be sent to the upstream server. This provides an
+ * extension mechanism for sending additional information to the auth server
+ * without modifying the proto definition. It maps to the internal opaque
+ * context in the filter chain.
+ *
+ * @schema SecurityPolicySpecExtAuthContextExtensions
+ */
+export interface SecurityPolicySpecExtAuthContextExtensions {
+  /**
+   * Name of the context extension.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensions#name
+   */
+  readonly name: string;
+
+  /**
+   * Type is the type of method to use to read the ContextExtension value.
+   * Valid values are Value and ValueRef, default is Value.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensions#type
+   */
+  readonly type: SecurityPolicySpecExtAuthContextExtensionsType;
+
+  /**
+   * Value of the context extension.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensions#value
+   */
+  readonly value?: string;
+
+  /**
+   * ValueRef for the context extension's value.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensions#valueRef
+   */
+  readonly valueRef?: SecurityPolicySpecExtAuthContextExtensionsValueRef;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthContextExtensions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthContextExtensions(obj: SecurityPolicySpecExtAuthContextExtensions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+    'type': obj.type,
+    'value': obj.value,
+    'valueRef': toJson_SecurityPolicySpecExtAuthContextExtensionsValueRef(obj.valueRef),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -47325,10 +57359,22 @@ export interface SecurityPolicySpecExtAuthHttp {
    * For example, if the original request path is "/hello", and the path specified here is "/auth",
    * then the path of the authorization request will be "/auth/hello". If the path is not specified,
    * the path of the authorization request will be "/hello".
+   * Only one of Path or PathOverride can be set.
    *
    * @schema SecurityPolicySpecExtAuthHttp#path
    */
   readonly path?: string;
+
+  /**
+   * PathOverride replaces the original request path in the authorization request.
+   * If set, the path will be overridden to this value during authorization.
+   * For example, if the original request path is "/hello", and PathOverride is set to "/auth",
+   * then the path of the authorization request will be "/auth".
+   * Only one of Path or PathOverride can be set.
+   *
+   * @schema SecurityPolicySpecExtAuthHttp#pathOverride
+   */
+  readonly pathOverride?: string;
 }
 
 /**
@@ -47343,11 +57389,97 @@ export function toJson_SecurityPolicySpecExtAuthHttp(obj: SecurityPolicySpecExtA
     'backendSettings': toJson_SecurityPolicySpecExtAuthHttpBackendSettings(obj.backendSettings),
     'headersToBackend': obj.headersToBackend?.map(y => y),
     'path': obj.path,
+    'pathOverride': obj.pathOverride,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Sets the HTTP status that is returned when the authorization service returns an error
+ * or cannot be reached. Defaults to 403 Forbidden.
+ * Only 4xx and 5xx status codes are supported.
+ *
+ * @default 403 Forbidden.
+ * @schema SecurityPolicySpecExtAuthStatusOnError
+ */
+export enum SecurityPolicySpecExtAuthStatusOnError {
+  /** 400 */
+  VALUE_400 = 400,
+  /** 401 */
+  VALUE_401 = 401,
+  /** 402 */
+  VALUE_402 = 402,
+  /** 403 */
+  VALUE_403 = 403,
+  /** 404 */
+  VALUE_404 = 404,
+  /** 405 */
+  VALUE_405 = 405,
+  /** 406 */
+  VALUE_406 = 406,
+  /** 407 */
+  VALUE_407 = 407,
+  /** 408 */
+  VALUE_408 = 408,
+  /** 409 */
+  VALUE_409 = 409,
+  /** 410 */
+  VALUE_410 = 410,
+  /** 411 */
+  VALUE_411 = 411,
+  /** 412 */
+  VALUE_412 = 412,
+  /** 413 */
+  VALUE_413 = 413,
+  /** 414 */
+  VALUE_414 = 414,
+  /** 415 */
+  VALUE_415 = 415,
+  /** 416 */
+  VALUE_416 = 416,
+  /** 417 */
+  VALUE_417 = 417,
+  /** 421 */
+  VALUE_421 = 421,
+  /** 422 */
+  VALUE_422 = 422,
+  /** 423 */
+  VALUE_423 = 423,
+  /** 424 */
+  VALUE_424 = 424,
+  /** 426 */
+  VALUE_426 = 426,
+  /** 428 */
+  VALUE_428 = 428,
+  /** 429 */
+  VALUE_429 = 429,
+  /** 431 */
+  VALUE_431 = 431,
+  /** 500 */
+  VALUE_500 = 500,
+  /** 501 */
+  VALUE_501 = 501,
+  /** 502 */
+  VALUE_502 = 502,
+  /** 503 */
+  VALUE_503 = 503,
+  /** 504 */
+  VALUE_504 = 504,
+  /** 505 */
+  VALUE_505 = 505,
+  /** 506 */
+  VALUE_506 = 506,
+  /** 507 */
+  VALUE_507 = 507,
+  /** 508 */
+  VALUE_508 = 508,
+  /** 510 */
+  VALUE_510 = 510,
+  /** 511 */
+  VALUE_511 = 511,
+}
 
 /**
  * JWTProvider defines how a JSON Web Token (JWT) can be verified.
@@ -47677,6 +57809,45 @@ export function toJson_SecurityPolicySpecOidcDenyRedirect(obj: SecurityPolicySpe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ForwardIDToken configures forwarding of the OIDC ID token to the upstream.
+ *
+ * If the configured header is "Authorization", EG forwards the ID token using
+ * the "Bearer " prefix. For any other header, EG forwards the raw token value.
+ * If not specified, the ID token will not be forwarded.
+ *
+ * Note: when passThroughAuthHeader is enabled, this header must not be the same
+ * as a header a JWT provider extracts from (the "Authorization" header by
+ * default). The forwarded ID token header is owned by Envoy, and Envoy rejects
+ * an OAuth2 configuration whose pass-through matcher keys on it.
+ *
+ * @schema SecurityPolicySpecOidcForwardIdToken
+ */
+export interface SecurityPolicySpecOidcForwardIdToken {
+  /**
+   * Header is the upstream request header that will carry the ID token.
+   * It must be a valid HTTP header name. Pseudo-headers (names starting with ":")
+   * and the "Host" header are not allowed.
+   *
+   * @schema SecurityPolicySpecOidcForwardIdToken#header
+   */
+  readonly header: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcForwardIdToken' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcForwardIdToken(obj: SecurityPolicySpecOidcForwardIdToken | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'header': obj.header,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * The OIDC Provider configuration.
  *
  * @schema SecurityPolicySpecOidcProvider
@@ -47815,6 +57986,54 @@ export function toJson_SecurityPolicySpecTargetSelectorsMatchExpressions(obj: Se
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Namespaces determines which namespaces are considered for target selection.
+ *
+ * If unspecified, only targets in the same namespace as this policy are considered.
+ *
+ * When specified, the effective set of namespaces is always constrained to the
+ * namespaces watched by Envoy Gateway.
+ *
+ * Selecting targets across namespaces requires a ReferenceGrant in the target
+ * namespace that allows this policy kind to reference the selected target kind.
+ * Cross-namespace targets without a matching ReferenceGrant are ignored.
+ *
+ * @schema SecurityPolicySpecTargetSelectorsNamespaces
+ */
+export interface SecurityPolicySpecTargetSelectorsNamespaces {
+  /**
+   * From indicates how namespaces are selected for this target selector.
+   *
+   * All means all namespaces watched by Envoy Gateway.
+   * Selector means namespaces watched by Envoy Gateway that match Selector.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespaces#from
+   */
+  readonly from: SecurityPolicySpecTargetSelectorsNamespacesFrom;
+
+  /**
+   * Selector selects namespaces when From is set to Selector.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespaces#selector
+   */
+  readonly selector?: SecurityPolicySpecTargetSelectorsNamespacesSelector;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecTargetSelectorsNamespaces' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecTargetSelectorsNamespaces(obj: SecurityPolicySpecTargetSelectorsNamespaces | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'from': obj.from,
+    'selector': toJson_SecurityPolicySpecTargetSelectorsNamespacesSelector(obj.selector),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Action defines the action to be taken if the rule matches.
  *
  * @schema SecurityPolicySpecAuthorizationRulesAction
@@ -47839,7 +58058,15 @@ export interface SecurityPolicySpecAuthorizationRulesOperation {
    *
    * @schema SecurityPolicySpecAuthorizationRulesOperation#methods
    */
-  readonly methods: SecurityPolicySpecAuthorizationRulesOperationMethods[];
+  readonly methods?: SecurityPolicySpecAuthorizationRulesOperationMethods[];
+
+  /**
+   * Path is the HTTP path of the request.
+   * Support Exact, PathPrefix and RegularExpression match types.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesOperation#path
+   */
+  readonly path?: SecurityPolicySpecAuthorizationRulesOperationPath;
 }
 
 /**
@@ -47850,6 +58077,7 @@ export function toJson_SecurityPolicySpecAuthorizationRulesOperation(obj: Securi
   if (obj === undefined) { return undefined; }
   const result = {
     'methods': obj.methods?.map(y => y),
+    'path': toJson_SecurityPolicySpecAuthorizationRulesOperationPath(obj.path),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -47891,6 +58119,21 @@ export interface SecurityPolicySpecAuthorizationRulesPrincipal {
   readonly clientCidRs?: string[];
 
   /**
+   * ClientIPGeoLocations authorizes the request based on geolocation metadata derived from the client IP.
+   * This field is supported for HTTPRoute and GRPCRoute authorization.
+   * It is not supported for TCPRoute targets.
+   *
+   * If multiple entries are specified,  one of the ClientIPGeoLocation entries must match for the rule to match.
+   *
+   * The client IP is inferred from the X-Forwarded-For header, a custom header, or the
+   * direct downstream connection source address (the TCP peer of the connection terminated by Envoy).
+   * You can use the `ClientIPDetection` field in the `ClientTrafficPolicy` to configure the client IP detection.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipal#clientIPGeoLocations
+   */
+  readonly clientIpGeoLocations?: SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations[];
+
+  /**
    * Headers authorize the request based on user identity extracted from custom headers.
    * If multiple headers are specified, all headers must match for the rule to match.
    *
@@ -47916,8 +58159,75 @@ export function toJson_SecurityPolicySpecAuthorizationRulesPrincipal(obj: Securi
   if (obj === undefined) { return undefined; }
   const result = {
     'clientCIDRs': obj.clientCidRs?.map(y => y),
+    'clientIPGeoLocations': obj.clientIpGeoLocations?.map(y => toJson_SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations(y)),
     'headers': obj.headers?.map(y => toJson_SecurityPolicySpecAuthorizationRulesPrincipalHeaders(y)),
     'jwt': toJson_SecurityPolicySpecAuthorizationRulesPrincipalJwt(obj.jwt),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type is the type of method to use to read the ContextExtension value.
+ * Valid values are Value and ValueRef, default is Value.
+ *
+ * @schema SecurityPolicySpecExtAuthContextExtensionsType
+ */
+export enum SecurityPolicySpecExtAuthContextExtensionsType {
+  /** Value */
+  VALUE = "Value",
+  /** ValueRef */
+  VALUE_REF = "ValueRef",
+}
+
+/**
+ * ValueRef for the context extension's value.
+ *
+ * @schema SecurityPolicySpecExtAuthContextExtensionsValueRef
+ */
+export interface SecurityPolicySpecExtAuthContextExtensionsValueRef {
+  /**
+   * Group is the group of the referent. For example, "gateway.networking.k8s.io".
+   * When unspecified or empty string, core API group is inferred.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensionsValueRef#group
+   */
+  readonly group: string;
+
+  /**
+   * The key to select.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensionsValueRef#key
+   */
+  readonly key: string;
+
+  /**
+   * Kind is kind of the referent. For example "HTTPRoute" or "Service".
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensionsValueRef#kind
+   */
+  readonly kind: string;
+
+  /**
+   * Name is the name of the referent.
+   *
+   * @schema SecurityPolicySpecExtAuthContextExtensionsValueRef#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthContextExtensionsValueRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthContextExtensionsValueRef(obj: SecurityPolicySpecExtAuthContextExtensionsValueRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'group': obj.group,
+    'key': obj.key,
+    'kind': obj.kind,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -48093,6 +58403,25 @@ export interface SecurityPolicySpecExtAuthGrpcBackendRefs {
    * @schema SecurityPolicySpecExtAuthGrpcBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -48108,6 +58437,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendRefs(obj: SecurityPol
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -48389,6 +58719,25 @@ export interface SecurityPolicySpecExtAuthHttpBackendRefs {
    * @schema SecurityPolicySpecExtAuthHttpBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -48404,6 +58753,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendRefs(obj: SecurityPol
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -48690,6 +59040,17 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwks {
   readonly cacheDuration?: string;
 
   /**
+   * FailedRefetchDuration is the duration Envoy waits before re-fetching the JWKS
+   * after a failed fetch.
+   * This does not control retries within a single fetch attempt (see BackendSettings.Retry),
+   * only the interval between fetch attempts after a failure.
+   * If not specified, Envoy's default of 1 second is used.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwks#failedRefetchDuration
+   */
+  readonly failedRefetchDuration?: string;
+
+  /**
    * URI is the HTTPS URI to fetch the JWKS. Envoy's system trust bundle is used to validate the server certificate.
    * If a custom trust bundle is needed, it can be specified in a BackendTLSConfig resource and target the BackendRefs.
    *
@@ -48709,6 +59070,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwks(obj: SecurityPol
     'backendRefs': obj.backendRefs?.map(y => toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendRefs(y)),
     'backendSettings': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettings(obj.backendSettings),
     'cacheDuration': obj.cacheDuration,
+    'failedRefetchDuration': obj.failedRefetchDuration,
     'uri': obj.uri,
   };
   // filter undefined values
@@ -48941,6 +59303,25 @@ export interface SecurityPolicySpecOidcProviderBackendRefs {
    * @schema SecurityPolicySpecOidcProviderBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -48956,6 +59337,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendRefs(obj: SecurityPo
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -49069,6 +59451,61 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettings(obj: Securi
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * From indicates how namespaces are selected for this target selector.
+ *
+ * All means all namespaces watched by Envoy Gateway.
+ * Selector means namespaces watched by Envoy Gateway that match Selector.
+ *
+ * @schema SecurityPolicySpecTargetSelectorsNamespacesFrom
+ */
+export enum SecurityPolicySpecTargetSelectorsNamespacesFrom {
+  /** Same */
+  SAME = "Same",
+  /** All */
+  ALL = "All",
+  /** Selector */
+  SELECTOR = "Selector",
+}
+
+/**
+ * Selector selects namespaces when From is set to Selector.
+ *
+ * @schema SecurityPolicySpecTargetSelectorsNamespacesSelector
+ */
+export interface SecurityPolicySpecTargetSelectorsNamespacesSelector {
+  /**
+   * matchExpressions is a list of label selector requirements. The requirements are ANDed.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespacesSelector#matchExpressions
+   */
+  readonly matchExpressions?: SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions[];
+
+  /**
+   * matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+   * map is equivalent to an element of matchExpressions, whose key field is "key", the
+   * operator is "In", and the values array contains only "value". The requirements are ANDed.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespacesSelector#matchLabels
+   */
+  readonly matchLabels?: { [key: string]: string };
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecTargetSelectorsNamespacesSelector' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecTargetSelectorsNamespacesSelector(obj: SecurityPolicySpecTargetSelectorsNamespacesSelector | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matchExpressions': obj.matchExpressions?.map(y => toJson_SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(y)),
+    'matchLabels': ((obj.matchLabels) === undefined) ? undefined : (Object.entries(obj.matchLabels).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {})),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTPMethod describes how to select a HTTP route by matching the HTTP
  * method as defined by
  * [RFC 7231](https://datatracker.ietf.org/doc/html/rfc7231#section-4) and
@@ -49104,6 +59541,119 @@ export enum SecurityPolicySpecAuthorizationRulesOperationMethods {
   /** PATCH */
   PATCH = "PATCH",
 }
+
+/**
+ * Path is the HTTP path of the request.
+ * Support Exact, PathPrefix and RegularExpression match types.
+ *
+ * @schema SecurityPolicySpecAuthorizationRulesOperationPath
+ */
+export interface SecurityPolicySpecAuthorizationRulesOperationPath {
+  /**
+   * Invert specifies whether the value match result will be inverted.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesOperationPath#invert
+   */
+  readonly invert?: boolean;
+
+  /**
+   * Type specifies how to match against the value of the path.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesOperationPath#type
+   */
+  readonly type?: SecurityPolicySpecAuthorizationRulesOperationPathType;
+
+  /**
+   * Value specifies the HTTP path.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesOperationPath#value
+   */
+  readonly value: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecAuthorizationRulesOperationPath' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecAuthorizationRulesOperationPath(obj: SecurityPolicySpecAuthorizationRulesOperationPath | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'invert': obj.invert,
+    'type': obj.type,
+    'value': obj.value,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ClientIPGeoLocation specifies geolocation-based match criteria for authorization.
+ *
+ * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations
+ */
+export interface SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations {
+  /**
+   * Anonymous matches anonymous network detection signals.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations#anonymous
+   */
+  readonly anonymous?: SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous;
+
+  /**
+   * ASN is the autonomous system number associated with the client IP.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations#asn
+   */
+  readonly asn?: number;
+
+  /**
+   * City is the city associated with the client IP.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations#city
+   */
+  readonly city?: string;
+
+  /**
+   * Country is the country ISO code associated with the client IP.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations#country
+   */
+  readonly country?: string;
+
+  /**
+   * ISP is the internet service provider associated with the client IP.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations#isp
+   */
+  readonly isp?: string;
+
+  /**
+   * Region is the region ISO code associated with the client IP.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations#region
+   */
+  readonly region?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations(obj: SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocations | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'anonymous': toJson_SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous(obj.anonymous),
+    'asn': obj.asn,
+    'city': obj.city,
+    'country': obj.country,
+    'isp': obj.isp,
+    'region': obj.region,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * AuthorizationHeaderMatch specifies how to match against the value of an HTTP header within a authorization rule.
@@ -49175,8 +59725,8 @@ export interface SecurityPolicySpecAuthorizationRulesPrincipalJwt {
   /**
    * Scopes are a special type of claim in a JWT token that represents the permissions of the client.
    *
-   * The value of the scopes field should be a space delimited string that is expected in the scope parameter,
-   * as defined in RFC 6749: https://datatracker.ietf.org/doc/html/rfc6749#page-23.
+   * The value of the scopes field should be a space delimited string that is expected in the
+   * scope (or scp) claim, as defined in RFC 6749: https://datatracker.ietf.org/doc/html/rfc6749#page-23.
    *
    * If multiple scopes are specified, all scopes must match for the rule to match.
    *
@@ -49250,6 +59800,14 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreaker {
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -49265,6 +59823,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreake
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -49430,6 +59989,13 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheck(o
  */
 export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -49471,6 +60037,7 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2 {
 export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -49490,12 +60057,29 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2(obj: Se
  */
 export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -49510,7 +60094,7 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer {
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer#slowStart
    */
@@ -49522,7 +60106,9 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer {
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer#type
    */
@@ -49543,7 +60129,9 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer {
 export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -49561,7 +60149,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancer(
  */
 export interface SecurityPolicySpecExtAuthGrpcBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -49782,6 +60370,14 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreaker {
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -49797,6 +60393,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreake
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -49962,6 +60559,13 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheck(o
  */
 export interface SecurityPolicySpecExtAuthHttpBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -50003,6 +60607,7 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHttp2 {
 export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHttp2(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -50022,12 +60627,29 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHttp2(obj: Se
  */
 export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -50042,7 +60664,7 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer {
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer#slowStart
    */
@@ -50054,7 +60676,9 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer {
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer#type
    */
@@ -50075,7 +60699,9 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer {
 export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer(obj: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -50093,7 +60719,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancer(
  */
 export interface SecurityPolicySpecExtAuthHttpBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -50533,6 +61159,25 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendRefs {
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendRefs#port
    */
   readonly port?: number;
+
+  /**
+   * Weight specifies the proportion of requests forwarded to the referenced
+   * backend. This is computed as weight/(sum of all weights in this
+   * BackendRefs list). For non-zero values, there may be some epsilon from
+   * the exact proportion defined here depending on the precision an
+   * implementation supports. Weight is not a percentage and the sum of
+   * weights does not need to equal 100.
+   *
+   * If only one backend is specified and it has a weight greater than 0, 100%
+   * of the traffic is forwarded to that backend. If weight is set to 0, no
+   * traffic should be forwarded for this entry. If unspecified, weight
+   * defaults to 1.
+   *
+   * Support for this field varies based on the context where used.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendRefs#weight
+   */
+  readonly weight?: number;
 }
 
 /**
@@ -50548,6 +61193,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendRefs(obj: 
     'name': obj.name,
     'namespace': obj.namespace,
     'port': obj.port,
+    'weight': obj.weight,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -50725,6 +61371,14 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsCircuitBreaker {
    * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -50740,6 +61394,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreak
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -50905,6 +61560,13 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheck(
  */
 export interface SecurityPolicySpecOidcProviderBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -50946,6 +61608,7 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHttp2 {
 export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHttp2(obj: SecurityPolicySpecOidcProviderBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -50965,12 +61628,29 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHttp2(obj: S
  */
 export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -50985,7 +61665,7 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer {
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer#slowStart
    */
@@ -50997,7 +61677,9 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer {
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer#type
    */
@@ -51018,7 +61700,9 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer {
 export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer(obj: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -51036,7 +61720,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
  */
 export interface SecurityPolicySpecOidcProviderBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -51209,6 +61893,129 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsTimeout(obj:
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * A label selector requirement is a selector that contains values, a key, and an operator that
+ * relates the key and values.
+ *
+ * @schema SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions
+ */
+export interface SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions {
+  /**
+   * key is the label key that the selector applies to.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#key
+   */
+  readonly key: string;
+
+  /**
+   * operator represents a key's relationship to a set of values.
+   * Valid operators are In, NotIn, Exists and DoesNotExist.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#operator
+   */
+  readonly operator: string;
+
+  /**
+   * values is an array of string values. If the operator is In or NotIn,
+   * the values array must be non-empty. If the operator is Exists or DoesNotExist,
+   * the values array must be empty. This array is replaced during a strategic
+   * merge patch.
+   *
+   * @schema SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions#values
+   */
+  readonly values?: string[];
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions(obj: SecurityPolicySpecTargetSelectorsNamespacesSelectorMatchExpressions | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'key': obj.key,
+    'operator': obj.operator,
+    'values': obj.values?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type specifies how to match against the value of the path.
+ *
+ * @schema SecurityPolicySpecAuthorizationRulesOperationPathType
+ */
+export enum SecurityPolicySpecAuthorizationRulesOperationPathType {
+  /** Exact */
+  EXACT = "Exact",
+  /** PathPrefix */
+  PATH_PREFIX = "PathPrefix",
+  /** RegularExpression */
+  REGULAR_EXPRESSION = "RegularExpression",
+}
+
+/**
+ * Anonymous matches anonymous network detection signals.
+ *
+ * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous
+ */
+export interface SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous {
+  /**
+   * IsAnonymous matches whether the client IP is considered anonymous.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous#isAnonymous
+   */
+  readonly isAnonymous?: boolean;
+
+  /**
+   * IsHosting matches whether the client IP belongs to a hosting provider.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous#isHosting
+   */
+  readonly isHosting?: boolean;
+
+  /**
+   * IsProxy matches whether the client IP belongs to a public proxy.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous#isProxy
+   */
+  readonly isProxy?: boolean;
+
+  /**
+   * IsTor matches whether the client IP belongs to a Tor exit node.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous#isTor
+   */
+  readonly isTor?: boolean;
+
+  /**
+   * IsVPN matches whether the client IP is detected as VPN.
+   *
+   * @schema SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous#isVPN
+   */
+  readonly isVpn?: boolean;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous(obj: SecurityPolicySpecAuthorizationRulesPrincipalClientIpGeoLocationsAnonymous | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'isAnonymous': obj.isAnonymous,
+    'isHosting': obj.isHosting,
+    'isProxy': obj.isProxy,
+    'isTor': obj.isTor,
+    'isVPN': obj.isVpn,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * JWTClaim specifies a claim in a JWT token.
  *
  * @schema SecurityPolicySpecAuthorizationRulesPrincipalJwtClaims
@@ -51282,6 +62089,50 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreake
   if (obj === undefined) { return undefined; }
   const result = {
     'maxConnections': obj.maxConnections,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -51415,6 +62266,15 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive {
   readonly grpc?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive#healthyThreshold
@@ -51445,6 +62305,15 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive {
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -51468,6 +62337,9 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive {
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -51482,10 +62354,12 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckAc
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -51502,6 +62376,14 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckAc
  * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPassive
  */
 export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -51570,6 +62452,7 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPassive 
 export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPassive(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -51578,6 +62461,60 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckPa
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -51619,6 +62556,103 @@ export class SecurityPolicySpecExtAuthGrpcBackendSettingsHttp2InitialStreamWindo
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -51649,6 +62683,13 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsist
   readonly headers?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -51661,6 +62702,7 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsist
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -51677,8 +62719,62 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerC
     'cookie': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -51719,7 +62815,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerE
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerSlowStart
  */
@@ -51755,7 +62851,9 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerS
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerType
  */
@@ -51768,6 +62866,10 @@ export enum SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerType {
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -51782,6 +62884,14 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwa
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -51792,6 +62902,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZ
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -51799,7 +62910,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZ
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -51928,6 +63039,14 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsTimeoutHttp {
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -51941,6 +63060,7 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsTimeoutHttp(o
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -51998,6 +63118,50 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreake
   if (obj === undefined) { return undefined; }
   const result = {
     'maxConnections': obj.maxConnections,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget(obj: SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -52131,6 +63295,15 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive {
   readonly grpc?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive#healthyThreshold
@@ -52161,6 +63334,15 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive {
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -52184,6 +63366,9 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive {
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -52198,10 +63383,12 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckAc
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -52218,6 +63405,14 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckAc
  * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPassive
  */
 export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -52286,6 +63481,7 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPassive 
 export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPassive(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -52294,6 +63490,60 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckPa
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -52335,6 +63585,103 @@ export class SecurityPolicySpecExtAuthHttpBackendSettingsHttp2InitialStreamWindo
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization(obj: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -52365,6 +63712,13 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsist
   readonly headers?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -52377,6 +63731,7 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsist
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -52393,8 +63748,62 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerC
     'cookie': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule(obj: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -52435,7 +63844,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerE
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerSlowStart
  */
@@ -52471,7 +63880,9 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerS
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerType
  */
@@ -52484,6 +63895,10 @@ export enum SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerType {
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -52498,6 +63913,14 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwa
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -52508,6 +63931,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZ
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -52515,7 +63939,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZ
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -52644,6 +64068,14 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsTimeoutHttp {
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -52657,6 +64089,7 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsTimeoutHttp(o
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -52741,6 +64174,14 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitB
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreaker#perEndpoint
    */
   readonly perEndpoint?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerPerEndpoint;
+
+  /**
+   * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+   * RetryBudget take precedence over maxParallelRetries.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreaker#retryBudget
+   */
+  readonly retryBudget?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget;
 }
 
 /**
@@ -52756,6 +64197,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCi
     'maxPendingRequests': obj.maxPendingRequests,
     'maxRequestsPerConnection': obj.maxRequestsPerConnection,
     'perEndpoint': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerPerEndpoint(obj.perEndpoint),
+    'retryBudget': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget(obj.retryBudget),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -52921,6 +64363,13 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
  */
 export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2 {
   /**
+   * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2#connectionKeepalive
+   */
+  readonly connectionKeepalive?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive;
+
+  /**
    * InitialConnectionWindowSize sets the initial window size for HTTP/2 connections.
    * If not set, the default value is 1 MiB.
    *
@@ -52962,6 +64411,7 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2 {
 export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2 | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'connectionKeepalive': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive(obj.connectionKeepalive),
     'initialConnectionWindowSize': obj.initialConnectionWindowSize?.value,
     'initialStreamWindowSize': obj.initialStreamWindowSize?.value,
     'maxConcurrentStreams': obj.maxConcurrentStreams,
@@ -52981,12 +64431,29 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHt
  */
 export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer {
   /**
+   * BackendUtilization defines the configuration when the load balancer type is
+   * set to BackendUtilization.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer#backendUtilization
+   */
+  readonly backendUtilization?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization;
+
+  /**
    * ConsistentHash defines the configuration when the load balancer type is
    * set to ConsistentHash
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer#consistentHash
    */
   readonly consistentHash?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHash;
+
+  /**
+   * DynamicModule defines the configuration when the load balancer type is
+   * set to DynamicModule. The referenced module must be registered in the
+   * EnvoyProxy resource's dynamicModules allowlist.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer#dynamicModule
+   */
+  readonly dynamicModule?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule;
 
   /**
    * EndpointOverride defines the configuration for endpoint override.
@@ -53001,7 +64468,7 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBala
   /**
    * SlowStart defines the configuration related to the slow start load balancer policy.
    * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
-   * Currently this is only supported for RoundRobin and LeastRequest load balancers
+   * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer#slowStart
    */
@@ -53013,7 +64480,9 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBala
    * "ConsistentHash",
    * "LeastRequest",
    * "Random",
-   * "RoundRobin".
+   * "RoundRobin",
+   * "BackendUtilization",
+   * "DynamicModule".
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer#type
    */
@@ -53034,7 +64503,9 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBala
 export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancer | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'backendUtilization': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization(obj.backendUtilization),
     'consistentHash': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHash(obj.consistentHash),
+    'dynamicModule': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule(obj.dynamicModule),
     'endpointOverride': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerEndpointOverride(obj.endpointOverride),
     'slowStart': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerSlowStart(obj.slowStart),
     'type': obj.type,
@@ -53052,7 +64523,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
  */
 export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsProxyProtocol {
   /**
-   * Version of ProxyProtol
+   * Version of ProxyProtocol
    * Valid ProxyProtocolVersion values are
    * "V1"
    * "V2"
@@ -53253,6 +64724,50 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreak
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget(obj: SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * BufferLimit Soft limit on size of the cluster’s connections read and write buffers.
  * BufferLimit applies to connection streaming (maybe non-streaming) channel between processes, it's in user space.
  * If unspecified, an implementation defined default is applied (32768 bytes).
@@ -53379,6 +64894,15 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive 
   readonly grpc?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive#healthyThreshold
@@ -53409,6 +64933,15 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive 
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -53432,6 +64965,9 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive 
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -53446,10 +64982,12 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckA
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -53466,6 +65004,14 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckA
  * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckPassive
  */
 export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -53534,6 +65080,7 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckPassive
 export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckPassive(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -53542,6 +65089,60 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckP
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive(obj: SecurityPolicySpecOidcProviderBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -53583,6 +65184,103 @@ export class SecurityPolicySpecOidcProviderBackendSettingsHttp2InitialStreamWind
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization(obj: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -53613,6 +65311,13 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsis
   readonly headers?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -53625,6 +65330,7 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsis
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -53641,8 +65347,62 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
     'cookie': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule(obj: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -53683,7 +65443,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerSlowStart
  */
@@ -53719,7 +65479,9 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerType
  */
@@ -53732,6 +65494,10 @@ export enum SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerType {
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -53746,6 +65512,14 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAw
    * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -53756,6 +65530,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -53763,7 +65538,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -53892,6 +65667,14 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsTimeoutHttp {
    * @schema SecurityPolicySpecOidcProviderBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -53905,6 +65688,7 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsTimeoutHttp(
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -53954,6 +65738,39 @@ export enum SecurityPolicySpecAuthorizationRulesPrincipalJwtClaimsValueType {
 }
 
 /**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * GRPC defines the configuration of the GRPC health checker.
  * It's optional, and can only be used if the specified type is GRPC.
  *
@@ -53985,6 +65802,49 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckAc
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -54008,8 +65868,9 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHt
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -54030,6 +65891,23 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHt
    * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -54044,6 +65922,41 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckAc
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54081,6 +65994,62 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckAc
   const result = {
     'receive': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54196,11 +66165,41 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerC
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHashType
  */
@@ -54213,6 +66212,8 @@ export enum SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerConsistentHa
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -54285,6 +66286,47 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZ
     'force': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54365,6 +66407,39 @@ export enum SecurityPolicySpecExtAuthGrpcBackendSettingsRetryRetryOnTriggers {
 }
 
 /**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent(obj: SecurityPolicySpecExtAuthHttpBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * GRPC defines the configuration of the GRPC health checker.
  * It's optional, and can only be used if the specified type is GRPC.
  *
@@ -54396,6 +66471,49 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckAc
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -54419,8 +66537,9 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHt
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -54441,6 +66560,23 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHt
    * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -54455,6 +66591,41 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckAc
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54492,6 +66663,62 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckAc
   const result = {
     'receive': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54607,11 +66834,41 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerC
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams(obj: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHashType
  */
@@ -54624,6 +66881,8 @@ export enum SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerConsistentHa
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -54696,6 +66955,47 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZ
     'force': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54797,6 +67097,50 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCi
   if (obj === undefined) { return undefined; }
   const result = {
     'maxConnections': obj.maxConnections,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RetryBudget provides settings for retry budget, which limits the number of retries in a given percentage.
+ * RetryBudget take precedence over maxParallelRetries.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget {
+  /**
+   * MinRetryConcurrency specifies the minimum retry concurrency allowed for the retry budget.
+   * For example, a budget of 20% with a minimum retry concurrency of 3
+   * will allow 5 active retries while there are 25 active requests.
+   * If there are 2 active requests, there are still 3 active retries
+   * allowed because of the minimum retry concurrency.
+   * Defaults to 3.
+   *
+   * @default 3.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget#minRetryConcurrency
+   */
+  readonly minRetryConcurrency?: number;
+
+  /**
+   * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+   * the sum of active requests and active pending requests.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget#percent
+   */
+  readonly percent: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudget | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'minRetryConcurrency': obj.minRetryConcurrency,
+    'percent': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent(obj.percent),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -54930,6 +67274,15 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
   readonly grpc?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveGrpc;
 
   /**
+   * HealthCheckLog defines health check event logging configuration for this cluster.
+   * When set, HC probe outcomes are logged to the configured sinks.
+   * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActive#healthCheckLog
+   */
+  readonly healthCheckLog?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog;
+
+  /**
    * HealthyThreshold defines the number of healthy health checks required before a backend host is marked healthy.
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActive#healthyThreshold
@@ -54960,6 +67313,15 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
   readonly interval?: string;
 
   /**
+   * Overrides defines the configuration of the overriding health check settings for all endpoints
+   * in the backend cluster. This allows customization of port and other settings that may differ
+   * from the main service configuration.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActive#overrides
+   */
+  readonly overrides?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides;
+
+  /**
    * TCP defines the configuration of tcp health checker.
    * It's required while the health checker type is TCP.
    *
@@ -54983,6 +67345,9 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
 
   /**
    * UnhealthyThreshold defines the number of unhealthy health checks required before a backend host is marked unhealthy.
+   * Without RetriableStatuses configured, any health check failure results in the host being immediately
+   * considered unhealthy. When RetriableStatuses is set, health checks returning those statuses are retried
+   * up to this threshold before the host is marked unhealthy.
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActive#unhealthyThreshold
    */
@@ -54997,10 +67362,12 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
   if (obj === undefined) { return undefined; }
   const result = {
     'grpc': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveGrpc(obj.grpc),
+    'healthCheckLog': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog(obj.healthCheckLog),
     'healthyThreshold': obj.healthyThreshold,
     'http': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttp(obj.http),
     'initialJitter': obj.initialJitter,
     'interval': obj.interval,
+    'overrides': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides(obj.overrides),
     'tcp': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveTcp(obj.tcp),
     'timeout': obj.timeout,
     'type': obj.type,
@@ -55017,6 +67384,14 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
  * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckPassive
  */
 export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckPassive {
+  /**
+   * AlwaysEjectOneEndpoint defines whether at least one host should be ejected,
+   * regardless of MaxEjectionPercent.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckPassive#alwaysEjectOneEndpoint
+   */
+  readonly alwaysEjectOneEndpoint?: boolean;
+
   /**
    * BaseEjectionTime defines the base duration for which a host will be ejected on consecutive failures.
    *
@@ -55085,6 +67460,7 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
 export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckPassive(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckPassive | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
+    'alwaysEjectOneEndpoint': obj.alwaysEjectOneEndpoint,
     'baseEjectionTime': obj.baseEjectionTime,
     'consecutive5XxErrors': obj.consecutive5XxErrors,
     'consecutiveGatewayErrors': obj.consecutiveGatewayErrors,
@@ -55093,6 +67469,60 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
     'interval': obj.interval,
     'maxEjectionPercent': obj.maxEjectionPercent,
     'splitExternalLocalOriginErrors': obj.splitExternalLocalOriginErrors,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * ConnectionKeepalive configures HTTP/2 connection keepalive using PING frames.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive {
+  /**
+   * IdleInterval specifies how long a connection must be idle before a PING is sent.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive#idleInterval
+   */
+  readonly idleInterval?: string;
+
+  /**
+   * Interval specifies how often to send HTTP/2 PING frames to keep the connection alive.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive#interval
+   */
+  readonly interval?: string;
+
+  /**
+   * IntervalJitter specifies a random jitter percentage added to each interval.
+   * Defaults to 15% if not specified.
+   *
+   * @default 15% if not specified.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive#intervalJitter
+   */
+  readonly intervalJitter?: number;
+
+  /**
+   * Timeout specifies how long to wait for a PING response before considering the connection dead.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive#timeout
+   */
+  readonly timeout?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2ConnectionKeepalive | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'idleInterval': obj.idleInterval,
+    'interval': obj.interval,
+    'intervalJitter': obj.intervalJitter,
+    'timeout': obj.timeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55134,6 +67564,103 @@ export class SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHttp2Initial
 }
 
 /**
+ * BackendUtilization defines the configuration when the load balancer type is
+ * set to BackendUtilization.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization {
+  /**
+   * A given endpoint must report load metrics continuously for at least this long before the endpoint weight will be used.
+   * Default is 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#blackoutPeriod
+   */
+  readonly blackoutPeriod?: string;
+
+  /**
+   * ErrorUtilizationPenaltyPercent adjusts endpoint weights based on the error rate (eps/qps).
+   * This is expressed as a percentage-based integer where 100 represents 1.0, 150 represents 1.5, etc.
+   *
+   * For example:
+   * - 100 => 1.0x
+   * - 120 => 1.2x
+   * - 200 => 2.0x
+   *
+   * Must be non-negative.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#errorUtilizationPenaltyPercent
+   */
+  readonly errorUtilizationPenaltyPercent?: number;
+
+  /**
+   * KeepResponseHeaders keeps the ORCA load report headers/trailers before sending the response to the client.
+   * Defaults to false.
+   *
+   * @default false.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#keepResponseHeaders
+   */
+  readonly keepResponseHeaders?: boolean;
+
+  /**
+   * Metric names used to compute utilization if application_utilization is not set.
+   * For map fields in ORCA proto, use the form "<map_field>.<key>", e.g., "named_metrics.foo".
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#metricNamesForComputingUtilization
+   */
+  readonly metricNamesForComputingUtilization?: string[];
+
+  /**
+   * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+   * server-streaming gRPC connection to each endpoint's
+   * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+   * reports periodically, instead of relying on in-band ORCA metrics
+   * carried in response headers/trailers.
+   *
+   * The backend must implement OpenRcaService for this to take effect.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#outOfBand
+   */
+  readonly outOfBand?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand;
+
+  /**
+   * If a given endpoint has not reported load metrics in this long, stop using the reported weight. Defaults to 3m.
+   *
+   * @default 3m.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#weightExpirationPeriod
+   */
+  readonly weightExpirationPeriod?: string;
+
+  /**
+   * How often endpoint weights are recalculated. Values less than 100ms are capped at 100ms. Default 1s.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization#weightUpdatePeriod
+   */
+  readonly weightUpdatePeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilization | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'blackoutPeriod': obj.blackoutPeriod,
+    'errorUtilizationPenaltyPercent': obj.errorUtilizationPenaltyPercent,
+    'keepResponseHeaders': obj.keepResponseHeaders,
+    'metricNamesForComputingUtilization': obj.metricNamesForComputingUtilization?.map(y => y),
+    'outOfBand': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj.outOfBand),
+    'weightExpirationPeriod': obj.weightExpirationPeriod,
+    'weightUpdatePeriod': obj.weightUpdatePeriod,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHash defines the configuration when the load balancer type is
  * set to ConsistentHash
  *
@@ -55164,6 +67691,13 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBala
   readonly headers?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashHeaders[];
 
   /**
+   * QueryParams configures the query parameter hash policy when the consistent hash type is set to QueryParams.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHash#queryParams
+   */
+  readonly queryParams?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams[];
+
+  /**
    * The table size for consistent hashing, must be prime number limited to 5000011.
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHash#tableSize
@@ -55176,6 +67710,7 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBala
    * "Header",
    * "Headers",
    * "Cookie".
+   * "QueryParams".
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHash#type
    */
@@ -55192,8 +67727,62 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
     'cookie': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashCookie(obj.cookie),
     'header': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashHeader(obj.header),
     'headers': obj.headers?.map(y => toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashHeaders(y)),
+    'queryParams': obj.queryParams?.map(y => toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams(y)),
     'tableSize': obj.tableSize,
     'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * DynamicModule defines the configuration when the load balancer type is
+ * set to DynamicModule. The referenced module must be registered in the
+ * EnvoyProxy resource's dynamicModules allowlist.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule {
+  /**
+   * Config is optional configuration for the module's load balancer
+   * implementation. This is serialized and passed to the module's
+   * initialization function.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule#config
+   */
+  readonly config?: any;
+
+  /**
+   * LBPolicyName identifies a specific load balancer implementation within
+   * the dynamic module. A single shared library can contain multiple LB
+   * policy implementations. This value is passed to the module's
+   * initialization function to select the appropriate implementation.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule#lbPolicyName
+   */
+  readonly lbPolicyName: string;
+
+  /**
+   * Name references a dynamic module registered in the EnvoyProxy resource's
+   * dynamicModules list. The referenced module must exist in the registry;
+   * otherwise, the policy will be rejected.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerDynamicModule | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'config': obj.config,
+    'lbPolicyName': obj.lbPolicyName,
+    'name': obj.name,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55234,7 +67823,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
 /**
  * SlowStart defines the configuration related to the slow start load balancer policy.
  * If set, during slow start window, traffic sent to the newly added hosts will gradually increase.
- * Currently this is only supported for RoundRobin and LeastRequest load balancers
+ * Supported for RoundRobin, LeastRequest, and BackendUtilization load balancers.
  *
  * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerSlowStart
  */
@@ -55270,7 +67859,9 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
  * "ConsistentHash",
  * "LeastRequest",
  * "Random",
- * "RoundRobin".
+ * "RoundRobin",
+ * "BackendUtilization",
+ * "DynamicModule".
  *
  * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerType
  */
@@ -55283,6 +67874,10 @@ export enum SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerT
   RANDOM = "Random",
   /** RoundRobin */
   ROUND_ROBIN = "RoundRobin",
+  /** BackendUtilization */
+  BACKEND_UTILIZATION = "BackendUtilization",
+  /** DynamicModule */
+  DYNAMIC_MODULE = "DynamicModule",
 }
 
 /**
@@ -55297,6 +67892,14 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBala
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAware#preferLocal
    */
   readonly preferLocal?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwarePreferLocal;
+
+  /**
+   * WeightedZones configures weight-based traffic distribution across locality zones.
+   * Traffic is distributed proportionally based on the sum of all zone weights.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAware#weightedZones
+   */
+  readonly weightedZones?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones[];
 }
 
 /**
@@ -55307,6 +67910,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
   if (obj === undefined) { return undefined; }
   const result = {
     'preferLocal': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwarePreferLocal(obj.preferLocal),
+    'weightedZones': obj.weightedZones?.map(y => toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55314,7 +67918,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Version of ProxyProtol
+ * Version of ProxyProtocol
  * Valid ProxyProtocolVersion values are
  * "V1"
  * "V2"
@@ -55443,6 +68047,14 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsTimeoutH
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsTimeoutHttp#requestTimeout
    */
   readonly requestTimeout?: string;
+
+  /**
+   * The stream idle timeout defines the amount of time a stream can exist without any upstream or downstream activity.
+   * If not specified, StreamIdleTimeout is inherited from the listener-level setting, which can be configured via ClientTrafficPolicy.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsTimeoutHttp#streamIdleTimeout
+   */
+  readonly streamIdleTimeout?: string;
 }
 
 /**
@@ -55456,6 +68068,7 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsTi
     'maxConnectionDuration': obj.maxConnectionDuration,
     'maxStreamDuration': obj.maxStreamDuration,
     'requestTimeout': obj.requestTimeout,
+    'streamIdleTimeout': obj.streamIdleTimeout,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55485,6 +68098,39 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsTi
   if (obj === undefined) { return undefined; }
   const result = {
     'connectTimeout': obj.connectTimeout,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent(obj: SecurityPolicySpecOidcProviderBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55523,6 +68169,49 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckA
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -55546,8 +68235,9 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveH
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -55568,6 +68258,23 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveH
    * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -55582,6 +68289,41 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckA
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55619,6 +68361,62 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckA
   const result = {
     'receive': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55734,11 +68532,41 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams(obj: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentHashType
  */
@@ -55751,6 +68579,8 @@ export enum SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerConsistentH
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -55823,6 +68653,47 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
     'force': toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: SecurityPolicySpecOidcProviderBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -55903,6 +68774,59 @@ export enum SecurityPolicySpecOidcProviderBackendSettingsRetryRetryOnTriggers {
 }
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -55935,6 +68859,50 @@ export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHt
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -56065,6 +69033,59 @@ export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsLoadBalancerZ
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -56097,6 +69118,50 @@ export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHt
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -56227,6 +69292,39 @@ export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsLoadBalancerZ
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * Percent specifies the limit on concurrent retries as a percentage [0, 100] of
+ * the sum of active requests and active pending requests.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent {
+  /**
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent#denominator
+   */
+  readonly denominator?: number;
+
+  /**
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent#numerator
+   */
+  readonly numerator: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsCircuitBreakerRetryBudgetPercent | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'denominator': obj.denominator,
+    'numerator': obj.numerator,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * GRPC defines the configuration of the GRPC health checker.
  * It's optional, and can only be used if the specified type is GRPC.
  *
@@ -56258,6 +69356,49 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * HealthCheckLog defines health check event logging configuration for this cluster.
+ * When set, HC probe outcomes are logged to the configured sinks.
+ * Takes precedence over the gateway-level EnvoyProxy.spec.telemetry.healthCheckLog.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog {
+  /**
+   * Matches defines which health check probe outcomes produce a log entry.
+   * When omitted or empty, all events are logged.
+   *
+   * Each value must be unique. Multiple values are ORed. If any failure type is
+   * specified then a success type must also be specified, and vice versa.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog#matches
+   */
+  readonly matches?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogMatches[];
+
+  /**
+   * Sinks defines where health check events are written.
+   * When omitted, events are written to /dev/stdout.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog#sinks
+   */
+  readonly sinks?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks[];
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLog | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'matches': obj.matches?.map(y => y),
+    'sinks': obj.sinks?.map(y => toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks(y)),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * HTTP defines the configuration of http health checker.
  * It's required while the health checker type is HTTP.
  *
@@ -56281,8 +69422,9 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
   readonly expectedStatuses?: number[];
 
   /**
-   * Hostname defines the HTTP host that will be requested during health checking.
-   * Default: HTTPRoute or GRPCRoute hostname.
+   * Hostname defines the HTTP Host header used for active HTTP health checks.
+   * Host selection uses this order: this field, the associated Backend endpoint
+   * hostname if available, then the effective Route hostname.
    *
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttp#hostname
    */
@@ -56303,6 +69445,23 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
    * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttp#path
    */
   readonly path: string;
+
+  /**
+   * RequestBody defines the HTTP request body payload sent during health checking.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttp#requestBody
+   */
+  readonly requestBody?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody;
+
+  /**
+   * RetriableStatuses defines a list of HTTP response statuses considered retriable.
+   * Responses matching these statuses count towards the unhealthy threshold but
+   * do not result in the host being considered immediately unhealthy.
+   * The expected statuses take precedence for any range overlaps with this field.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttp#retriableStatuses
+   */
+  readonly retriableStatuses?: number[];
 }
 
 /**
@@ -56317,6 +69476,41 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
     'hostname': obj.hostname,
     'method': obj.method,
     'path': obj.path,
+    'requestBody': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody(obj.requestBody),
+    'retriableStatuses': obj.retriableStatuses?.map(y => y),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Overrides defines the configuration of the overriding health check settings for all endpoints
+ * in the backend cluster. This allows customization of port and other settings that may differ
+ * from the main service configuration.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides {
+  /**
+   * Port overrides the health check port.
+   * If not set, the endpoint's serving port is used for health checks.
+   * This is useful when health checks are served on a different port than
+   * the main service port (e.g., port 443 for service, port 9090 for health checks).
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides#port
+   */
+  readonly port?: number;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveOverrides | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'port': obj.port,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -56354,6 +69548,62 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHe
   const result = {
     'receive': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveTcpReceive(obj.receive),
     'send': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveTcpSend(obj.send),
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * OutOfBand enables out-of-band ORCA load reporting. When set, Envoy opens a
+ * server-streaming gRPC connection to each endpoint's
+ * xds.service.orca.v3.OpenRcaService/StreamCoreMetrics and pulls load
+ * reports periodically, instead of relying on in-band ORCA metrics
+ * carried in response headers/trailers.
+ *
+ * The backend must implement OpenRcaService for this to take effect.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand {
+  /**
+   * Authority overrides the :authority header on the OutOfBand gRPC stream.
+   * If unset, Envoy uses the endpoint hostname, then the dialed address, then
+   * the cluster name.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand#authority
+   */
+  readonly authority?: string;
+
+  /**
+   * Port overrides the port used for the OutOfBand reporting connection, e.g. to
+   * reach a separate reporting sidecar. Defaults to the endpoint's port.
+   *
+   * @default the endpoint's port.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand#port
+   */
+  readonly port?: number;
+
+  /**
+   * ReportingPeriod is how often Envoy requests load reports from the server.
+   * Must be greater than 0. Defaults to 10s.
+   *
+   * @default 10s.
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand#reportingPeriod
+   */
+  readonly reportingPeriod?: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerBackendUtilizationOutOfBand | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'authority': obj.authority,
+    'port': obj.port,
+    'reportingPeriod': obj.reportingPeriod,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -56469,11 +69719,41 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * QueryParam defines the query parameter name hashing configuration for consistent hash based
+ * load balancing.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams {
+  /**
+   * Name of the query param to hash.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashQueryParams | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ConsistentHashType defines the type of input to hash on. Valid Type values are
  * "SourceIP",
  * "Header",
  * "Headers",
  * "Cookie".
+ * "QueryParams".
  *
  * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerConsistentHashType
  */
@@ -56486,6 +69766,8 @@ export enum SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerC
   HEADERS = "Headers",
   /** Cookie */
   COOKIE = "Cookie",
+  /** QueryParams */
+  QUERY_PARAMS = "QueryParams",
 }
 
 /**
@@ -56558,6 +69840,47 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
     'force': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwarePreferLocalForce(obj.force),
     'minEndpointsThreshold': obj.minEndpointsThreshold,
     'percentageEnabled': obj.percentageEnabled,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * WeightedZoneConfig defines the weight for a specific locality zone.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones {
+  /**
+   * Weight defines the weight for this locality.
+   * Higher values receive more traffic. The actual traffic distribution
+   * is proportional to this value relative to other localities.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones#weight
+   */
+  readonly weight: number;
+
+  /**
+   * Zone specifies the topology zone this weight applies to.
+   * The value should match the topology.kubernetes.io/zone label
+   * of the nodes where endpoints are running.
+   * Zones not listed in the configuration receive a default weight of 1.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones#zone
+   */
+  readonly zone: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLoadBalancerZoneAwareWeightedZones | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'weight': obj.weight,
+    'zone': obj.zone,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -56638,6 +69961,59 @@ export enum SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsRetryRetryOnT
 }
 
 /**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -56670,6 +70046,50 @@ export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveH
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -56800,6 +70220,139 @@ export function toJson_SecurityPolicySpecOidcProviderBackendSettingsLoadBalancer
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum SecurityPolicySpecExtAuthGrpcBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum SecurityPolicySpecExtAuthHttpBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
+
+/**
+ * ProxyHealthCheckLogEventType specifies which health check probe outcomes produce a log entry.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogMatches
+ */
+export enum SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogMatches {
+  /** Failure */
+  FAILURE = "Failure",
+  /** FailureSeriesStart */
+  FAILURE_SERIES_START = "FailureSeriesStart",
+  /** Success */
+  SUCCESS = "Success",
+  /** HealthyTransition */
+  HEALTHY_TRANSITION = "HealthyTransition",
+}
+
+/**
+ * ProxyHealthCheckLogSink defines a destination for health check event logs.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks {
+  /**
+   * File defines the file sink configuration.
+   * Required when type is File.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks#file
+   */
+  readonly file?: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile;
+
+  /**
+   * Type defines the type of sink.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks#type
+   */
+  readonly type: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksType;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinks | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'file': toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj.file),
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ExpectedResponse defines a list of HTTP expected responses to match.
  *
  * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpExpectedResponse
@@ -56832,6 +70385,50 @@ export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCh
  */
 /* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpExpectedResponse(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpExpectedResponse | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'binary': obj.binary,
+    'text': obj.text,
+    'type': obj.type,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * RequestBody defines the HTTP request body payload sent during health checking.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody {
+  /**
+   * Binary payload base64 encoded.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody#binary
+   */
+  readonly binary?: string;
+
+  /**
+   * Text payload in plain text.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody#text
+   */
+  readonly text?: string;
+
+  /**
+   * Type defines the type of the payload.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody#type
+   */
+  readonly type: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHttpRequestBody | undefined): Record<string, any> | undefined {
   if (obj === undefined) { return undefined; }
   const result = {
     'binary': obj.binary,
@@ -56960,4 +70557,84 @@ export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsLo
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
 }
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum SecurityPolicySpecOidcProviderBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
+
+/**
+ * File defines the file sink configuration.
+ * Required when type is File.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile
+ */
+export interface SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile {
+  /**
+   * Path specifies the file path for health check event output.
+   * Use /dev/stdout to write to standard output.
+   *
+   * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile#path
+   */
+  readonly path: string;
+}
+
+/**
+ * Converts an object of type 'SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile(obj: SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksFile | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'path': obj.path,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * Type defines the type of sink.
+ *
+ * @schema SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksType
+ */
+export enum SecurityPolicySpecJwtProvidersRemoteJwksBackendSettingsHealthCheckActiveHealthCheckLogSinksType {
+  /** File */
+  FILE = "File",
+}
 

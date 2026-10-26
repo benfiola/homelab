@@ -20,7 +20,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     config: {
       apiVersion: "controller.config.cert-manager.io/v1alpha1",
       kind: "ControllerConfiguration",
-      enableGatewayAPI: true,
+      gatewayAPI: { enabled: true },
     },
     crds: {
       enabled: true,

@@ -289,6 +289,14 @@ export interface CertificateSpec {
   readonly renewBeforePercentage?: number;
 
   /**
+   * `renewal` allows configuration of how your certificate is renewed. If the policy mentioned is
+   * `RenewBefore` then the controller respects `renewBefore` and `renewBeforePercentage`.
+   *
+   * @schema CertificateSpec#renewal
+   */
+  readonly renewal?: CertificateSpecRenewal;
+
+  /**
    * The maximum number of CertificateRequest revisions that are maintained in
    * the Certificate's history. Each revision represents a single `CertificateRequest`
    * created by this Certificate, either when it was created, renewed, or Spec
@@ -387,6 +395,7 @@ export function toJson_CertificateSpec(obj: CertificateSpec | undefined): Record
     'privateKey': toJson_CertificateSpecPrivateKey(obj.privateKey),
     'renewBefore': obj.renewBefore,
     'renewBeforePercentage': obj.renewBeforePercentage,
+    'renewal': toJson_CertificateSpecRenewal(obj.renewal),
     'revisionHistoryLimit': obj.revisionHistoryLimit,
     'secretName': obj.secretName,
     'secretTemplate': toJson_CertificateSpecSecretTemplate(obj.secretTemplate),
@@ -656,9 +665,6 @@ export interface CertificateSpecPrivateKey {
    * will be generated whenever a re-issuance occurs.
    * Default is `Always`.
    * The default was changed from `Never` to `Always` in cert-manager >=v1.18.0.
-   * The new default can be disabled by setting the
-   * `--feature-gates=DefaultPrivateKeyRotationPolicyAlways=false` option on
-   * the controller component.
    *
    * @default Always`.
    * @schema CertificateSpecPrivateKey#rotationPolicy
@@ -691,6 +697,43 @@ export function toJson_CertificateSpecPrivateKey(obj: CertificateSpecPrivateKey 
     'encoding': obj.encoding,
     'rotationPolicy': obj.rotationPolicy,
     'size': obj.size,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * `renewal` allows configuration of how your certificate is renewed. If the policy mentioned is
+ * `RenewBefore` then the controller respects `renewBefore` and `renewBeforePercentage`.
+ *
+ * @schema CertificateSpecRenewal
+ */
+export interface CertificateSpecRenewal {
+  /**
+   * `policy` must be one of `Disabled`, `RenewBefore`.
+   *
+   * @schema CertificateSpecRenewal#policy
+   */
+  readonly policy?: CertificateSpecRenewalPolicy;
+
+  /**
+   * `windows` mentions the behavior of when the renewal must happen.
+   *
+   * @schema CertificateSpecRenewal#windows
+   */
+  readonly windows?: CertificateSpecRenewalWindows[];
+}
+
+/**
+ * Converts an object of type 'CertificateSpecRenewal' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CertificateSpecRenewal(obj: CertificateSpecRenewal | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'policy': obj.policy,
+    'windows': obj.windows?.map(y => toJson_CertificateSpecRenewalWindows(y)),
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -1063,6 +1106,11 @@ export interface CertificateSpecKeystoresPkcs12 {
    * `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
    * (e.g., because of company policy). Please note that the security of the algorithm is not that important
    * in reality, because the unencrypted certificate and private key are also stored in the Secret.
+   * `Modern2026`: Encodes PKCS#12 files using algorithms that are considered modern as of 2026.
+   * Private keys and certificates are encrypted using PBES2 with PBKDF2-HMAC-SHA-256 and AES-256-CBC.
+   * The MAC algorithm is PBMAC1 with PBKDF2-HMAC-SHA-256 and HMAC-SHA256.
+   * Files produced with this profile can be read by OpenSSL 3.4.0 and higher, Java 26 and higher,
+   * or with Java using compatible versions of Bouncy Castle. Meets FIPS 140-3 requirements.
    *
    * @schema CertificateSpecKeystoresPkcs12#profile
    */
@@ -1245,9 +1293,6 @@ export enum CertificateSpecPrivateKeyEncoding {
  * will be generated whenever a re-issuance occurs.
  * Default is `Always`.
  * The default was changed from `Never` to `Always` in cert-manager >=v1.18.0.
- * The new default can be disabled by setting the
- * `--feature-gates=DefaultPrivateKeyRotationPolicyAlways=false` option on
- * the controller component.
  *
  * @default Always`.
  * @schema CertificateSpecPrivateKeyRotationPolicy
@@ -1258,6 +1303,71 @@ export enum CertificateSpecPrivateKeyRotationPolicy {
   /** Always */
   ALWAYS = "Always",
 }
+
+/**
+ * `policy` must be one of `Disabled`, `RenewBefore`.
+ *
+ * @schema CertificateSpecRenewalPolicy
+ */
+export enum CertificateSpecRenewalPolicy {
+  /** RenewBefore */
+  RENEW_BEFORE = "RenewBefore",
+  /** Disabled */
+  DISABLED = "Disabled",
+}
+
+/**
+ * CertificateRenewalWindows is the definition for renewal windows
+ *
+ * @schema CertificateSpecRenewalWindows
+ */
+export interface CertificateSpecRenewalWindows {
+  /**
+   * `cron` is a cron compliant string to allow when the renewal should be allowed. Format is as shown below:
+   * * * * * *
+   * | | | | |
+   * | | | | day of the week (0–6) (Sunday to Saturday;
+   * | | | month (1–12)             7 is also Sunday on some systems)
+   * | | day of the month (1–31)
+   * | hour (0–23)
+   * minute (0–59)
+   *
+   * @schema CertificateSpecRenewalWindows#cron
+   */
+  readonly cron: string;
+
+  /**
+   * `timezone` is IANA compliant timezone. For example America/Denver.
+   * If this field is not set, timezone is treated as UTC.
+   *
+   * @schema CertificateSpecRenewalWindows#timezone
+   */
+  readonly timezone?: string;
+
+  /**
+   * `windowDuration` is how long the cron definition is active for.
+   * Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration.
+   *
+   * @schema CertificateSpecRenewalWindows#windowDuration
+   */
+  readonly windowDuration: string;
+}
+
+/**
+ * Converts an object of type 'CertificateSpecRenewalWindows' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_CertificateSpecRenewalWindows(obj: CertificateSpecRenewalWindows | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'cron': obj.cron,
+    'timezone': obj.timezone,
+    'windowDuration': obj.windowDuration,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
  * PasswordSecretRef is a reference to a non-empty key in a Secret resource
@@ -1353,6 +1463,11 @@ export function toJson_CertificateSpecKeystoresPkcs12PasswordSecretRef(obj: Cert
  * `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
  * (e.g., because of company policy). Please note that the security of the algorithm is not that important
  * in reality, because the unencrypted certificate and private key are also stored in the Secret.
+ * `Modern2026`: Encodes PKCS#12 files using algorithms that are considered modern as of 2026.
+ * Private keys and certificates are encrypted using PBES2 with PBKDF2-HMAC-SHA-256 and AES-256-CBC.
+ * The MAC algorithm is PBMAC1 with PBKDF2-HMAC-SHA-256 and HMAC-SHA256.
+ * Files produced with this profile can be read by OpenSSL 3.4.0 and higher, Java 26 and higher,
+ * or with Java using compatible versions of Bouncy Castle. Meets FIPS 140-3 requirements.
  *
  * @schema CertificateSpecKeystoresPkcs12Profile
  */
@@ -1363,6 +1478,8 @@ export enum CertificateSpecKeystoresPkcs12Profile {
   LEGACY_DES = "LegacyDES",
   /** Modern2023 */
   MODERN2023 = "Modern2023",
+  /** Modern2026 */
+  MODERN2026 = "Modern2026",
 }
 
 
@@ -1869,8 +1986,8 @@ export interface ClusterIssuerSpec {
   readonly vault?: ClusterIssuerSpecVault;
 
   /**
-   * Venafi configures this issuer to sign certificates using a Venafi TPP
-   * or Venafi Cloud policy zone.
+   * Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+   * or SaaS policy zone.
    *
    * @schema ClusterIssuerSpec#venafi
    */
@@ -2258,31 +2375,39 @@ export function toJson_ClusterIssuerSpecVault(obj: ClusterIssuerSpecVault | unde
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Venafi configures this issuer to sign certificates using a Venafi TPP
- * or Venafi Cloud policy zone.
+ * Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+ * or SaaS policy zone.
  *
  * @schema ClusterIssuerSpecVenafi
  */
 export interface ClusterIssuerSpecVenafi {
   /**
-   * Cloud specifies the Venafi cloud configuration settings.
-   * Only one of TPP or Cloud may be specified.
+   * Cloud specifies the CyberArk Certificate Manager SaaS configuration settings.
+   * Only one of CyberArk Certificate Manager may be specified.
    *
    * @schema ClusterIssuerSpecVenafi#cloud
    */
   readonly cloud?: ClusterIssuerSpecVenafiCloud;
 
   /**
-   * TPP specifies Trust Protection Platform configuration settings.
-   * Only one of TPP or Cloud may be specified.
+   * NGTS specifies Palo Alto Networks Next Generation Trust Services (NGTS) configuration
+   * using OAuth 2.0 Client Credentials. Only one of tpp, cloud, or ngts may be specified.
+   *
+   * @schema ClusterIssuerSpecVenafi#ngts
+   */
+  readonly ngts?: ClusterIssuerSpecVenafiNgts;
+
+  /**
+   * TPP specifies CyberArk Certificate Manager Self-Hosted configuration settings.
+   * Only one of CyberArk Certificate Manager may be specified.
    *
    * @schema ClusterIssuerSpecVenafi#tpp
    */
   readonly tpp?: ClusterIssuerSpecVenafiTpp;
 
   /**
-   * Zone is the Venafi Policy Zone to use for this issuer.
-   * All requests made to the Venafi platform will be restricted by the named
+   * Zone is the Certificate Manager Policy Zone to use for this issuer.
+   * All requests made to the Certificate Manager platform will be restricted by the named
    * zone policy.
    * This field is required.
    *
@@ -2299,6 +2424,7 @@ export function toJson_ClusterIssuerSpecVenafi(obj: ClusterIssuerSpecVenafi | un
   if (obj === undefined) { return undefined; }
   const result = {
     'cloud': toJson_ClusterIssuerSpecVenafiCloud(obj.cloud),
+    'ngts': toJson_ClusterIssuerSpecVenafiNgts(obj.ngts),
     'tpp': toJson_ClusterIssuerSpecVenafiTpp(obj.tpp),
     'zone': obj.zone,
   };
@@ -2441,6 +2567,27 @@ export interface ClusterIssuerSpecAcmeSolvers {
    * @schema ClusterIssuerSpecAcmeSolvers#selector
    */
   readonly selector?: ClusterIssuerSpecAcmeSolversSelector;
+
+  /**
+   * WaitInsteadOfSelfCheck, if set, skips cert-manager's self-check and
+   * instead waits this long after presentation before asking the ACME server
+   * to validate the challenge.
+   *
+   * This is an advanced escape hatch for environments where cert-manager's
+   * self-check cannot succeed from its own network or DNS viewpoint even
+   * though the ACME server can still validate successfully, for example due
+   * to split-horizon DNS or NAT hairpinning.
+   *
+   * A value of 0 skips the self-check and asks the ACME server to validate
+   * immediately after presentation, relying on the ACME server's own
+   * validation retries (RFC 8555 section 8.2) to succeed once the challenge
+   * has propagated. A negative duration is rejected.
+   * Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration,
+   * for example `30s` or `2m`.
+   *
+   * @schema ClusterIssuerSpecAcmeSolvers#waitInsteadOfSelfCheck
+   */
+  readonly waitInsteadOfSelfCheck?: string;
 }
 
 /**
@@ -2453,6 +2600,7 @@ export function toJson_ClusterIssuerSpecAcmeSolvers(obj: ClusterIssuerSpecAcmeSo
     'dns01': toJson_ClusterIssuerSpecAcmeSolversDns01(obj.dns01),
     'http01': toJson_ClusterIssuerSpecAcmeSolversHttp01(obj.http01),
     'selector': toJson_ClusterIssuerSpecAcmeSolversSelector(obj.selector),
+    'waitInsteadOfSelfCheck': obj.waitInsteadOfSelfCheck,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -2472,6 +2620,15 @@ export interface ClusterIssuerSpecVaultAuth {
    * @schema ClusterIssuerSpecVaultAuth#appRole
    */
   readonly appRole?: ClusterIssuerSpecVaultAuthAppRole;
+
+  /**
+   * AWS authenticates with Vault using AWS IAM authentication.
+   * This allows authentication using IAM roles for service accounts (IRSA),
+   * EKS Pod Identity (PIA), or ambient credentials (EC2 instance profiles, ECS task role).
+   *
+   * @schema ClusterIssuerSpecVaultAuth#aws
+   */
+  readonly aws?: ClusterIssuerSpecVaultAuthAws;
 
   /**
    * ClientCertificate authenticates with Vault by presenting a client
@@ -2506,6 +2663,7 @@ export function toJson_ClusterIssuerSpecVaultAuth(obj: ClusterIssuerSpecVaultAut
   if (obj === undefined) { return undefined; }
   const result = {
     'appRole': toJson_ClusterIssuerSpecVaultAuthAppRole(obj.appRole),
+    'aws': toJson_ClusterIssuerSpecVaultAuthAws(obj.aws),
     'clientCertificate': toJson_ClusterIssuerSpecVaultAuthClientCertificate(obj.clientCertificate),
     'kubernetes': toJson_ClusterIssuerSpecVaultAuthKubernetes(obj.kubernetes),
     'tokenSecretRef': toJson_ClusterIssuerSpecVaultAuthTokenSecretRef(obj.tokenSecretRef),
@@ -2640,21 +2798,21 @@ export function toJson_ClusterIssuerSpecVaultClientKeySecretRef(obj: ClusterIssu
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Cloud specifies the Venafi cloud configuration settings.
- * Only one of TPP or Cloud may be specified.
+ * Cloud specifies the CyberArk Certificate Manager SaaS configuration settings.
+ * Only one of CyberArk Certificate Manager may be specified.
  *
  * @schema ClusterIssuerSpecVenafiCloud
  */
 export interface ClusterIssuerSpecVenafiCloud {
   /**
-   * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+   * APITokenSecretRef is a secret key selector for the CyberArk Certificate Manager SaaS API token.
    *
    * @schema ClusterIssuerSpecVenafiCloud#apiTokenSecretRef
    */
   readonly apiTokenSecretRef: ClusterIssuerSpecVenafiCloudApiTokenSecretRef;
 
   /**
-   * URL is the base URL for Venafi Cloud.
+   * URL is the base URL for CyberArk Certificate Manager SaaS.
    * Defaults to "https://api.venafi.cloud/".
    *
    * @default https://api.venafi.cloud/".
@@ -2679,15 +2837,77 @@ export function toJson_ClusterIssuerSpecVenafiCloud(obj: ClusterIssuerSpecVenafi
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * TPP specifies Trust Protection Platform configuration settings.
- * Only one of TPP or Cloud may be specified.
+ * NGTS specifies Palo Alto Networks Next Generation Trust Services (NGTS) configuration
+ * using OAuth 2.0 Client Credentials. Only one of tpp, cloud, or ngts may be specified.
+ *
+ * @schema ClusterIssuerSpecVenafiNgts
+ */
+export interface ClusterIssuerSpecVenafiNgts {
+  /**
+   * CredentialsRef is a reference to a Kubernetes Secret containing the OAuth 2.0
+   * Client ID and Client Secret. The secret must contain the keys 'client-id' and
+   * 'client-secret'.
+   *
+   * @schema ClusterIssuerSpecVenafiNgts#credentialsRef
+   */
+  readonly credentialsRef: ClusterIssuerSpecVenafiNgtsCredentialsRef;
+
+  /**
+   * TokenEndpoint is the OAuth 2.0 token endpoint URL used to obtain access tokens,
+   * for example "https://auth.apps.paloaltonetworks.com/oauth2/access_token".
+   * Defaults to "https://auth.apps.paloaltonetworks.com/oauth2/access_token" if not set.
+   *
+   * @default https://auth.apps.paloaltonetworks.com/oauth2/access_token" if not set.
+   * @schema ClusterIssuerSpecVenafiNgts#tokenEndpoint
+   */
+  readonly tokenEndpoint?: string;
+
+  /**
+   * TSGID is the Tenant Service Group ID used to scope the OAuth 2.0 access token,
+   * for example "1234567890". The tsg_id: prefix is added automatically.
+   * This field is required.
+   *
+   * @schema ClusterIssuerSpecVenafiNgts#tsgID
+   */
+  readonly tsgId: string;
+
+  /**
+   * URL is the base URL for the NGTS API endpoint.
+   * Defaults to "https://api.strata.paloaltonetworks.com/ngts" if not set.
+   *
+   * @default https://api.strata.paloaltonetworks.com/ngts" if not set.
+   * @schema ClusterIssuerSpecVenafiNgts#url
+   */
+  readonly url?: string;
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVenafiNgts' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVenafiNgts(obj: ClusterIssuerSpecVenafiNgts | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'credentialsRef': toJson_ClusterIssuerSpecVenafiNgtsCredentialsRef(obj.credentialsRef),
+    'tokenEndpoint': obj.tokenEndpoint,
+    'tsgID': obj.tsgId,
+    'url': obj.url,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TPP specifies CyberArk Certificate Manager Self-Hosted configuration settings.
+ * Only one of CyberArk Certificate Manager may be specified.
  *
  * @schema ClusterIssuerSpecVenafiTpp
  */
 export interface ClusterIssuerSpecVenafiTpp {
   /**
    * Base64-encoded bundle of PEM CAs which will be used to validate the certificate
-   * chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+   * chain presented by the CyberArk Certificate Manager Self-Hosted server. Only used if using HTTPS; ignored for HTTP.
    * If undefined, the certificate bundle in the cert-manager controller container
    * is used to validate the chain.
    *
@@ -2697,7 +2917,7 @@ export interface ClusterIssuerSpecVenafiTpp {
 
   /**
    * Reference to a Secret containing a base64-encoded bundle of PEM CAs
-   * which will be used to validate the certificate chain presented by the TPP server.
+   * which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
    * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
    * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
    * the cert-manager controller container is used to validate the TLS connection.
@@ -2707,7 +2927,7 @@ export interface ClusterIssuerSpecVenafiTpp {
   readonly caBundleSecretRef?: ClusterIssuerSpecVenafiTppCaBundleSecretRef;
 
   /**
-   * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+   * CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
    * The secret must contain the key 'access-token' for the Access Token Authentication,
    * or two keys, 'username' and 'password' for the API Keys Authentication.
    *
@@ -2716,7 +2936,7 @@ export interface ClusterIssuerSpecVenafiTpp {
   readonly credentialsRef: ClusterIssuerSpecVenafiTppCredentialsRef;
 
   /**
-   * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance,
+   * URL is the base URL for the vedsdk endpoint of the CyberArk Certificate Manager Self-Hosted instance,
    * for example: "https://tpp.example.com/vedsdk".
    *
    * @schema ClusterIssuerSpecVenafiTpp#url
@@ -3066,6 +3286,85 @@ export function toJson_ClusterIssuerSpecVaultAuthAppRole(obj: ClusterIssuerSpecV
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * AWS authenticates with Vault using AWS IAM authentication.
+ * This allows authentication using IAM roles for service accounts (IRSA),
+ * EKS Pod Identity (PIA), or ambient credentials (EC2 instance profiles, ECS task role).
+ *
+ * @schema ClusterIssuerSpecVaultAuthAws
+ */
+export interface ClusterIssuerSpecVaultAuthAws {
+  /**
+   * The ARN of the AWS IAM role to assume using the Kubernetes service account
+   * token. Required when using IRSA (serviceAccountRef is set).
+   * This role must have a trust policy that allows the OIDC provider to assume it.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAws#iamRoleArn
+   */
+  readonly iamRoleArn?: string;
+
+  /**
+   * The Vault mountPath here is the mount path to use when authenticating with
+   * Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+   * `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+   * default value "/v1/auth/aws" will be used.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAws#mountPath
+   */
+  readonly mountPath?: string;
+
+  /**
+   * The AWS region to use for authentication. If not specified, the region
+   * will be determined from AWS_REGION or AWS_DEFAULT_REGION environment
+   * variables, falling back to "us-east-1" if not set.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAws#region
+   */
+  readonly region?: string;
+
+  /**
+   * A required field containing the Vault Role to assume when authenticating.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAws#role
+   */
+  readonly role: string;
+
+  /**
+   * A reference to a service account that will be used to request a web identity
+   * token for IRSA (IAM Roles for Service Accounts) authentication.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAws#serviceAccountRef
+   */
+  readonly serviceAccountRef?: ClusterIssuerSpecVaultAuthAwsServiceAccountRef;
+
+  /**
+   * The Vault header value to include in the STS signing request.
+   * This is used to prevent replay attacks.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAws#vaultHeaderValue
+   */
+  readonly vaultHeaderValue?: string;
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVaultAuthAws' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVaultAuthAws(obj: ClusterIssuerSpecVaultAuthAws | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'iamRoleArn': obj.iamRoleArn,
+    'mountPath': obj.mountPath,
+    'region': obj.region,
+    'role': obj.role,
+    'serviceAccountRef': toJson_ClusterIssuerSpecVaultAuthAwsServiceAccountRef(obj.serviceAccountRef),
+    'vaultHeaderValue': obj.vaultHeaderValue,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ClientCertificate authenticates with Vault by presenting a client
  * certificate during the request's TLS handshake.
  * Works only when using HTTPS protocol.
@@ -3220,7 +3519,7 @@ export function toJson_ClusterIssuerSpecVaultAuthTokenSecretRef(obj: ClusterIssu
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+ * APITokenSecretRef is a secret key selector for the CyberArk Certificate Manager SaaS API token.
  *
  * @schema ClusterIssuerSpecVenafiCloudApiTokenSecretRef
  */
@@ -3259,8 +3558,39 @@ export function toJson_ClusterIssuerSpecVenafiCloudApiTokenSecretRef(obj: Cluste
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * CredentialsRef is a reference to a Kubernetes Secret containing the OAuth 2.0
+ * Client ID and Client Secret. The secret must contain the keys 'client-id' and
+ * 'client-secret'.
+ *
+ * @schema ClusterIssuerSpecVenafiNgtsCredentialsRef
+ */
+export interface ClusterIssuerSpecVenafiNgtsCredentialsRef {
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema ClusterIssuerSpecVenafiNgtsCredentialsRef#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVenafiNgtsCredentialsRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVenafiNgtsCredentialsRef(obj: ClusterIssuerSpecVenafiNgtsCredentialsRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Reference to a Secret containing a base64-encoded bundle of PEM CAs
- * which will be used to validate the certificate chain presented by the TPP server.
+ * which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
  * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
  * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
  * the cert-manager controller container is used to validate the TLS connection.
@@ -3302,7 +3632,7 @@ export function toJson_ClusterIssuerSpecVenafiTppCaBundleSecretRef(obj: ClusterI
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+ * CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
  * The secret must contain the key 'access-token' for the Access Token Authentication,
  * or two keys, 'username' and 'password' for the API Keys Authentication.
  *
@@ -3490,6 +3820,22 @@ export interface ClusterIssuerSpecAcmeSolversDns01AzureDns {
    * @schema ClusterIssuerSpecAcmeSolversDns01AzureDns#tenantID
    */
   readonly tenantId?: string;
+
+  /**
+   * ZoneType determines which type of Azure DNS zone to use.
+   *
+   * Valid values are:
+   * - AzurePublicZone  (default): Use a public Azure DNS zone.
+   * - AzurePrivateZone: Use an Azure Private DNS zone.
+   *
+   * If not specified, AzurePublicZone is used.
+   *
+   * Support for Azure Private DNS zones is currently
+   * experimental and may change in future releases.
+   *
+   * @schema ClusterIssuerSpecAcmeSolversDns01AzureDns#zoneType
+   */
+  readonly zoneType?: ClusterIssuerSpecAcmeSolversDns01AzureDnsZoneType;
 }
 
 /**
@@ -3507,6 +3853,7 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDns(obj: ClusterIss
     'resourceGroupName': obj.resourceGroupName,
     'subscriptionID': obj.subscriptionId,
     'tenantID': obj.tenantId,
+    'zoneType': obj.zoneType,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -3656,7 +4003,7 @@ export interface ClusterIssuerSpecAcmeSolversDns01Rfc2136 {
   /**
    * The IP address or hostname of an authoritative DNS server supporting
    * RFC2136 in the form host:port. If the host is an IPv6 address it must be
-   * enclosed in square brackets (e.g [2001:db8::1]) ; port is optional.
+   * enclosed in square brackets (e.g [2001:db8::1]); port is optional.
    * This field is required.
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Rfc2136#nameserver
@@ -3724,8 +4071,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
   /**
    * The AccessKeyID is used for authentication.
    * Cannot be set when SecretAccessKeyID is set.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#accessKeyID
@@ -3736,8 +4083,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
    * The SecretAccessKey is used for authentication. If set, pull the AWS
    * access key ID from a key within a Kubernetes Secret.
    * Cannot be set when AccessKeyID is set.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#accessKeyIDSecretRef
@@ -3796,8 +4143,8 @@ export interface ClusterIssuerSpecAcmeSolversDns01Route53 {
 
   /**
    * The SecretAccessKey is used for authentication.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema ClusterIssuerSpecAcmeSolversDns01Route53#secretAccessKeySecretRef
@@ -4071,6 +4418,44 @@ export function toJson_ClusterIssuerSpecVaultAuthAppRoleSecretRef(obj: ClusterIs
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * A reference to a service account that will be used to request a web identity
+ * token for IRSA (IAM Roles for Service Accounts) authentication.
+ *
+ * @schema ClusterIssuerSpecVaultAuthAwsServiceAccountRef
+ */
+export interface ClusterIssuerSpecVaultAuthAwsServiceAccountRef {
+  /**
+   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+   * The default audiences are always included in the token.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAwsServiceAccountRef#audiences
+   */
+  readonly audiences?: string[];
+
+  /**
+   * Name of the ServiceAccount used to request a token.
+   *
+   * @schema ClusterIssuerSpecVaultAuthAwsServiceAccountRef#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'ClusterIssuerSpecVaultAuthAwsServiceAccountRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_ClusterIssuerSpecVaultAuthAwsServiceAccountRef(obj: ClusterIssuerSpecVaultAuthAwsServiceAccountRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'audiences': obj.audiences?.map(y => y),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * The required Secret field containing a Kubernetes ServiceAccount JWT used
  * for authenticating with Vault. Use of 'ambient credentials' is not
  * supported.
@@ -4122,8 +4507,8 @@ export function toJson_ClusterIssuerSpecVaultAuthKubernetesSecretRef(obj: Cluste
  */
 export interface ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef {
   /**
-   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault. The default token
-   * consisting of the issuer's namespace and name is always included.
+   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+   * The default audiences are always included in the token.
    *
    * @schema ClusterIssuerSpecVaultAuthKubernetesServiceAccountRef#audiences
    */
@@ -4417,6 +4802,27 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01AzureDnsManagedIdentity(
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ZoneType determines which type of Azure DNS zone to use.
+ *
+ * Valid values are:
+ * - AzurePublicZone  (default): Use a public Azure DNS zone.
+ * - AzurePrivateZone: Use an Azure Private DNS zone.
+ *
+ * If not specified, AzurePublicZone is used.
+ *
+ * Support for Azure Private DNS zones is currently
+ * experimental and may change in future releases.
+ *
+ * @schema ClusterIssuerSpecAcmeSolversDns01AzureDnsZoneType
+ */
+export enum ClusterIssuerSpecAcmeSolversDns01AzureDnsZoneType {
+  /** AzurePublicZone */
+  AZURE_PUBLIC_ZONE = "AzurePublicZone",
+  /** AzurePrivateZone */
+  AZURE_PRIVATE_ZONE = "AzurePrivateZone",
+}
+
+/**
  * A reference to a specific 'key' within a Secret resource.
  * In some instances, `key` is a required field.
  *
@@ -4632,8 +5038,8 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretR
  * The SecretAccessKey is used for authentication. If set, pull the AWS
  * access key ID from a key within a Kubernetes Secret.
  * Cannot be set when AccessKeyID is set.
- * If neither the Access Key nor Key ID are set, we fall-back to using env
- * vars, shared credentials file or AWS Instance metadata,
+ * If neither the Access Key nor Key ID are set, we fall back to using env
+ * vars, shared credentials file, or AWS Instance metadata,
  * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef
@@ -4703,8 +5109,8 @@ export function toJson_ClusterIssuerSpecAcmeSolversDns01Route53Auth(obj: Cluster
 
 /**
  * The SecretAccessKey is used for authentication.
- * If neither the Access Key nor Key ID are set, we fall-back to using env
- * vars, shared credentials file or AWS Instance metadata,
+ * If neither the Access Key nor Key ID are set, we fall back to using env
+ * vars, shared credentials file, or AWS Instance metadata,
  * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema ClusterIssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef
@@ -5684,9 +6090,10 @@ export interface ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSp
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema ClusterIssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#operator
@@ -6014,9 +6421,10 @@ export interface ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerat
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema ClusterIssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#operator
@@ -9861,8 +10269,8 @@ export interface IssuerSpec {
   readonly vault?: IssuerSpecVault;
 
   /**
-   * Venafi configures this issuer to sign certificates using a Venafi TPP
-   * or Venafi Cloud policy zone.
+   * Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+   * or SaaS policy zone.
    *
    * @schema IssuerSpec#venafi
    */
@@ -10250,31 +10658,39 @@ export function toJson_IssuerSpecVault(obj: IssuerSpecVault | undefined): Record
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Venafi configures this issuer to sign certificates using a Venafi TPP
- * or Venafi Cloud policy zone.
+ * Venafi configures this issuer to sign certificates using a CyberArk Certificate Manager Self-Hosted
+ * or SaaS policy zone.
  *
  * @schema IssuerSpecVenafi
  */
 export interface IssuerSpecVenafi {
   /**
-   * Cloud specifies the Venafi cloud configuration settings.
-   * Only one of TPP or Cloud may be specified.
+   * Cloud specifies the CyberArk Certificate Manager SaaS configuration settings.
+   * Only one of CyberArk Certificate Manager may be specified.
    *
    * @schema IssuerSpecVenafi#cloud
    */
   readonly cloud?: IssuerSpecVenafiCloud;
 
   /**
-   * TPP specifies Trust Protection Platform configuration settings.
-   * Only one of TPP or Cloud may be specified.
+   * NGTS specifies Palo Alto Networks Next Generation Trust Services (NGTS) configuration
+   * using OAuth 2.0 Client Credentials. Only one of tpp, cloud, or ngts may be specified.
+   *
+   * @schema IssuerSpecVenafi#ngts
+   */
+  readonly ngts?: IssuerSpecVenafiNgts;
+
+  /**
+   * TPP specifies CyberArk Certificate Manager Self-Hosted configuration settings.
+   * Only one of CyberArk Certificate Manager may be specified.
    *
    * @schema IssuerSpecVenafi#tpp
    */
   readonly tpp?: IssuerSpecVenafiTpp;
 
   /**
-   * Zone is the Venafi Policy Zone to use for this issuer.
-   * All requests made to the Venafi platform will be restricted by the named
+   * Zone is the Certificate Manager Policy Zone to use for this issuer.
+   * All requests made to the Certificate Manager platform will be restricted by the named
    * zone policy.
    * This field is required.
    *
@@ -10291,6 +10707,7 @@ export function toJson_IssuerSpecVenafi(obj: IssuerSpecVenafi | undefined): Reco
   if (obj === undefined) { return undefined; }
   const result = {
     'cloud': toJson_IssuerSpecVenafiCloud(obj.cloud),
+    'ngts': toJson_IssuerSpecVenafiNgts(obj.ngts),
     'tpp': toJson_IssuerSpecVenafiTpp(obj.tpp),
     'zone': obj.zone,
   };
@@ -10433,6 +10850,27 @@ export interface IssuerSpecAcmeSolvers {
    * @schema IssuerSpecAcmeSolvers#selector
    */
   readonly selector?: IssuerSpecAcmeSolversSelector;
+
+  /**
+   * WaitInsteadOfSelfCheck, if set, skips cert-manager's self-check and
+   * instead waits this long after presentation before asking the ACME server
+   * to validate the challenge.
+   *
+   * This is an advanced escape hatch for environments where cert-manager's
+   * self-check cannot succeed from its own network or DNS viewpoint even
+   * though the ACME server can still validate successfully, for example due
+   * to split-horizon DNS or NAT hairpinning.
+   *
+   * A value of 0 skips the self-check and asks the ACME server to validate
+   * immediately after presentation, relying on the ACME server's own
+   * validation retries (RFC 8555 section 8.2) to succeed once the challenge
+   * has propagated. A negative duration is rejected.
+   * Value must be in units accepted by Go time.ParseDuration https://golang.org/pkg/time/#ParseDuration,
+   * for example `30s` or `2m`.
+   *
+   * @schema IssuerSpecAcmeSolvers#waitInsteadOfSelfCheck
+   */
+  readonly waitInsteadOfSelfCheck?: string;
 }
 
 /**
@@ -10445,6 +10883,7 @@ export function toJson_IssuerSpecAcmeSolvers(obj: IssuerSpecAcmeSolvers | undefi
     'dns01': toJson_IssuerSpecAcmeSolversDns01(obj.dns01),
     'http01': toJson_IssuerSpecAcmeSolversHttp01(obj.http01),
     'selector': toJson_IssuerSpecAcmeSolversSelector(obj.selector),
+    'waitInsteadOfSelfCheck': obj.waitInsteadOfSelfCheck,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -10464,6 +10903,15 @@ export interface IssuerSpecVaultAuth {
    * @schema IssuerSpecVaultAuth#appRole
    */
   readonly appRole?: IssuerSpecVaultAuthAppRole;
+
+  /**
+   * AWS authenticates with Vault using AWS IAM authentication.
+   * This allows authentication using IAM roles for service accounts (IRSA),
+   * EKS Pod Identity (PIA), or ambient credentials (EC2 instance profiles, ECS task role).
+   *
+   * @schema IssuerSpecVaultAuth#aws
+   */
+  readonly aws?: IssuerSpecVaultAuthAws;
 
   /**
    * ClientCertificate authenticates with Vault by presenting a client
@@ -10498,6 +10946,7 @@ export function toJson_IssuerSpecVaultAuth(obj: IssuerSpecVaultAuth | undefined)
   if (obj === undefined) { return undefined; }
   const result = {
     'appRole': toJson_IssuerSpecVaultAuthAppRole(obj.appRole),
+    'aws': toJson_IssuerSpecVaultAuthAws(obj.aws),
     'clientCertificate': toJson_IssuerSpecVaultAuthClientCertificate(obj.clientCertificate),
     'kubernetes': toJson_IssuerSpecVaultAuthKubernetes(obj.kubernetes),
     'tokenSecretRef': toJson_IssuerSpecVaultAuthTokenSecretRef(obj.tokenSecretRef),
@@ -10632,21 +11081,21 @@ export function toJson_IssuerSpecVaultClientKeySecretRef(obj: IssuerSpecVaultCli
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * Cloud specifies the Venafi cloud configuration settings.
- * Only one of TPP or Cloud may be specified.
+ * Cloud specifies the CyberArk Certificate Manager SaaS configuration settings.
+ * Only one of CyberArk Certificate Manager may be specified.
  *
  * @schema IssuerSpecVenafiCloud
  */
 export interface IssuerSpecVenafiCloud {
   /**
-   * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+   * APITokenSecretRef is a secret key selector for the CyberArk Certificate Manager SaaS API token.
    *
    * @schema IssuerSpecVenafiCloud#apiTokenSecretRef
    */
   readonly apiTokenSecretRef: IssuerSpecVenafiCloudApiTokenSecretRef;
 
   /**
-   * URL is the base URL for Venafi Cloud.
+   * URL is the base URL for CyberArk Certificate Manager SaaS.
    * Defaults to "https://api.venafi.cloud/".
    *
    * @default https://api.venafi.cloud/".
@@ -10671,15 +11120,77 @@ export function toJson_IssuerSpecVenafiCloud(obj: IssuerSpecVenafiCloud | undefi
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * TPP specifies Trust Protection Platform configuration settings.
- * Only one of TPP or Cloud may be specified.
+ * NGTS specifies Palo Alto Networks Next Generation Trust Services (NGTS) configuration
+ * using OAuth 2.0 Client Credentials. Only one of tpp, cloud, or ngts may be specified.
+ *
+ * @schema IssuerSpecVenafiNgts
+ */
+export interface IssuerSpecVenafiNgts {
+  /**
+   * CredentialsRef is a reference to a Kubernetes Secret containing the OAuth 2.0
+   * Client ID and Client Secret. The secret must contain the keys 'client-id' and
+   * 'client-secret'.
+   *
+   * @schema IssuerSpecVenafiNgts#credentialsRef
+   */
+  readonly credentialsRef: IssuerSpecVenafiNgtsCredentialsRef;
+
+  /**
+   * TokenEndpoint is the OAuth 2.0 token endpoint URL used to obtain access tokens,
+   * for example "https://auth.apps.paloaltonetworks.com/oauth2/access_token".
+   * Defaults to "https://auth.apps.paloaltonetworks.com/oauth2/access_token" if not set.
+   *
+   * @default https://auth.apps.paloaltonetworks.com/oauth2/access_token" if not set.
+   * @schema IssuerSpecVenafiNgts#tokenEndpoint
+   */
+  readonly tokenEndpoint?: string;
+
+  /**
+   * TSGID is the Tenant Service Group ID used to scope the OAuth 2.0 access token,
+   * for example "1234567890". The tsg_id: prefix is added automatically.
+   * This field is required.
+   *
+   * @schema IssuerSpecVenafiNgts#tsgID
+   */
+  readonly tsgId: string;
+
+  /**
+   * URL is the base URL for the NGTS API endpoint.
+   * Defaults to "https://api.strata.paloaltonetworks.com/ngts" if not set.
+   *
+   * @default https://api.strata.paloaltonetworks.com/ngts" if not set.
+   * @schema IssuerSpecVenafiNgts#url
+   */
+  readonly url?: string;
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVenafiNgts' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVenafiNgts(obj: IssuerSpecVenafiNgts | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'credentialsRef': toJson_IssuerSpecVenafiNgtsCredentialsRef(obj.credentialsRef),
+    'tokenEndpoint': obj.tokenEndpoint,
+    'tsgID': obj.tsgId,
+    'url': obj.url,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
+ * TPP specifies CyberArk Certificate Manager Self-Hosted configuration settings.
+ * Only one of CyberArk Certificate Manager may be specified.
  *
  * @schema IssuerSpecVenafiTpp
  */
 export interface IssuerSpecVenafiTpp {
   /**
    * Base64-encoded bundle of PEM CAs which will be used to validate the certificate
-   * chain presented by the TPP server. Only used if using HTTPS; ignored for HTTP.
+   * chain presented by the CyberArk Certificate Manager Self-Hosted server. Only used if using HTTPS; ignored for HTTP.
    * If undefined, the certificate bundle in the cert-manager controller container
    * is used to validate the chain.
    *
@@ -10689,7 +11200,7 @@ export interface IssuerSpecVenafiTpp {
 
   /**
    * Reference to a Secret containing a base64-encoded bundle of PEM CAs
-   * which will be used to validate the certificate chain presented by the TPP server.
+   * which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
    * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
    * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
    * the cert-manager controller container is used to validate the TLS connection.
@@ -10699,7 +11210,7 @@ export interface IssuerSpecVenafiTpp {
   readonly caBundleSecretRef?: IssuerSpecVenafiTppCaBundleSecretRef;
 
   /**
-   * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+   * CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
    * The secret must contain the key 'access-token' for the Access Token Authentication,
    * or two keys, 'username' and 'password' for the API Keys Authentication.
    *
@@ -10708,7 +11219,7 @@ export interface IssuerSpecVenafiTpp {
   readonly credentialsRef: IssuerSpecVenafiTppCredentialsRef;
 
   /**
-   * URL is the base URL for the vedsdk endpoint of the Venafi TPP instance,
+   * URL is the base URL for the vedsdk endpoint of the CyberArk Certificate Manager Self-Hosted instance,
    * for example: "https://tpp.example.com/vedsdk".
    *
    * @schema IssuerSpecVenafiTpp#url
@@ -11058,6 +11569,85 @@ export function toJson_IssuerSpecVaultAuthAppRole(obj: IssuerSpecVaultAuthAppRol
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * AWS authenticates with Vault using AWS IAM authentication.
+ * This allows authentication using IAM roles for service accounts (IRSA),
+ * EKS Pod Identity (PIA), or ambient credentials (EC2 instance profiles, ECS task role).
+ *
+ * @schema IssuerSpecVaultAuthAws
+ */
+export interface IssuerSpecVaultAuthAws {
+  /**
+   * The ARN of the AWS IAM role to assume using the Kubernetes service account
+   * token. Required when using IRSA (serviceAccountRef is set).
+   * This role must have a trust policy that allows the OIDC provider to assume it.
+   *
+   * @schema IssuerSpecVaultAuthAws#iamRoleArn
+   */
+  readonly iamRoleArn?: string;
+
+  /**
+   * The Vault mountPath here is the mount path to use when authenticating with
+   * Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+   * `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+   * default value "/v1/auth/aws" will be used.
+   *
+   * @schema IssuerSpecVaultAuthAws#mountPath
+   */
+  readonly mountPath?: string;
+
+  /**
+   * The AWS region to use for authentication. If not specified, the region
+   * will be determined from AWS_REGION or AWS_DEFAULT_REGION environment
+   * variables, falling back to "us-east-1" if not set.
+   *
+   * @schema IssuerSpecVaultAuthAws#region
+   */
+  readonly region?: string;
+
+  /**
+   * A required field containing the Vault Role to assume when authenticating.
+   *
+   * @schema IssuerSpecVaultAuthAws#role
+   */
+  readonly role: string;
+
+  /**
+   * A reference to a service account that will be used to request a web identity
+   * token for IRSA (IAM Roles for Service Accounts) authentication.
+   *
+   * @schema IssuerSpecVaultAuthAws#serviceAccountRef
+   */
+  readonly serviceAccountRef?: IssuerSpecVaultAuthAwsServiceAccountRef;
+
+  /**
+   * The Vault header value to include in the STS signing request.
+   * This is used to prevent replay attacks.
+   *
+   * @schema IssuerSpecVaultAuthAws#vaultHeaderValue
+   */
+  readonly vaultHeaderValue?: string;
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVaultAuthAws' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVaultAuthAws(obj: IssuerSpecVaultAuthAws | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'iamRoleArn': obj.iamRoleArn,
+    'mountPath': obj.mountPath,
+    'region': obj.region,
+    'role': obj.role,
+    'serviceAccountRef': toJson_IssuerSpecVaultAuthAwsServiceAccountRef(obj.serviceAccountRef),
+    'vaultHeaderValue': obj.vaultHeaderValue,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * ClientCertificate authenticates with Vault by presenting a client
  * certificate during the request's TLS handshake.
  * Works only when using HTTPS protocol.
@@ -11212,7 +11802,7 @@ export function toJson_IssuerSpecVaultAuthTokenSecretRef(obj: IssuerSpecVaultAut
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
+ * APITokenSecretRef is a secret key selector for the CyberArk Certificate Manager SaaS API token.
  *
  * @schema IssuerSpecVenafiCloudApiTokenSecretRef
  */
@@ -11251,8 +11841,39 @@ export function toJson_IssuerSpecVenafiCloudApiTokenSecretRef(obj: IssuerSpecVen
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * CredentialsRef is a reference to a Kubernetes Secret containing the OAuth 2.0
+ * Client ID and Client Secret. The secret must contain the keys 'client-id' and
+ * 'client-secret'.
+ *
+ * @schema IssuerSpecVenafiNgtsCredentialsRef
+ */
+export interface IssuerSpecVenafiNgtsCredentialsRef {
+  /**
+   * Name of the resource being referred to.
+   * More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+   *
+   * @schema IssuerSpecVenafiNgtsCredentialsRef#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVenafiNgtsCredentialsRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVenafiNgtsCredentialsRef(obj: IssuerSpecVenafiNgtsCredentialsRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * Reference to a Secret containing a base64-encoded bundle of PEM CAs
- * which will be used to validate the certificate chain presented by the TPP server.
+ * which will be used to validate the certificate chain presented by the CyberArk Certificate Manager Self-Hosted server.
  * Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
  * If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
  * the cert-manager controller container is used to validate the TLS connection.
@@ -11294,7 +11915,7 @@ export function toJson_IssuerSpecVenafiTppCaBundleSecretRef(obj: IssuerSpecVenaf
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
- * CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+ * CredentialsRef is a reference to a Secret containing the CyberArk Certificate Manager Self-Hosted API credentials.
  * The secret must contain the key 'access-token' for the Access Token Authentication,
  * or two keys, 'username' and 'password' for the API Keys Authentication.
  *
@@ -11482,6 +12103,22 @@ export interface IssuerSpecAcmeSolversDns01AzureDns {
    * @schema IssuerSpecAcmeSolversDns01AzureDns#tenantID
    */
   readonly tenantId?: string;
+
+  /**
+   * ZoneType determines which type of Azure DNS zone to use.
+   *
+   * Valid values are:
+   * - AzurePublicZone  (default): Use a public Azure DNS zone.
+   * - AzurePrivateZone: Use an Azure Private DNS zone.
+   *
+   * If not specified, AzurePublicZone is used.
+   *
+   * Support for Azure Private DNS zones is currently
+   * experimental and may change in future releases.
+   *
+   * @schema IssuerSpecAcmeSolversDns01AzureDns#zoneType
+   */
+  readonly zoneType?: IssuerSpecAcmeSolversDns01AzureDnsZoneType;
 }
 
 /**
@@ -11499,6 +12136,7 @@ export function toJson_IssuerSpecAcmeSolversDns01AzureDns(obj: IssuerSpecAcmeSol
     'resourceGroupName': obj.resourceGroupName,
     'subscriptionID': obj.subscriptionId,
     'tenantID': obj.tenantId,
+    'zoneType': obj.zoneType,
   };
   // filter undefined values
   return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
@@ -11648,7 +12286,7 @@ export interface IssuerSpecAcmeSolversDns01Rfc2136 {
   /**
    * The IP address or hostname of an authoritative DNS server supporting
    * RFC2136 in the form host:port. If the host is an IPv6 address it must be
-   * enclosed in square brackets (e.g [2001:db8::1]) ; port is optional.
+   * enclosed in square brackets (e.g [2001:db8::1]); port is optional.
    * This field is required.
    *
    * @schema IssuerSpecAcmeSolversDns01Rfc2136#nameserver
@@ -11716,8 +12354,8 @@ export interface IssuerSpecAcmeSolversDns01Route53 {
   /**
    * The AccessKeyID is used for authentication.
    * Cannot be set when SecretAccessKeyID is set.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#accessKeyID
@@ -11728,8 +12366,8 @@ export interface IssuerSpecAcmeSolversDns01Route53 {
    * The SecretAccessKey is used for authentication. If set, pull the AWS
    * access key ID from a key within a Kubernetes Secret.
    * Cannot be set when AccessKeyID is set.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#accessKeyIDSecretRef
@@ -11788,8 +12426,8 @@ export interface IssuerSpecAcmeSolversDns01Route53 {
 
   /**
    * The SecretAccessKey is used for authentication.
-   * If neither the Access Key nor Key ID are set, we fall-back to using env
-   * vars, shared credentials file or AWS Instance metadata,
+   * If neither the Access Key nor Key ID are set, we fall back to using env
+   * vars, shared credentials file, or AWS Instance metadata,
    * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
    *
    * @schema IssuerSpecAcmeSolversDns01Route53#secretAccessKeySecretRef
@@ -12063,6 +12701,44 @@ export function toJson_IssuerSpecVaultAuthAppRoleSecretRef(obj: IssuerSpecVaultA
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * A reference to a service account that will be used to request a web identity
+ * token for IRSA (IAM Roles for Service Accounts) authentication.
+ *
+ * @schema IssuerSpecVaultAuthAwsServiceAccountRef
+ */
+export interface IssuerSpecVaultAuthAwsServiceAccountRef {
+  /**
+   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+   * The default audiences are always included in the token.
+   *
+   * @schema IssuerSpecVaultAuthAwsServiceAccountRef#audiences
+   */
+  readonly audiences?: string[];
+
+  /**
+   * Name of the ServiceAccount used to request a token.
+   *
+   * @schema IssuerSpecVaultAuthAwsServiceAccountRef#name
+   */
+  readonly name: string;
+}
+
+/**
+ * Converts an object of type 'IssuerSpecVaultAuthAwsServiceAccountRef' to JSON representation.
+ */
+/* eslint-disable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+export function toJson_IssuerSpecVaultAuthAwsServiceAccountRef(obj: IssuerSpecVaultAuthAwsServiceAccountRef | undefined): Record<string, any> | undefined {
+  if (obj === undefined) { return undefined; }
+  const result = {
+    'audiences': obj.audiences?.map(y => y),
+    'name': obj.name,
+  };
+  // filter undefined values
+  return Object.entries(result).reduce((r, i) => (i[1] === undefined) ? r : ({ ...r, [i[0]]: i[1] }), {});
+}
+/* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
+
+/**
  * The required Secret field containing a Kubernetes ServiceAccount JWT used
  * for authenticating with Vault. Use of 'ambient credentials' is not
  * supported.
@@ -12114,8 +12790,8 @@ export function toJson_IssuerSpecVaultAuthKubernetesSecretRef(obj: IssuerSpecVau
  */
 export interface IssuerSpecVaultAuthKubernetesServiceAccountRef {
   /**
-   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault. The default token
-   * consisting of the issuer's namespace and name is always included.
+   * TokenAudiences is an optional list of extra audiences to include in the token passed to Vault.
+   * The default audiences are always included in the token.
    *
    * @schema IssuerSpecVaultAuthKubernetesServiceAccountRef#audiences
    */
@@ -12409,6 +13085,27 @@ export function toJson_IssuerSpecAcmeSolversDns01AzureDnsManagedIdentity(obj: Is
 /* eslint-enable max-len, @stylistic/max-len, quote-props, @stylistic/quote-props */
 
 /**
+ * ZoneType determines which type of Azure DNS zone to use.
+ *
+ * Valid values are:
+ * - AzurePublicZone  (default): Use a public Azure DNS zone.
+ * - AzurePrivateZone: Use an Azure Private DNS zone.
+ *
+ * If not specified, AzurePublicZone is used.
+ *
+ * Support for Azure Private DNS zones is currently
+ * experimental and may change in future releases.
+ *
+ * @schema IssuerSpecAcmeSolversDns01AzureDnsZoneType
+ */
+export enum IssuerSpecAcmeSolversDns01AzureDnsZoneType {
+  /** AzurePublicZone */
+  AZURE_PUBLIC_ZONE = "AzurePublicZone",
+  /** AzurePrivateZone */
+  AZURE_PRIVATE_ZONE = "AzurePrivateZone",
+}
+
+/**
  * A reference to a specific 'key' within a Secret resource.
  * In some instances, `key` is a required field.
  *
@@ -12624,8 +13321,8 @@ export function toJson_IssuerSpecAcmeSolversDns01Rfc2136TsigSecretSecretRef(obj:
  * The SecretAccessKey is used for authentication. If set, pull the AWS
  * access key ID from a key within a Kubernetes Secret.
  * Cannot be set when AccessKeyID is set.
- * If neither the Access Key nor Key ID are set, we fall-back to using env
- * vars, shared credentials file or AWS Instance metadata,
+ * If neither the Access Key nor Key ID are set, we fall back to using env
+ * vars, shared credentials file, or AWS Instance metadata,
  * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema IssuerSpecAcmeSolversDns01Route53AccessKeyIdSecretRef
@@ -12695,8 +13392,8 @@ export function toJson_IssuerSpecAcmeSolversDns01Route53Auth(obj: IssuerSpecAcme
 
 /**
  * The SecretAccessKey is used for authentication.
- * If neither the Access Key nor Key ID are set, we fall-back to using env
- * vars, shared credentials file or AWS Instance metadata,
+ * If neither the Access Key nor Key ID are set, we fall back to using env
+ * vars, shared credentials file, or AWS Instance metadata,
  * see: https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials
  *
  * @schema IssuerSpecAcmeSolversDns01Route53SecretAccessKeySecretRef
@@ -13676,9 +14373,10 @@ export interface IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecToler
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema IssuerSpecAcmeSolversHttp01GatewayHttpRoutePodTemplateSpecTolerations#operator
@@ -14006,9 +14704,10 @@ export interface IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations {
 
   /**
    * Operator represents a key's relationship to the value.
-   * Valid operators are Exists and Equal. Defaults to Equal.
+   * Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
    * Exists is equivalent to wildcard for value, so that a pod can
    * tolerate all taints of a particular category.
+   * Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
    *
    * @default Equal.
    * @schema IssuerSpecAcmeSolversHttp01IngressPodTemplateSpecTolerations#operator

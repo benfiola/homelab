@@ -9,7 +9,7 @@ export const assets: TemplateAssetFn = async (dir) => {
   const sourceChartPath = await helm.pull(
     {
       chart: `oci://quay.io/jetstack/charts/cert-manager`,
-      version: "v1.19.1",
+      version: "v1.21.3",
     },
     dir,
   );
