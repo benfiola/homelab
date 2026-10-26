@@ -1,6 +1,14 @@
-import { GatewayClass } from "../../../assets/gateway-api/gateway.networking.k8s.io";
+import {
+  Gateway,
+  GatewayClass,
+} from "../../../assets/gateway-api/gateway.networking.k8s.io";
 import { WrappedGateway } from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-images.benfiola.com";
-import { Chart, gateways, Namespace } from "../../cdk8s";
+import {
+  Chart,
+  gateways,
+  listenerSetGateways,
+  Namespace,
+} from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -30,6 +38,34 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       "cert-manager.io/cluster-issuer": "cloudflare",
     };
     const staticIp = staticIps[name];
+    const infrastructure = {
+      annotations: {
+        "lbipam.cilium.io/ips": staticIp,
+      },
+    };
+
+    if ((listenerSetGateways as readonly string[]).includes(name)) {
+      new Gateway(chart, `${id}-gateway-${name}`, {
+        metadata: {
+          name,
+        },
+        spec: {
+          gatewayClassName: gatewayClass.name,
+          infrastructure,
+          allowedListeners: { namespaces: { from: "All" as any } },
+          listeners: [
+            {
+              name: "placeholder",
+              port: 80,
+              protocol: "HTTP",
+              allowedRoutes: { namespaces: { from: "None" as any } },
+            },
+          ],
+        },
+      });
+      continue;
+    }
+
     new WrappedGateway(chart, `${id}-wrapped-gateway-${name}`, {
       metadata: {
         annotations,
@@ -37,11 +73,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
       spec: {
         gatewayClassName: gatewayClass.name,
-        infrastructure: {
-          annotations: {
-            "lbipam.cilium.io/ips": staticIp,
-          },
-        },
+        infrastructure,
       },
     });
   }

@@ -4,7 +4,7 @@ import dedent from "ts-dedent";
 import { ConfigMap } from "../../../assets/kubernetes/k8s";
 import {
   Chart,
-  HttpRoute,
+  ListenerSetHttpRoute,
   Namespace,
   StatefulSet,
   VerticalPodAutoscaler,
@@ -83,7 +83,10 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const service = statefulSet.createService({ web: 8123 });
 
-  new HttpRoute(chart, "family", "automation.fiola.dev").match(service, 8123);
+  new ListenerSetHttpRoute(chart, "family", "automation.fiola.dev").match(
+    service,
+    8123,
+  );
 
   new VerticalPodAutoscaler(chart, statefulSet);
 

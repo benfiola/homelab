@@ -18,6 +18,7 @@ import {
 import {
   GrpcRoute as BaseGrpcRoute,
   HttpRoute as BaseHttpRoute,
+  ListenerSet,
   TcpRoute as BaseTcpRoute,
   UdpRoute as BaseUdpRoute,
 } from "../assets/gateway-api/gateway.networking.k8s.io";
@@ -674,6 +675,346 @@ export class GrpcRoute extends BaseGrpcRoute {
           {
             name: gateway,
             namespace: "gateway",
+            sectionName: hostname,
+          },
+        ],
+      },
+    });
+
+    if (opts.timeout) {
+      new BackendTrafficPolicy(construct, `${id}-backend-traffic-policy`, {
+        metadata: {
+          name: hostname,
+        },
+        spec: {
+          targetRefs: [
+            {
+              group: "gateway.networking.k8s.io",
+              kind: "GRPCRoute",
+              name: hostname,
+            },
+          ],
+          timeout: {
+            http: {
+              maxStreamDuration: opts.timeout,
+              requestTimeout: opts.timeout,
+            },
+          },
+        },
+      });
+    }
+  }
+
+  match(
+    to: RouteTarget,
+    port: number,
+    ...matches: {
+      service?: string;
+      method?: string;
+      type?: "Exact" | "RegularExpression";
+    }[]
+  ) {
+    const props = (this as any).props;
+    const spec = (props.spec = props.spec ?? {});
+    const rules = (spec.rules = spec.rules ?? []);
+    for (const { service, method, type } of matches.length ? matches : [{}]) {
+      const hasMethodMatch = service !== undefined || method !== undefined;
+      rules.push({
+        backendRefs: [
+          {
+            apiVersion: to.apiVersion,
+            kind: to.kind,
+            name: to.name,
+            port,
+          },
+        ],
+        ...(hasMethodMatch
+          ? { matches: [{ method: { service, method, type } }] }
+          : {}),
+      });
+    }
+    return this;
+  }
+}
+
+export const listenerSetGateways = ["family"] as const satisfies Gateway[];
+export type ListenerSetGateway = (typeof listenerSetGateways)[number];
+
+interface CreateListenerSetOpts {
+  gateway: ListenerSetGateway;
+  name: string;
+  routeKind: "GRPCRoute" | "HTTPRoute" | "TCPRoute" | "UDPRoute";
+  port: number;
+  hostname?: string;
+}
+
+const routeKindProtocols = {
+  GRPCRoute: "HTTPS",
+  HTTPRoute: "HTTPS",
+  TCPRoute: "TCP",
+  UDPRoute: "UDP",
+} as const;
+
+const createListenerSet = (
+  construct: Construct,
+  opts: CreateListenerSetOpts,
+) => {
+  const { gateway, hostname, name, port, routeKind } = opts;
+  const protocol = routeKindProtocols[routeKind];
+
+  const annotations: Record<string, string> = {};
+  let tls:
+    | { mode: "Terminate"; certificateRefs: { name: string }[] }
+    | undefined;
+  if (protocol === "HTTPS") {
+    annotations["cert-manager.io/cluster-issuer"] = "cloudflare";
+    tls = {
+      mode: "Terminate",
+      certificateRefs: [{ name: `${name.replaceAll(".", "-")}-tls` }],
+    };
+  }
+
+  return new ListenerSet(construct, `${construct}-listener-set-${name}`, {
+    metadata: {
+      name,
+      annotations,
+    },
+    spec: {
+      parentRef: {
+        group: "gateway.networking.k8s.io",
+        kind: "Gateway",
+        name: gateway,
+        namespace: "gateway",
+      },
+      listeners: [
+        {
+          name,
+          hostname,
+          port,
+          protocol,
+          ...(tls ? { tls: tls as any } : {}),
+          allowedRoutes: {
+            namespaces: { from: "Same" as any },
+            kinds: [{ group: "gateway.networking.k8s.io", kind: routeKind }],
+          },
+        },
+      ],
+    },
+  });
+};
+
+export class ListenerSetHttpRoute extends BaseHttpRoute {
+  constructor(
+    construct: Construct,
+    gateway: ListenerSetGateway,
+    hostname: string,
+  ) {
+    const id = `${construct}-http-route-${hostname}`;
+
+    const annotations: Record<string, string> = {
+      ...getGatewayAnnotations(gateway),
+    };
+
+    const listenerSet = createListenerSet(construct, {
+      gateway,
+      name: hostname,
+      hostname,
+      port: 443,
+      routeKind: "HTTPRoute",
+    });
+
+    super(construct, id, {
+      metadata: {
+        name: hostname,
+        annotations,
+      },
+      spec: {
+        hostnames: [hostname],
+        parentRefs: [
+          {
+            kind: "ListenerSet",
+            name: listenerSet.name,
+            sectionName: hostname,
+          },
+        ],
+      },
+    });
+  }
+
+  match(
+    to: RouteTarget,
+    port: number,
+    ...matches: {
+      path?: string;
+      pathType?: "Exact" | "PathPrefix" | "RegularExpression";
+      timeout?: string;
+    }[]
+  ) {
+    const props = (this as any).props;
+    const spec = (props.spec = props.spec ?? {});
+    const rules = (spec.rules = spec.rules ?? []);
+    for (const {
+      path = "/",
+      pathType = "PathPrefix",
+      timeout,
+    } of matches.length ? matches : [{}]) {
+      rules.push({
+        backendRefs: [
+          {
+            apiVersion: to.apiVersion,
+            kind: to.kind,
+            name: to.name,
+            port,
+          },
+        ],
+        matches: [{ path: { type: pathType, value: path } }],
+        ...(timeout ? { timeouts: { request: timeout } } : {}),
+      });
+    }
+    return this;
+  }
+}
+
+export class ListenerSetTcpRoute extends BaseTcpRoute {
+  constructor(
+    construct: Construct,
+    gateway: ListenerSetGateway,
+    hostname: string,
+    fromPort: number,
+    to: RouteTarget,
+    toPort: number,
+  ) {
+    const name = `${hostname}-${fromPort}`;
+    const id = `${construct}-tcp-route-${name}`;
+
+    const annotations: Record<string, string> = {
+      [`${knownAnnotations.hostname}`]: hostname,
+      ...getGatewayAnnotations(gateway),
+    };
+
+    const listenerSet = createListenerSet(construct, {
+      gateway,
+      name: `${hostname}-tcp-${fromPort}`,
+      port: fromPort,
+      routeKind: "TCPRoute",
+    });
+
+    super(construct, id, {
+      metadata: {
+        name,
+        annotations,
+      },
+      spec: {
+        parentRefs: [
+          {
+            kind: "ListenerSet",
+            name: listenerSet.name,
+            sectionName: `${hostname}-tcp-${fromPort}`,
+            port: fromPort,
+          },
+        ],
+        rules: [
+          {
+            backendRefs: [
+              {
+                kind: to.kind,
+                name: to.name,
+                port: toPort,
+              },
+            ],
+          },
+        ],
+      },
+    });
+  }
+}
+
+export class ListenerSetUdpRoute extends BaseUdpRoute {
+  constructor(
+    construct: Construct,
+    gateway: ListenerSetGateway,
+    hostname: string,
+    fromPort: number,
+    to: RouteTarget,
+    toPort: number,
+  ) {
+    const name = `${hostname}-${fromPort}`;
+    const id = `${construct}-udp-route-${name}`;
+
+    const annotations: Record<string, string> = {
+      [`${knownAnnotations.hostname}`]: hostname,
+      ...getGatewayAnnotations(gateway),
+    };
+
+    const listenerSet = createListenerSet(construct, {
+      gateway,
+      name: `${hostname}-udp-${fromPort}`,
+      port: fromPort,
+      routeKind: "UDPRoute",
+    });
+
+    super(construct, id, {
+      metadata: {
+        name,
+        annotations,
+      },
+      spec: {
+        parentRefs: [
+          {
+            kind: "ListenerSet",
+            name: listenerSet.name,
+            sectionName: `${hostname}-udp-${fromPort}`,
+            port: fromPort,
+          },
+        ],
+        rules: [
+          {
+            backendRefs: [
+              {
+                kind: to.kind,
+                name: to.name,
+                port: toPort,
+              },
+            ],
+          },
+        ],
+      },
+    });
+  }
+}
+
+export class ListenerSetGrpcRoute extends BaseGrpcRoute {
+  constructor(
+    construct: Construct,
+    gateway: ListenerSetGateway,
+    hostname: string,
+    opts: GrpcRouteOpts = {},
+  ) {
+    const id = `${construct}-grpc-route-${hostname}`;
+
+    const annotations: Record<string, string> = {
+      ...getGatewayAnnotations(gateway),
+    };
+
+    const listenerSet = createListenerSet(construct, {
+      gateway,
+      name: hostname,
+      hostname,
+      port: 443,
+      routeKind: "GRPCRoute",
+    });
+
+    super(construct, id, {
+      metadata: {
+        name: hostname,
+        annotations,
+      },
+      spec: {
+        hostnames: [hostname],
+        parentRefs: [
+          {
+            kind: "ListenerSet",
+            name: listenerSet.name,
             sectionName: hostname,
           },
         ],
