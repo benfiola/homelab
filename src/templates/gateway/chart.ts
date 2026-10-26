@@ -4,13 +4,7 @@ import {
   GatewaySpecAllowedListenersNamespacesFrom as AllowedListenersNamespacesFrom,
   GatewaySpecListenersAllowedRoutesNamespacesFrom as AllowedRoutesNamespacesFrom,
 } from "../../../assets/gateway-api/gateway.networking.k8s.io";
-import { WrappedGateway } from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-images.benfiola.com";
-import {
-  Chart,
-  gateways,
-  listenerSetGateways,
-  Namespace,
-} from "../../cdk8s";
+import { Chart, gateways, Namespace } from "../../cdk8s";
 import { TemplateChartFn } from "../../context";
 
 export const chart: TemplateChartFn = async (construct, _, context) => {
@@ -36,9 +30,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   };
 
   for (const name of gateways) {
-    const annotations: Record<string, string> = {
-      "cert-manager.io/cluster-issuer": "cloudflare",
-    };
     const staticIp = staticIps[name];
     const infrastructure = {
       annotations: {
@@ -46,47 +37,33 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
       },
     };
 
-    if ((listenerSetGateways as readonly string[]).includes(name)) {
-      new Gateway(chart, `${id}-gateway-${name}`, {
-        metadata: {
-          name,
-        },
-        spec: {
-          gatewayClassName: gatewayClass.name,
-          infrastructure,
-          allowedListeners: {
-            namespaces: { from: AllowedListenersNamespacesFrom.ALL },
-          },
-          listeners: [
-            {
-              name: "placeholder",
-              port: 80,
-              protocol: "HTTP",
-              allowedRoutes: {
-                namespaces: {
-                  from: AllowedRoutesNamespacesFrom.SELECTOR,
-                  selector: {
-                    matchExpressions: [
-                      { key: "homelab/does-not-exist", operator: "Exists" },
-                    ],
-                  },
-                },
-              },
-            },
-          ],
-        },
-      });
-      continue;
-    }
-
-    new WrappedGateway(chart, `${id}-wrapped-gateway-${name}`, {
+    new Gateway(chart, `${id}-gateway-${name}`, {
       metadata: {
-        annotations,
         name,
       },
       spec: {
         gatewayClassName: gatewayClass.name,
         infrastructure,
+        allowedListeners: {
+          namespaces: { from: AllowedListenersNamespacesFrom.ALL },
+        },
+        listeners: [
+          {
+            name: "placeholder",
+            port: 80,
+            protocol: "HTTP",
+            allowedRoutes: {
+              namespaces: {
+                from: AllowedRoutesNamespacesFrom.SELECTOR,
+                selector: {
+                  matchExpressions: [
+                    { key: "homelab/does-not-exist", operator: "Exists" },
+                  ],
+                },
+              },
+            },
+          },
+        ],
       },
     });
   }

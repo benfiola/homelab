@@ -494,255 +494,12 @@ interface RouteTarget {
   name: string;
 }
 
-export class HttpRoute extends BaseHttpRoute {
-  constructor(construct: Construct, gateway: Gateway, hostname: string) {
-    const id = `${construct}-http-route-${hostname}`;
-
-    const annotations: Record<string, string> = {
-      ...getGatewayAnnotations(gateway),
-    };
-
-    super(construct, id, {
-      metadata: {
-        name: hostname,
-        annotations,
-      },
-      spec: {
-        hostnames: [hostname],
-        parentRefs: [
-          {
-            name: gateway,
-            namespace: "gateway",
-            sectionName: hostname,
-          },
-        ],
-      },
-    });
-  }
-
-  match(
-    to: RouteTarget,
-    port: number,
-    ...matches: {
-      path?: string;
-      pathType?: "Exact" | "PathPrefix" | "RegularExpression";
-      timeout?: string;
-    }[]
-  ) {
-    const props = (this as any).props;
-    const spec = (props.spec = props.spec ?? {});
-    const rules = (spec.rules = spec.rules ?? []);
-    for (const {
-      path = "/",
-      pathType = "PathPrefix",
-      timeout,
-    } of matches.length ? matches : [{}]) {
-      rules.push({
-        backendRefs: [
-          {
-            apiVersion: to.apiVersion,
-            kind: to.kind,
-            name: to.name,
-            port,
-          },
-        ],
-        matches: [{ path: { type: pathType, value: path } }],
-        ...(timeout ? { timeouts: { request: timeout } } : {}),
-      });
-    }
-    return this;
-  }
-}
-
-export class TcpRoute extends BaseTcpRoute {
-  constructor(
-    construct: Construct,
-    gateway: Gateway,
-    hostname: string,
-    fromPort: number,
-    to: RouteTarget,
-    toPort: number,
-  ) {
-    const name = `${hostname}-${fromPort}`;
-    const id = `${construct}-tcp-route-${name}`;
-
-    const annotations: Record<string, string> = {
-      [`${knownAnnotations.hostname}`]: hostname,
-      ...getGatewayAnnotations(gateway),
-    };
-
-    super(construct, id, {
-      metadata: {
-        name,
-        annotations,
-      },
-      spec: {
-        parentRefs: [
-          {
-            name: gateway,
-            namespace: "gateway",
-            sectionName: `${hostname}-tcp-${fromPort}`,
-            port: fromPort,
-          },
-        ],
-        rules: [
-          {
-            backendRefs: [
-              {
-                kind: to.kind,
-                name: to.name,
-                port: toPort,
-              },
-            ],
-          },
-        ],
-      },
-    });
-  }
-}
-
-export class UdpRoute extends BaseUdpRoute {
-  constructor(
-    construct: Construct,
-    gateway: Gateway,
-    hostname: string,
-    fromPort: number,
-    to: RouteTarget,
-    toPort: number,
-  ) {
-    const name = `${hostname}-${fromPort}`;
-    const id = `${construct}-udp-route-${name}`;
-
-    const annotations: Record<string, string> = {
-      [`${knownAnnotations.hostname}`]: hostname,
-      ...getGatewayAnnotations(gateway),
-    };
-
-    super(construct, id, {
-      metadata: {
-        name,
-        annotations,
-      },
-      spec: {
-        parentRefs: [
-          {
-            name: gateway,
-            namespace: "gateway",
-            sectionName: `${hostname}-udp-${fromPort}`,
-            port: fromPort,
-          },
-        ],
-        rules: [
-          {
-            backendRefs: [
-              {
-                kind: to.kind,
-                name: to.name,
-                port: toPort,
-              },
-            ],
-          },
-        ],
-      },
-    });
-  }
-}
-
 interface GrpcRouteOpts {
   timeout?: string;
 }
 
-export class GrpcRoute extends BaseGrpcRoute {
-  constructor(
-    construct: Construct,
-    gateway: Gateway,
-    hostname: string,
-    opts: GrpcRouteOpts = {},
-  ) {
-    const id = `${construct}-grpc-route-${hostname}`;
-
-    const annotations: Record<string, string> = {
-      ...getGatewayAnnotations(gateway),
-    };
-
-    super(construct, id, {
-      metadata: {
-        name: hostname,
-        annotations,
-      },
-      spec: {
-        hostnames: [hostname],
-        parentRefs: [
-          {
-            name: gateway,
-            namespace: "gateway",
-            sectionName: hostname,
-          },
-        ],
-      },
-    });
-
-    if (opts.timeout) {
-      new BackendTrafficPolicy(construct, `${id}-backend-traffic-policy`, {
-        metadata: {
-          name: hostname,
-        },
-        spec: {
-          targetRefs: [
-            {
-              group: "gateway.networking.k8s.io",
-              kind: "GRPCRoute",
-              name: hostname,
-            },
-          ],
-          timeout: {
-            http: {
-              maxStreamDuration: opts.timeout,
-              requestTimeout: opts.timeout,
-            },
-          },
-        },
-      });
-    }
-  }
-
-  match(
-    to: RouteTarget,
-    port: number,
-    ...matches: {
-      service?: string;
-      method?: string;
-      type?: "Exact" | "RegularExpression";
-    }[]
-  ) {
-    const props = (this as any).props;
-    const spec = (props.spec = props.spec ?? {});
-    const rules = (spec.rules = spec.rules ?? []);
-    for (const { service, method, type } of matches.length ? matches : [{}]) {
-      const hasMethodMatch = service !== undefined || method !== undefined;
-      rules.push({
-        backendRefs: [
-          {
-            apiVersion: to.apiVersion,
-            kind: to.kind,
-            name: to.name,
-            port,
-          },
-        ],
-        ...(hasMethodMatch
-          ? { matches: [{ method: { service, method, type } }] }
-          : {}),
-      });
-    }
-    return this;
-  }
-}
-
-export const listenerSetGateways = ["family"] as const satisfies Gateway[];
-export type ListenerSetGateway = (typeof listenerSetGateways)[number];
-
 interface CreateListenerSetOpts {
-  gateway: ListenerSetGateway;
+  gateway: Gateway;
   name: string;
   routeKind: "GRPCRoute" | "HTTPRoute" | "TCPRoute" | "UDPRoute";
   port: number;
@@ -804,10 +561,10 @@ const createListenerSet = (
   });
 };
 
-export class ListenerSetHttpRoute extends BaseHttpRoute {
+export class HttpRoute extends BaseHttpRoute {
   constructor(
     construct: Construct,
-    gateway: ListenerSetGateway,
+    gateway: Gateway,
     hostname: string,
   ) {
     const id = `${construct}-http-route-${hostname}`;
@@ -876,10 +633,10 @@ export class ListenerSetHttpRoute extends BaseHttpRoute {
   }
 }
 
-export class ListenerSetTcpRoute extends BaseTcpRoute {
+export class TcpRoute extends BaseTcpRoute {
   constructor(
     construct: Construct,
-    gateway: ListenerSetGateway,
+    gateway: Gateway,
     hostname: string,
     fromPort: number,
     to: RouteTarget,
@@ -930,10 +687,10 @@ export class ListenerSetTcpRoute extends BaseTcpRoute {
   }
 }
 
-export class ListenerSetUdpRoute extends BaseUdpRoute {
+export class UdpRoute extends BaseUdpRoute {
   constructor(
     construct: Construct,
-    gateway: ListenerSetGateway,
+    gateway: Gateway,
     hostname: string,
     fromPort: number,
     to: RouteTarget,
@@ -984,10 +741,10 @@ export class ListenerSetUdpRoute extends BaseUdpRoute {
   }
 }
 
-export class ListenerSetGrpcRoute extends BaseGrpcRoute {
+export class GrpcRoute extends BaseGrpcRoute {
   constructor(
     construct: Construct,
-    gateway: ListenerSetGateway,
+    gateway: Gateway,
     hostname: string,
     opts: GrpcRouteOpts = {},
   ) {

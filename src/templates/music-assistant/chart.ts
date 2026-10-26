@@ -1,7 +1,7 @@
 import {
   Chart,
-  ListenerSetHttpRoute,
-  ListenerSetTcpRoute,
+  HttpRoute,
+  TcpRoute,
   Namespace,
   StatefulSet,
   VerticalPodAutoscaler,
@@ -45,11 +45,11 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     stream: 8097,
   });
 
-  new ListenerSetHttpRoute(chart, "family", "listen.fiola.dev").match(
+  new HttpRoute(chart, "family", "listen.fiola.dev").match(
     service,
     8095,
   );
-  new ListenerSetTcpRoute(
+  new TcpRoute(
     chart,
     "family",
     "stream.listen.fiola.dev",
