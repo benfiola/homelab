@@ -258,17 +258,6 @@ const talosctl = async (opts: TalosctlOpts, command: Command) => {
   await actions.talosctl(opts.configDir, command.args);
 };
 
-interface UpgradeTalosOpts {
-  configDir: string;
-  nodes?: string[];
-}
-
-const upgradeTalos = async (opts: UpgradeTalosOpts) => {
-  await actions.upgradeTalos(opts.configDir, {
-    nodes: opts.nodes,
-  });
-};
-
 interface RcloneAssetsOpts {
   configDir: string;
 }
@@ -404,12 +393,6 @@ const main = async () => {
     .allowUnknownOption()
     .passThroughOptions()
     .action(talosctl);
-
-  program
-    .command("upgrade-talos")
-    .description("upgrades talos on all nodes")
-    .option("--config-dir <path>", "cluster config directory", defaultConfigDir)
-    .action(upgradeTalos);
 
   program
     .command("apply-swos <config>")

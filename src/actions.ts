@@ -687,36 +687,6 @@ export const talosctl = async (configDir: string, args: string[]) => {
   await talos.talosctl(cluster, nodes, args);
 };
 
-interface UpgradeTalosOpts {
-  nodes?: string[];
-}
-
-export const upgradeTalos = async (
-  configDir: string,
-  opts: UpgradeTalosOpts = {},
-) => {
-  const cluster = await config.getClusterConfig(configDir);
-  const nodeNames =
-    opts.nodes || (await getEnabledNodes(configDir)).map((n) => n.name);
-  const nodes = await Promise.all(
-    nodeNames.map((n) => config.getNodeConfig(configDir, n)),
-  );
-
-  const buckets: Record<string, string[]> = {};
-  nodes.forEach((n) => {
-    const hwType = cluster.hardware[n.hardware];
-    const image = hwType.image;
-    buckets[image] = buckets[image] ?? [];
-    buckets[image].push(n.name);
-  });
-
-  for (const bucket of Object.values(buckets)) {
-    const bucketStr = bucket.join(",");
-    let command = [`--nodes=${bucketStr}`, "upgrade"];
-    await talosctl(configDir, command);
-  }
-};
-
 export const manageAssets = async (configDir: string, args: string[] = []) => {
   const appSecrets = await config.getAppsSecrets(configDir);
   const bucketSecrets = appSecrets.secrets["bucket-sync"];
