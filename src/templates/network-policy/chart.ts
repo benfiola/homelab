@@ -111,10 +111,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "garage-operator",
     pod("garage-operator", "garage-operator"),
   );
-  const gatewayRouteSync = svc(
-    "gateway-route-sync",
-    pod("gateway-route-sync", "gateway-route-sync"),
-  );
   const grafana = svc("grafana", pod("grafana", "grafana"));
   const grafanaOperator = svc(
     "grafana-operator",
@@ -370,10 +366,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // garage-operator
   garageOperator.to(kubeApiServer, tcp(6443)).to(garage, tcp(3903));
   host.to(garageOperator, tcp(8081));
-
-  // gateway-route-sync
-  gatewayRouteSync.to(kubeApiServer, tcp(6443));
-  host.to(gatewayRouteSync, tcp(8081));
 
   // grafana
   grafana

@@ -19,7 +19,6 @@ apps:
   - template: garage-operator
   - template: gateway
   - template: gateway-api
-  - template: gateway-route-sync
   - template: grafana
   - template: grafana-operator
   - template: home-assistant
