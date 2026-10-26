@@ -41,7 +41,6 @@ apps:
   - template: network-policy
   - template: node-feature-discovery
   - template: nvidia-gpu-operator
-  - template: palworld
   - template: piraeus-operator
   - template: postfix
   - template: prometheus
@@ -50,7 +49,6 @@ apps:
   - template: pvc-restore
   - template: reloader
   - template: storage-class
-  - template: tunnel
   - template: vault
   - template: vault-push-secrets
   - template: vault-secrets-operator
