@@ -1,6 +1,8 @@
 import {
   Gateway,
   GatewayClass,
+  GatewaySpecAllowedListenersNamespacesFrom as AllowedListenersNamespacesFrom,
+  GatewaySpecListenersAllowedRoutesNamespacesFrom as AllowedRoutesNamespacesFrom,
 } from "../../../assets/gateway-api/gateway.networking.k8s.io";
 import { WrappedGateway } from "../../../assets/gateway-route-sync/gateway-route-sync.homelab-images.benfiola.com";
 import {
@@ -52,13 +54,24 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         spec: {
           gatewayClassName: gatewayClass.name,
           infrastructure,
-          allowedListeners: { namespaces: { from: "All" as any } },
+          allowedListeners: {
+            namespaces: { from: AllowedListenersNamespacesFrom.ALL },
+          },
           listeners: [
             {
               name: "placeholder",
               port: 80,
               protocol: "HTTP",
-              allowedRoutes: { namespaces: { from: "None" as any } },
+              allowedRoutes: {
+                namespaces: {
+                  from: AllowedRoutesNamespacesFrom.SELECTOR,
+                  selector: {
+                    matchExpressions: [
+                      { key: "homelab/does-not-exist", operator: "Exists" },
+                    ],
+                  },
+                },
+              },
             },
           ],
         },

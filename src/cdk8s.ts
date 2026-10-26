@@ -19,6 +19,7 @@ import {
   GrpcRoute as BaseGrpcRoute,
   HttpRoute as BaseHttpRoute,
   ListenerSet,
+  ListenerSetSpecListenersAllowedRoutesNamespacesFrom as AllowedRoutesNamespacesFrom,
   TcpRoute as BaseTcpRoute,
   UdpRoute as BaseUdpRoute,
 } from "../assets/gateway-api/gateway.networking.k8s.io";
@@ -794,7 +795,7 @@ const createListenerSet = (
           protocol,
           ...(tls ? { tls: tls as any } : {}),
           allowedRoutes: {
-            namespaces: { from: "Same" as any },
+            namespaces: { from: AllowedRoutesNamespacesFrom.SAME },
             kinds: [{ group: "gateway.networking.k8s.io", kind: routeKind }],
           },
         },
