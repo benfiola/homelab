@@ -40,15 +40,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const alertmanager = svc("alertmanager", pod("alertmanager", "alertmanager"));
   const alloy = svc("alloy", pod("alloy", "alloy"));
   const assetsServer = svc("assets-server", _assetsServer("*"));
-  const azerothcoreServer = svc(
-    "azerothcore-server",
-    pod("server", "azerothcore"),
-  );
-  const azerothcoreDb = svc("azerothcore-db", pod("db", "azerothcore"));
-  const azerothcoreAssetsServer = svc(
-    "azerothcore-assets-server",
-    _assetsServer("azerothcore"),
-  );
   const bucketSync = svc("bucket-sync", pod("bucket-sync", "bucket-sync"));
   const bucketSyncJob = svc("bucket-sync-job", pod("bucket-sync-job", "*"));
   const certManagerCainjector = svc(
@@ -166,11 +157,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "metrics-server",
     pod("metrics-server", "metrics-server"),
   );
-  const minecraft = svc("minecraft", pod("minecraft", "minecraft"));
-  const minecraftAssetsServer = svc(
-    "minecraft-assets-server",
-    _assetsServer("minecraft"),
-  );
   const mosquitto = svc("mosquitto", pod("mosquitto", "mosquitto"));
   const musicAssistant = svc(
     "music-assistant",
@@ -230,7 +216,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const mediarrSabnzbd = svc("mediarr-sabnzbd", pod("sabnzbd", "mediarr"));
   const mediarrSeerr = svc("mediarr-seerr", pod("seerr", "mediarr"));
   const mediarrSonarr = svc("mediarr-sonarr", pod("sonarr", "mediarr"));
-  const palworld = svc("palworld", pod("palworld", "palworld"));
   const piraeusOperator = svc(
     "piraeus-operator",
     component("piraeus-operator", "piraeus-operator"),
@@ -251,15 +236,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   );
   const pvcRestore = svc("pvc-restore", pod("pvc-restore", "pvc-restore"));
   const reloader = svc("reloader", pod("reloader", "reloader"));
-  const singlePlayerTarkov = svc(
-    "single-player-tarkov",
-    pod("single-player-tarkov", "single-player-tarkov"),
-  );
-  const singlePlayerTarkovAssetsServer = svc(
-    "single-player-tarkov-assets-server",
-    _assetsServer("single-player-tarkov"),
-  );
-  const tunnel = svc("tunnel", pod("tunnel", "tunnel"));
   const vault = svc("vault", pod("vault", "vault"));
   const vaultPushSecrets = svc(
     "vault-push-secrets",
@@ -309,11 +285,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   // assets-server
   assetsServer.to(garage, tcp(3900));
-
-  // azerothcore
-  azerothcoreServer
-    .to(azerothcoreAssetsServer, tcp(8080))
-    .to(azerothcoreDb, tcp(3306));
 
   // bucket-sync
   bucketSync.to(kubeApiServer, tcp(6443));
@@ -536,15 +507,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   host.to(metricsServer, tcp(10250));
   metricsServer.to(kubeApiServer, tcp(6443)).to(nodes, tcp(10250));
 
-  // minecraft
-  minecraft
-    .to(minecraftAssetsServer, tcp(8080))
-    .to(dns("launchermeta.mojang.com"), tcp(443))
-    .to(dns("api.minecraftservices.com"), tcp(443))
-    .to(dns("sessionserver.mojang.com"), tcp(443))
-    .to(dns("meta.fabricmc.net"), tcp(443))
-    .to(dns("maven.fabricmc.net"), tcp(443));
-
   // music-assistant
   musicAssistant
     .from(cidrs("224.0.0.251/32"), udp(5353))
@@ -565,20 +527,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   nvidiaGpuOperator.to(kubeApiServer, tcp(6443));
   host.to(nvidiaGpuOperator, tcp(8081));
   nvidiaOperatorValidator.to(kubeApiServer, tcp(6443));
-
-  // palworld
-  palworld
-    .to(dns("steampipe.akamaized.net"), tcp(443))
-    .to(
-      dns(
-        "*.steamcontent.com",
-        "*.*.steamcontent.com",
-        "*.*.*.steamcontent.com",
-      ),
-      tcp(443),
-    )
-    .to(dns("api.steampowered.com"), tcp(443))
-    .to(dns("*.steamserver.net"), tcp(443, [27015, 27060]));
 
   // piraeus-operator
   host.to(linstorAffinityController, tcp(8000));
@@ -629,12 +577,6 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   // reloader
   reloader.to(kubeApiServer, tcp(6443));
   host.to(reloader, tcp(9090));
-
-  // single-player-tarkov
-  singlePlayerTarkov
-    .to(singlePlayerTarkovAssetsServer, tcp(8080))
-    .to(dns("github.com"), tcp(443))
-    .to(dns("release-assets.githubusercontent.com"), tcp(443));
 
   // vault
   vault.to(kubeApiServer, tcp(6443)).to(vault, tcp(8200, 8201));
@@ -754,23 +696,15 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   gatewayPersonal
     .to(envoyGatewayController, tcp(18000))
-    .to(tunnel, tcp(8080, 8081))
     .from(
       cidrs("192.168.16.0/24", "192.168.17.0/24", "192.168.34.0/24"),
-      tcp(8080, 10443),
+      tcp(10443),
     );
 
   gatewayFriends
     .to(envoyGatewayController, tcp(18000))
-    .to(azerothcoreServer, tcp(3724, 7878, 8080, 8085))
-    .to(azerothcoreAssetsServer, tcp(8080))
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSeerr, tcp(5055))
-    .to(minecraft, tcp(25565))
-    .to(minecraftAssetsServer, tcp(8080))
-    .to(palworld, udp(8211), tcp(8080))
-    .to(singlePlayerTarkov, tcp(6969, 7828, 7829))
-    .to(singlePlayerTarkovAssetsServer, tcp(8080))
     .from(
       cidrs(
         "192.168.8.0/24",
@@ -792,8 +726,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         // iot + iot_allow_intranet (bedroom-2.assistant)
         "192.168.24.14/32",
       ),
-      tcp(3724, 6969, 7878, 8085, 10443, 25565),
-      udp(8211),
+      tcp(10443),
     );
 
   gatewayInfrastructure

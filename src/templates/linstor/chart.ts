@@ -39,6 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   new LinstorCluster(chart, `${id}-cluster`, {
     metadata: { name: id },
     spec: {
+      nfsServer: { enabled: false },
       properties: [{ name: "DrbdOptions/auto-diskful", value: "30" }],
     },
   });
