@@ -49,7 +49,7 @@ hardware:
               - siderolabs/drbd
               - siderolabs/i915
     image: factory.talos.dev/metal-installer/322dbdfae3877a291f8977311656b2267aacfe7c15a483f56904d65050814a0c:v1.14.4
-kubernetes: 1.36.1
+kubernetes: 1.36.5
 name: homelab
 ---
 cluster:
