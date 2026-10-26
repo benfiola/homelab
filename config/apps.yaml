@@ -3,7 +3,6 @@ kind: HomelabAppsConfig
 apps:
   - template: alertmanager
   - template: alloy
-  - template: azerothcore
   - template: bucket-sync
   - template: cert-manager
   - template: cilium
@@ -34,7 +33,6 @@ apps:
   - template: mdns-reflector
   - template: mediarr
   - template: metrics-server
-  - template: minecraft
   - template: monitoring-config
   - template: mosquitto
   - template: multus
@@ -51,7 +49,6 @@ apps:
   - template: prometheus-operator
   - template: pvc-restore
   - template: reloader
-  - template: single-player-tarkov
   - template: storage-class
   - template: tunnel
   - template: vault
