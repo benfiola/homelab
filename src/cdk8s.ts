@@ -472,7 +472,7 @@ export type Gateway = (typeof gateways)[number];
 const knownAnnotations = {
   useMikrotik: "homelab.benfiola.com/use-external-dns-mikrotik",
   useCloudflare: "homelab.benfiola.com/use-external-dns-cloudflare",
-  hostname: "external-dns.alpha.kubernetes.io/hostname",
+  hostname: "external-dns.kubernetes.io/hostname",
 } as const;
 type Annotations = typeof knownAnnotations;
 type Annotation = Annotations[keyof Annotations];

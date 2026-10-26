@@ -31,6 +31,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm-mikrotik`, context.getAsset("chart.tar.gz"), {
     annotationFilter: "homelab.benfiola.com/use-external-dns-mikrotik",
+    enableGatewayListenerSets: true,
+    image: { tag: "v0.24.0" },
     nameOverride: `${id}-mikrotik`,
     policy: "sync",
     provider: {
@@ -62,7 +64,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         ],
         image: {
           repository: "ghcr.io/mirceanton/external-dns-provider-mikrotik",
-          tag: "v1.5.1",
+          tag: "v1.6.3",
         },
         securityContext: {
           allowPrivilegeEscalation: false,
@@ -88,6 +90,8 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   new Helm(chart, `${id}-helm-cloudflare`, context.getAsset("chart.tar.gz"), {
     annotationFilter: "homelab.benfiola.com/use-external-dns-cloudflare",
+    enableGatewayListenerSets: true,
+    image: { tag: "v0.24.0" },
     env: [
       {
         name: "CF_API_TOKEN",
