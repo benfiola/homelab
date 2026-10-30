@@ -13,7 +13,7 @@ HUBBLE_VERSION ?= 1.19.4
 # renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler extractVersion=^v(?<version>.+)$
 JB_VERSION ?= 0.6.0
 # renovate: datasource=github-releases depName=derailed/k9s extractVersion=^v(?<version>.+)$
-K9S_VERSION ?= 0.50.16
+K9S_VERSION ?= 0.51.0
 # renovate-pinned: depName=kubectl reason=matches the cluster version, which is upgraded manually
 KUBECTL_VERSION ?= 1.36.5
 # renovate: datasource=github-releases depName=rclone/rclone extractVersion=^v(?<version>.+)$
