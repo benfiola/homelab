@@ -21,7 +21,7 @@ RCLONE_VERSION ?= 1.73.2
 # renovate-pinned: depName=talosctl reason=matches the cluster version, which is upgraded manually
 TALOSCTL_VERSION ?= 1.14.4
 # renovate: datasource=npm depName=tsx
-TSX_VERSION ?= 4.20.6
+TSX_VERSION ?= 4.23.15
 # renovate: datasource=github-releases depName=hashicorp/vault extractVersion=^v(?<version>.+)$
 VAULT_VERSION ?= 1.21.1
 
