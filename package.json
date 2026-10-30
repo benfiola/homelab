@@ -6,7 +6,7 @@
     "homelab": "./src/cli.ts"
   },
   "overrides": {
-    "npm-run-path": "5"
+    "npm-run-path": "6"
   },
   "dependencies": {
     "@types/lodash": "^4.17.21",
