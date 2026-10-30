@@ -22,6 +22,7 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
+      // renovate: datasource=node-version depName=node
       "version": "22.21.0"
     }
   },

@@ -5,6 +5,7 @@ import { TemplateAssetFn } from "../../context.ts";
 import { getTempy } from "../../tempy";
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.+)$
   const version = "2.7.3";
   const manifestUrl = `https://github.com/fluxcd/flux2/releases/download/v${version}/install.yaml`;
 

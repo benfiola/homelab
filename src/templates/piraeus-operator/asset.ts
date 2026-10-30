@@ -5,6 +5,7 @@ import { TemplateAssetFn } from "../../context.ts";
 import { kustomize } from "../../kubernetes";
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator extractVersion=^v(?<version>.+)$
   const version = "2.10.1";
 
   const manifestUrl = `https://github.com/piraeusdatastore/piraeus-operator/config/default?ref=v${version}`;

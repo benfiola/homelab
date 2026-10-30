@@ -1,0 +1,73 @@
+name: refresh-assets
+
+# renovate only bumps version strings in src/templates/*/asset.ts.
+# the assets those strings produce (assets/**) are committed, so they need to be regenerated
+# for the pull request to be mergeable.
+
+on:
+  pull_request:
+    paths:
+      - "src/templates/*/asset.ts"
+
+jobs:
+  refresh-assets:
+    # only branches renovate pushed to this repository (forks can't be pushed to)
+    if: startsWith(github.head_ref, 'renovate/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: "${{github.workflow}}-${{github.head_ref}}"
+      cancel-in-progress: true
+    permissions:
+      contents: write
+    env:
+      BASE_REF: ${{github.base_ref}}
+      HEAD_REF: ${{github.head_ref}}
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{github.head_ref}}
+      - name: configure git environment
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          # renovate: datasource=node-version depName=node
+          node-version: "22.21.0"
+      - name: install project
+        run: |
+          sudo make install-tools
+          make install-project
+      - name: find changed templates
+        id: templates
+        run: |
+          templates=$(git diff --name-only "origin/${BASE_REF}...HEAD" -- 'src/templates/*/asset.ts' | cut -d/ -f3 | sort -u | tr '\n' ' ')
+          echo "changed templates: ${templates}"
+          echo "names=${templates}" >> "${GITHUB_OUTPUT}"
+      - name: refresh assets
+        if: steps.templates.outputs.names != ''
+        env:
+          TEMPLATES: ${{steps.templates.outputs.names}}
+        run: |
+          # intentionally unquoted: one argument per template
+          homelab refresh-assets --filter ${TEMPLATES}
+      - name: commit assets
+        if: steps.templates.outputs.names != ''
+        env:
+          TEMPLATES: ${{steps.templates.outputs.names}}
+        run: |
+          git add assets
+          if git diff --cached --quiet; then
+            echo "assets are up to date"
+            exit 0
+          fi
+          git commit -m "refresh assets: ${TEMPLATES}"
+          git push origin "HEAD:refs/heads/${HEAD_REF}"
+      # fails the check if the refreshed assets no longer work with the templates (e.g. a renamed crd kind)
+      - name: generate manifests
+        run: |
+          homelab generate-manifests --output "${RUNNER_TEMP}/manifests"

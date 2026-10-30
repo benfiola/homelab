@@ -6,6 +6,7 @@ import * as helm from "../../helm.ts";
 import { getTempy } from "../../tempy.ts";
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=envoyproxy/gateway extractVersion=^v(?<version>.+)$
   const version = "1.9.3";
 
   const sourceCrdChartPath = await helm.pull(

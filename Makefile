@@ -1,15 +1,28 @@
+# renovate: datasource=github-releases depName=bitwarden/sdk-sm extractVersion=^bws-v(?<version>.+)$
 BWS_VERSION ?= 2.1.0
+# renovate: datasource=npm depName=cdk8s-cli
 CDK8S_VERSION ?= 2.203.1
+# renovate: datasource=github-releases depName=cilium/cilium-cli extractVersion=^v(?<version>.+)$
 CILIUMCLI_VERSION ?= 0.19.7
+# renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.+)$
 FLUX_VERSION ?= 2.7.3
+# renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.+)$
 HELM_VERSION ?= 4.0.0
+# renovate: datasource=github-releases depName=cilium/hubble extractVersion=^v(?<version>.+)$
 HUBBLE_VERSION ?= 1.19.4
+# renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler extractVersion=^v(?<version>.+)$
 JB_VERSION ?= 0.6.0
+# renovate: datasource=github-releases depName=derailed/k9s extractVersion=^v(?<version>.+)$
 K9S_VERSION ?= 0.50.16
+# renovate-pinned: depName=kubectl reason=matches the cluster version, which is upgraded manually
 KUBECTL_VERSION ?= 1.36.5
+# renovate: datasource=github-releases depName=rclone/rclone extractVersion=^v(?<version>.+)$
 RCLONE_VERSION ?= 1.73.2
+# renovate-pinned: depName=talosctl reason=matches the cluster version, which is upgraded manually
 TALOSCTL_VERSION ?= 1.14.4
+# renovate: datasource=npm depName=tsx
 TSX_VERSION ?= 4.20.6
+# renovate: datasource=github-releases depName=hashicorp/vault extractVersion=^v(?<version>.+)$
 VAULT_VERSION ?= 1.21.1
 
 ARCH ?= $(shell uname -m)

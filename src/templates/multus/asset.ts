@@ -3,6 +3,7 @@ import { join } from "path";
 import * as cdk8s from "../../cdk8s-cli";
 
 export const assets = async (dir: string) => {
+  // renovate: datasource=github-releases depName=k8snetworkplumbingwg/multus-cni extractVersion=^v(?<version>.+)$
   const version = "4.2.4";
   const manifestUrl = `https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v${version}/deployments/multus-daemonset-thick.yml`;
 

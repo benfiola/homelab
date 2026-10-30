@@ -13,7 +13,11 @@ const githubContentSchema = zod.object({
 });
 
 const fetchGithubContent = async (url: string) => {
-  let response = await fetch(url);
+  const token = process.env.GITHUB_TOKEN;
+  let response = await fetch(
+    url,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
+  );
   if (!response.ok) {
     throw new Error(`request failed: ${response.url}`);
   }
@@ -51,6 +55,7 @@ const getCrdUrls = async (version: string) => {
 };
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=cilium/cilium extractVersion=^v(?<version>.+)$
   const version = "1.20.1";
 
   const sourceChartPath = await helm.pull(

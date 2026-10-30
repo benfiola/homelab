@@ -4,6 +4,7 @@ import { TemplateAssetFn } from "../../context.ts";
 import * as helm from "../../helm.ts";
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=bokysan/docker-postfix extractVersion=^v(?<version>.+)$
   const version = "5.1.0";
 
   const sourceChartPath = await helm.pull(

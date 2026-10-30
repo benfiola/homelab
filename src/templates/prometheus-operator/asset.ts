@@ -5,6 +5,7 @@ import { TemplateAssetFn } from "../../context.ts";
 import { kustomize } from "../../kubernetes";
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator extractVersion=^v(?<version>.+)$
   const version = "0.87.0";
 
   const manifestUrl = `https://github.com/prometheus-operator/prometheus-operator/releases/download/v${version}/bundle.yaml`;

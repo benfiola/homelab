@@ -1,0 +1,179 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Differences from homelab-images: no PR is opened until its checkbox is ticked in the dependency dashboard (dependencyDashboardApproval), because merging to main publishes manifests that flux applies to the cluster. Commits read 'bump <name> to <version>' to match this repo's history, rather than using semantic commits.",
+    "gitIgnoredAuthors: the refresh-assets workflow pushes regenerated assets to renovate branches, and renovate must not treat those commits as someone editing the branch (which stops it from rebasing)."
+  ],
+  "extends": [
+    "config:recommended"
+  ],
+  "dependencyDashboard": true,
+  "dependencyDashboardHeader": "This issue lists Renovate updates and detected dependencies. Read the [Dependency Dashboard](https://docs.renovatebot.com/key-concepts/dashboard/) docs to learn more.\n\nEntries under **Detected dependencies** marked `(pinned: ...)` are deliberately held back for this environment and are never updated.",
+  "dependencyDashboardApproval": true,
+  "ignoreUnstable": true,
+  "minimumReleaseAge": "3 days",
+  "semanticCommits": "disabled",
+  "commitMessageAction": "bump",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "commitMessageLowerCase": "auto",
+  "labels": [
+    "dependencies"
+  ],
+  "gitIgnoredAuthors": [
+    "github-actions@github.com"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Tracked: a '# renovate:' comment on the line above a version (datasource + depName) or above a commit sha (git-refs + branch).",
+      "managerFilePatterns": [
+        "/(^|/)Makefile$/",
+        "/\\.sh$/",
+        "/^src/.*\\.ts$/",
+        "/(^|/)devcontainer\\.json$/",
+        "/^\\.github\\/workflows\\/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "(?:#|//) renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?(?: extractVersion=(?<extractVersion>\\S+))?\\n[^\\n]*?[=:]\\s*\\\"?(?<currentValue>[^\\\"\\s]+)\\\"?",
+        "(?:#|//) renovate: datasource=(?<datasource>git-refs) depName=(?<depName>\\S+) branch=(?<currentValue>\\S+)\\n[^\\n]*?[=:]\\s*\\\"?(?<currentDigest>[a-f0-9]{40})\\\"?"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Tracked: helm.pull({ repo, chart, version }) in a template's asset.ts.",
+      "managerFilePatterns": [
+        "/^src\\/templates\\/[^/]+\\/asset\\.ts$/"
+      ],
+      "datasourceTemplate": "helm",
+      "matchStrings": [
+        "repo: [\\\"'`](?<registryUrl>[^\\\"'`]+)[\\\"'`],\\s*chart: [\\\"'`](?<depName>[^\\\"'`]+)[\\\"'`],\\s*version: [\\\"'`](?<currentValue>v?\\d[^\\\"'`$]*)[\\\"'`]"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Tracked: helm.pull({ chart: 'oci://...', version }) in a template's asset.ts.",
+      "managerFilePatterns": [
+        "/^src\\/templates\\/[^/]+\\/asset\\.ts$/"
+      ],
+      "datasourceTemplate": "docker",
+      "matchStrings": [
+        "chart: [\\\"'`]oci://(?<depName>[^\\\"'`]+)[\\\"'`],\\s*version: [\\\"'`](?<currentValue>v?\\d[^\\\"'`$]*)[\\\"'`]"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Tracked: container image references ('[registry/]path/name:tag') in templates.",
+      "managerFilePatterns": [
+        "/^src\\/.*\\.ts$/"
+      ],
+      "datasourceTemplate": "docker",
+      "matchStrings": [
+        "[\\\"'`](?<depName>(?:[a-z0-9-]+(?:\\.[a-z0-9-]+)+/)?(?:[a-z0-9_.-]+/)+[a-z0-9_.-]+):(?<currentValue>[\\w.-]*\\d[\\w.-]*)[\\\"'`]",
+        "[\\\"'`](?<depName>alpine|mysql|memcached):(?<currentValue>[\\w.-]*\\d[\\w.-]*)[\\\"'`]"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Pinned: a '# renovate-pinned:' comment above a version. The version is read from the line below, never from the comment. Listed in the dashboard's detected dependencies, never updated.",
+      "managerFilePatterns": [
+        "/(^|/)Makefile$/",
+        "/\\.sh$/",
+        "/^src\\/.*\\.ts$/",
+        "/^config\\/.+\\.yaml$/"
+      ],
+      "matchStrings": [
+        "(?:#|//) renovate-pinned: depName=(?<depName>\\S+) reason=(?<reason>[^\\n]+)\\n[^\\n]*[=:]\\s*\\\"?(?<currentValue>[^\\\"\\s:]+)\\\"?[ \\t]*(?:\\n|$)"
+      ],
+      "depNameTemplate": "{{{depName}}} (pinned: {{{reason}}})",
+      "depTypeTemplate": "pinned",
+      "datasourceTemplate": "git-refs",
+      "packageNameTemplate": "https://github.com/benfiola/homelab"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "VERSIONS: assets/ is generated output (vendored jsonnet, go modules, workflows, etc.) and is never tracked.",
+      "matchFileNames": [
+        "assets/**"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "GROUPING: all workflow action updates arrive as one PR.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "groupName": "github actions"
+    },
+    {
+      "description": "VERSIONS: node is tracked via '# renovate:' annotations everywhere, so the workflows and devcontainer agree on one source. Turn off the built-in actions tracking of it.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "enabled": false,
+      "matchPackageNames": [
+        "actions/node-versions"
+      ]
+    },
+    {
+      "description": "VERSIONS: package.json 'engines' is a compatibility floor, not a pin.",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "engines"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "GROUPING / VERSIONS: the node version in the devcontainer and workflows moves together, and only even (LTS) majors are used.",
+      "matchDepNames": [
+        "node"
+      ],
+      "groupName": "node",
+      "allowedVersions": "/^v?\\d*[02468]\\./"
+    },
+    {
+      "description": "VERSIONS: linuxserver appends a '-lsNNN' build suffix that changes on every rebuild.",
+      "matchPackageNames": [
+        "lscr.io/linuxserver/sabnzbd"
+      ],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-ls(?<build>\\d+)$"
+    },
+    {
+      "description": "VERSIONS: llama.cpp releases are monotonically increasing build numbers.",
+      "matchPackageNames": [
+        "ghcr.io/ggml-org/llama.cpp"
+      ],
+      "versioning": "regex:^server-cuda-b(?<major>\\d+)$"
+    },
+    {
+      "description": "PINNED: shown in the dashboard, never updated. (The datasource above only exists so the entry isn't skipped.)",
+      "matchDepTypes": [
+        "pinned"
+      ],
+      "versioning": "loose",
+      "allowedVersions": "/^$/"
+    },
+    {
+      "description": "PR NOTE: asset.ts bumps are regenerated by the refresh-assets workflow.",
+      "matchFileNames": [
+        "src/templates/*/asset.ts"
+      ],
+      "prBodyNotes": [
+        "ℹ️ The `refresh-assets` workflow regenerates `assets/` on this branch. Check that it (and its manifest generation check) passes before merging."
+      ]
+    },
+    {
+      "description": "PR NOTE: envoy-gateway supports a specific range of gateway-api releases.",
+      "matchDepNames": [
+        "envoyproxy/gateway",
+        "kubernetes-sigs/gateway-api"
+      ],
+      "prBodyNotes": [
+        "⚠️ `envoy-gateway` supports a specific gateway-api release range. Bump and check them together."
+      ]
+    }
+  ]
+}

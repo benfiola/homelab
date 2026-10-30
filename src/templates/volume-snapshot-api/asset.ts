@@ -5,6 +5,7 @@ import { TemplateAssetFn } from "../../context.ts";
 import { kustomize } from "../../kubernetes";
 
 export const assets: TemplateAssetFn = async (dir) => {
+  // renovate: datasource=github-releases depName=kubernetes-csi/external-snapshotter extractVersion=^v(?<version>.+)$
   const version = "8.4.0";
 
   const manifestUrl = `https://github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v${version}`;

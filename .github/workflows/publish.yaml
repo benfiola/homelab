@@ -27,6 +27,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
+          # renovate: datasource=node-version depName=node
           node-version: "22.21.0"
       - name: install project
         run: |
@@ -63,6 +64,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
+          # renovate: datasource=node-version depName=node
           node-version: "22.21.0"
       - name: build docs
         run: |

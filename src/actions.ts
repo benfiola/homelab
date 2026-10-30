@@ -676,8 +676,15 @@ export const refreshAssets = async (
   output: string,
   opts: RefreshAssetsOpts = {},
 ) => {
-  await rm(output, { force: true, recursive: true });
-  await templates.fetchAssets(output, { filter: opts.filter });
+  const filter = opts.filter ?? [];
+  if (filter.length === 0) {
+    await rm(output, { force: true, recursive: true });
+  } else {
+    for (const name of filter) {
+      await rm(join(output, name), { force: true, recursive: true });
+    }
+  }
+  await templates.fetchAssets(output, { filter });
 };
 
 export const talosctl = async (configDir: string, args: string[]) => {
