@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           # renovate: datasource=node-version depName=node
-          node-version: "22.21.0"
+          node-version: "22.23.4"
       - name: install project
         run: |
           sudo make install-tools
@@ -65,7 +65,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           # renovate: datasource=node-version depName=node
-          node-version: "22.21.0"
+          node-version: "22.23.4"
       - name: build docs
         run: |
           DIST=dist make build-docs
