@@ -14,7 +14,7 @@
     "@types/nunjucks": "^3.2.6",
     "cdk8s": "^2.70.23",
     "commander": "^15.0.0",
-    "deepmerge-ts": "^7.1.5",
+    "deepmerge-ts": "^8.0.0",
     "digest-fetch": "^3.1.1",
     "execa": "^10.0.0",
     "lodash": "^4.17.21",
