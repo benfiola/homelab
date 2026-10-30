@@ -24,7 +24,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     "dashboard-lights.yaml",
     "dashboard-thermostat.yaml",
     "scripts.yaml",
-  ].map((v) => path.join(__dirname, v));
+  ].map((v) => path.join(import.meta.dirname, v));
   const config = new ConfigMap(chart, `${id}-config-map`, {
     metadata: {
       name: "home-assistant",

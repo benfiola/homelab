@@ -1,13 +1,10 @@
 import { once } from "events";
 import build from "pino-abstract-transport";
-import { SonicBoom } from "sonic-boom";
-import {
-  logLabels,
-  LogLevel,
-  LogLevelLabel,
-  logLevels,
-  LogStatus,
-} from "./logger";
+import sonicBoom from "sonic-boom";
+
+const { SonicBoom } = sonicBoom;
+import { logLabels, logLevels } from "./logger.ts";
+import type { LogLevel, LogLevelLabel, LogStatus } from "./logger.ts";
 
 export type LogFormat = "raw" | "plain" | "rich";
 

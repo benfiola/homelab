@@ -22,7 +22,7 @@ import * as jsonnet from "../../jsonnet";
 const getMonitoringConfig = async (context: TemplateChartContext) => {
   const libs = [context.getAsset("jsonnet")];
   const contentStr = await jsonnet.evaluate({
-    jsonnetFile: path.join(__dirname, "main.jsonnet"),
+    jsonnetFile: path.join(import.meta.dirname, "main.jsonnet"),
     libs,
   });
   const content = JSON.parse(contentStr);

@@ -6,7 +6,7 @@ import {
 } from "cdk8s";
 import { Construct } from "constructs";
 import { writeFile } from "fs/promises";
-import { get } from "lodash";
+import get from "lodash/get.js";
 import { BucketSyncPolicy as BaseBucketSyncPolicy } from "../assets/bucket-sync/bucket-sync.homelab-images.benfiola.com";
 import { BackendTrafficPolicy } from "../assets/envoy-gateway/gateway.envoyproxy.io";
 import {

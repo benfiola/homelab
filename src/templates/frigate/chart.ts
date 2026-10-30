@@ -23,7 +23,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
 
   const vaultSecret = new VaultStaticSecret(chart, vaultAuth);
 
-  const configFile = path.join(__dirname, "config.yaml");
+  const configFile = path.join(import.meta.dirname, "config.yaml");
   const config = new ConfigMap(chart, `${id}-config-map-config`, {
     metadata: {
       name: "frigate-config",

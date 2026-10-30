@@ -8,8 +8,8 @@ import {
   TemplateChartFn,
 } from "./context";
 
-const assetsDir = join(__dirname, "..", "assets");
-const templatesDir = join(__dirname, "templates");
+const assetsDir = join(import.meta.dirname, "..", "assets");
+const templatesDir = join(import.meta.dirname, "templates");
 
 const getTemplateName = (templateFile: string) =>
   basename(dirname(templateFile));

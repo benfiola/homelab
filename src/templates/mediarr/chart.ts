@@ -36,7 +36,7 @@ export const chart: TemplateChartFn = async (construct, id) => {
       await Promise.all(
         scriptFiles.map(async (f) => [
           f,
-          (await readFile(path.join(__dirname, f))).toString(),
+          (await readFile(path.join(import.meta.dirname, f))).toString(),
         ]),
       ),
     ),

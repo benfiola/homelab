@@ -27,9 +27,9 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
     data: {
       "mosquitto.conf": (
-        await readFile(path.join(__dirname, "mosquitto.conf"))
+        await readFile(path.join(import.meta.dirname, "mosquitto.conf"))
       ).toString(),
-      "acl.conf": (await readFile(path.join(__dirname, "acl.conf"))).toString(),
+      "acl.conf": (await readFile(path.join(import.meta.dirname, "acl.conf"))).toString(),
     },
   });
 
@@ -39,7 +39,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     },
     data: {
       "setup-auth.sh": (
-        await readFile(path.join(__dirname, "setup-auth.sh"))
+        await readFile(path.join(import.meta.dirname, "setup-auth.sh"))
       ).toString(),
     },
   });

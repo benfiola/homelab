@@ -59,7 +59,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
         raft: {
           enabled: true,
           config: (
-            await readFile(path.join(__dirname, "config.hcl"))
+            await readFile(path.join(import.meta.dirname, "config.hcl"))
           ).toString(),
         },
         replicas: 3,

@@ -22,7 +22,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
   const scripts = new ConfigMap(chart, `${id}-config-map-scripts`, {
     data: {
       "download-models.sh": (
-        await readFile(path.join(__dirname, "download-models.sh"))
+        await readFile(path.join(import.meta.dirname, "download-models.sh"))
       ).toString(),
     },
   });

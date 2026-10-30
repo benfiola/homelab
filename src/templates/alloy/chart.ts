@@ -22,7 +22,7 @@ export const chart: TemplateChartFn = async (construct, _, context) => {
     alloy: {
       configMap: {
         content: (
-          await readFile(path.join(__dirname, "config.alloy"))
+          await readFile(path.join(import.meta.dirname, "config.alloy"))
         ).toString(),
       },
       enableReporting: false,

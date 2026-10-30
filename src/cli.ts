@@ -287,7 +287,7 @@ const configureLogger = async (logFormat: LogFormat, logLevel: LogLevel) => {
 
 const main = async () => {
   const homeDir = homedir();
-  const projectDir = join(__dirname, "..");
+  const projectDir = join(import.meta.dirname, "..");
   const defaultConfigDir = join(projectDir, "config");
   const defaultLogFormat = "rich";
   const defaultLogLevel = "status";

@@ -1,6 +1,7 @@
 {
   "name": "homelab",
   "version": "0.0.1",
+  "type": "module",
   "main": "./src/cli.ts",
   "bin": {
     "homelab": "./src/cli.ts"
