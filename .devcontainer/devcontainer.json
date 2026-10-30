@@ -23,7 +23,7 @@
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       // renovate: datasource=node-version depName=node
-      "version": "22.21.0"
+      "version": "22.23.4"
     }
   },
   "image": "ubuntu:latest",
