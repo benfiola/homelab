@@ -20,8 +20,6 @@ KUBECTL_VERSION ?= 1.36.5
 RCLONE_VERSION ?= 1.73.2
 # renovate-pinned: depName=talosctl reason=matches the cluster version, which is upgraded manually
 TALOSCTL_VERSION ?= 1.14.4
-# renovate: datasource=npm depName=tsx
-TSX_VERSION ?= 4.23.15
 # renovate: datasource=github-releases depName=hashicorp/vault extractVersion=^v(?<version>.+)$
 VAULT_VERSION ?= 1.21.1
 
@@ -82,8 +80,11 @@ $(eval $(call tool-from-apt,bsdtar,libarchive-tools))
 $(eval $(call tool-from-apt,curl,curl))
 $(eval $(call tool-from-apt,git,git))
 $(eval $(call tool-from-apt,jsonnet,jsonnet))
-$(eval $(call tool-from-npm,cdk8s,cdk8s-cli))
-$(eval $(call tool-from-npm,tsx,tsx))
+$(eval $(call tool-from-npm,cdk8s,cdk8s-cli@$(CDK8S_VERSION)))
+# tsx is pinned by package.json - install the same version globally
+tsx_version := $(shell sed -n 's/^ *"tsx": *"[^0-9]*\([^"]*\)".*/\1/p' package.json)
+$(if $(tsx_version),,$(error failed to determine the tsx version from package.json))
+$(eval $(call tool-from-npm,tsx,tsx@$(tsx_version)))
 $(eval $(call tool-from-apt,wg,wireguard-tools))
 
 bws_arch := $(arch)

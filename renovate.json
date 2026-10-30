@@ -127,12 +127,15 @@
       "enabled": false
     },
     {
-      "description": "GROUPING / VERSIONS: the node version in the devcontainer and workflows moves together, and only even (LTS) majors are used.",
+      "description": "GROUPING / VERSIONS / PR NOTE: the node version in the devcontainer and workflows moves together, and only even (LTS) majors are used.",
       "matchDepNames": [
         "node"
       ],
       "groupName": "node",
-      "allowedVersions": "/^v?\\d*[02468]\\./"
+      "allowedVersions": "/^v?\\d*[02468]\\./",
+      "prBodyNotes": [
+        "⚠️ When changing the node major, also change the `@types/node` major in `package.json` to match."
+      ]
     },
     {
       "description": "VERSIONS: linuxserver appends a '-lsNNN' build suffix that changes on every rebuild.",
@@ -174,6 +177,16 @@
       "prBodyNotes": [
         "⚠️ `envoy-gateway` supports a specific gateway-api release range. Bump and check them together."
       ]
+    },
+    {
+      "description": "VERSIONS: the @types/node major follows the node major in the devcontainer and workflows, so it only changes together with node (by hand, in package.json). Minor and patch updates are fine.",
+      "matchPackageNames": [
+        "@types/node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
     }
   ]
 }
