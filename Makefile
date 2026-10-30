@@ -7,7 +7,7 @@ CILIUMCLI_VERSION ?= 0.19.7
 # renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.+)$
 FLUX_VERSION ?= 2.7.3
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>.+)$
-HELM_VERSION ?= 4.0.0
+HELM_VERSION ?= 4.3.1
 # renovate: datasource=github-releases depName=cilium/hubble extractVersion=^v(?<version>.+)$
 HUBBLE_VERSION ?= 1.19.4
 # renovate: datasource=github-releases depName=jsonnet-bundler/jsonnet-bundler extractVersion=^v(?<version>.+)$
