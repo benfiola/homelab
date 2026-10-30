@@ -1,7 +1,7 @@
 # renovate: datasource=github-releases depName=bitwarden/sdk-sm extractVersion=^bws-v(?<version>.+)$
 BWS_VERSION ?= 2.1.0
 # renovate: datasource=npm depName=cdk8s-cli
-CDK8S_VERSION ?= 2.203.1
+CDK8S_VERSION ?= 2.207.70
 # renovate: datasource=github-releases depName=cilium/cilium-cli extractVersion=^v(?<version>.+)$
 CILIUMCLI_VERSION ?= 0.19.7
 # renovate: datasource=github-releases depName=fluxcd/flux2 extractVersion=^v(?<version>.+)$
