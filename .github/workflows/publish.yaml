@@ -17,7 +17,7 @@ jobs:
       name: publish
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
       - name: configure git environment
@@ -25,7 +25,7 @@ jobs:
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # renovate: datasource=node-version depName=node
           node-version: "24.22.2"
@@ -34,7 +34,7 @@ jobs:
           sudo make install-tools
           make install-project
       - name: checkout manifests
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
           ref: main
@@ -58,11 +58,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # renovate: datasource=node-version depName=node
           node-version: "24.22.2"
@@ -70,7 +70,7 @@ jobs:
         run: |
           DIST=dist make build-docs
       - name: upload docs
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -88,4 +88,4 @@ jobs:
     steps:
       - name: deploy docs
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
