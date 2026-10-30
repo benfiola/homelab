@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.17.21",
-    "@types/node": "^24.9.1",
+    "@types/node": "^26.0.0",
     "@types/nunjucks": "^3.2.6",
     "cdk8s": "^2.70.23",
     "commander": "^14.0.2",
