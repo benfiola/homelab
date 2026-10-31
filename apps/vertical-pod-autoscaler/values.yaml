@@ -1,0 +1,31 @@
+admissionController:
+  extraArgs:
+    - --client-ca-file=/etc/tls-certs/ca.crt
+    - --reload-cert=true
+    - --tls-cert-file=/etc/tls-certs/tls.crt
+    - --tls-private-key=/etc/tls-certs/tls.key
+  tls:
+    existingSecret: vpa-tls-certs
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add: []
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+podSecurityContext:
+  fsGroup: 65534
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+recommender:
+  extraArgs:
+    - --round-cpu-millicores=25
+    - --round-memory-bytes=16777216
+updater:
+  extraArgs:
+    - --min-replicas=1

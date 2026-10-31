@@ -1,0 +1,22 @@
+# the nodes. a node's hostname is its name under the cluster endpoint (see cluster.yaml).
+nodes:
+  - name: samoyed
+    profile: tc
+    role: controlplane
+    interface: eno1
+  - name: chihuahua
+    profile: tc
+    role: worker
+    interface: eno2
+  - name: husky
+    profile: tc
+    role: worker
+    interface: eno2
+  - name: malamute
+    profile: tc
+    role: worker
+    interface: eno2
+  - name: shiba
+    profile: axp
+    role: worker
+    interface: enp196s0

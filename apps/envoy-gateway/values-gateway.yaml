@@ -1,0 +1,16 @@
+certgen:
+  job:
+    pod:
+      labels:
+        app.kubernetes.io/component: certgen
+    ttlSecondsAfterFinished: null
+deployment:
+  envoyGateway:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits: null
+  pod:
+    labels:
+      app.kubernetes.io/component: controller

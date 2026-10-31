@@ -1,0 +1,63 @@
+# first-boot order for a new cluster: `just bootstrap`, once talos is up and the kubeconfig is in place.
+# once flux is running, everything else converges by retry.
+#
+# apply:           kubectl apply out/apps/<name>/manifest.yaml for each app
+# kustomizations:  create flux Kustomizations (a name, and a path of the manifests repository)
+# run:             commands to run; `retry` is a timeout in seconds, `requires` lists required
+#                  environment variables
+#
+# ${VAR} and ${VAR:-default} in commands are expanded from the environment:
+# FLUX_BRANCH=scratch just bootstrap
+#
+# vault is not initialised here: that is still manual.
+stages:
+  - name: cluster-ready
+    run:
+      - command: [kubectl, cluster-info]
+        retry: 900
+
+  - name: crds
+    apply: [crds]
+    serverSide: true
+    forceConflicts: true
+    run:
+      - command:
+          [kubectl, wait, --for=condition=Established, crd, --all, --timeout=5m]
+
+  - name: network-policy
+    apply: [network-policy]
+
+  - name: cilium
+    apply: [cilium]
+    run:
+      - command:
+          [
+            kubectl,
+            --namespace=cilium,
+            rollout,
+            status,
+            daemonset/cilium,
+            --timeout=60s,
+          ]
+        retry: 900
+
+  - name: flux
+    run:
+      - command:
+          - flux
+          - bootstrap
+          - github
+          - --owner=${FLUX_OWNER:-benfiola}
+          - --personal
+          - --repository=${FLUX_REPOSITORY:-homelab-manifests}
+          - --branch=${FLUX_BRANCH:-main}
+          - --network-policy=false
+          - --path=./flux
+        requires: [GITHUB_TOKEN]
+
+  # applies the `flux` app, which defines every other app's Kustomization. created here, once: nothing
+  # in the cluster owns it.
+  - name: flux-bootstrap
+    kustomizations:
+      - name: flux-bootstrap
+        path: ./apps/flux

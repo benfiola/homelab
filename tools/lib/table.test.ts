@@ -1,0 +1,44 @@
+import assert from "node:assert/strict";
+import { describe, test } from "node:test";
+import { align } from "./table.ts";
+
+describe("align", () => {
+  test("pads each column to its widest cell, two spaces apart", () => {
+    assert.deepEqual(
+      align([
+        ["router.rsc", "routeros"],
+        ["office.ap.sh", "openwrt"],
+        ["a", "b"],
+      ]),
+      ["router.rsc    routeros", "office.ap.sh  openwrt", "a             b"],
+    );
+  });
+
+  test("leaves no trailing spaces, including after an empty last cell", () => {
+    assert.deepEqual(
+      align([
+        ["ok", "alloy", ""],
+        ["ok", "cilium", "2 accepted"],
+      ]),
+      ["ok  alloy", "ok  cilium  2 accepted"],
+    );
+  });
+
+  test("aligns the columns asked for to the right", () => {
+    assert.deepEqual(
+      align(
+        [
+          ["a", "4 objects"],
+          ["bb", "53 objects"],
+        ],
+        { right: [1] },
+      ),
+      ["a    4 objects", "bb  53 objects"],
+    );
+  });
+
+  test("copes with rows of different lengths, and with none", () => {
+    assert.deepEqual(align([["a"], ["b", "c"]]), ["a", "b  c"]);
+    assert.deepEqual(align([]), []);
+  });
+});

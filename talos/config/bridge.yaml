@@ -1,0 +1,7 @@
+apiVersion: v1alpha1
+kind: BridgeConfig
+name: mdns0
+links: []
+up: true
+addresses:
+  - address: 192.168.254.1/24

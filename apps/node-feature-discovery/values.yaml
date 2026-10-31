@@ -1,0 +1,15 @@
+master:
+  resources:
+    limits: null
+worker:
+  config:
+    core:
+      labelSources:
+        - kernel
+        - pci
+        - system
+  resources:
+    limits: null
+gc:
+  resources:
+    limits: null

@@ -1,10 +1,13 @@
-.DS_Store
-.claude
-.bin
-.env
-secrets*
-!/assets/**/secrets*
-manifests
-network-config
 node_modules
-/build
+/golden
+/out
+/.cache/
+/apps/*/vendor/
+/.devcontainer/devcontainer.json
+/.devcontainer/devcontainer-lock.json
+
+# secrets files and credentials the tools take and produce
+/secrets*.yaml
+/secrets*.yml
+/talosconfig
+/kubeconfig

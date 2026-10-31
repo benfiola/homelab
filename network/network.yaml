@@ -1,0 +1,123 @@
+domain: fiola.dev
+resolver: 192.168.88.1
+
+# vlans carried to the access points are bridged on them; those with wifi get networks
+vlans:
+  family: { id: 8, subnet: 192.168.8.0/24, wifi: { ssid: wifiwifiwifiwifi-family, security: sae } }
+  personal: { id: 16, subnet: 192.168.16.0/24, wifi: { ssid: wifiwifiwifiwifi-personal, security: sae, hidden: true } }
+  iot: { id: 24, subnet: 192.168.24.0/24, wifi: { ssid: wifiwifiwifiwifi-iot, security: psk } }
+  infrastructure: { id: 32, subnet: 192.168.32.0/23, ap: false }
+  friends: { id: 40, subnet: 192.168.40.0/24, wifi: { ssid: wifiwifiwifiwifi, security: sae } }
+  management: { id: 88, subnet: 192.168.88.0/24 }
+
+# the cluster's gateways, by vlan
+gateways:
+  family: 192.168.33.2
+  personal: 192.168.33.3
+  infrastructure: 192.168.33.4
+  friends: 192.168.33.7
+
+# wireguard interfaces, named for their vlan
+wireguard:
+  family: { port: 13231, subnet: 192.168.9.0/24, routes: [gateway:family, gateway:friends, 192.168.88.1/32] }
+  personal: { port: 13232, subnet: 192.168.17.0/24, routes: [gateway:family, gateway:personal, gateway:friends, 192.168.88.1/32] }
+  infrastructure: { port: 13233, subnet: 192.168.34.0/24, routes: [192.168.32.0/23, 192.168.88.1/32] }
+  management: { port: 13234, subnet: 192.168.89.0/24, routes: [192.168.88.0/24] }
+  friends: { port: 13235, subnet: 192.168.41.0/24, routes: [gateway:friends] }
+
+# wireguard devices, with their address in each interface they join (the last octet)
+clients:
+  bfiola-desktop-linux: { infrastructure: 3, management: 3 }
+  bfiola-desktop-wsl: { infrastructure: 5, management: 5 }
+  bfiola-home-laptop: { personal: 2, infrastructure: 2, management: 2 }
+  bfiola-ipad: { personal: 5 }
+  bfiola-iphone: { personal: 4 }
+  bfiola-work-laptop: { personal: 3, infrastructure: 4, management: 4 }
+  jfiola-iphone: { family: 2 }
+  ph: { friends: 2 }
+  cam: { friends: 3 }
+  james: { friends: 4 }
+  tristan: { friends: 5 }
+  rj: { friends: 6 }
+
+# static leases. dns publishes <name>.${domain}; allow adds the host to <VLAN>_ALLOW_<X>
+hosts:
+  - { vlan: personal, ip: 2, name: bfiola-desktop, mac: C8:7F:54:6C:10:46, dns: true }
+  - { vlan: iot, ip: 2, name: projector, mac: D4:0A:DC:DB:A9:0E, allow: [wan, intranet] }
+  - { vlan: iot, ip: 3, name: "sonos (play right)", mac: 80:4A:F2:B2:19:E2, allow: [wan, intranet] }
+  - { vlan: iot, ip: 4, name: "sonos (play left)", mac: 80:4A:F2:B2:19:64, allow: [wan, intranet] }
+  - { vlan: iot, ip: 5, name: "yoto player", mac: EC:E3:34:8C:F5:58, allow: [wan] }
+  - { vlan: iot, ip: 6, name: "sonos (bedroom-2 right)", mac: F8:5C:24:40:2F:4A, allow: [wan, intranet] }
+  - { vlan: iot, ip: 7, name: "sonos (bedroom-2 left)", mac: F8:5C:24:40:34:98, allow: [wan, intranet] }
+  - { vlan: iot, ip: 8, name: 3d-printer, mac: A0:85:E3:E9:43:78, dns: true }
+  - { vlan: iot, ip: 9, name: printer, mac: 00:68:EB:75:E3:B8, dns: true }
+  - { vlan: iot, ip: 10, name: front-yard.camera, mac: 24:48:45:4D:1C:00, dns: true }
+  - { vlan: iot, ip: 11, name: garage.camera, mac: 24:48:45:4D:1B:C2, dns: true }
+  - { vlan: iot, ip: 12, name: porch.camera, mac: 54:8C:81:DE:3D:C8, dns: true }
+  - { vlan: iot, ip: 13, name: doorbell.camera, mac: EC:71:DB:2F:D2:68, dns: true }
+  - { vlan: iot, ip: 14, name: bedroom-2.assistant, mac: 08:38:E6:35:C2:CE, dns: true, allow: [wan, intranet] }
+  - { vlan: infrastructure, ip: 2, name: husky.cluster, mac: F8:75:A4:FE:1F:E9, dns: true, allow: [wan], bgp: true }
+  - { vlan: infrastructure, ip: 3, name: chihuahua.cluster, mac: 88:A4:C2:A0:B5:BB, dns: true, allow: [wan], bgp: true }
+  - { vlan: infrastructure, ip: 4, name: malamute.cluster, mac: 00:2B:67:D6:40:6B, dns: true, allow: [wan], bgp: true }
+  - { vlan: infrastructure, ip: 5, name: samoyed.cluster, mac: 38:F3:AB:E0:C5:DD, dns: true, allow: [wan], bgp: true }
+  - { vlan: infrastructure, ip: 6, name: shiba.cluster, mac: 38:05:25:34:71:80, dns: true, allow: [wan], bgp: true }
+  - { vlan: infrastructure, ip: 7, name: nas, mac: 6C:1F:F7:29:D5:E6, dns: true }
+  - { vlan: management, ip: 2, name: core.switch, mac: F4:1E:57:F8:8F:89, dns: true }
+  - { vlan: management, ip: 3, name: cluster.switch, mac: F4:1E:57:F8:96:77, dns: true }
+  - { vlan: management, ip: 4, name: office.ap, mac: 94:83:C4:AB:04:1F, dns: true }
+  - { vlan: management, ip: 5, name: bedroom-2.ap, mac: 94:83:C4:AB:06:68, dns: true }
+  - { vlan: management, ip: 6, name: living-room.ap, mac: 94:83:C4:AA:F9:1B, dns: true }
+
+devices:
+  router: { profile: routeros, script: router.rsc }
+  office.ap: { profile: openwrt, script: ap.sh }
+  living-room.ap: { profile: openwrt, script: ap.sh }
+  bedroom-2.ap: { profile: openwrt, script: ap.sh }
+  core.switch:
+    profile: swos
+    script: switch.yaml
+    vlans: [family, personal, iot, infrastructure, friends, management]
+    unused: family
+    ports:
+      1: { name: hue-bridge, access: iot }
+      2: { name: br1-1, access: family }
+      3: off
+      4: { name: br1-2, access: family }
+      5: off
+      6: { name: br2-1, trunk: true }
+      7: off
+      8: { name: br2-2, access: family }
+      9: { name: cameras.switch, access: iot }
+      10: { name: lr-1, trunk: true }
+      11: { name: office.ap, trunk: true }
+      12: { name: lr-2, access: family }
+      13: off
+      14: { name: o-1, access: personal }
+      15: { name: rescue, access: management, force: true }
+      16: { name: o-2, access: family }
+      17: { name: router, trunk: true, sfp: true }
+      18: { name: cluster.switch, trunk: true, sfp: true }
+  cluster.switch:
+    profile: swos
+    script: switch.yaml
+    vlans: [family, personal, iot, infrastructure, management]
+    unused: family
+    ports:
+      1: { name: samoyed.cluster, access: infrastructure }
+      2: off
+      3: { name: chihua...cluster, access: infrastructure }
+      4: off
+      5: { name: husky.cluster, access: infrastructure }
+      6: off
+      7: { name: malamute.cluster, access: infrastructure }
+      8: off
+      9: { name: shiba.cluster, access: infrastructure }
+      10: off
+      11: off
+      12: off
+      13: off
+      14: off
+      15: { name: rescue, access: management, force: true }
+      16: off
+      17: { name: router, trunk: true, sfp: true }
+      18: { name: nas, access: infrastructure, sfp: true }

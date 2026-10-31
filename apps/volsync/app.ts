@@ -1,0 +1,28 @@
+import type { AppFunction } from "../../tools/lib/app.ts";
+import {
+  dns,
+  pod,
+  tcp,
+  type NetworkFunction,
+} from "../../tools/lib/k8s/network-policy.ts";
+
+export const app: AppFunction = (h) => {
+  h.helm("https://backube.github.io/helm-charts/volsync?version=0.14.0", {
+    values: "values.yaml",
+  });
+
+  h.namespace();
+
+  h.vpa({ kind: "Deployment", name: "volsync" });
+};
+
+export const network: NetworkFunction = (n) => {
+  const volsync = n.subject("volsync", pod("volsync", "volsync"));
+  const volsyncMover = n.subject("volsync-mover", pod("volsync-mover", "*"));
+
+  volsync.to(n.kubeApiServer, tcp(6443));
+  n.host.to(volsync, tcp(8081));
+  volsyncMover
+    .to(dns("*.backblazeb2.com"), tcp(443))
+    .to(dns("*.backblaze.com"), tcp(443));
+};

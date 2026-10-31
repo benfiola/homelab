@@ -1,0 +1,21 @@
+annotationFilter: homelab.benfiola.com/use-external-dns-cloudflare
+enableGatewayListenerSets: true
+image:
+  # renovate: datasource=docker depName=registry.k8s.io/external-dns/external-dns
+  tag: v0.24.0
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: secrets
+        key: cloudflare-api-token
+nameOverride: external-dns-cloudflare
+policy: sync
+provider:
+  name: cloudflare
+sources:
+  - gateway-grpcroute
+  - gateway-httproute
+  - gateway-tcproute
+  - gateway-tlsroute
+  - gateway-udproute

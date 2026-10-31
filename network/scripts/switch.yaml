@@ -1,0 +1,30 @@
+# a SwOS switch, in three parts separated by `---`: the switch, a port and a vlan. the second and
+# third are filled in once for each port and vlan the switch has, where the first has them.
+system:
+  identity: "{{ device.name }}"
+ports:
+{{ switch.ports }}
+vlans:
+{{ switch.vlans }}
+---
+- index: {{ port.index }}
+  name: "{{ port.name }}"
+  enabled: {{ port.enabled }}
+  autoNegotiation: true
+  flowControl:
+    tx: true
+    rx: false
+  {{ port.sfp }}
+  vlan:
+    mode: strict
+    receive: {{ port.receive }}
+    defaultVlanId: {{ port.vlan }}
+    forceVlanId: {{ port.force }}
+---
+- id: {{ vlan.id }}
+  name: "{{ vlan.name }}"
+  members: {{ vlan.members }}
+  portIsolation: true
+  learning: true
+  mirror: false
+  igmpSnooping: false

@@ -1,0 +1,51 @@
+{
+  "name": "homelab",
+  "image": "debian:trixie-slim",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "esbenp.prettier-vscode",
+        "jnoortheen.nix-ide",
+        "rohit-gohri.format-code-action",
+        "yoavbls.pretty-ts-errors"
+      ],
+      "settings": {
+        "[nix]": {
+          "editor.defaultFormatter": "jnoortheen.nix-ide"
+        },
+        "[yaml]": {
+          "editor.autoIndent": "none"
+        },
+        "editor.codeActionsOnSave": [
+          "source.organizeImports",
+          "source.unusedImports",
+          "source.formatDocument"
+        ],
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "js/ts.tsdk.path": "./tools/node_modules/typescript/lib",
+        "nix.enableLanguageServer": true,
+        "nix.formatterPath": "nixfmt",
+        "nix.serverPath": "nixd",
+        "nix.serverSettings": {
+          "nixd": {}
+        }
+      }
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "packages": "nixd,nixfmt",
+      "extraNixConfig": "experimental-features = nix-command flakes"
+    }
+  },
+  "mounts": [
+    // to mount your host claude config, add this mount
+    // "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached",
+    "source=homelab-nix-store,target=/nix,type=volume",
+    "source=homelab-secrets,target=/root/.homelab,type=volume"
+  ],
+  "userEnvProbe": "loginInteractiveShell",
+  "postCreateCommand": ".devcontainer/post-create.sh",
+  "postStartCommand": ".devcontainer/post-start.sh"
+}

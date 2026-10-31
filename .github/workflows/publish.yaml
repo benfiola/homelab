@@ -1,91 +1,70 @@
 name: publish
 
+# renders apps/ and publishes the result to the apps folder of the homelab-manifests repository,
+# which flux reads. nothing else in that repository is touched.
+
 on:
   push:
     branches:
       - main
 
+env:
+  MANIFESTS_REPOSITORY: benfiola/homelab-manifests
+  MANIFESTS_BRANCH: main
+  MANIFESTS_FOLDER: apps
+
 jobs:
-  publish-manifests:
+  publish:
     runs-on: ubuntu-latest
     concurrency:
-      group: "${{github.workflow}}-publish-manifests"
+      group: "${{github.workflow}}"
     permissions:
-      contents: write
-      id-token: write
+      contents: read
     environment:
       name: publish
+    defaults:
+      run:
+        # every step runs in the dev shell, wherever it runs (the path is absolute for steps that
+        # change directory)
+        shell: nix develop ${{github.workspace}} --command bash -euo pipefail {0}
     steps:
       - name: checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
-      - name: configure git environment
-        run: |
-          git config --global user.name github-actions
-          git config --global user.email github-actions@github.com
-      - name: setup node
-        uses: actions/setup-node@v7
-        with:
-          # renovate: datasource=node-version depName=node
-          node-version: "24.22.2"
+      - name: install nix
+        uses: cachix/install-nix-action@v31
       - name: install project
-        run: |
-          sudo make install-tools
-          make install-project
+        run: just install
+      - name: check
+        run: just check
+      - name: build manifests
+        run: just build --out out
       - name: checkout manifests
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
-          ref: main
-          repository: benfiola/homelab-manifests
+          repository: ${{env.MANIFESTS_REPOSITORY}}
+          ref: ${{env.MANIFESTS_BRANCH}}
           path: homelab-manifests
           token: ${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}
-      - name: generate manifests
+      - name: replace manifests
         run: |
-          rm -rf homelab-manifests/apps
-          mkdir -p homelab-manifests/apps
-          homelab generate-manifests --output homelab-manifests/apps
+          # an empty folder would be the whole repository
+          rm -rf "homelab-manifests/${MANIFESTS_FOLDER:?}"
+          cp -R out/apps "homelab-manifests/${MANIFESTS_FOLDER}"
       - name: commit manifests
+        working-directory: homelab-manifests
+        env:
+          MESSAGE: ${{github.event.head_commit.message}}
         run: |
-          cd homelab-manifests
-          git remote set-url origin https://x-access-token:${{secrets.HOMELAB_MANIFESTS_GIT_TOKEN}}@github.com/benfiola/homelab-manifests.git
-          git add -A
-          git commit --allow-empty -m "${{github.event.head_commit.message}}"
-          git push origin
-
-  build-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
-      - name: setup node
-        uses: actions/setup-node@v7
-        with:
-          # renovate: datasource=node-version depName=node
-          node-version: "24.22.2"
-      - name: build docs
-        run: |
-          DIST=dist make build-docs
-      - name: upload docs
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
-
-  publish-docs:
-    needs: build-docs
-    runs-on: ubuntu-latest
-    concurrency:
-      group: "${{github.workflow}}-publish-docs"
-    permissions:
-      id-token: write
-      pages: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: deploy docs
-        id: deployment
-        uses: actions/deploy-pages@v5
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          # only the folder is ours: nothing else in the repository is staged
+          git add -A -- "${MANIFESTS_FOLDER:?}"
+          if git diff --cached --quiet; then
+            echo "manifests are unchanged"
+            exit 0
+          fi
+          git commit -m "${MESSAGE}"
+          git push origin "HEAD:${MANIFESTS_BRANCH}"

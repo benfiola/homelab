@@ -1,0 +1,10 @@
+kube-rbac-proxy-resources:
+  requests:
+    cpu: 5m
+    memory: 64Mi
+  limits: null
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits: null

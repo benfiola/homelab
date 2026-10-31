@@ -1,0 +1,57 @@
+cluster:
+  allowSchedulingOnControlPlanes: true
+  apiServer:
+    admissionControl:
+      - name: PodSecurity
+        configuration:
+          defaults:
+            audit: restricted
+            enforce: restricted
+            warn: restricted
+  controllerManager:
+    extraArgs:
+      # allow remote-node workloads to access server (monitoring)
+      bind-address: 0.0.0.0
+  network:
+    cni:
+      # disable cni (cilium)
+      name: none
+  proxy:
+    # disable kube-proxy (cilium)
+    disabled: true
+  scheduler:
+    extraArgs:
+      # allow remote-node workloads to access server (monitoring)
+      bind-address: 0.0.0.0
+machine:
+  features:
+    hostDNS:
+      # disable dns forwarding (cilium)
+      forwardKubeDNSToHost: false
+  kernel:
+    modules:
+      # configure drbd kernel modules (piraeus)
+      - name: dm_mod
+      - name: dm_thin_pool
+      - name: drbd
+        parameters:
+          - usermode_helper=disabled
+      - name: drbd_transport_tcp
+  kubelet:
+    extraConfig:
+      # ensure the scheduler leaves buffer for system/kube workloads
+      systemReserved:
+        cpu: "250m"
+        memory: "512Mi"
+      kubeReserved:
+        cpu: "250m"
+        memory: "512Mi"
+    extraMounts:
+      # configure r/w mounts (piraeus)
+      - destination: /var/local
+        source: /var/local
+        type: bind
+        options:
+          - rbind
+          - rshared
+          - rw

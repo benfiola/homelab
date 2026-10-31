@@ -1,0 +1,5 @@
+# the cluster: nodes are <name>.<endpoint>
+name: homelab
+endpoint: cluster.fiola.dev
+# renovate-pinned: depName=kubernetes reason=cluster upgrades are performed manually with talosctl
+kubernetes: 1.36.5

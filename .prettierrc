@@ -1,0 +1,6 @@
+{
+  "overrides": [
+    { "files": "*.jsonc", "options": { "trailingComma": "none" } },
+    { "files": "network/network.yaml", "options": { "printWidth": 140 } }
+  ]
+}

@@ -1,24 +1,15 @@
-#/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-echo 'export DEBIAN_FRONTEND=noninteractive' >> ~/.bashrc
-export DEBIAN_FRONTEND=noninteractive
+. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 
-apt -y update
-apt -y install vim
+nix-shell -p git --run "git config --system --add safe.directory '*'"
 
-make install-tools
-make install-docs
-make install-project
+# /etc/nix-devshell.sh is written by ./post-start.sh
+echo '. /etc/nix-devshell.sh' | tee -a /etc/bash.bashrc >/dev/null
 
-# Setup bws
-read -sp "Enter Bitwarden Secrets Manager access token: " BWS_ACCESS_TOKEN
-mkdir -p ~/.config/bws
-echo "$BWS_ACCESS_TOKEN" > ~/.config/bws/access-token
-chmod 600 ~/.config/bws/access-token
-export BWS_ACCESS_TOKEN
-echo 'export BWS_ACCESS_TOKEN=$(cat ~/.config/bws/access-token)' >> ~/.bashrc
+# install tool dependencies (node comes from the devshell)
+nix develop . --command npm ci --prefix tools
 
-homelab pull-secrets
-homelab generate-client-config
-homelab talosctl -n samoyed kubeconfig
+# secrets and client configuration, once this machine has signed in to Bitwarden (`just secrets login`)
+nix develop . --command bash -c 'just init || echo "not initialised: fix the above (\`just secrets login\` if not signed in), then run \`just init\`"'
