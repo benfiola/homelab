@@ -1,7 +1,7 @@
 // images shared by several apps (`h.images`). written as `image:` entries, so renovate finds them
 // like any other.
 const list = [
-  { key: "alpine", image: "alpine:3.23.4" },
+  { key: "alpine", image: "alpine:3.24.3" },
   { key: "toolbox", image: "ghcr.io/benfiola/homelab-images/toolbox:1.2.3" },
   { key: "rclone", image: "rclone/rclone:1.73.1" },
 ] as const;
