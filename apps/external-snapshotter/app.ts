@@ -8,7 +8,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.kustomize(
-    "github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.4.0",
+    "github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.7.0",
     {
       namespace: true,
     },
