@@ -12,7 +12,7 @@ server:
     - env:
         - name: VAULT_UNSEAL_KEY
           value: /vault/data/unseal-key
-      image: ghcr.io/benfiola/homelab-images/vault-unseal:1.0.2
+      image: ghcr.io/benfiola/homelab-images/vault-unseal:1.0.6
       name: vault-unseal
       securityContext:
         allowPrivilegeEscalation: false
