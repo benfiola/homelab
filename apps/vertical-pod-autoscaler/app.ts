@@ -7,27 +7,11 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.8.0",
+    "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.15.0",
     { values: "values.yaml" },
   );
 
   h.namespace();
-
-  h.add({
-    apiVersion: "cert-manager.io/v1",
-    kind: "Certificate",
-    metadata: {
-      name: "admission-controller",
-    },
-    spec: {
-      dnsNames: ["vpa-webhook.vertical-pod-autoscaler.svc"],
-      issuerRef: {
-        kind: "ClusterIssuer",
-        name: "self-signed",
-      },
-      secretName: "vpa-tls-certs",
-    },
-  });
 
   const advisory = { advisory: true };
   h.vpa(
@@ -44,41 +28,6 @@ export const app: AppFunction = (h) => {
   h.vpa(
     { kind: "Deployment", name: "vertical-pod-autoscaler-updater" },
     advisory,
-  );
-
-  // the admission controller reads these, but the chart's role doesn't allow it
-  h.edit(
-    {
-      kind: "ClusterRole",
-      name: "vertical-pod-autoscaler-admission-controller",
-    },
-    (role) => {
-      const read = ["get", "list", "watch"];
-      role.rules.push(
-        {
-          apiGroups: ["apps"],
-          resources: [
-            "daemonsets",
-            "deployments",
-            "replicasets",
-            "statefulsets",
-          ],
-          verbs: read,
-        },
-        { apiGroups: ["batch"], resources: ["cronjobs", "jobs"], verbs: read },
-        { apiGroups: [""], resources: ["replicationcontrollers"], verbs: read },
-        {
-          apiGroups: ["admissionregistration.k8s.io"],
-          resources: ["mutatingwebhookconfigurations"],
-          verbs: ["create", "delete", "get", "list", "update", "watch"],
-        },
-        {
-          apiGroups: ["garage.rajsingh.info"],
-          resources: ["garageclusters/scale"],
-          verbs: ["get"],
-        },
-      );
-    },
   );
 };
 
