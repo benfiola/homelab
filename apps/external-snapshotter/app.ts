@@ -20,7 +20,7 @@ export const app: AppFunction = (h) => {
 
   h.edit({ kind: "Deployment", name: "snapshot-controller" }, (deployment) => {
     const controller = container(deployment, "snapshot-controller");
-    controller.image = "registry.k8s.io/sig-storage/snapshot-controller:v8.4.0";
+    controller.image = "registry.k8s.io/sig-storage/snapshot-controller:v8.7.0";
     deployment.spec.template.spec.securityContext = {
       fsGroup: 65534,
       runAsNonRoot: true,
