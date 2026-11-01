@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://intel.github.io/helm-charts/intel-device-plugins-operator?version=0.35.0",
+    "https://intel.github.io/helm-charts/intel-device-plugins-operator?version=0.37.1",
     { values: "values.yaml" },
   );
 
