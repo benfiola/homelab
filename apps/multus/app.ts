@@ -3,7 +3,7 @@ import { container } from "../../tools/lib/k8s/edit.ts";
 
 export const app: AppFunction = (h) => {
   h.manifest(
-    "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.2.4/deployments/multus-daemonset-thick.yml",
+    "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.3.1/deployments/multus-daemonset-thick.yml",
     { namespace: true, labels: { "app.kubernetes.io/name": h.app } },
   );
 
