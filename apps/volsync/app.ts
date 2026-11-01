@@ -7,7 +7,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://backube.github.io/helm-charts/volsync?version=0.14.0", {
+  h.helm("https://backube.github.io/helm-charts/volsync?version=0.17.0", {
     values: "values.yaml",
   });
 
