@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://grafana.github.io/helm-charts/loki?version=6.55.0", {
+  h.helm("https://grafana.github.io/helm-charts/loki?version=7.5.0", {
     values: "values.yaml",
   });
 
