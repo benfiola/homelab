@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://grafana.github.io/helm-charts/alloy?version=1.14.4", {
+  h.helm("https://grafana.github.io/helm-charts/alloy?version=1.15.0", {
     values: "values.yaml",
   });
 
