@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://kubernetes-sigs.github.io/metrics-server/metrics-server?version=3.13.0",
+    "https://kubernetes-sigs.github.io/metrics-server/metrics-server?version=3.14.0",
     { values: "values.yaml" },
   );
 
