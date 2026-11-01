@@ -43,7 +43,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("home-assistant", {
-      image: "ghcr.io/benfiola/homelab-images/home-assistant:1.8.0",
+      image: "ghcr.io/benfiola/homelab-images/home-assistant:1.9.2",
       env: {
         TZ: h.timezone,
       },
