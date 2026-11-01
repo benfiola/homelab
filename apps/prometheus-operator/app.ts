@@ -8,7 +8,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.manifest(
-    "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.87.0/bundle.yaml",
+    "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.2/bundle.yaml",
     {
       namespace: true,
     },
