@@ -8,7 +8,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.kustomize(
-    "github.com/piraeusdatastore/piraeus-operator/config/default?ref=v2.10.1",
+    "github.com/piraeusdatastore/piraeus-operator/config/default?ref=v2.12.1",
     {
       namespace: true,
       labels: { "app.kubernetes.io/name": h.app },
