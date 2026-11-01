@@ -23,7 +23,7 @@ export const app: AppFunction = (h) => {
         enabled: true,
       },
       containerSecurityContext: security.container,
-      image: "dxflrs/garage:v2.2.0",
+      image: "dxflrs/garage:v2.5.0",
       podLabels: {
         "app.kubernetes.io/name": "garage",
       },
