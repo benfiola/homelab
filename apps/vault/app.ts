@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://helm.releases.hashicorp.com/vault?version=0.31.0", {
+  h.helm("https://helm.releases.hashicorp.com/vault?version=0.34.1", {
     values: "values.yaml",
   });
 
