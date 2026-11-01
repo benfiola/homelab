@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://helm.releases.hashicorp.com/vault-secrets-operator?version=1.0.1",
+    "https://helm.releases.hashicorp.com/vault-secrets-operator?version=1.6.2",
     { values: "values.yaml" },
   );
 
