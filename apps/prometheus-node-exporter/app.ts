@@ -2,7 +2,7 @@ import type { AppFunction } from "../../tools/lib/app.ts";
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://prometheus-community.github.io/helm-charts/prometheus-node-exporter?version=4.49.2",
+    "https://prometheus-community.github.io/helm-charts/prometheus-node-exporter?version=4.60.1",
     { values: "values.yaml" },
   );
 
