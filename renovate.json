@@ -87,7 +87,8 @@
       "matchStrings": [
         "\\bh\\.helm\\(\\s*\"oci://(?<depName>[^\"?]+)\\?version=(?<currentValue>[^\"&]+)\""
       ],
-      "datasourceTemplate": "docker"
+      "datasourceTemplate": "docker",
+      "depTypeTemplate": "helm-chart"
     },
     {
       "customType": "regex",
@@ -117,6 +118,11 @@
       "prBodyNotes": [
         "ℹ️ Run `just pins refresh` on this branch to update the download hashes in `pins.json`."
       ]
+    },
+    {
+      "description": "NAMING: oci helm charts are looked up as docker tags, which renovate would otherwise describe as '<chart> Docker tag'.",
+      "matchDepTypes": ["helm-chart"],
+      "commitMessageTopic": "{{depName}} chart"
     },
     {
       "description": "GROUPING: all workflow action updates arrive as one PR.",
