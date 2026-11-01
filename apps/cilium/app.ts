@@ -6,13 +6,13 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://helm.cilium.io/cilium?version=1.20.1", {
+  h.helm("https://helm.cilium.io/cilium?version=1.20.4", {
     values: "values.yaml",
   });
 
   // the chart doesn't ship these crds
   const crds =
-    "https://raw.githubusercontent.com/cilium/cilium/v1.20.1/pkg/k8s/apis/cilium.io/client/crds";
+    "https://raw.githubusercontent.com/cilium/cilium/v1.20.4/pkg/k8s/apis/cilium.io/client/crds";
   for (const file of [
     "v2/ciliumbgpadvertisements",
     "v2/ciliumbgpclusterconfigs",
