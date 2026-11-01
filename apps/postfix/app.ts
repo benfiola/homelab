@@ -7,7 +7,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://bokysan.github.io/docker-postfix/mail?version=v5.1.0", {
+  h.helm("https://bokysan.github.io/docker-postfix/mail?version=5.2.0", {
     release: "postfix",
     values: "values.yaml",
   });
