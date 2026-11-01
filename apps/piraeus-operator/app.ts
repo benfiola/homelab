@@ -80,7 +80,7 @@ export const network: NetworkFunction = (n) => {
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
   linstorSatellite.to(linstorSatellite, tcp([7000, 7999]));
-  n.nodes.to(linstorSatellite, tcp(3366));
+  n.nodes.to(linstorSatellite, tcp(3366, 9942));
   n.host.to(piraeusOperatorHaController, tcp(8000));
   piraeusOperatorHaController.to(n.kubeApiServer, tcp(6443));
   n.controlPlane.to(piraeusOperator, tcp(9443));

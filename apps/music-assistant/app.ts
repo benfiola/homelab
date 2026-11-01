@@ -52,6 +52,7 @@ export const network: NetworkFunction = (n) => {
     .to(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("192.168.24.0/24"))
     .to(n.ref("gateway-family"), tcp(8097))
+    .to(dns("itunes.apple.com"), tcp(443))
     .to(dns("tidal.com"), tcp(443))
     .to(dns("*.tidal.com"), tcp(443))
     .to(dns("*.*.tidal.com"), tcp(443));

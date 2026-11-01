@@ -83,5 +83,9 @@ export const network: NetworkFunction = (n) => {
   n.controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(50000));
   n.nodes.to(n.controlPlane, tcp(50001));
   // general - timeserver
-  n.nodes.to(cidrs("162.159.200.1/32", "162.159.200.123/32"), udp(123));
+  n.nodes.to(
+    cidrs("162.159.200.1/32", "162.159.200.123/32"),
+    udp(123),
+    tcp(4460),
+  );
 };
