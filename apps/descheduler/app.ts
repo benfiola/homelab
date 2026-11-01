@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://kubernetes-sigs.github.io/descheduler/descheduler?version=0.36.0",
+    "https://kubernetes-sigs.github.io/descheduler/descheduler?version=0.37.0",
     { values: "values.yaml" },
   );
 
