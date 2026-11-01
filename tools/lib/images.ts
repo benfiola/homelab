@@ -3,7 +3,7 @@
 const list = [
   { key: "alpine", image: "alpine:3.23.4" },
   { key: "toolbox", image: "ghcr.io/benfiola/homelab-images/toolbox:1.2.3" },
-  { key: "rclone", image: "rclone/rclone:1.73.1" },
+  { key: "rclone", image: "rclone/rclone:1.75.2" },
 ] as const;
 
 type Images = {
