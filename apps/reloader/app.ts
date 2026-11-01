@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://stakater.github.io/stakater-charts/reloader?version=2.2.14", {
+  h.helm("https://stakater.github.io/stakater-charts/reloader?version=2.2.19", {
     values: "values.yaml",
   });
 
