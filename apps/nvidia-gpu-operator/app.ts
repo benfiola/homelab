@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.3.3", {
+  h.helm("https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2", {
     release: "nvidia-gpu-operator",
     values: "values.yaml",
   });
