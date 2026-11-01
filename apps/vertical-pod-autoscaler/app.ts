@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.8.0",
+    "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.15.0",
     { values: "values.yaml" },
   );
 
