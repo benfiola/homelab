@@ -14,7 +14,7 @@
     }
   },
   "cilium-cli": {
-    "version": "0.19.7",
+    "version": "0.20.2",
     "url": "https://github.com/cilium/cilium-cli/releases/download/v${version}/cilium-linux-${arch}.tar.gz",
     "checksum": "${url}.sha256sum",
     "unpack": "tar",
