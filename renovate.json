@@ -92,10 +92,10 @@
     },
     {
       "customType": "regex",
-      "description": "pinned tools in pins.json released from github with a 'v' prefix (hubble, cilium-cli). kubectl and talosctl are deliberately not tracked: they follow the cluster version, which is upgraded by hand.",
+      "description": "pinned tools in pins.json released from github with a 'v' prefix (hubble). kubectl and talosctl are deliberately not tracked: they follow the cluster version, which is upgraded by hand.",
       "managerFilePatterns": ["/^pins\\.json$/"],
       "matchStrings": [
-        "\"version\": \"(?<currentValue>[^\"]+)\",\\s*\"url\": \"https://github\\.com/(?<depName>cilium/(?:hubble|cilium-cli))/releases/download/v"
+        "\"version\": \"(?<currentValue>[^\"]+)\",\\s*\"url\": \"https://github\\.com/(?<depName>cilium/hubble)/releases/download/v"
       ],
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"

@@ -13,17 +13,6 @@
       "arm64": "sha256-6w8a5h0cO3QkTShBIzJ24Fx36L5NoZftkPxiSDhwBeE="
     }
   },
-  "cilium-cli": {
-    "version": "0.19.7",
-    "url": "https://github.com/cilium/cilium-cli/releases/download/v${version}/cilium-linux-${arch}.tar.gz",
-    "checksum": "${url}.sha256sum",
-    "unpack": "tar",
-    "bin": "cilium",
-    "hashes": {
-      "amd64": "sha256-zRXgmDvwrMeUbNBdRT0eWDduqS3sJkLnRSEt8rB9iFI=",
-      "arm64": "sha256-lIKTfxQGH7I58tuy+X9BA94bEB9dXe+/8xnylPm9VA8="
-    }
-  },
   "hubble": {
     "version": "1.19.4",
     "url": "https://github.com/cilium/hubble/releases/download/v${version}/hubble-linux-${arch}.tar.gz",

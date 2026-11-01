@@ -22,7 +22,7 @@
         in
         {
           default = pkgs.mkShell {
-            # pinned release binaries (see pins.json): bws, cilium, hubble, kubectl, talosctl
+            # pinned release binaries (see pins.json): bws, hubble, kubectl, talosctl
             packages =
               (builtins.attrValues lib.tools)
               ++ (with pkgs; [
