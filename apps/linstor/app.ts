@@ -30,7 +30,7 @@ export const app: AppFunction = (h) => {
               {
                 name: "linstor-provision-disk",
                 image:
-                  "ghcr.io/benfiola/homelab-images/linstor-provision-disk:1.1.0",
+                  "ghcr.io/benfiola/homelab-images/linstor-provision-disk:1.1.4",
                 securityContext: { privileged: true },
                 volumeMounts: [{ name: "dev", mountPath: "/dev" }],
                 env: [
