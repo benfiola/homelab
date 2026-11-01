@@ -27,7 +27,6 @@
               (builtins.attrValues lib.tools)
               ++ (with pkgs; [
                 curl
-                dyff
                 fluxcd
                 git
                 jsonnet

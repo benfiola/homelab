@@ -15,10 +15,6 @@ check:
 build *args:
     node tools/build.ts {{ args }}
 
-# compare a render against the reference manifests (golden master): just parity ./golden/manifests ./out --app cert-manager
-parity expected actual *args:
-    node tools/parity.ts {{ expected }} {{ actual }} {{ args }}
-
 # the cluster's nodes (see tools/talos.ts): just talos config samoyed
 talos *args:
     node tools/talos.ts {{ args }}

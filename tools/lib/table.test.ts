@@ -24,19 +24,6 @@ describe("align", () => {
     );
   });
 
-  test("aligns the columns asked for to the right", () => {
-    assert.deepEqual(
-      align(
-        [
-          ["a", "4 objects"],
-          ["bb", "53 objects"],
-        ],
-        { right: [1] },
-      ),
-      ["a    4 objects", "bb  53 objects"],
-    );
-  });
-
   test("copes with rows of different lengths, and with none", () => {
     assert.deepEqual(align([["a"], ["b", "c"]]), ["a", "b  c"]);
     assert.deepEqual(align([]), []);

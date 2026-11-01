@@ -1,13 +1,24 @@
+# node
 node_modules
-/golden
+
+# output folders for 'just build'
 /out
 /.cache/
-/apps/*/vendor/
+
+# personal devcontainer settings and matching lock file
 /.devcontainer/devcontainer.json
 /.devcontainer/devcontainer-lock.json
 
-# secrets files and credentials the tools take and produce
-/secrets*.yaml
-/secrets*.yml
-/talosconfig
-/kubeconfig
+# default directory for vendored files when using 'jb install/update' to update a jb lockfile
+/apps/*/vendor/
+
+# default output file when using 'talosctl gen secrets'
+secrets*.yaml
+
+# default output files when using 'talosctl gen config'
+controlplane.yaml
+worker.yaml
+talosconfig
+
+# default output file when using 'talosctl kubeconfig'
+kubeconfig
