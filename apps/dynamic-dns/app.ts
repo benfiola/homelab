@@ -8,7 +8,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/dynamic-dns?version=1.0.6",
+    "oci://ghcr.io/benfiola/homelab-images/charts/dynamic-dns?version=1.0.9",
     { values: "values.yaml" },
   );
 
