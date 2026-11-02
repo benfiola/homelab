@@ -1,11 +1,10 @@
 bitwarden-sdk-server:
   enabled: true
-  # the sdk's resolver fails external names under the default ndots of 5, which surfaces as a 400 on
-  # login (see the server's README, 'DNS Issues')
-  podDnsConfig:
-    options:
-      - name: ndots
-        value: "2"
+  # the chart's default (v0.6.0) can't complete a request to bitwarden: logins fail with 'error
+  # sending request' whatever the token. v0.8.1 can. repository is stated for renovate
+  image:
+    repository: ghcr.io/external-secrets/bitwarden-sdk-server
+    tag: v0.8.1
   podSecurityContext:
     fsGroup: 65534
     runAsNonRoot: true
