@@ -27,7 +27,7 @@ export const app: AppFunction = (h) => {
     "routeros-username": "external-dns",
   });
 
-  h.secrets();
+  h.secrets("secrets", ["cloudflare-api-token", "routeros-password"]);
 
   h.vpa({ kind: "Deployment", name: "external-dns-mikrotik" });
 

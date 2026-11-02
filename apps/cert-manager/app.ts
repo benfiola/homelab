@@ -54,7 +54,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.secrets();
+  h.secrets("secrets", ["cloudflare-api-token"]);
 
   h.vpa({ kind: "Deployment", name: "cert-manager" });
 

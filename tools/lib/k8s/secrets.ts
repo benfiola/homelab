@@ -21,8 +21,11 @@ export const blobSecret = "apps";
 
 // the apps that read their secrets through external secrets rather than vault
 export const esoApps = new Set<string>([
+  "cert-manager",
   "dynamic-dns",
+  "external-dns",
   "frigate",
+  "garage",
   "grafana",
   "llama-cpp",
   "mediarr",

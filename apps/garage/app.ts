@@ -9,7 +9,7 @@ import {
 export const app: AppFunction = (h) => {
   h.namespace();
 
-  h.secrets();
+  const secrets = h.secrets("secrets", ["admin-token"]);
 
   const security = h.securityContext();
 
@@ -19,7 +19,7 @@ export const app: AppFunction = (h) => {
     metadata: { name: "garage" },
     spec: {
       admin: {
-        adminTokenSecretRef: h.secretKey("admin-token").secretKeyRef,
+        adminTokenSecretRef: secrets.key("admin-token").secretKeyRef,
         enabled: true,
       },
       containerSecurityContext: security.container,
