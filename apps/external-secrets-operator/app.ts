@@ -57,6 +57,7 @@ export const app: AppFunction = (h) => {
             { key: "tls.key", path: "key.pem" },
           ],
         },
+        state: { emptyDir: { medium: "Memory" } },
       },
     })
     .addContainer(server, {
@@ -64,7 +65,8 @@ export const app: AppFunction = (h) => {
       containerPorts: { https: 9998 },
       liveness: { http: { path: "/live", port: "https", scheme: "HTTPS" } },
       readiness: { http: { path: "/ready", port: "https", scheme: "HTTPS" } },
-      volumeMounts: { certs: "/certs" },
+      args: ["--state-path=/state/session"],
+      volumeMounts: { certs: "/certs", state: "/state" },
     });
   sdkServer.service({ https: 9998 });
 
