@@ -9,8 +9,6 @@
 # ${VAR} and ${VAR:-default} in commands are expanded from the environment:
 # FLUX_BRANCH=scratch just bootstrap
 #
-# vault is not initialised here: that is still manual.
-#
 # the external-secrets stage can be run alone, to give the cluster a new token for bitwarden:
 # just bootstrap --only external-secrets
 stages:

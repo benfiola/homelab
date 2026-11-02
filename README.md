@@ -171,7 +171,7 @@ just secrets pull flux
 just bootstrap                      # crds, network policies, cilium, flux
 ```
 
-Flux is bootstrapped with the token in `~/.homelab/flux.yaml` (`token:`), unless `GITHUB_TOKEN` is set. `just bootstrap --dry-run` prints the steps without running them, and `--from <stage>` resumes after a failure. Vault is still initialised by hand.
+Flux is bootstrapped with the token in `~/.homelab/flux.yaml` (`token:`), unless `GITHUB_TOKEN` is set. `just bootstrap --dry-run` prints the steps without running them, and `--from <stage>` resumes after a failure.
 
 ### Add a node
 

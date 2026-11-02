@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
 import { App } from "./app.ts";
-import { bucketSyncKeys, esoApps, secretRef } from "./k8s/secrets.ts";
+import { bucketSyncKeys, secretRef } from "./k8s/secrets.ts";
 
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
@@ -79,37 +79,14 @@ describe("App", () => {
     assert.equal(vpas[1].spec.updatePolicy.updateMode, "Off");
   });
 
-  test("secrets use the app's own name, and expose the key references apps need", async () => {
-    const h = new App("web", "/apps/web");
-    h.secrets();
-    assert.deepEqual(await kinds(h), [
-      "ServiceAccount/vault-secrets-operator",
-      "VaultAuth/web",
-      "VaultStaticSecret/secrets",
-    ]);
-    assert.deepEqual(h.secretKey("token"), {
-      secretKeyRef: { name: "secrets", key: "token" },
-    });
-    assert.match(h.secretRef("token"), /"token"/);
-
-    const templated = new App("mail", "/apps/mail");
-    templated.templatedSecrets({ PASSWORD: templated.secretRef("smtp") });
-    assert.equal((await templated.objects())[2].kind, "VaultDynamicSecret");
-  });
-
-  describe("secrets through external secrets", () => {
+  describe("secrets", () => {
     const via = async (app: string, use: (h: App) => void) => {
-      esoApps.add(app);
-      try {
-        const h = new App(app, `/apps/${app}`);
-        use(h);
-        return h;
-      } finally {
-        esoApps.delete(app);
-      }
+      const h = new App(app, `/apps/${app}`);
+      use(h);
+      return h;
     };
 
-    test("an app in esoApps names its Secret and lists its keys, and is given a store and a push in external-secrets-operator", async () => {
+    test("an app names its Secret and lists its keys, and is given a store and a push in external-secrets-operator", async () => {
       const h = await via("web", (h) => h.secrets("credentials", ["token"]));
       const objects = await h.objects();
       assert.deepEqual(
@@ -209,38 +186,9 @@ describe("App", () => {
     });
 
     test("secretRef reads the app's own section", async () => {
-      esoApps.add("web");
-      try {
-        assert.equal(
-          new App("web", "/apps/web").secretRef("token"),
-          secretRef("token", "web"),
-        );
-      } finally {
-        esoApps.delete("web");
-      }
-    });
-
-    test("an app in esoApps must name its Secret, and one that isn't must not", async () => {
-      await assert.rejects(
-        async () => via("web", (h) => h.secrets()),
-        /is in esoApps: name the Secret and list its keys/,
-      );
-      await assert.rejects(
-        async () => via("web", (h) => h.templatedSecrets({ A: "a" } as any)),
-        /is in esoApps: name the Secret and give its templates/,
-      );
-      await assert.rejects(
-        async () => via("web", (h) => h.secretKey("token")),
-        /read keys through the Secret that secrets\(\) returns/,
-      );
-      const legacy = new App("web", "/apps/web");
-      assert.throws(
-        () => legacy.secrets("credentials", ["token"]),
-        /names a Secret, but is not in esoApps/,
-      );
-      assert.throws(
-        () => legacy.templatedSecrets("credentials", { A: "a" }),
-        /names a Secret, but is not in esoApps/,
+      assert.equal(
+        new App("web", "/apps/web").secretRef("token"),
+        secretRef("token", "web"),
       );
     });
 
@@ -260,10 +208,6 @@ describe("App", () => {
       const policy = objects.find((o) => o.kind === "BucketSyncPolicy");
       assert.ok(
         JSON.stringify(policy).includes("bucket-sync-llama-cpp-assets"),
-      );
-      assert.equal(
-        objects.some((o) => o.kind === "VaultAuth"),
-        false,
       );
     });
 
@@ -726,30 +670,29 @@ describe("namespaces", () => {
     });
 
     test("secrets pushed through external secrets", async () => {
-      esoApps.add("web");
-      try {
-        const h = new App("web", "/apps/web");
-        h.secrets("one", ["a"], { namespace: other });
-        const objects = await h.objects();
-        assert.equal(
-          objects.find((o) => o.kind === "SecretStore")!.spec.provider
-            .kubernetes.remoteNamespace,
-          other,
-        );
-      } finally {
-        esoApps.delete("web");
-      }
+      const h = new App("web", "/apps/web");
+      h.secrets("one", ["a"], { namespace: other });
+      const objects = await h.objects();
+      assert.equal(
+        objects.find((o) => o.kind === "SecretStore")!.spec.provider.kubernetes
+          .remoteNamespace,
+        other,
+      );
     });
 
     test("an assets server, with all that it makes", async () => {
       const h = new App("llama-cpp", "/apps/llama-cpp");
       const { url } = h.assetsServer({ namespace: other });
-      const found = await namespaces(h);
+      // the objects that push Secrets live in external-secrets-operator, and push into the namespace
+      const pushes = /^(SecretStore|PushSecret)\//;
+      const found = (await namespaces(h)).filter((f) => !pushes.test(f));
       assert.ok(found.length > 5);
       assert.ok(
         found.every((f) => f.endsWith(`=${other}`)),
         found.join(", "),
       );
+      const store = (await h.objects()).find((o) => o.kind === "SecretStore")!;
+      assert.equal(store.spec.provider.kubernetes.remoteNamespace, other);
       assert.equal(url, `http://assets-server.${other}.svc:8080`);
     });
 

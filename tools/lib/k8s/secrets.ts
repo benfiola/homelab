@@ -19,21 +19,6 @@ export const credentialsSecret = "bitwarden-credentials";
 // the Secret holding the `apps` file, in the key of the same name
 export const blobSecret = "apps";
 
-// the apps that read their secrets through external secrets rather than vault
-export const esoApps = new Set<string>([
-  "cert-manager",
-  "dynamic-dns",
-  "external-dns",
-  "frigate",
-  "garage",
-  "grafana",
-  "llama-cpp",
-  "mediarr",
-  "mosquitto",
-  "postfix",
-  "wyoming-whisper",
-]);
-
 // the keys of bucket-sync's section, which apps syncing from backblaze are given
 export const bucketSyncKeys = [
   "backblaze-application-key",

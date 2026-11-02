@@ -27,24 +27,15 @@ import { editor, type Editor } from "./k8s/edit.ts";
 import { moveToNamespace } from "./k8s/namespace.ts";
 import { nasVolume } from "./k8s/storage.ts";
 import {
-  appSecrets as esoSecrets,
-  appTemplatedSecrets as esoTemplatedSecrets,
+  appSecrets,
+  appTemplatedSecrets,
   bucketSyncKeys,
-  esoApps,
   pushStore,
   secretKeys,
-  secretRef as esoSecretRef,
+  secretRef,
   type SecretKeys,
   type SecretOptions,
 } from "./k8s/secrets.ts";
-import {
-  appSecrets,
-  appTemplatedSecrets,
-  bucketSyncAuth,
-  bucketSyncSecret,
-  secretName,
-  secretRef,
-} from "./secrets/vault.ts";
 import {
   vpa,
   type Options as VpaOptions,
@@ -315,85 +306,35 @@ export class App {
   }
 
   // a Secret in the app's namespace, holding keys of the app's section of the `apps` secret. returns
-  // the Secret, to read its keys through. an app that reads them through external secrets (see
-  // `esoApps`) names the Secret and lists its keys, and may put it in another `namespace` or read
-  // the section `from` another app; the others get a Secret named 'secrets' holding their vault
-  // path, whole
-  secrets(): this;
+  // the Secret, to read its keys through. it may be put in another `namespace`, or built from the
+  // section `from` another app
   secrets<K extends string>(
     name: string,
     keys: readonly K[],
-    opts?: SecretOptions,
-  ): SecretKeys<K>;
-  secrets(
-    name?: string,
-    keys?: readonly string[],
     opts: SecretOptions = {},
-  ): this | SecretKeys {
-    if (!esoApps.has(this.app)) {
-      if (name !== undefined || keys !== undefined) {
-        throw new Error(`${this.app} names a Secret, but is not in esoApps`);
-      }
-      return this.add(...appSecrets(this.app));
-    }
-    if (name === undefined || keys === undefined) {
-      throw new Error(
-        `${this.app} is in esoApps: name the Secret and list its keys`,
-      );
-    }
+  ): SecretKeys<K> {
     const namespace = opts.namespace ?? this.namespaceName;
-    this.push(
-      namespace,
-      esoSecrets(this.app, name, keys, { ...opts, namespace }),
-    );
+    this.push(namespace, appSecrets(this.app, name, keys, { ...opts, namespace }));
     return secretKeys(name, keys);
   }
 
   // the same, with the Secret's keys built from templates
-  templatedSecrets(templates: Record<string, string>): this;
   templatedSecrets<K extends string>(
     name: string,
     templates: Record<K, string>,
-    opts?: Pick<SecretOptions, "namespace">,
-  ): SecretKeys<K>;
-  templatedSecrets(
-    name: string | Record<string, string>,
-    templates?: Record<string, string>,
     opts: Pick<SecretOptions, "namespace"> = {},
-  ): this | SecretKeys {
-    if (!esoApps.has(this.app)) {
-      if (typeof name !== "object") {
-        throw new Error(`${this.app} names a Secret, but is not in esoApps`);
-      }
-      return this.add(...appTemplatedSecrets(this.app, name));
-    }
-    if (typeof name !== "string" || templates === undefined) {
-      throw new Error(
-        `${this.app} is in esoApps: name the Secret and give its templates`,
-      );
-    }
+  ): SecretKeys<K> {
     const namespace = opts.namespace ?? this.namespaceName;
     this.push(
       namespace,
-      esoTemplatedSecrets(this.app, name, templates, { namespace }),
+      appTemplatedSecrets(this.app, name, templates, { namespace }),
     );
-    return secretKeys(name, Object.keys(templates));
-  }
-
-  // an env var source for a key of the app's 'secrets' Secret (vault only: an app in `esoApps` reads
-  // the keys of the Secret that `secrets` returns)
-  secretKey(key: string) {
-    if (esoApps.has(this.app)) {
-      throw new Error(
-        `${this.app} is in esoApps: read keys through the Secret that secrets() returns`,
-      );
-    }
-    return { secretKeyRef: { name: secretName, key } };
+    return secretKeys(name, Object.keys(templates) as K[]);
   }
 
   // refers to a key of the app's secrets, inside a `templatedSecrets` template
   secretRef(key: string): string {
-    return esoApps.has(this.app) ? esoSecretRef(key, this.app) : secretRef(key);
+    return secretRef(key, this.app);
   }
 
   // the objects that push Secrets into a namespace, and the store they push through (one a namespace)
@@ -466,17 +407,12 @@ export class App {
     const name = `${this.app}-assets`;
     const key = garageKey(name);
     const readKey = garageKey(`${name}-read`);
-    // bucket-sync's backblaze credentials are in a section of their own
-    const viaEso = esoApps.has(this.app);
-    const auth = viaEso ? undefined : bucketSyncAuth();
     const credentials = `bucket-sync-${name}`;
 
     const objects = [
-      ...(auth?.objects ?? []),
       key.object,
       readKey.object,
       garageBucket(name, [key], { roKeys: [readKey] }),
-      ...(auth ? [bucketSyncSecret(auth, name)] : []),
       bucketSyncPolicy({
         bucket: name,
         key,
@@ -486,15 +422,14 @@ export class App {
       }),
     ];
     objects.forEach((object) => this.track(object, opts.namespace));
-    if (viaEso) {
-      this.push(
+    // bucket-sync's backblaze credentials are in a section of their own
+    this.push(
+      namespace,
+      appSecrets(this.app, credentials, bucketSyncKeys, {
         namespace,
-        esoSecrets(this.app, credentials, bucketSyncKeys, {
-          namespace,
-          from: "bucket-sync",
-        }),
-      );
-    }
+        from: "bucket-sync",
+      }),
+    );
 
     const server = this.deployment("assets-server", {
       namespace: opts.namespace,
