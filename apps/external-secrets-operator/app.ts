@@ -99,7 +99,7 @@ export const app: AppFunction = (h) => {
     metadata: { name: blobSecret },
     spec: {
       data: [{ remoteRef: { key: appsSecret }, secretKey: blobSecret }],
-      refreshInterval: "1h",
+      refreshInterval: "1m",
       secretStoreRef: { kind: "SecretStore", name: "bitwarden" },
       target: { name: blobSecret },
     },
