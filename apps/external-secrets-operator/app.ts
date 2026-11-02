@@ -5,7 +5,11 @@ import {
   esoNamespace,
   pusherServiceAccount,
 } from "../../tools/lib/k8s/secrets.ts";
-import { organization, project } from "../../tools/lib/secrets/bitwarden.ts";
+import {
+  appsSecret,
+  organization,
+  project,
+} from "../../tools/lib/secrets/bitwarden.ts";
 import {
   dns,
   pod,
@@ -74,7 +78,7 @@ export const app: AppFunction = (h) => {
     kind: "ExternalSecret",
     metadata: { name: blobSecret },
     spec: {
-      data: [{ remoteRef: { key: "apps" }, secretKey: blobSecret }],
+      data: [{ remoteRef: { key: appsSecret }, secretKey: blobSecret }],
       refreshInterval: "1h",
       secretStoreRef: { kind: "SecretStore", name: "bitwarden" },
       target: { name: blobSecret },
