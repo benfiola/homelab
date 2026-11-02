@@ -1,10 +1,12 @@
-import { dirname, resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { crdsApp, fluxDeclaration, listApps, networkFunction } from "./apps.ts";
 import { images } from "./images.ts";
-import { configMap, files } from "./k8s/config.ts";
+import { configMap } from "./k8s/config.ts";
 import {
   bucketSyncPolicy,
   garageBucket,
+  garageEndpoint,
   garageKey,
   type GarageKey,
   type GarageBucketOptions,
@@ -21,8 +23,20 @@ import {
 import type { FluxDeclaration } from "./k8s/flux.ts";
 import { addLabels } from "./k8s/labels.ts";
 import type { NetworkFunction } from "./k8s/network-policy.ts";
+import { editor, type Editor } from "./k8s/edit.ts";
 import { moveToNamespace } from "./k8s/namespace.ts";
 import { nasVolume } from "./k8s/storage.ts";
+import {
+  appSecrets as esoSecrets,
+  appTemplatedSecrets as esoTemplatedSecrets,
+  bucketSyncKeys,
+  esoApps,
+  pushStore,
+  secretKeys,
+  secretRef as esoSecretRef,
+  type SecretKeys,
+  type SecretOptions,
+} from "./k8s/secrets.ts";
 import {
   appSecrets,
   appTemplatedSecrets,
@@ -53,24 +67,20 @@ type Obj = Record<string, any>;
 // the type of an app's exported `app`; it types `h`
 export type { Env, Workload } from "./k8s/workload.ts";
 
-export interface Selector {
-  kind: string;
-  name: string;
-  // api group, for kinds that exist in several
-  group?: string;
-}
-
 export interface SourceOptions {
   // added to every object, and to the selectors that match pods
   labels?: Record<string, string>;
 }
 
 export interface ManifestOptions extends SourceOptions {
-  // moves the objects into the app's namespace, as `kubectl apply -n` would (helm takes its namespace itself)
-  namespace?: boolean;
+  // moves the objects into a namespace, as `kubectl apply -n` would: the app's if true (helm takes its
+  // namespace itself)
+  namespace?: boolean | string;
 }
 
 export interface HelmSourceOptions extends SourceOptions {
+  // the namespace to render the chart for (default: the app's)
+  namespace?: string;
   // defaults to the chart's name
   release?: string;
   // values files, named relative to the app's directory
@@ -82,14 +92,31 @@ export interface HelmSourceOptions extends SourceOptions {
 
 export type AppFunction = (h: App) => void | Obj[] | Promise<void | Obj[]>;
 
+// workloads, and the namespace to put them (and their services) in, if not the app's
+export type AppWorkloadOptions = WorkloadOptions & { namespace?: string };
+
+type Resource = Obj | Workload | HttpRoute | GrpcRoute | Promise<Obj[]>;
+
 // the handle an app's `app.ts` receives. everything created through it is collected for the app and
 // built when the app finishes, so workloads and routes keep accepting additions until then.
 export class App {
   readonly app: string;
   readonly dir: string;
 
-  // namespace stamped on objects that name none; the app's name unless set
-  namespaceName: string;
+  // the namespace of everything added that names none; the app's name unless set. what is added reads
+  // it when it is added, so it can only be set before anything is
+  private _namespaceName: string;
+  get namespaceName(): string {
+    return this._namespaceName;
+  }
+  set namespaceName(name: string) {
+    if (this.resources.length > 0) {
+      throw new Error(
+        `${this.app}: namespaceName is set after something was added (which used ${this._namespaceName}): set it first`,
+      );
+    }
+    this._namespaceName = name;
+  }
 
   // every app, the generated crds app included, by name
   get apps(): string[] {
@@ -111,16 +138,16 @@ export class App {
   readonly images = images;
   readonly timezone = "America/Los_Angeles";
 
-  private readonly resources: (
-    Obj | Workload | HttpRoute | GrpcRoute | Promise<Obj[]>
-  )[] = [];
-  private readonly edits: { selector: Selector; edit: (obj: Obj) => void }[] =
-    [];
+  // everything added, with the namespace it was added for
+  private readonly resources: { resource: Resource; namespace: string }[] = [];
+  private readonly hooks: ((e: Editor) => void)[] = [];
+  private readonly pushStores = new Set<string>();
+  private readonly pushed = new Set<string>();
 
   constructor(app: string, dir: string) {
     this.app = app;
     this.dir = dir;
-    this.namespaceName = app;
+    this._namespaceName = app;
   }
 
   // restricted security contexts, the default for workloads
@@ -128,13 +155,14 @@ export class App {
     return securityContext(opts);
   }
 
-  // the app's namespace. `privileged` lifts pod security admission for apps that need host access
-  namespace(opts: { privileged?: boolean } = {}): this {
+  // the app's namespace, or another by `name`. `privileged` lifts pod security admission for apps
+  // that need host access
+  namespace(opts: { name?: string; privileged?: boolean } = {}): this {
     return this.add({
       apiVersion: "v1",
       kind: "Namespace",
       metadata: {
-        name: this.namespaceName,
+        name: opts.name ?? this.namespaceName,
         ...(opts.privileged && {
           labels: { "pod-security.kubernetes.io/enforce": "privileged" },
         }),
@@ -143,37 +171,51 @@ export class App {
   }
 
   add(...objects: Obj[]): this {
-    this.resources.push(...objects);
+    objects.forEach((object) => this.track(object));
     return this;
   }
 
+  // collects something to build when the app finishes. what it makes is given the `namespace` (the
+  // app's, unless told otherwise) where it names none. that is read now: workloads, routes and
+  // sources aren't built until the app finishes, and namespaceName can't change once one is added
+  private track(resource: Resource, namespace = this.namespaceName): void {
+    this.resources.push({ resource, namespace });
+  }
+
   // sources fetch as soon as they are declared, and are awaited when the app finishes
-  private source(objects: Promise<Obj[]>, opts: ManifestOptions = {}): this {
+  private source(
+    objects: Promise<Obj[]>,
+    opts: ManifestOptions = {},
+    stamp?: string,
+  ): this {
+    const namespace =
+      opts.namespace === true
+        ? this.namespaceName
+        : opts.namespace || undefined;
     const labelled = objects.then((o) => {
-      const moved = opts.namespace ? moveToNamespace(o, this.namespaceName) : o;
+      const moved = namespace ? moveToNamespace(o, namespace) : o;
       return opts.labels
         ? moved.map((obj) => addLabels(obj, opts.labels!))
         : moved;
     });
     // avoids an unhandled rejection before the app is awaited
     labelled.catch(() => {});
-    this.resources.push(labelled);
+    this.track(labelled, stamp);
     return this;
   }
 
   // the objects of a helm chart: `<repository url>/<chart>?version=<version>` (see parseChartUrl)
   helm(
     chart: string,
-    { values, labels, ...opts }: HelmSourceOptions = {},
+    { values, labels, namespace, ...opts }: HelmSourceOptions = {},
   ): this {
     const files = [values ?? []].flat().map((file) => resolve(this.dir, file));
-    return this.source(
-      helm(
-        { ...parseChartUrl(chart), ...opts, values: files },
-        this.namespaceName,
-      ),
-      { labels },
+    const objects = helm(
+      { ...parseChartUrl(chart), ...opts, values: files },
+      namespace ?? this.namespaceName,
     );
+    // objects the chart leaves without a namespace are given the one it was rendered for
+    return this.source(objects, { labels }, namespace);
   }
 
   // the objects of a manifest: a url, or a path relative to the app's directory
@@ -191,42 +233,52 @@ export class App {
     return jsonnet(file, this.dir);
   }
 
-  // edits the objects matching `selector`, once the app is complete; an error if none match
-  edit(selector: Selector, edit: (obj: Obj) => void): this {
-    this.edits.push({ selector, edit });
+  // changes the objects the app made, once it is complete: they are built by then (and have their
+  // namespaces), so the hook edits what will be published, whichever way it was made. the editor finds
+  // objects and parts of them, and fails when it can't, so that a changed upstream is noticed
+  postRender(hook: (e: Editor) => void): this {
+    this.hooks.push(hook);
     return this;
   }
 
-  private workload(kind: WorkloadKind, name: string, opts?: WorkloadOptions) {
+  private workload(
+    kind: WorkloadKind,
+    name: string,
+    { namespace, ...opts }: AppWorkloadOptions = {},
+  ) {
     const workload = new Workload(kind, name, opts, (service) =>
-      this.add(service),
+      this.track(service, namespace),
     );
-    this.resources.push(workload);
+    this.track(workload, namespace);
     return workload;
   }
 
-  statefulSet(name: string, opts?: WorkloadOptions) {
+  statefulSet(name: string, opts?: AppWorkloadOptions) {
     return this.workload("StatefulSet", name, opts);
   }
 
-  deployment(name: string, opts?: WorkloadOptions) {
+  deployment(name: string, opts?: AppWorkloadOptions) {
     return this.workload("Deployment", name, opts);
   }
 
-  daemonSet(name: string, opts?: WorkloadOptions) {
+  daemonSet(name: string, opts?: AppWorkloadOptions) {
     return this.workload("DaemonSet", name, opts);
   }
 
   // an https route (with its listener); add where it sends traffic with `.match()`
-  httpRoute(gateway: Gateway, hostname: string) {
+  httpRoute(gateway: Gateway, hostname: string, opts?: { namespace?: string }) {
     const route = new HttpRoute(gateway, hostname);
-    this.resources.push(route);
+    this.track(route, opts?.namespace);
     return route;
   }
 
-  grpcRoute(gateway: Gateway, hostname: string, opts?: { timeout?: string }) {
+  grpcRoute(
+    gateway: Gateway,
+    hostname: string,
+    { namespace, ...opts }: { timeout?: string; namespace?: string } = {},
+  ) {
     const route = new GrpcRoute(gateway, hostname, opts);
-    this.resources.push(route);
+    this.track(route, namespace);
     return route;
   }
 
@@ -236,8 +288,12 @@ export class App {
     fromPort: number,
     to: RouteTarget,
     toPort: number,
+    opts: { namespace?: string } = {},
   ): this {
-    return this.add(...tcpRoute(gateway, hostname, fromPort, to, toPort));
+    tcpRoute(gateway, hostname, fromPort, to, toPort).forEach((object) =>
+      this.track(object, opts.namespace),
+    );
+    return this;
   }
 
   udpRoute(
@@ -246,54 +302,147 @@ export class App {
     fromPort: number,
     to: RouteTarget,
     toPort: number,
+    opts: { namespace?: string } = {},
   ): this {
-    return this.add(...udpRoute(gateway, hostname, fromPort, to, toPort));
+    udpRoute(gateway, hostname, fromPort, to, toPort).forEach((object) =>
+      this.track(object, opts.namespace),
+    );
+    return this;
   }
 
   vpa(target: VpaTarget | { target: VpaTarget }, opts?: VpaOptions): this {
     return this.add(vpa("target" in target ? target.target : target, opts));
   }
 
-  // the app's vault path, as a Secret named 'secrets' in its namespace
-  secrets(): this {
-    return this.add(...appSecrets(this.app));
+  // a Secret in the app's namespace, holding keys of the app's section of the `apps` secret. returns
+  // the Secret, to read its keys through. an app that reads them through external secrets (see
+  // `esoApps`) names the Secret and lists its keys, and may put it in another `namespace` or read
+  // the section `from` another app; the others get a Secret named 'secrets' holding their vault
+  // path, whole
+  secrets(): this;
+  secrets<K extends string>(
+    name: string,
+    keys: readonly K[],
+    opts?: SecretOptions,
+  ): SecretKeys<K>;
+  secrets(
+    name?: string,
+    keys?: readonly string[],
+    opts: SecretOptions = {},
+  ): this | SecretKeys {
+    if (!esoApps.has(this.app)) {
+      if (name !== undefined || keys !== undefined) {
+        throw new Error(`${this.app} names a Secret, but is not in esoApps`);
+      }
+      return this.add(...appSecrets(this.app));
+    }
+    if (name === undefined || keys === undefined) {
+      throw new Error(
+        `${this.app} is in esoApps: name the Secret and list its keys`,
+      );
+    }
+    const namespace = opts.namespace ?? this.namespaceName;
+    this.push(
+      namespace,
+      esoSecrets(this.app, name, keys, { ...opts, namespace }),
+    );
+    return secretKeys(name, keys);
   }
 
   // the same, with the Secret's keys built from templates
-  templatedSecrets(templates: Record<string, string>): this {
-    return this.add(...appTemplatedSecrets(this.app, templates));
+  templatedSecrets(templates: Record<string, string>): this;
+  templatedSecrets<K extends string>(
+    name: string,
+    templates: Record<K, string>,
+    opts?: Pick<SecretOptions, "namespace">,
+  ): SecretKeys<K>;
+  templatedSecrets(
+    name: string | Record<string, string>,
+    templates?: Record<string, string>,
+    opts: Pick<SecretOptions, "namespace"> = {},
+  ): this | SecretKeys {
+    if (!esoApps.has(this.app)) {
+      if (typeof name !== "object") {
+        throw new Error(`${this.app} names a Secret, but is not in esoApps`);
+      }
+      return this.add(...appTemplatedSecrets(this.app, name));
+    }
+    if (typeof name !== "string" || templates === undefined) {
+      throw new Error(
+        `${this.app} is in esoApps: name the Secret and give its templates`,
+      );
+    }
+    const namespace = opts.namespace ?? this.namespaceName;
+    this.push(
+      namespace,
+      esoTemplatedSecrets(this.app, name, templates, { namespace }),
+    );
+    return secretKeys(name, Object.keys(templates));
   }
 
-  // an env var source for a key of the app's 'secrets' Secret
+  // an env var source for a key of the app's 'secrets' Secret (vault only: an app in `esoApps` reads
+  // the keys of the Secret that `secrets` returns)
   secretKey(key: string) {
+    if (esoApps.has(this.app)) {
+      throw new Error(
+        `${this.app} is in esoApps: read keys through the Secret that secrets() returns`,
+      );
+    }
     return { secretKeyRef: { name: secretName, key } };
   }
 
-  // refers to a key of the app's vault path, inside a `templatedSecrets` template
+  // refers to a key of the app's secrets, inside a `templatedSecrets` template
   secretRef(key: string): string {
-    return secretRef(key);
+    return esoApps.has(this.app) ? esoSecretRef(key, this.app) : secretRef(key);
   }
 
-  configMap(name: string, data: Record<string, string>): Obj {
+  // the objects that push Secrets into a namespace, and the store they push through (one a namespace)
+  private push(namespace: string, objects: Obj[]): this {
+    for (const { metadata } of objects) {
+      if (this.pushed.has(metadata.name)) {
+        throw new Error(
+          `${this.app} pushes the Secret behind ${metadata.name} twice: give each Secret a name of its own`,
+        );
+      }
+      this.pushed.add(metadata.name);
+    }
+    if (!this.pushStores.has(namespace)) {
+      this.pushStores.add(namespace);
+      this.add(pushStore(namespace));
+    }
+    return this.add(...objects);
+  }
+
+  configMap(
+    name: string,
+    data: Record<string, string>,
+    opts: { namespace?: string } = {},
+  ): Obj {
     const object = configMap(name, data);
-    this.add(object);
+    this.track(object, opts.namespace);
     return object;
   }
 
   // the contents of files in the app's directory, keyed by file name
   files(...names: string[]): Record<string, string> {
-    return files(this.dir, ...names);
+    return Object.fromEntries(
+      names.map((name) => [name, readFileSync(join(this.dir, name), "utf-8")]),
+    );
   }
 
   // a share on the nas: a PersistentVolume and its claim (mount it with `{ pvc: { name } }`)
-  nasVolume(name: string): this {
-    return this.add(...nasVolume(name));
+  nasVolume(name: string, opts: { namespace?: string } = {}): this {
+    nasVolume(name).forEach((object) => this.track(object, opts.namespace));
+    return this;
   }
 
   // a garage access key; unless imported it is generated into a Secret named `garage-key-garage-<name>`
-  garageKey(name: string, opts?: GarageKeyOptions): GarageKey {
+  garageKey(
+    name: string,
+    { namespace, ...opts }: GarageKeyOptions & { namespace?: string } = {},
+  ): GarageKey {
     const key = garageKey(name, opts);
-    this.add(key.object);
+    this.track(key.object, namespace);
     return key;
   }
 
@@ -301,38 +450,55 @@ export class App {
   garageBucket(
     name: string,
     owners: GarageKey[],
-    opts?: GarageBucketOptions,
+    { namespace, ...opts }: GarageBucketOptions & { namespace?: string } = {},
   ): Obj {
     const bucket = garageBucket(name, owners, opts);
-    this.add(bucket);
+    this.track(bucket, namespace);
     return bucket;
   }
 
   // serves files synced from backblaze into a garage bucket named after the app (bucket, keys, sync
   // policy, and a read-only rclone server). returns the in-cluster url
-  assetsServer(opts: { syncTimeout?: string } = {}): { url: string } {
+  assetsServer(opts: { syncTimeout?: string; namespace?: string } = {}): {
+    url: string;
+  } {
+    const namespace = opts.namespace ?? this.namespaceName;
     const name = `${this.app}-assets`;
-    const auth = bucketSyncAuth();
     const key = garageKey(name);
     const readKey = garageKey(`${name}-read`);
-    const credentials = bucketSyncSecret(auth, name);
+    // bucket-sync's backblaze credentials are in a section of their own
+    const viaEso = esoApps.has(this.app);
+    const auth = viaEso ? undefined : bucketSyncAuth();
+    const credentials = `bucket-sync-${name}`;
 
-    this.add(
-      ...auth.objects,
+    const objects = [
+      ...(auth?.objects ?? []),
       key.object,
       readKey.object,
       garageBucket(name, [key], { roKeys: [readKey] }),
-      credentials,
+      ...(auth ? [bucketSyncSecret(auth, name)] : []),
       bucketSyncPolicy({
         bucket: name,
         key,
         source: `homelab-assets-698966/${this.app}`,
-        credentials: credentials.metadata.name,
+        credentials,
         syncTimeout: opts.syncTimeout,
       }),
-    );
+    ];
+    objects.forEach((object) => this.track(object, opts.namespace));
+    if (viaEso) {
+      this.push(
+        namespace,
+        esoSecrets(this.app, credentials, bucketSyncKeys, {
+          namespace,
+          from: "bucket-sync",
+        }),
+      );
+    }
 
-    const server = this.deployment("assets-server").addContainer("rclone", {
+    const server = this.deployment("assets-server", {
+      namespace: opts.namespace,
+    }).addContainer("rclone", {
       image: this.images.rclone,
       containerPorts: { http: 8080 },
       args: ["serve", "http", `source:${name}`, "--addr=:8080"],
@@ -348,48 +514,92 @@ export class App {
             key: readKey.secretAccessKeyKey,
           },
         },
-        RCLONE_CONFIG_SOURCE_ENDPOINT: "http://garage.garage.svc:3900",
+        RCLONE_CONFIG_SOURCE_ENDPOINT: garageEndpoint,
         RCLONE_CONFIG_SOURCE_REGION: "garage",
       },
     });
     server.service({ http: 8080 });
-    this.vpa(server);
+    this.vpa(server, { namespace: opts.namespace });
 
-    return { url: `http://assets-server.${this.app}.svc:8080` };
+    return { url: `http://assets-server.${namespace}.svc:8080` };
   }
 
-  // everything the app created, in creation order, with the edits applied
+  // what the app publishes: everything it created, in creation order. each object has a namespace
+  // (see `track`) and is checked to be an object at all; the post-render hooks then change them, and
+  // the result is tidied
   async objects(): Promise<Obj[]> {
     const objects = (
       await Promise.all(
-        this.resources.map(async (r) =>
-          r instanceof Promise
-            ? // a copy, so edits never accumulate over repeated calls
-              structuredClone(await r)
-            : r instanceof Workload
-              ? [r.object()]
-              : r instanceof HttpRoute || r instanceof GrpcRoute
-                ? r.objects()
-                : [r],
-        ),
+        this.resources.map(async ({ resource: r, namespace }) => {
+          const built =
+            r instanceof Promise
+              ? await r
+              : r instanceof Workload
+                ? [r.object()]
+                : r instanceof HttpRoute || r instanceof GrpcRoute
+                  ? r.objects()
+                  : [r];
+          // a copy, so that hooks never change what was added, or accumulate over repeated calls
+          return stampNamespace(structuredClone(built), namespace);
+        }),
       )
     ).flat();
 
-    for (const { selector, edit } of this.edits) {
-      const matches = objects.filter(
-        (obj) =>
-          obj.kind === selector.kind &&
-          obj.metadata?.name === selector.name &&
-          (selector.group === undefined ||
-            String(obj.apiVersion).split("/")[0] === selector.group),
-      );
-      if (matches.length === 0) {
-        throw new Error(
-          `${this.app}: edit matched no object (${selector.kind}/${selector.name})`,
-        );
+    validate(join(this.dir, "app.ts"), objects);
+
+    const e = editor(objects);
+    for (const hook of this.hooks) {
+      try {
+        hook(e);
+      } catch (error: any) {
+        throw new Error(`${this.app}: ${error.message}`);
       }
-      matches.forEach(edit);
     }
-    return objects;
+    return tidy(objects);
   }
 }
+
+// flux applies a namespace-less object to 'default', and identifies every object, cluster-scoped ones
+// included, as <namespace>_<name>_<group>_<kind>. so every object is stamped (kubernetes ignores the
+// namespace on cluster-scoped kinds): changing a stamp changes the id, and flux prunes the object.
+const stampNamespace = (items: Obj[], namespace: string): Obj[] =>
+  items.map((obj) =>
+    obj?.metadata?.namespace
+      ? obj
+      : { ...obj, metadata: { ...obj?.metadata, namespace } },
+  );
+
+// what `kubectl apply` needs of an object: where it came from is named, for the error
+const validate = (origin: string, objects: Obj[]): Obj[] => {
+  objects.forEach((obj, i) => {
+    for (const field of ["apiVersion", "kind"]) {
+      if (typeof obj?.[field] !== "string") {
+        throw new Error(`${origin}: object ${i} has no '${field}'`);
+      }
+    }
+    if (typeof obj.metadata?.name !== "string") {
+      throw new Error(
+        `${origin}: ${obj.kind} (object ${i}) has no 'metadata.name'`,
+      );
+    }
+  });
+  return objects;
+};
+
+// drops `creationTimestamp: null` (controller-gen, in crds) and empty label and annotation maps (helm)
+const tidy = (items: Obj[]): Obj[] =>
+  items.map((obj) => {
+    if (!obj.metadata) {
+      return obj;
+    }
+    const metadata = { ...obj.metadata };
+    if (metadata.creationTimestamp === null) {
+      delete metadata.creationTimestamp;
+    }
+    for (const field of ["annotations", "labels"]) {
+      if (metadata[field] && Object.keys(metadata[field]).length === 0) {
+        delete metadata[field];
+      }
+    }
+    return { ...obj, metadata };
+  });

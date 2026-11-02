@@ -16,13 +16,13 @@ export const app: AppFunction = (h) => {
   h.vpa({ kind: "Deployment", name: "inteldeviceplugins-controller-manager" });
 
   // the operator's pods are selected by app name, like every other app's
-  h.edit(
-    { kind: "Deployment", name: "inteldeviceplugins-controller-manager" },
-    (deployment) => {
-      deployment.spec.template.metadata.labels["app.kubernetes.io/name"] =
-        h.app;
-    },
-  );
+  h.postRender((e) => {
+    const deployment = e.find({
+      kind: "Deployment",
+      name: "inteldeviceplugins-controller-manager",
+    });
+    deployment.spec.template.metadata.labels["app.kubernetes.io/name"] = h.app;
+  });
 };
 
 export const network: NetworkFunction = (n) => {

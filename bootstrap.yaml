@@ -10,6 +10,9 @@
 # FLUX_BRANCH=scratch just bootstrap
 #
 # vault is not initialised here: that is still manual.
+#
+# the external-secrets stage can be run alone, to give the cluster a new token for bitwarden:
+# just bootstrap --only external-secrets
 stages:
   - name: cluster-ready
     run:
@@ -61,3 +64,29 @@ stages:
     kustomizations:
       - name: flux-bootstrap
         path: ./apps/flux
+
+  # the token of the machine account that external secrets reads bitwarden with: the one secret that
+  # can't come from bitwarden. flux makes the namespace, so this waits for it. the token is read from
+  # ~/.homelab/eso-token (owner only, as for the other secrets), without its newline, and is never in
+  # a command line
+  - name: external-secrets
+    run:
+      - command:
+          - kubectl
+          - wait
+          - --for=jsonpath={.status.phase}=Active
+          - namespace/external-secrets-operator
+          - --timeout=60s
+        retry: 900
+      - command:
+          - bash
+          - -euo
+          - pipefail
+          - -c
+          - |
+            file="$HOME/.homelab/eso-token"
+            [ "$(stat -c %a "$file")" = 600 ] || { echo "$file must be readable by its owner only (chmod 600 $file)" >&2; exit 1; }
+            kubectl create secret generic bitwarden-credentials \
+              --namespace=external-secrets-operator \
+              --from-file=token=<(tr -d '\n' < "$file") \
+              --dry-run=client --output=yaml | kubectl apply --filename=-

@@ -1,5 +1,4 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { container } from "../../tools/lib/k8s/edit.ts";
 import {
   pod,
   tcp,
@@ -18,8 +17,12 @@ export const app: AppFunction = (h) => {
 
   h.vpa({ kind: "Deployment", name: "snapshot-controller" });
 
-  h.edit({ kind: "Deployment", name: "snapshot-controller" }, (deployment) => {
-    const controller = container(deployment, "snapshot-controller");
+  h.postRender((e) => {
+    const deployment = e.find({
+      kind: "Deployment",
+      name: "snapshot-controller",
+    });
+    const controller = e.container(deployment, "snapshot-controller");
     controller.image = "registry.k8s.io/sig-storage/snapshot-controller:v8.7.0";
     deployment.spec.template.spec.securityContext = {
       fsGroup: 65534,

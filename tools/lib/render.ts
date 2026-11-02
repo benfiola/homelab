@@ -1,12 +1,10 @@
 import { basename, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { App } from "./app.ts";
-import { stampNamespace, tidy, validate } from "./finalize.ts";
 
 type Obj = Record<string, any>;
 
-// the objects of an app: what its `app.ts` creates through the `App` handle (see app.ts) and returns,
-// made ready to publish
+// the objects of an app: what its `app.ts` creates through the `App` handle (see app.ts) and returns
 export const renderApp = async (dir: string): Promise<Obj[]> => {
   const module = join(dir, "app.ts");
   const imported = await import(pathToFileURL(module).href);
@@ -21,9 +19,6 @@ export const renderApp = async (dir: string): Promise<Obj[]> => {
       `${module}: 'app' must return nothing, or an array of objects`,
     );
   }
-  const objects = validate(module, [
-    ...(await h.objects()),
-    ...(returned ?? []),
-  ]);
-  return stampNamespace(tidy(objects), h.namespaceName);
+  h.add(...(returned ?? []));
+  return h.objects();
 };

@@ -1,5 +1,12 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
+  blobSecret,
+  credentialsSecret,
+  esoNamespace,
+  pusherServiceAccount,
+} from "../../tools/lib/k8s/secrets.ts";
+import { organization, project } from "../../tools/lib/secrets/bitwarden.ts";
+import {
   dns,
   pod,
   tcp,
@@ -9,6 +16,9 @@ import {
 const tlsSecret = "bitwarden-tls-certs";
 
 export const app: AppFunction = (h) => {
+  // the helpers that push Secrets put their objects here
+  h.namespaceName = esoNamespace;
+
   h.helm("https://charts.external-secrets.io/external-secrets?version=2.14.0", {
     values: "values.yaml",
   });
@@ -33,6 +43,96 @@ export const app: AppFunction = (h) => {
     },
   });
 
+  // reads bitwarden through the sdk server, which it trusts through the ca of the server's certificate
+  h.add({
+    apiVersion: "external-secrets.io/v1",
+    kind: "SecretStore",
+    metadata: { name: "bitwarden" },
+    spec: {
+      provider: {
+        bitwardensecretsmanager: {
+          apiURL: "https://api.bitwarden.com",
+          auth: {
+            secretRef: {
+              credentials: { key: "token", name: credentialsSecret },
+            },
+          },
+          bitwardenServerSDKURL: `https://${server}.${h.namespaceName}.svc.cluster.local:9998`,
+          caProvider: { key: "ca.crt", name: tlsSecret, type: "Secret" },
+          identityURL: "https://identity.bitwarden.com",
+          organizationID: organization,
+          projectID: project,
+        },
+      },
+    },
+  });
+
+  // the `apps` secret of bitwarden, whole, for the PushSecrets to build each app's Secret from. this
+  // is the only thing that reads bitwarden
+  h.add({
+    apiVersion: "external-secrets.io/v1",
+    kind: "ExternalSecret",
+    metadata: { name: blobSecret },
+    spec: {
+      data: [{ remoteRef: { key: "apps" }, secretKey: blobSecret }],
+      refreshInterval: "1h",
+      secretStoreRef: { kind: "SecretStore", name: "bitwarden" },
+      target: { name: blobSecret },
+    },
+  });
+
+  // the identity the apps' stores push Secrets through (see tools/lib/k8s/secrets.ts). it may write
+  // Secrets in any namespace, as the operator itself may
+  h.add(
+    {
+      apiVersion: "v1",
+      kind: "ServiceAccount",
+      metadata: { name: pusherServiceAccount },
+    },
+    {
+      apiVersion: "rbac.authorization.k8s.io/v1",
+      kind: "ClusterRole",
+      metadata: { name: pusherServiceAccount },
+      rules: [
+        {
+          apiGroups: [""],
+          resources: ["secrets"],
+          verbs: [
+            "create",
+            "delete",
+            "get",
+            "list",
+            "patch",
+            "update",
+            "watch",
+          ],
+        },
+        {
+          apiGroups: ["authorization.k8s.io"],
+          resources: ["selfsubjectrulesreviews"],
+          verbs: ["create"],
+        },
+      ],
+    },
+    {
+      apiVersion: "rbac.authorization.k8s.io/v1",
+      kind: "ClusterRoleBinding",
+      metadata: { name: pusherServiceAccount },
+      roleRef: {
+        apiGroup: "rbac.authorization.k8s.io",
+        kind: "ClusterRole",
+        name: pusherServiceAccount,
+      },
+      subjects: [
+        {
+          kind: "ServiceAccount",
+          name: pusherServiceAccount,
+          namespace: h.namespaceName,
+        },
+      ],
+    },
+  );
+
   h.vpa({ kind: "Deployment", name: "external-secrets" });
   h.vpa({ kind: "Deployment", name: "external-secrets-cert-controller" });
   h.vpa({ kind: "Deployment", name: "external-secrets-webhook" });
@@ -40,7 +140,7 @@ export const app: AppFunction = (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const namespace = "external-secrets-operator";
+  const namespace = esoNamespace;
   const certController = n.subject(
     "external-secrets-cert-controller",
     pod("external-secrets-cert-controller", namespace),

@@ -2,6 +2,9 @@ type Obj = Record<string, any>;
 
 export const garageCluster = { name: "garage", namespace: "garage" };
 
+// where the cluster's s3 api is found
+export const garageEndpoint = `http://${garageCluster.name}.${garageCluster.namespace}.svc:3900`;
+
 export interface GarageKey {
   name: string;
   // the Secret holding the key, and its entries
@@ -138,7 +141,7 @@ export const bucketSyncPolicy = (opts: BucketSyncPolicyOptions): Obj => {
           opts.key.secret,
           opts.key.secretAccessKeyKey,
         ),
-        literal("ENDPOINT", `http://${garageCluster.name}.garage.svc:3900`),
+        literal("ENDPOINT", garageEndpoint),
         literal("REGION", "garage"),
       ],
       schedule: "0 * * * *",

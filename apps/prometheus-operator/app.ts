@@ -1,5 +1,4 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { container, replace } from "../../tools/lib/k8s/edit.ts";
 import {
   component,
   tcp,
@@ -17,31 +16,33 @@ export const app: AppFunction = (h) => {
   h.namespace();
 
   // endpoints -> endpointslices
-  h.edit({ kind: "ClusterRole", name: "prometheus-operator" }, (role) => {
-    const index = role.rules.findIndex(
+  h.postRender((e) => {
+    const role = e.find({ kind: "ClusterRole", name: "prometheus-operator" });
+    const endpoints = e.item(
+      role.rules,
       (rule: any) => rule.resources?.join() === "endpoints",
+      "rule for 'endpoints'",
     );
-    if (index < 0) {
-      throw new Error(
-        "ClusterRole/prometheus-operator has no 'endpoints' rule",
-      );
-    }
-    role.rules[index] = {
+    e.replace(role.rules, endpoints, {
       apiGroups: ["discovery.k8s.io"],
       resources: ["endpointslices"],
       verbs: ["create", "delete", "get", "list", "update"],
-    };
+    });
   });
 
-  h.edit({ kind: "Deployment", name: "prometheus-operator" }, (deployment) => {
-    const operator = container(deployment, "prometheus-operator");
+  h.postRender((e) => {
+    const deployment = e.find({
+      kind: "Deployment",
+      name: "prometheus-operator",
+    });
+    const operator = e.container(deployment, "prometheus-operator");
     operator.resources = { requests: { cpu: "100m", memory: "128Mi" } };
-    replace(
+    e.replace(
       operator.args,
       "--kubelet-endpoints=true",
       "--kubelet-endpoints=false",
     );
-    replace(
+    e.replace(
       operator.args,
       "--kubelet-endpointslice=false",
       "--kubelet-endpointslice=true",

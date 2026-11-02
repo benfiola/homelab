@@ -124,7 +124,7 @@ describe("build", () => {
   });
 });
 
-// flux applies a namespace-less object to 'default', and its inventory id includes the namespace (see lib/finalize.ts)
+// flux applies a namespace-less object to 'default', and its inventory id includes the namespace (see lib/app.ts)
 describe("namespaces", () => {
   const clusterRole =
     "apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: cr\n";

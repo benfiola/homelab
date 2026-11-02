@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, test } from "node:test";
 import { parse } from "yaml";
+import { credentialsSecret, esoNamespace } from "./lib/k8s/secrets.ts";
 import {
   expand,
   githubToken,
@@ -114,7 +115,25 @@ describe("bootstrap.yaml", () => {
         "cilium",
         "flux",
         "flux-bootstrap",
+        "external-secrets",
       ],
+    );
+  });
+
+  test("gives the cluster the token external secrets reads bitwarden with, to the place and name the app expects", () => {
+    const steps = plan(loadStages("../bootstrap.yaml"), {
+      builtDir: "out",
+      env: {},
+      only: "external-secrets",
+    });
+    const [wait, create] = steps.map((s) => s.command.join(" "));
+    assert.ok(wait.includes(`namespace/${esoNamespace}`));
+    assert.ok(create.includes(`create secret generic ${credentialsSecret}`));
+    assert.ok(create.includes(`--namespace=${esoNamespace}`));
+    assert.ok(create.includes("eso-token"));
+    assert.deepEqual(
+      steps.map((s) => s.retry),
+      [900, undefined],
     );
   });
 });

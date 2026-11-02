@@ -10,10 +10,10 @@ import {
   tokenPath,
   writePrivate,
 } from "./lib/secrets/local.ts";
+import { project } from "./lib/secrets/bitwarden.ts";
 import { align } from "./lib/table.ts";
 
-// the Bitwarden Secrets Manager project the secrets are kept in; each is a file, stored whole
-const project = "5b43cd1a-4cb5-4ae7-936e-b488012786c2";
+// each secret of the Bitwarden Secrets Manager project is a file, stored whole
 
 const names = ["talos", "network", "flux", "apps"];
 

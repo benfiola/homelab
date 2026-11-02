@@ -1,5 +1,4 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { container } from "../../tools/lib/k8s/edit.ts";
 import {
   component,
   tcp,
@@ -19,14 +18,15 @@ export const app: AppFunction = (h) => {
   h.vpa({ kind: "Deployment", name: "piraeus-operator-gencert" });
 
   // no limits: the autoscaler sizes requests
-  for (const [deployment, name] of [
-    ["piraeus-operator-controller-manager", "manager"],
-    ["piraeus-operator-gencert", "gencert"],
-  ]) {
-    h.edit({ kind: "Deployment", name: deployment }, (d) => {
-      delete container(d, name).resources.limits;
-    });
-  }
+  h.postRender((e) => {
+    for (const [deployment, name] of [
+      ["piraeus-operator-controller-manager", "manager"],
+      ["piraeus-operator-gencert", "gencert"],
+    ]) {
+      const d = e.find({ kind: "Deployment", name: deployment });
+      delete e.container(d, name).resources.limits;
+    }
+  });
 };
 
 export const network: NetworkFunction = (n) => {
