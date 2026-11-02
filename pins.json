@@ -19,8 +19,8 @@
     "checksum": "${url}.sha256sum",
     "unpack": "tar",
     "hashes": {
-      "amd64": "sha256-x8N6XyftKuLVSVxt2+zGHOu7hBUI53rzwTHpbwBe0kc=",
-      "arm64": "sha256-un9SFFgUfeMnzbD0v3Or6lu2wpwfuKHg4W2b+1CVGzE="
+      "amd64": "sha256-A/JIpQytEecov5ODOCOSxXFI/WoZhTrTWft1mNrikxI=",
+      "arm64": "sha256-BxGui8MQCiyYW/j7XH0AaubjH0yfPcU+vH2FBNdtxg0="
     }
   },
   "kubectl": {
