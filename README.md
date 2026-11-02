@@ -133,6 +133,24 @@ just pins refresh                  # refresh every hash, after Renovate bumps a 
 just pins check                    # fail if any hash is out of date
 ```
 
+### Add a tool to the dev shell
+
+- **Any version will do** (`k9s`, `vim`, ...): add it to `packages` in `flake.nix` (find its name on [search.nixos.org](https://search.nixos.org/packages), `unstable` channel).
+- **A specific version is needed** (`kubectl`, `talosctl`, ...): pin it in `pins.json` (see above).
+
+To see which version a nixpkgs tool gets:
+
+```sh
+nix eval --inputs-from . --raw nixpkgs#vim.version    # locked nixpkgs
+nix develop -c vim --version                          # dev shell
+```
+
+Update all tools in the nix flake:
+
+```sh
+nix flake update
+```
+
 ## Cluster
 
 ### Build a new cluster

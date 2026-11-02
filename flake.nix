@@ -40,9 +40,13 @@
                 prettier
                 rclone
                 renovate
+                vim
                 wireguard-tools
                 yq-go
               ]);
+
+            # k9s opens resources in $EDITOR
+            EDITOR = "vim";
 
             # one source of truth for the cluster's versions (see lib.nix)
             KUBERNETES_VERSION = lib.versions.kubernetes;
