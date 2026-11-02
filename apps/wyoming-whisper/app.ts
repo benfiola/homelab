@@ -9,7 +9,7 @@ import {
 export const app: AppFunction = (h) => {
   h.namespace();
 
-  h.secrets();
+  const secrets = h.secrets("secrets", ["hass-token"]);
 
   const workload = h
     .deployment("wyoming-whisper", {
@@ -31,7 +31,7 @@ export const app: AppFunction = (h) => {
       ],
       containerPorts: { wyoming: 10300 },
       env: {
-        HASS_TOKEN: h.secretKey("hass-token"),
+        HASS_TOKEN: secrets.key("hass-token"),
       },
       resources: {
         limits: { "nvidia.com/gpu": "1" },

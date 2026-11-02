@@ -12,7 +12,11 @@ import {
 export const app: AppFunction = (h) => {
   h.namespace({ privileged: true });
 
-  h.secrets();
+  const secrets = h.secrets("secrets", [
+    "vpn-server-countries",
+    "vpn-server-cities",
+    "vpn-wireguard-private-key",
+  ]);
   h.nasVolume("media");
 
   const scripts = h.configMap(
@@ -86,14 +90,14 @@ export const app: AppFunction = (h) => {
       DNS_UPSTREAM_RESOLVER_TYPE: "plain",
       FIREWALL_OUTBOUND_SUBNETS: "10.244.0.0/16",
       FIREWALL_INPUT_PORTS: opts.firewallInputPorts.join(","),
-      SERVER_COUNTRIES: h.secretKey("vpn-server-countries"),
-      SERVER_CITIES: h.secretKey("vpn-server-cities"),
+      SERVER_COUNTRIES: secrets.key("vpn-server-countries"),
+      SERVER_CITIES: secrets.key("vpn-server-cities"),
       TZ: h.timezone,
       VPN_SERVICE_PROVIDER: "protonvpn",
       VPN_TYPE: "wireguard",
       WIREGUARD_MTU: "1360",
       WIREGUARD_PERSISTENT_KEEPALIVE_INTERVAL: "5s",
-      WIREGUARD_PRIVATE_KEY: h.secretKey("vpn-wireguard-private-key"),
+      WIREGUARD_PRIVATE_KEY: secrets.key("vpn-wireguard-private-key"),
     };
 
     if (opts.portForwarding) {

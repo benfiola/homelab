@@ -8,7 +8,7 @@ import {
 export const app: AppFunction = (h) => {
   h.namespace();
 
-  h.secrets();
+  const secrets = h.secrets("secrets", ["admin-password"]);
 
   h.add(
     {
@@ -84,7 +84,7 @@ export const app: AppFunction = (h) => {
                     { name: "GF_SECURITY_ADMIN_USER", value: "admin" },
                     {
                       name: "GF_SECURITY_ADMIN_PASSWORD",
-                      valueFrom: h.secretKey("admin-password"),
+                      valueFrom: secrets.key("admin-password"),
                     },
                   ],
                   volumeMounts: [

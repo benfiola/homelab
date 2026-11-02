@@ -14,7 +14,7 @@ export const app: AppFunction = (h) => {
 
   h.namespace({ privileged: true });
 
-  h.templatedSecrets({
+  h.templatedSecrets("secrets", {
     RELAYHOST_PASSWORD: h.secretRef("mailgun-smtp-password"),
   });
 
