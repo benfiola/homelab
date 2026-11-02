@@ -9,7 +9,13 @@ import {
 export const app: AppFunction = (h) => {
   h.namespace({ privileged: true });
 
-  h.secrets();
+  const secrets = h.secrets("secrets", [
+    "camera-doorbell-password",
+    "camera-front-yard-password",
+    "camera-garage-password",
+    "camera-porch-password",
+    "mqtt-password",
+  ]);
 
   const config = h.configMap("frigate-config", {
     "config.yml": h.files("config.yaml")["config.yaml"],
@@ -47,15 +53,15 @@ export const app: AppFunction = (h) => {
         "http-insecure": 5000,
       },
       env: {
-        FRIGATE_CAMERA_DOORBELL_PASSWORD: h.secretKey(
+        FRIGATE_CAMERA_DOORBELL_PASSWORD: secrets.key(
           "camera-doorbell-password",
         ),
-        FRIGATE_CAMERA_FRONT_YARD_PASSWORD: h.secretKey(
+        FRIGATE_CAMERA_FRONT_YARD_PASSWORD: secrets.key(
           "camera-front-yard-password",
         ),
-        FRIGATE_CAMERA_GARAGE_PASSWORD: h.secretKey("camera-garage-password"),
-        FRIGATE_CAMERA_PORCH_PASSWORD: h.secretKey("camera-porch-password"),
-        FRIGATE_MQTT_PASSWORD: h.secretKey("mqtt-password"),
+        FRIGATE_CAMERA_GARAGE_PASSWORD: secrets.key("camera-garage-password"),
+        FRIGATE_CAMERA_PORCH_PASSWORD: secrets.key("camera-porch-password"),
+        FRIGATE_MQTT_PASSWORD: secrets.key("mqtt-password"),
         TZ: h.timezone,
       },
       resources: {

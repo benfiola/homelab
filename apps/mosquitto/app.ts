@@ -7,7 +7,10 @@ import {
 export const app: AppFunction = (h) => {
   h.namespace();
 
-  h.secrets();
+  const secrets = h.secrets("secrets", [
+    "frigate-password",
+    "home-assistant-password",
+  ]);
 
   const config = h.configMap(
     "mosquitto-config",
@@ -32,8 +35,8 @@ export const app: AppFunction = (h) => {
         auth: "/auth",
       },
       env: {
-        PASSWORD_FRIGATE: h.secretKey("frigate-password"),
-        PASSWORD_HOME_ASSISTANT: h.secretKey("home-assistant-password"),
+        PASSWORD_FRIGATE: secrets.key("frigate-password"),
+        PASSWORD_HOME_ASSISTANT: secrets.key("home-assistant-password"),
       },
     })
     .addContainer("mosquitto", {
