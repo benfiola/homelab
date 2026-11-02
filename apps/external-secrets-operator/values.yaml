@@ -1,56 +1,20 @@
+# deployed by the app itself (see app.ts): the chart's lags upstream
 bitwarden-sdk-server:
-  enabled: true
-  # the chart's default (v0.6.0) can't complete a request to bitwarden: logins fail with 'error
-  # sending request' whatever the token. v0.8.1 can. repository is stated for renovate
-  image:
-    repository: ghcr.io/external-secrets/bitwarden-sdk-server
-    tag: v0.8.1
-  podSecurityContext:
-    fsGroup: 65534
-    runAsNonRoot: true
-    runAsUser: 65534
-    runAsGroup: 65534
-    seccompProfile:
-      type: RuntimeDefault
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-  securityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-        - ALL
-      add: []
-    runAsNonRoot: true
-    runAsUser: 65534
-    runAsGroup: 65534
+  enabled: false
 certController:
   podSecurityContext:
     fsGroup: 65534
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
   securityContext:
     runAsUser: 65534
     runAsGroup: 65534
 podSecurityContext:
   fsGroup: 65534
-resources:
-  requests:
-    cpu: 10m
-    memory: 32Mi
 securityContext:
   runAsUser: 65534
   runAsGroup: 65534
 webhook:
   podSecurityContext:
     fsGroup: 65534
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
   securityContext:
     runAsUser: 65534
     runAsGroup: 65534
