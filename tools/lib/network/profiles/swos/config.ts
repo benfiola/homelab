@@ -123,8 +123,12 @@ export type Write = {
 
 export type Plan = { changes: string[]; writes: Write[] };
 
-const flag = (want: boolean | undefined, have: number): number =>
-  want === undefined ? have : want ? 1 : 0;
+const flag = (want: boolean | undefined, have: number): number => {
+  if (want === undefined) {
+    return have;
+  }
+  return want ? 1 : 0;
+};
 
 // what has to change for the switch to match the config, and the writes that change it
 export const plan = (config: Config, state: State): Plan => {

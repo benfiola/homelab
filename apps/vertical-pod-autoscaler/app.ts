@@ -8,7 +8,40 @@ import {
 export const app: AppFunction = (h) => {
   h.helm(
     "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.15.0",
-    { values: "values.yaml" },
+    {
+      values: {
+        admissionController: {
+          certGen: { enabled: false },
+          certManager: { enabled: true, issuerRef: { name: "self-signed" } },
+        },
+        containerSecurityContext: {
+          allowPrivilegeEscalation: false,
+          capabilities: { drop: ["ALL"], add: [] },
+          runAsNonRoot: true,
+          runAsUser: 65534,
+          runAsGroup: 65534,
+        },
+        podSecurityContext: {
+          fsGroup: 65534,
+          runAsNonRoot: true,
+          runAsUser: 65534,
+          runAsGroup: 65534,
+          seccompProfile: { type: "RuntimeDefault" },
+        },
+        recommender: {
+          extraArgs: [
+            "--round-cpu-millicores=25",
+            "--round-memory-bytes=16777216",
+          ],
+        },
+        updater: {
+          extraArgs: [
+            "--in-place-skip-disruption-budget=true",
+            "--min-replicas=1",
+          ],
+        },
+      },
+    },
   );
 
   h.namespace();

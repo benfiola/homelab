@@ -7,16 +7,89 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
+  const externalDns = h.helmImage(
+    "registry.k8s.io/external-dns/external-dns:v0.24.0",
+  );
+
   h.helm(
     "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.23.0",
-    { release: "external-dns-mikrotik", values: "values-mikrotik.yaml" },
+    {
+      release: "external-dns-mikrotik",
+      values: {
+        annotationFilter: "homelab.benfiola.com/use-external-dns-mikrotik",
+        enableGatewayListenerSets: true,
+        image: externalDns,
+        nameOverride: "external-dns-mikrotik",
+        policy: "sync",
+        provider: {
+          name: "webhook",
+          webhook: {
+            env: [
+              { name: "MIKROTIK_BASEURL", value: "http://router.fiola.dev" },
+              {
+                name: "MIKROTIK_PASSWORD",
+                valueFrom: {
+                  secretKeyRef: { name: "secrets", key: "routeros-password" },
+                },
+              },
+              {
+                name: "MIKROTIK_USERNAME",
+                valueFrom: {
+                  configMapKeyRef: { name: "config", key: "routeros-username" },
+                },
+              },
+            ],
+            image: h.helmImage(
+              "ghcr.io/mirceanton/external-dns-provider-mikrotik:v1.6.3",
+            ),
+            securityContext: {
+              allowPrivilegeEscalation: false,
+              capabilities: { drop: ["ALL"] },
+              privileged: false,
+              runAsGroup: 1000,
+              runAsNonRoot: true,
+              runAsUser: 1000,
+            },
+          },
+        },
+        sources: [
+          "gateway-grpcroute",
+          "gateway-httproute",
+          "gateway-tcproute",
+          "gateway-tlsroute",
+          "gateway-udproute",
+        ],
+      },
+    },
   );
 
   h.helm(
     "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.23.0",
     {
       release: "external-dns-cloudflare",
-      values: "values-cloudflare.yaml",
+      values: {
+        annotationFilter: "homelab.benfiola.com/use-external-dns-cloudflare",
+        enableGatewayListenerSets: true,
+        image: externalDns,
+        env: [
+          {
+            name: "CF_API_TOKEN",
+            valueFrom: {
+              secretKeyRef: { name: "secrets", key: "cloudflare-api-token" },
+            },
+          },
+        ],
+        nameOverride: "external-dns-cloudflare",
+        policy: "sync",
+        provider: { name: "cloudflare" },
+        sources: [
+          "gateway-grpcroute",
+          "gateway-httproute",
+          "gateway-tcproute",
+          "gateway-tlsroute",
+          "gateway-udproute",
+        ],
+      },
       crds: false,
     },
   );

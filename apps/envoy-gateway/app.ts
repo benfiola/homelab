@@ -8,12 +8,28 @@ import {
 export const app: AppFunction = (h) => {
   h.helm("oci://docker.io/envoyproxy/gateway-crds-helm?version=v1.9.3", {
     release: "envoy-gateway",
-    values: "values-crds.yaml",
+    values: { crds: { envoyGateway: { enabled: true } } },
   });
 
   h.helm("oci://docker.io/envoyproxy/gateway-helm?version=v1.9.3", {
     release: "envoy-gateway",
-    values: "values-gateway.yaml",
+    values: {
+      certgen: {
+        job: {
+          pod: { labels: { "app.kubernetes.io/component": "certgen" } },
+          ttlSecondsAfterFinished: null,
+        },
+      },
+      deployment: {
+        envoyGateway: {
+          resources: {
+            requests: { cpu: "100m", memory: "256Mi" },
+            limits: null,
+          },
+        },
+        pod: { labels: { "app.kubernetes.io/component": "controller" } },
+      },
+    },
     crds: false,
   });
 

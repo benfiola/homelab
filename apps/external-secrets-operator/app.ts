@@ -24,7 +24,20 @@ export const app: AppFunction = (h) => {
   h.namespaceName = esoNamespace;
 
   h.helm("https://charts.external-secrets.io/external-secrets?version=2.14.0", {
-    values: "values.yaml",
+    values: {
+      // deployed by the app itself (see below): the chart's lags upstream
+      "bitwarden-sdk-server": { enabled: false },
+      certController: {
+        podSecurityContext: { fsGroup: 65534 },
+        securityContext: { runAsUser: 65534, runAsGroup: 65534 },
+      },
+      podSecurityContext: { fsGroup: 65534 },
+      securityContext: { runAsUser: 65534, runAsGroup: 65534 },
+      webhook: {
+        podSecurityContext: { fsGroup: 65534 },
+        securityContext: { runAsUser: 65534, runAsGroup: 65534 },
+      },
+    },
   });
 
   h.namespace();

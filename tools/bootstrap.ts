@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { Command } from "commander";
-import { parse, stringify } from "yaml";
+import { parse } from "yaml";
 import { exit, run } from "./lib/cli.ts";
+import { run as exec } from "./lib/exec.ts";
 import { fluxKustomization } from "./lib/k8s/flux.ts";
 import { parseWith, z } from "./lib/schema.ts";
 import { readSecret, secretsFile } from "./lib/secrets/local.ts";
+import { readYaml, toYaml } from "./lib/yaml.ts";
 
 // runs the stages of bootstrap.yaml in order
 
@@ -75,7 +76,7 @@ export const expand = (text: string, env: Record<string, string | undefined>) =>
   });
 
 export const loadStages = (file: string): Stage[] =>
-  parseWith(stagesSchema, parse(readFileSync(file, "utf-8")), file).stages;
+  readYaml(file, stagesSchema).stages;
 
 export interface PlanOpts {
   builtDir: string;
@@ -116,7 +117,7 @@ export const plan = (stages: Stage[], opts: PlanOpts): Step[] => {
       steps.push({
         stage: stage.name,
         command: ["kubectl", "apply", "-f", "-"],
-        input: stringify(fluxKustomization(name, path), { lineWidth: 0 }),
+        input: toYaml([fluxKustomization(name, path)]),
         requires: [],
       });
     }
@@ -135,16 +136,19 @@ export const plan = (stages: Stage[], opts: PlanOpts): Step[] => {
 const quote = (arg: string) =>
   /^[\w@%+=:,./-]+$/.test(arg) ? arg : JSON.stringify(arg);
 
-const exec = (command: string[], input?: string) =>
-  spawnSync(command[0], command.slice(1), {
-    stdio: [input === undefined ? "inherit" : "pipe", "inherit", "inherit"],
-    input,
-  }).status === 0;
+const attempt = (step: Step) =>
+  exec(step.command[0], step.command.slice(1), {
+    input: step.input,
+    interactive: step.input === undefined,
+  }).then(
+    () => true,
+    () => false,
+  );
 
 const runStep = async (step: Step) => {
   const deadline = Date.now() + (step.retry ?? 0) * 1000;
   for (;;) {
-    if (exec(step.command, step.input)) {
+    if (await attempt(step)) {
       return true;
     }
     if (Date.now() >= deadline) {

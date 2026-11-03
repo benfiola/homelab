@@ -1,8 +1,7 @@
-import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { basename, resolve } from "node:path";
 import { parseAllDocuments } from "yaml";
-import { cacheDir } from "../cache.ts";
+import { cacheDir, cacheKey, cachedText } from "./cache.ts";
 
 type Obj = Record<string, any>;
 
@@ -73,14 +72,6 @@ const download = async (url: string): Promise<string> => {
   }
 };
 
-// writes through a temporary file, so a concurrent build never reads half a download
-export const writeAtomic = (path: string, content: string) => {
-  mkdirSync(dirname(path), { recursive: true });
-  const temp = `${path}.${process.pid}.${Math.random().toString(36).slice(2)}`;
-  writeFileSync(temp, content);
-  renameSync(temp, path);
-};
-
 // the objects in a manifest at a url (downloaded once, then cached) or at a path inside the app
 export const manifest = async (
   source: string,
@@ -90,20 +81,9 @@ export const manifest = async (
     const path = resolve(appDir, source);
     return parseManifests(readFileSync(path, "utf-8"), path);
   }
-  const key = createHash("sha256").update(source).digest("hex").slice(0, 16);
   const path = cacheDir(
     "manifests",
-    `${key}-${basename(new URL(source).pathname)}`,
+    `${cacheKey(source)}-${basename(new URL(source).pathname)}`,
   );
-  let text: string;
-  try {
-    text = readFileSync(path, "utf-8");
-  } catch (e: any) {
-    if (e.code !== "ENOENT") {
-      throw e;
-    }
-    text = await download(source);
-    writeAtomic(path, text);
-  }
-  return parseManifests(text, source);
+  return parseManifests(await cachedText(path, () => download(source)), source);
 };

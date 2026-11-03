@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import { describe, test } from "node:test";
-import { listApps } from "./lib/apps.ts";
-import { renderApp } from "./lib/render.ts";
+import { renderApp } from "../build.ts";
+import { listApps } from "../lib/apps.ts";
 
 // the real flux app
 describe("apps/flux", async () => {
-  const appsDir = join(import.meta.dirname, "../apps");
+  const appsDir = join(import.meta.dirname, "../../apps");
   const objects = await renderApp(join(appsDir, "flux"));
   const kustomizations = objects.filter((o) => o.kind === "Kustomization");
 

@@ -1,8 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { basename } from "node:path";
 import { Command } from "commander";
-import { exit, run } from "./lib/cli.ts";
-import { align } from "./lib/table.ts";
+import { align, exit, run } from "./lib/cli.ts";
 import { parseWith, z } from "./lib/schema.ts";
 
 // pins.json is read by lib.nix (to build the pinned tool derivations) and by this

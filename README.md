@@ -53,7 +53,7 @@ An app is a directory of `apps/` with an `app.ts`: `app` says what to deploy, an
 export const app: AppFunction = (h) => {
   h.helm(
     "https://kubernetes-sigs.github.io/descheduler/descheduler?version=0.36.0",
-    { values: "values.yaml" },
+    { values: { kind: "Deployment" } },
   );
   h.namespace();
   h.vpa({ kind: "Deployment", name: "descheduler" });

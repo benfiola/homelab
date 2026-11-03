@@ -1,4 +1,4 @@
-import { compact } from "./workload.ts";
+import { compact } from "../object.ts";
 
 type Obj = Record<string, any>;
 
@@ -104,6 +104,33 @@ const route = (kind: RouteKind, metadata: Obj, spec: Obj): Obj => ({
   spec,
 });
 
+// the https listener of a hostname, and the route attached to it
+const hostRoutes = (
+  kind: "HTTPRoute" | "GRPCRoute",
+  gateway: Gateway,
+  hostname: string,
+  rules: Obj[],
+): Obj[] => [
+  listenerSet({
+    gateway,
+    name: hostname,
+    hostname,
+    port: 443,
+    routeKind: kind,
+  }),
+  route(
+    kind,
+    { name: hostname, annotations: publish(gateway) },
+    {
+      hostnames: [hostname],
+      parentRefs: [
+        { kind: "ListenerSet", name: hostname, sectionName: hostname },
+      ],
+      rules,
+    },
+  ),
+];
+
 export interface HttpMatch {
   path?: string;
   pathType?: "Exact" | "PathPrefix" | "RegularExpression";
@@ -137,27 +164,7 @@ export class HttpRoute {
   }
 
   objects(): Obj[] {
-    const { gateway, hostname } = this;
-    return [
-      listenerSet({
-        gateway,
-        name: hostname,
-        hostname,
-        port: 443,
-        routeKind: "HTTPRoute",
-      }),
-      route(
-        "HTTPRoute",
-        { name: hostname, annotations: publish(gateway) },
-        {
-          hostnames: [hostname],
-          parentRefs: [
-            { kind: "ListenerSet", name: hostname, sectionName: hostname },
-          ],
-          rules: this.rules,
-        },
-      ),
-    ];
+    return hostRoutes("HTTPRoute", this.gateway, this.hostname, this.rules);
   }
 }
 
@@ -199,26 +206,7 @@ export class GrpcRoute {
 
   objects(): Obj[] {
     const { gateway, hostname } = this;
-    const objects = [
-      listenerSet({
-        gateway,
-        name: hostname,
-        hostname,
-        port: 443,
-        routeKind: "GRPCRoute",
-      }),
-      route(
-        "GRPCRoute",
-        { name: hostname, annotations: publish(gateway) },
-        {
-          hostnames: [hostname],
-          parentRefs: [
-            { kind: "ListenerSet", name: hostname, sectionName: hostname },
-          ],
-          rules: this.rules,
-        },
-      ),
-    ];
+    const objects = hostRoutes("GRPCRoute", gateway, hostname, this.rules);
     if (this.opts.timeout) {
       objects.push({
         apiVersion: "gateway.envoyproxy.io/v1alpha1",

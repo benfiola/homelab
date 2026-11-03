@@ -5,6 +5,9 @@ export const app: AppFunction = (h) => {
 
   h.helm(
     "https://intel.github.io/helm-charts/intel-device-plugins-gpu?version=0.37.1",
-    { release: "intel-device-plugins", values: "values.yaml" },
+    {
+      release: "intel-device-plugins",
+      values: { name: "gpu-device-plugin", sharedDevNum: 127 },
+    },
   );
 };

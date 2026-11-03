@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { checkTemplate, renderTemplate, renderValues } from "./template.ts";
+import { checkTemplate, renderTemplate } from "./template.ts";
 
 describe("renderTemplate", () => {
   test("fills in values by path", () => {
@@ -50,16 +50,5 @@ describe("checkTemplate", () => {
     );
     assert.throws(() => checkTemplate("{# comment #}", "t"), /not supported/);
     assert.doesNotThrow(() => checkTemplate("{{ plain }}", "t"));
-  });
-});
-
-describe("renderValues", () => {
-  test("fills in every string, however deep", () => {
-    const rendered = renderValues(
-      { a: "{{ s.k }}", b: ["x", "{{ s.k }}"], c: { d: "{{ s.k }}", e: 1 } },
-      { s: { k: "v" } },
-      "o",
-    );
-    assert.deepEqual(rendered, { a: "v", b: ["x", "v"], c: { d: "v", e: 1 } });
   });
 });

@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": [
     "No pull request is opened until its checkbox is ticked in the dependency dashboard (dependencyDashboardApproval), because merging to main publishes manifests that flux applies to the cluster. Commits read 'bump <name> to <version>', rather than using semantic commits.",
-    "Detection: values.yaml files are handled by renovate's built-in helm-values manager, and jsonnetfile.json (with its lock file) by the jsonnet-bundler manager. TypeScript has no built-in manager, so what an app.ts declares is found by shape (see tools/renovate.test.ts, which fails if something is written in a way these rules can't see): container images (`image: \"repo/name:tag\"`), helm charts (`h.helm(\"<repository url>/<chart>?version=<version>\")`), upstream kustomize overlays (`h.kustomize(\"github.com/org/repo/path?ref=tag\")`), and versioned github urls."
+    "Detection: jsonnetfile.json (with its lock file) is handled by the jsonnet-bundler manager. TypeScript has no built-in manager, so what an app.ts declares is found by shape (see tools/checks/renovate.test.ts, which fails if something is written in a way these rules can't see): container images (`image: \"repo/name:tag\"`, or `h.helmImage(\"repo/name:tag\")` in a chart's values), helm charts (`h.helm(\"<repository url>/<chart>?version=<version>\")`), upstream kustomize overlays (`h.kustomize(\"github.com/org/repo/path?ref=tag\")`), and versioned github urls."
   ],
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
@@ -18,28 +18,17 @@
   "nix": {
     "enabled": true
   },
-  "helm-values": {
-    "managerFilePatterns": ["/(^|/)values[^/]*\\.ya?ml$/"]
-  },
   "customManagers": [
     {
       "customType": "regex",
-      "description": "container images in app.ts and the shared images",
+      "description": "container images in app.ts (`image: \"repo:tag\"`, or `h.helmImage(\"repo:tag\")` for a chart's values) and the shared images",
       "managerFilePatterns": [
         "/^apps/[^/]+/app\\.ts$/",
         "/^tools/lib/images\\.ts$/"
       ],
       "matchStrings": [
-        "\\bimage\\s*[:=]\\s*\"(?<depName>[^\"\\s:@]+):(?<currentValue>[^\"\\s@]+)\""
-      ],
-      "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "description": "container images written as `image: repo:tag` in helm values (the built-in manager only reads image/repository/tag objects)",
-      "managerFilePatterns": ["/^apps/[^/]+/values[^/]*\\.ya?ml$/"],
-      "matchStrings": [
-        "\\bimage:\\s*\"?(?<depName>[^\"\\s:@]+):(?<currentValue>[^\"\\s@]+)\"?"
+        "\\bimage\\s*[:=]\\s*\"(?<depName>[^\"\\s:@]+):(?<currentValue>[^\"\\s@]+)\"",
+        "\\bh\\.helmImage\\(\\s*\"(?<depName>[^\"\\s:@]+):(?<currentValue>[^\"\\s@]+)\""
       ],
       "datasourceTemplate": "docker"
     },

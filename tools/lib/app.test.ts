@@ -1,11 +1,46 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
 import { App } from "./app.ts";
 import { bucketSyncKeys, secretRef } from "./k8s/secrets.ts";
+import { hasCommand, serve } from "./testing.ts";
+
+const deployment = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+        - name: web
+          image: web:1
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: web
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: web
+subjects:
+  - kind: ServiceAccount
+    name: web
+    namespace: default
+`;
+
+const server = await serve({
+  "deployment.yaml": deployment,
+  "sa.yaml":
+    "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: a\n  namespace: default\n",
+});
+after(() => server.close());
 
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
@@ -270,34 +305,6 @@ describe("App.manifest and App.postRender", () => {
     return dir;
   };
 
-  const deployment = `apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web
-  namespace: default
-spec:
-  template:
-    spec:
-      containers:
-        - name: web
-          image: web:1
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: web
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: web
-subjects:
-  - kind: ServiceAccount
-    name: web
-    namespace: default
-`;
-
   test("adds the objects of a manifest in the app's directory, without waiting", async () => {
     const h = new App("web", write({ "manifest.yaml": deployment }));
     h.manifest("manifest.yaml");
@@ -310,31 +317,43 @@ subjects:
     ]);
   });
 
-  test("a manifest can be moved into the app's namespace, with what refers to it", async () => {
-    const h = new App("web", write({ "manifest.yaml": deployment }));
-    h.manifest("manifest.yaml", { namespace: true });
-    const objects = await h.objects();
-    assert.deepEqual(
-      objects.map((o) => o.metadata.namespace),
-      ["web", "web", "web"],
-    );
-    assert.equal(objects[2].subjects[0].namespace, "web");
-  });
+  const kustomizeOptions = {
+    skip: !hasCommand("kustomize") && "kustomize is not installed",
+  };
 
-  test("a manifest can add labels, selectors included", async () => {
-    const dir = write({ "manifest.yaml": deployment });
-    const h = new App("web", dir);
-    h.manifest("manifest.yaml", {
-      labels: { "app.kubernetes.io/name": "web" },
-    });
-    const [d] = await h.objects();
-    assert.equal(d.metadata.labels["app.kubernetes.io/name"], "web");
-    assert.equal(d.spec.selector.matchLabels["app.kubernetes.io/name"], "web");
-    assert.equal(
-      d.spec.template.metadata.labels["app.kubernetes.io/name"],
-      "web",
-    );
-  });
+  test(
+    "a kustomization can be moved into a namespace, with what refers to it",
+    kustomizeOptions,
+    async () => {
+      const h = new App("web", "/apps/web");
+      h.kustomize(server.url("deployment.yaml"), { namespace: "moved" });
+      const objects = await h.objects();
+      const find = (kind: string) => objects.find((o) => o.kind === kind)!;
+      assert.equal(find("Deployment").metadata.namespace, "moved");
+      assert.equal(find("ClusterRoleBinding").subjects[0].namespace, "moved");
+    },
+  );
+
+  test(
+    "a kustomization can add labels, selectors included",
+    kustomizeOptions,
+    async () => {
+      const h = new App("web", "/apps/web");
+      h.kustomize(server.url("deployment.yaml"), {
+        labels: { "app.kubernetes.io/name": "web" },
+      });
+      const d = (await h.objects()).find((o) => o.kind === "Deployment")!;
+      assert.equal(d.metadata.labels["app.kubernetes.io/name"], "web");
+      assert.equal(
+        d.spec.selector.matchLabels["app.kubernetes.io/name"],
+        "web",
+      );
+      assert.equal(
+        d.spec.template.metadata.labels["app.kubernetes.io/name"],
+        "web",
+      );
+    },
+  );
 
   test("a missing manifest fails when the app is built, not when it is declared", async () => {
     const h = new App("web", write({}));
@@ -697,40 +716,28 @@ describe("namespaces", () => {
     });
 
     describe("sources", () => {
-      const dir = mkdtempSync(join(tmpdir(), "app-ns-"));
-      dirs.push(dir);
-      writeFileSync(
-        join(dir, "manifest.yaml"),
-        "apiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: a\n  namespace: default\n",
+      const sa = server.url("sa.yaml");
+
+      test(
+        "a kustomization is moved to the namespace it names, or the app's",
+        { skip: !hasCommand("kustomize") && "kustomize is not installed" },
+        async () => {
+          const named = new App("web", "/apps/web");
+          named.kustomize(sa, { namespace: other });
+          assert.deepEqual(await namespaces(named), [
+            `ServiceAccount/a=${other}`,
+          ]);
+
+          const own = new App("web", "/apps/web");
+          own.kustomize(sa);
+          assert.deepEqual(await namespaces(own), ["ServiceAccount/a=web"]);
+        },
       );
-
-      test("a manifest is moved to the namespace it names, or the app's if true", async () => {
-        const named = new App("web", dir);
-        named.manifest("manifest.yaml", { namespace: other });
-        assert.deepEqual(await namespaces(named), [
-          `ServiceAccount/a=${other}`,
-        ]);
-
-        const own = new App("web", dir);
-        own.manifest("manifest.yaml", { namespace: true });
-        assert.deepEqual(await namespaces(own), ["ServiceAccount/a=web"]);
-
-        const left = new App("web", dir);
-        left.manifest("manifest.yaml");
-        assert.deepEqual(await namespaces(left), ["ServiceAccount/a=default"]);
-      });
     });
   });
 });
 
-const hasHelm = (() => {
-  try {
-    execFileSync("helm", ["version", "--short"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const hasHelm = hasCommand("helm");
 
 describe(
   "helm in another namespace",

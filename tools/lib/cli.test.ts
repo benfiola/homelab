@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { align } from "./table.ts";
+import { align } from "./cli.ts";
 
 describe("align", () => {
   test("pads each column to its widest cell, two spaces apart", () => {

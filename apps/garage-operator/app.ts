@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm("oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.0.40", {
-    values: "values.yaml",
+    values: { resources: null },
   });
 
   h.namespace();

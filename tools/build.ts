@@ -6,12 +6,14 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { Command } from "commander";
-import { stringify } from "yaml";
+import { App } from "./lib/app.ts";
 import { crdsApp, listApps } from "./lib/apps.ts";
 import { exit, run } from "./lib/cli.ts";
-import { renderApp } from "./lib/render.ts";
+import { canonical } from "./lib/object.ts";
+import { toYaml } from "./lib/yaml.ts";
 
 type Obj = Record<string, any>;
 
@@ -22,20 +24,24 @@ sortOptions:
   order: fifo
 `;
 
-// json with sorted keys, so objects that differ only in key order compare equal
-const canonical = (value: unknown): string =>
-  JSON.stringify(value, (_, v) =>
-    v && typeof v === "object" && !Array.isArray(v)
-      ? Object.fromEntries(
-          Object.entries(v).sort(([a], [b]) => a.localeCompare(b)),
-        )
-      : v,
-  );
+// the objects of an app: what its `app.ts` creates through the `App` handle (see app.ts) and returns
+export const renderApp = async (dir: string): Promise<Obj[]> => {
+  const module = join(dir, "app.ts");
+  const imported = await import(pathToFileURL(module).href);
+  if (typeof imported.app !== "function") {
+    throw new Error(`${module}: expected an export named 'app' (a function)`);
+  }
 
-const toYaml = (objects: Obj[]) =>
-  objects
-    .map((o) => stringify(o, { lineWidth: 0, aliasDuplicateObjects: false }))
-    .join("---\n");
+  const h = new App(basename(dir), dir);
+  const returned = await imported.app(h);
+  if (returned !== undefined && !Array.isArray(returned)) {
+    throw new Error(
+      `${module}: 'app' must return nothing, or an array of objects`,
+    );
+  }
+  h.add(...(returned ?? []));
+  return h.objects();
+};
 
 const splitCrds = (objects: Obj[]) => {
   const rest: Obj[] = [];

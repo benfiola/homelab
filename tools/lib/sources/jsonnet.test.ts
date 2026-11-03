@@ -1,19 +1,12 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
 import { jsonnet } from "./jsonnet.ts";
+import { hasCommand } from "../testing.ts";
 
-const hasJsonnet = (() => {
-  try {
-    execFileSync("jsonnet", ["--version"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const hasJsonnet = hasCommand("jsonnet");
 
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));

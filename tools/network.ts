@@ -3,13 +3,15 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Command, Option } from "commander";
 import { parse } from "yaml";
-import { run } from "./lib/cli.ts";
-import { applyConfig } from "./lib/network/apply.ts";
-import { listOutputs, renderNetwork } from "./lib/network/config.ts";
+import { align, run } from "./lib/cli.ts";
+import {
+  applyConfig,
+  listOutputs,
+  renderNetwork,
+} from "./lib/network/config.ts";
 import { Client } from "./lib/network/profiles/swos/client.ts";
 import { dumpYaml } from "./lib/network/profiles/swos/device.ts";
 import { readSecret, secretsFile } from "./lib/secrets/local.ts";
-import { align } from "./lib/table.ts";
 
 // the network secrets given, else those this machine holds, if it has any
 const readSecrets = (given: string | undefined) => {

@@ -1,12 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { checkTemplate, renderTemplate } from "../template.ts";
+import { withTempFile } from "../../exec.ts";
+import { renderTemplate } from "../template.ts";
 import type { Client, Model } from "../model.ts";
 import {
   camel,
+  readScript,
   secret,
-  upper,
   type Context,
   type Profile,
   type Resolved,
@@ -15,6 +13,8 @@ import {
 // a client is named for its device, and for the interface too when it joins several
 export const clientName = (client: Client, iface: string) =>
   client.addresses.length > 1 ? `${client.device}-${iface}` : client.device;
+
+const upper = (s: string) => s.toUpperCase();
 
 const reset =
   "/system/reset-configuration no-defaults=yes run-after-reset=script.rsc";
@@ -141,9 +141,7 @@ export const routeros: Profile = {
   extension: ".rsc",
 
   render: (device, ctx) => {
-    const origin = `${device.name}${routeros.extension} (${device.script})`;
-    const text = readFileSync(join(ctx.scripts, device.script!), "utf-8");
-    checkTemplate(text, origin);
+    const { origin, text } = readScript(device, ctx, routeros.extension);
     return renderTemplate(
       text,
       {
@@ -165,14 +163,9 @@ export const routeros: Profile = {
       return;
     }
 
-    const dir = mkdtempSync(join(tmpdir(), "routeros-"));
-    try {
-      const file = join(dir, "script.rsc");
-      writeFileSync(file, content, { mode: 0o600 });
-      await o.run("scp", [file, `${target}:script.rsc`]);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
+    await withTempFile("script.rsc", content, (file) =>
+      o.run("scp", [file, `${target}:script.rsc`]),
+    );
     if (!o.reset) {
       o.log(
         `copied: reset the router to apply it with\n  ssh -t ${target} ${reset}`,

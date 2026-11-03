@@ -6,7 +6,7 @@ import { describe, test } from "node:test";
 // renovate has no manager for typescript: images in app.ts are found by the regex rules of renovate.json,
 // which these tests use, so an image renovate can't see fails here
 
-const root = join(import.meta.dirname, "..");
+const root = join(import.meta.dirname, "../..");
 const config = JSON.parse(readFileSync(join(root, "renovate.json"), "utf-8"));
 
 interface Manager {
@@ -101,7 +101,7 @@ describe("sources in typescript", () => {
     for (const { file, source } of sources) {
       const calls = [...source.matchAll(/\bh\.helm\(/g)].length;
       const matched = found(file, source, (m) =>
-        m.matchStrings.some((s) => s.includes("h\\.helm")),
+        m.matchStrings.some((s) => s.includes("h\\.helm\\(")),
       ).length;
       charts += calls;
       if (calls !== matched) {
@@ -112,10 +112,12 @@ describe("sources in typescript", () => {
     assert.deepEqual(missed, []);
   });
 
+  // a manifest url given to kustomize is found as a versioned url instead (below)
   test("every upstream kustomize overlay is found, which needs it pinned with ?ref=", () => {
     const missed: string[] = [];
     for (const { file, source } of sources) {
-      const calls = [...source.matchAll(/\bh\.kustomize\(/g)].length;
+      const calls = [...source.matchAll(/\bh\.kustomize\(\s*"(?!https:)/g)]
+        .length;
       const matched = found(file, source, (m) =>
         m.matchStrings.some((s) => s.includes("h\\.kustomize")),
       ).length;

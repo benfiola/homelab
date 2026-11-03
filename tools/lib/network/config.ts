@@ -1,9 +1,15 @@
 import { join } from "node:path";
+import { run } from "../exec.ts";
+import { contains } from "./ip.ts";
 import { loadModel, type ProfileName } from "./model.ts";
-import { camel, secret, type Context } from "./profiles/context.ts";
-import { profiles } from "./profiles/index.ts";
+import {
+  camel,
+  secret,
+  type ApplyOptions,
+  type Context,
+} from "./profiles/context.ts";
+import { defaultUser, profiles } from "./profiles/index.ts";
 import { clientName } from "./profiles/routeros.ts";
-import { wireguardConfig } from "./wireguard.ts";
 
 type Obj = Record<string, any>;
 
@@ -89,3 +95,53 @@ export const renderNetwork = (
       .map((o) => [o.file, o.render()]),
   );
 };
+
+// sends a device the configuration rendered for it
+export const applyConfig = async (
+  profile: OutputKind,
+  content: string,
+  options: ApplyOptions,
+): Promise<void> => {
+  if (profile === "wireguard") {
+    throw new Error(
+      "a wireguard configuration is imported on the device, not applied",
+    );
+  }
+  await profiles[profile].apply(content, {
+    ...options,
+    user: options.user ?? defaultUser[profile],
+    run: options.run ?? run,
+    log: options.log ?? console.log,
+  });
+};
+
+export interface WireguardClient {
+  privateKey: string;
+  // the client's address on the wireguard network
+  address: string;
+  // the server's public key for that network
+  publicKey: string;
+  // the server's port for that network
+  port: number;
+  allowedIps: string[];
+}
+
+// the configuration a device imports into its wireguard client. the router is the resolver of
+// the clients that can reach it.
+export const wireguardConfig = (
+  client: WireguardClient,
+  server: { endpoint: string; resolver: string },
+): string =>
+  [
+    "[Interface]",
+    `PrivateKey = ${client.privateKey}`,
+    `Address = ${client.address}`,
+    ...(client.allowedIps.some((ip) => contains(ip, server.resolver))
+      ? [`DNS = ${server.resolver}`]
+      : []),
+    "",
+    "[Peer]",
+    `PublicKey = ${client.publicKey}`,
+    `Endpoint = ${server.endpoint}:${client.port}`,
+    `AllowedIPs = ${client.allowedIps.join(", ")}`,
+  ].join("\n");

@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import { Command, Option } from "commander";
-import { stringify } from "yaml";
 import { run } from "./lib/cli.ts";
 import { secretsFile } from "./lib/secrets/local.ts";
+import { toYaml } from "./lib/yaml.ts";
 import { loadTalos, type Node, type Talos } from "./lib/talos/config.ts";
-import { translateArguments } from "./lib/talos/ctl.ts";
 import { machineConfig } from "./lib/talos/machine.ts";
 import {
   applyConfig,
@@ -12,7 +11,7 @@ import {
   generateClientConfig,
   generateNodeConfig,
   talosctl,
-  toYaml,
+  translateArguments,
 } from "./lib/talos/talosctl.ts";
 
 const pick = (talos: Talos, names: string[]): Node[] => {
@@ -129,11 +128,7 @@ program
   .addOption(secrets())
   .action(async (o: { dir: string; secrets?: string }) => {
     const file = bundle(o.secrets);
-    console.log(
-      stringify(await generateClientConfig(loadTalos(o.dir), file), {
-        lineWidth: 0,
-      }),
-    );
+    console.log(toYaml([await generateClientConfig(loadTalos(o.dir), file)]));
   });
 
 program
@@ -152,7 +147,7 @@ program
         image: `https://factory.talos.dev/image/${id}/v${version}/${profile.imageConfig.filename}`,
       };
     }
-    console.log(stringify(images));
+    console.log(toYaml([images]));
   });
 
 program

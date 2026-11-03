@@ -1,8 +1,7 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { checkTemplate, renderTemplate } from "../template.ts";
+import { renderTemplate } from "../template.ts";
 import type { Model } from "../model.ts";
 import {
+  readScript,
   secret,
   type Context,
   type Profile,
@@ -80,9 +79,7 @@ export const openwrt: Profile = {
   extension: ".sh",
 
   render: (device, ctx) => {
-    const origin = `${device.name}${openwrt.extension} (${device.script})`;
-    const text = readFileSync(join(ctx.scripts, device.script!), "utf-8");
-    checkTemplate(text, origin);
+    const { origin, text } = readScript(device, ctx, openwrt.extension);
     return renderTemplate(
       text,
       {

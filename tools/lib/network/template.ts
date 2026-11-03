@@ -12,14 +12,16 @@ export const renderTemplate = (
     return String(resolve(data, path, origin));
   });
 
-const lookup = (data: Obj, path: string): unknown =>
-  path
-    .split(".")
-    .reduce<any>(
-      (value, key) =>
-        value !== null && typeof value === "object" ? value[key] : undefined,
-      data,
-    );
+const lookup = (data: Obj, path: string): unknown => {
+  let value: any = data;
+  for (const key of path.split(".")) {
+    if (value === null || typeof value !== "object") {
+      return undefined;
+    }
+    value = value[key];
+  }
+  return value;
+};
 
 // the value at a path of the data; a path that isn't there is an error
 export const resolve = (data: Obj, path: string, origin: string): unknown => {
@@ -40,25 +42,4 @@ export const checkTemplate = (template: string, origin: string) => {
       `${origin}: '${match[0]}' is not supported; templates only fill in {{ values }}`,
     );
   }
-};
-
-// fills in the `{{ }}` of every string in a value, however deep
-export const renderValues = (
-  value: unknown,
-  data: Obj,
-  origin: string,
-): unknown => {
-  if (typeof value === "string") {
-    checkTemplate(value, origin);
-    return renderTemplate(value, data, origin);
-  }
-  if (Array.isArray(value)) {
-    return value.map((v) => renderValues(v, data, origin));
-  }
-  if (value !== null && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, renderValues(v, data, origin)]),
-    );
-  }
-  return value;
 };

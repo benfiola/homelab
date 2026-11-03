@@ -6,11 +6,8 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.manifest(
+  h.kustomize(
     "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.2/bundle.yaml",
-    {
-      namespace: true,
-    },
   );
 
   h.namespace();

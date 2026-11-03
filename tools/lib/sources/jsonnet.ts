@@ -1,19 +1,7 @@
-import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-} from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
-import { promisify } from "node:util";
-import { cacheDir } from "../cache.ts";
-
-const run = promisify(execFile);
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
+import { capture } from "../exec.ts";
+import { cacheDir, cacheKey, cachedDir } from "./cache.ts";
 
 const files = ["jsonnetfile.json", "jsonnetfile.lock.json"];
 
@@ -30,35 +18,19 @@ const libraries = async (appDir: string): Promise<string | undefined> => {
       `${appDir} has a jsonnetfile.json but no jsonnetfile.lock.json (run 'jb install' there)`,
     );
   }
-  const hash = createHash("sha256");
-  for (const file of [spec, lock]) {
-    hash.update(readFileSync(file));
-  }
-  const dest = cacheDir("jsonnet", hash.digest("hex").slice(0, 16));
-  if (!existsSync(dest)) {
-    mkdirSync(dirname(dest), { recursive: true });
-    const temp = mkdtempSync(join(dirname(dest), ".install-"));
-    try {
+  const dest = await cachedDir(
+    cacheDir("jsonnet", cacheKey(readFileSync(spec), readFileSync(lock))),
+    async (work) => {
       for (const file of [spec, lock]) {
-        copyFileSync(file, join(temp, basename(file)));
+        copyFileSync(file, join(work, basename(file)));
       }
-      await run("jb", ["install"], { cwd: temp });
-      try {
-        renameSync(temp, dest);
-      } catch (e: any) {
-        // a concurrent build installed the same libraries first, which is fine
-        if (!existsSync(dest)) {
-          throw e;
-        }
-      }
-    } catch (e: any) {
-      throw new Error(
-        `jb install (${appDir}): ${String(e.stderr || e.message).trim()}`,
-      );
-    } finally {
-      rmSync(temp, { recursive: true, force: true });
-    }
-  }
+      await capture("jb", ["install"], {
+        cwd: work,
+        context: `jb install (${appDir})`,
+      });
+      return work;
+    },
+  );
   return join(dest, "vendor");
 };
 
@@ -66,16 +38,10 @@ const libraries = async (appDir: string): Promise<string | undefined> => {
 export const jsonnet = async (file: string, appDir: string): Promise<any> => {
   const path = resolve(appDir, file);
   const vendor = await libraries(appDir);
-  try {
-    const { stdout } = await run(
-      "jsonnet",
-      [...(vendor ? ["--jpath", vendor] : []), path],
-      {
-        maxBuffer: 1024 * 1024 * 1024,
-      },
-    );
-    return JSON.parse(stdout);
-  } catch (e: any) {
-    throw new Error(`jsonnet ${path}: ${String(e.stderr || e.message).trim()}`);
-  }
+  const output = await capture(
+    "jsonnet",
+    [...(vendor ? ["--jpath", vendor] : []), path],
+    { context: `jsonnet ${path}` },
+  );
+  return JSON.parse(output);
 };

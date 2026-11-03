@@ -1,19 +1,12 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
 import { helm, isDeleteHook, parseChartUrl } from "./helm.ts";
+import { hasCommand } from "../testing.ts";
 
-const hasHelm = (() => {
-  try {
-    execFileSync("helm", ["version", "--short"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const hasHelm = hasCommand("helm");
 
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
@@ -88,11 +81,9 @@ metadata:
     assert.equal(config.data.kube, "v1.34.0");
   });
 
-  test("takes a release name and values files", async () => {
-    const values = join(cache, "values.yaml");
-    writeFileSync(values, "greeting: hi\n");
+  test("takes a release name and values", async () => {
     const objects = await helm(
-      { ...options, release: "other", values: [values] },
+      { ...options, release: "other", values: { greeting: "hi" } },
       "team",
     );
     const config = objects.find((o) => o.kind === "ConfigMap")!;

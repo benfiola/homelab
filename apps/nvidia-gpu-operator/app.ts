@@ -8,7 +8,17 @@ import {
 export const app: AppFunction = (h) => {
   h.helm("https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2", {
     release: "nvidia-gpu-operator",
-    values: "values.yaml",
+    values: {
+      dcgmExporter: { enabled: false },
+      devicePlugin: { config: { name: "user-config", default: "any" } },
+      driver: { enabled: false },
+      hostPaths: { driverInstallDir: "/usr/local" },
+      migManager: { enabled: false },
+      nfd: { enabled: false },
+      nodeStatusExporter: { enabled: false },
+      operator: { resources: null },
+      toolkit: { enabled: false },
+    },
   });
 
   h.namespace({ privileged: true });

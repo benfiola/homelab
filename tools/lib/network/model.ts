@@ -1,7 +1,6 @@
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { parse } from "yaml";
-import { parseWith, z } from "../schema.ts";
+import { z } from "../schema.ts";
+import { readYaml } from "../yaml.ts";
 import { isAddress, subnet, type Subnet } from "./ip.ts";
 
 export interface Wifi {
@@ -178,11 +177,18 @@ const known = (what: string, names: string[], name: string, path: string) => {
   }
 };
 
+const portMode = (p: { off?: boolean; trunk?: boolean }): Port["mode"] => {
+  if (p.off) {
+    return "off";
+  }
+  return p.trunk ? "trunk" : "access";
+};
+
 // what the schema doesn't say: the names things refer to must be there, and the addresses they
 // give must be within the networks they are in
 export const loadModel = (dir: string): Model => {
   const file = join(dir, "network.yaml");
-  const raw = parseWith(schema, parse(readFileSync(file, "utf-8")), file);
+  const raw = readYaml(file, schema);
   const at = (key: string) => `${file}:${key}`;
 
   const vlans = Object.entries(raw.vlans)
@@ -279,7 +285,7 @@ export const loadModel = (dir: string): Model => {
       return {
         index,
         name: p.off ? "" : p.name,
-        mode: p.off ? "off" : p.trunk ? "trunk" : "access",
+        mode: portMode(p),
         vlan: p.access,
         sfp: p.sfp,
         force: p.force,

@@ -1,17 +1,8 @@
-import { execFile } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  renameSync,
-  rmSync,
-} from "node:fs";
 import { join } from "node:path";
-import { promisify } from "node:util";
-import { cacheDir } from "../cache.ts";
+import { capture, withTempFile } from "../exec.ts";
+import { toYaml } from "../yaml.ts";
+import { cacheDir, cachedDir } from "./cache.ts";
 import { parseManifests } from "./manifest.ts";
-
-const run = promisify(execFile);
 
 type Obj = Record<string, any>;
 
@@ -26,8 +17,8 @@ export interface HelmOptions {
   version: string;
   // defaults to the chart's name
   release?: string;
-  // absolute paths of values files, in order
-  values?: string[];
+  // the chart's values
+  values?: Obj;
   // include the chart's crds (default true)
   crds?: boolean;
   kubeVersion?: string;
@@ -69,43 +60,29 @@ const slug = (repo: string) =>
     .replace(/^-+|-+$/g, "");
 
 // cached by repository, name and version: a published version never changes
-const pull = async ({ repo, chart, version }: HelmOptions): Promise<string> => {
-  const dest = cacheDir("charts", slug(repo), `${chart}-${version}`);
-  if (existsSync(dest)) {
-    return dest;
-  }
-  mkdirSync(join(dest, ".."), { recursive: true });
-  const temp = mkdtempSync(join(dest, "..", ".pull-"));
-  try {
-    const source = repo.startsWith("oci://")
-      ? [`${repo.replace(/\/$/, "")}/${chart}`]
-      : [chart, "--repo", repo];
-    await run("helm", [
-      "pull",
-      ...source,
-      "--version",
-      version,
-      "--untar",
-      "--untardir",
-      temp,
-    ]);
-    try {
-      renameSync(join(temp, chart), dest);
-    } catch (e: any) {
-      // a concurrent build pulled the same chart first, which is fine
-      if (!existsSync(dest)) {
-        throw e;
-      }
-    }
-  } catch (e: any) {
-    throw new Error(
-      `helm pull ${chart} ${version} (${repo}): ${String(e.stderr || e.message).trim()}`,
-    );
-  } finally {
-    rmSync(temp, { recursive: true, force: true });
-  }
-  return dest;
-};
+const pull = ({ repo, chart, version }: HelmOptions): Promise<string> =>
+  cachedDir(
+    cacheDir("charts", slug(repo), `${chart}-${version}`),
+    async (work) => {
+      const source = repo.startsWith("oci://")
+        ? [`${repo.replace(/\/$/, "")}/${chart}`]
+        : [chart, "--repo", repo];
+      await capture(
+        "helm",
+        [
+          "pull",
+          ...source,
+          "--version",
+          version,
+          "--untar",
+          "--untardir",
+          work,
+        ],
+        { context: `helm pull ${chart} ${version} (${repo})` },
+      );
+      return join(work, chart);
+    },
+  );
 
 const deleteHooks = new Set(["pre-delete", "post-delete"]);
 
@@ -130,7 +107,7 @@ export const helm = async (
   namespace: string,
 ): Promise<Obj[]> => {
   const dir = await pull(opts);
-  const args = [
+  const base = [
     "template",
     opts.release ?? opts.chart,
     dir,
@@ -140,15 +117,18 @@ export const helm = async (
     opts.kubeVersion ?? kubeVersion,
     "--skip-tests",
     ...(opts.crds === false ? [] : ["--include-crds"]),
-    ...(opts.values ?? []).flatMap((file) => ["--values", file]),
   ];
+  const template = (extra: string[]) =>
+    capture("helm", [...base, ...extra], {
+      context: `helm template ${opts.chart}`,
+    });
   let stdout: string;
-  try {
-    ({ stdout } = await run("helm", args, { maxBuffer: 1024 * 1024 * 1024 }));
-  } catch (e: any) {
-    throw new Error(
-      `helm template ${opts.chart}: ${String(e.stderr || e.message).trim()}`,
+  if (opts.values) {
+    stdout = await withTempFile("values.yaml", toYaml([opts.values]), (file) =>
+      template(["--values", file]),
     );
+  } else {
+    stdout = await template([]);
   }
   return parseManifests(stdout, `helm template ${opts.chart}`).filter(
     (obj) => !isDeleteHook(obj),

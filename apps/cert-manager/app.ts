@@ -9,7 +9,15 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm("oci://quay.io/jetstack/charts/cert-manager?version=v1.21.3", {
-    values: "values.yaml",
+    values: {
+      config: {
+        apiVersion: "controller.config.cert-manager.io/v1alpha1",
+        kind: "ControllerConfiguration",
+        featureGates: { ListenerSets: true },
+        gatewayAPI: { enabled: true, enableListenerSet: true },
+      },
+      crds: { enabled: true, keep: false },
+    },
   });
 
   h.namespace();

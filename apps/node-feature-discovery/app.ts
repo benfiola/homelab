@@ -8,7 +8,16 @@ import {
 export const app: AppFunction = (h) => {
   h.helm(
     "oci://registry.k8s.io/nfd/charts/node-feature-discovery?version=0.18.3",
-    { values: "values.yaml" },
+    {
+      values: {
+        master: { resources: { limits: null } },
+        worker: {
+          config: { core: { labelSources: ["kernel", "pci", "system"] } },
+          resources: { limits: null },
+        },
+        gc: { resources: { limits: null } },
+      },
+    },
   );
 
   h.namespace({ privileged: true });

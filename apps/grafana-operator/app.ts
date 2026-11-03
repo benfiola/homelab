@@ -7,7 +7,22 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm("oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.21.3", {
-    values: "values.yaml",
+    values: {
+      podSecurityContext: {
+        fsGroup: 65534,
+        runAsNonRoot: true,
+        runAsUser: 65534,
+        runAsGroup: 65534,
+        seccompProfile: { type: "RuntimeDefault" },
+      },
+      securityContext: {
+        allowPrivilegeEscalation: false,
+        capabilities: { drop: ["ALL"], add: [] },
+        runAsNonRoot: true,
+        runAsUser: 65534,
+        runAsGroup: 65534,
+      },
+    },
   });
 
   h.namespace();

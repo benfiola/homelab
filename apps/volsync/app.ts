@@ -8,7 +8,13 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm("https://backube.github.io/helm-charts/volsync?version=0.17.0", {
-    values: "values.yaml",
+    values: {
+      "kube-rbac-proxy-resources": {
+        requests: { cpu: "5m", memory: "64Mi" },
+        limits: null,
+      },
+      resources: { requests: { cpu: "100m", memory: "64Mi" }, limits: null },
+    },
   });
 
   h.namespace();

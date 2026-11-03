@@ -13,18 +13,12 @@ import {
   secretKeys,
   secretRef,
 } from "./secrets.ts";
+import { hasCommand } from "../testing.ts";
 
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
 
-const hasHelm = (() => {
-  try {
-    execFileSync("helm", ["version", "--short"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const hasHelm = hasCommand("helm");
 
 describe("pushStore", () => {
   test("writes into one namespace, as the service account that may", () => {

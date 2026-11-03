@@ -1,9 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 
 export const app: AppFunction = (h) => {
-  h.manifest(
+  h.kustomize(
     "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.3.1/deployments/multus-daemonset-thick.yml",
-    { namespace: true, labels: { "app.kubernetes.io/name": h.app } },
+    { labels: { "app.kubernetes.io/name": h.app } },
   );
 
   h.namespace({ privileged: true });

@@ -6,17 +6,9 @@ import { delimiter, join } from "node:path";
 import { after, describe, test } from "node:test";
 import { loadTalos } from "./lib/talos/config.ts";
 import { render } from "./talos.ts";
+import { hasCommand } from "./lib/testing.ts";
 
-const hasTalosctl = (() => {
-  try {
-    execFileSync("talosctl", ["version", "--client", "--short"], {
-      stdio: "ignore",
-    });
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const hasTalosctl = hasCommand("talosctl");
 
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));

@@ -44,8 +44,13 @@ export const encode = (data: Fields | Fields[]): string => {
 // ports are bits in a number: port 1 is bit 0. (bitwise operators are 32 bits wide)
 export const maxPorts = 32;
 
-export const toMask = (ports: number[]): number =>
-  ports.reduce((mask, p) => (mask | (1 << (p - 1))) >>> 0, 0);
+export const toMask = (ports: number[]): number => {
+  let mask = 0;
+  for (const port of ports) {
+    mask = (mask | (1 << (port - 1))) >>> 0;
+  }
+  return mask;
+};
 
 export const fromMask = (mask: number, ports: number): number[] =>
   Array.from({ length: ports }, (_, i) => i + 1).filter((p) =>

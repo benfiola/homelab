@@ -1,3 +1,4 @@
+import { canonical } from "../object.ts";
 import type { Gateway } from "./routes.ts";
 
 type Obj = Record<string, any>;
@@ -236,7 +237,7 @@ class PolicyBuilder {
   // the order they were declared in: the output stays the same however the apps are arranged.
   object(): Obj {
     const sorted = (rules: Obj[]) =>
-      [...rules].sort((a, b) => stable(a).localeCompare(stable(b)));
+      [...rules].sort((a, b) => canonical(a).localeCompare(canonical(b)));
     const { ingress, egress, ...rest } = this.spec;
     return {
       apiVersion: "cilium.io/v2",
@@ -306,16 +307,6 @@ class PolicyBuilder {
     rules.push(rule);
   }
 }
-
-// json with sorted keys, to compare values by content
-const stable = (value: unknown): string =>
-  JSON.stringify(value, (_, v) =>
-    v && typeof v === "object" && !Array.isArray(v)
-      ? Object.fromEntries(
-          Object.entries(v).sort(([a], [b]) => a.localeCompare(b)),
-        )
-      : v,
-  );
 
 // something that can be allowed to reach, or be reached by, another subject or an external peer
 export class SubjectRef {
@@ -435,7 +426,7 @@ export class PolicyRegistry {
     const builders = new Map<string, PolicyBuilder>();
     const seen = new Map<string, string>();
     for (const [name, { selector, owner }] of this.subjects) {
-      const key = stable(selector);
+      const key = canonical(selector);
       if (seen.has(key)) {
         throw new Error(
           `subjects '${seen.get(key)}' and '${name}' (${owner}) select the same pods`,
@@ -470,7 +461,7 @@ export class PolicyRegistry {
       const source = resolve(edge.source, edge.owner);
       const target = resolve(edge.target, edge.owner);
 
-      const key = stable({
+      const key = canonical({
         source: source instanceof PolicyBuilder ? source.subject : source,
         target: target instanceof PolicyBuilder ? target.subject : target,
         specifiers: edge.specifiers,

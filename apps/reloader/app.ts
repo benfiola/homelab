@@ -7,7 +7,28 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm("https://stakater.github.io/stakater-charts/reloader?version=2.2.19", {
-    values: "values.yaml",
+    values: {
+      reloader: {
+        autoReloadAll: true,
+        deployment: {
+          securityContext: {
+            fsGroup: 65534,
+            runAsNonRoot: true,
+            runAsUser: 65534,
+            runAsGroup: 65534,
+            seccompProfile: { type: "RuntimeDefault" },
+          },
+          containerSecurityContext: {
+            allowPrivilegeEscalation: false,
+            capabilities: { drop: ["ALL"], add: [] },
+            runAsNonRoot: true,
+            runAsUser: 65534,
+            runAsGroup: 65534,
+          },
+        },
+        reloadStrategy: "annotations",
+      },
+    },
   });
 
   h.namespace();

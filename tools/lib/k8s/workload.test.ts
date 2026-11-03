@@ -1,24 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { compact, securityContext, Workload } from "./workload.ts";
-
-describe("compact", () => {
-  test("removes undefined values at any depth, including in lists", () => {
-    assert.deepEqual(
-      compact({
-        a: undefined,
-        b: { c: undefined, d: 1 },
-        e: [{ f: undefined }],
-      }),
-      { b: { d: 1 }, e: [{}] },
-    );
-  });
-
-  test("keeps everything else, including empty values and falsy ones", () => {
-    const value = { a: {}, b: [], c: 0, d: "", e: false, f: null };
-    assert.deepEqual(compact(value), value);
-  });
-});
+import { securityContext, vpa, Workload } from "./workload.ts";
 
 describe("volumes", () => {
   const volumes = (v: Record<string, any>) =>
@@ -144,5 +126,47 @@ describe("Workload", () => {
       { name: "only", port: 9000, protocol: "TCP" },
       { name: "both", port: 90, targetPort: 9000, protocol: "UDP" },
     ]);
+  });
+});
+
+describe("vpa", () => {
+  test("targets a workload, which is in apps/v1", () => {
+    const v = vpa({ kind: "StatefulSet", name: "db" });
+    assert.deepEqual(v.spec.targetRef, {
+      apiVersion: "apps/v1",
+      kind: "StatefulSet",
+      name: "db",
+    });
+    assert.equal(v.metadata.name, "db");
+    assert.equal(v.spec.updatePolicy.updateMode, "InPlaceOrRecreate");
+  });
+
+  test("targets anything else by the apiVersion it is given", () => {
+    const v = vpa({
+      kind: "Rollout",
+      name: "r",
+      apiVersion: "argoproj.io/v1alpha1",
+    });
+    assert.equal(v.spec.targetRef.apiVersion, "argoproj.io/v1alpha1");
+  });
+
+  test("only recommends, when advisory", () => {
+    assert.equal(
+      vpa({ kind: "Deployment", name: "d" }, { advisory: true }).spec
+        .updatePolicy.updateMode,
+      "Off",
+    );
+  });
+
+  test("is in the namespace it is given, and otherwise in none", () => {
+    assert.equal(
+      vpa({ kind: "Deployment", name: "d" }, { namespace: "other" }).metadata
+        .namespace,
+      "other",
+    );
+    assert.equal(
+      "namespace" in vpa({ kind: "Deployment", name: "d" }).metadata,
+      false,
+    );
   });
 });

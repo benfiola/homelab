@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { promisify } from "node:util";
 import { Command, Option } from "commander";
-import { run } from "./lib/cli.ts";
+import { align, run } from "./lib/cli.ts";
+import { capture } from "./lib/exec.ts";
 import {
   readSecret,
   secretPath,
@@ -11,7 +10,6 @@ import {
   writePrivate,
 } from "./lib/secrets/local.ts";
 import { project } from "./lib/secrets/bitwarden.ts";
-import { align } from "./lib/table.ts";
 
 // each secret of the Bitwarden Secrets Manager project is a file, stored whole
 
@@ -40,21 +38,10 @@ interface Secret {
   value: string;
 }
 
-const bws = async (args: string[]): Promise<string> => {
-  const env = { ...process.env, BWS_ACCESS_TOKEN: token() };
-  try {
-    const { stdout } = await promisify(execFile)("bws", args, {
-      env,
-      maxBuffer: 64 * 1024 * 1024,
-    });
-    return stdout;
-  } catch (e: any) {
-    if (e.code === "ENOENT") {
-      throw new Error("bws is not installed (it is in the dev shell)");
-    }
-    throw new Error(`bws: ${String(e.stderr || e.message).trim()}`);
-  }
-};
+const bws = (args: string[]): Promise<string> =>
+  capture("bws", args, {
+    env: { ...process.env, BWS_ACCESS_TOKEN: token() },
+  });
 
 const list = async (projectId: string): Promise<Secret[]> =>
   JSON.parse(await bws(["secret", "list", projectId]));

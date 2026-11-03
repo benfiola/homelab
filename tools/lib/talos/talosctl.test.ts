@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import type { Talos } from "./config.ts";
-import { translateArguments } from "./ctl.ts";
+import { translateArguments } from "./talosctl.ts";
 
 const hw = (image: string) => ({
   name: "",

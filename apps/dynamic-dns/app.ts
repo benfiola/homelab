@@ -9,7 +9,21 @@ import {
 export const app: AppFunction = (h) => {
   h.helm(
     "oci://ghcr.io/benfiola/homelab-images/charts/dynamic-dns?version=1.0.9",
-    { values: "values.yaml" },
+    {
+      values: {
+        config: {
+          cloudflareApiTokenSecret: "secrets",
+          cloudflareApiTokenKey: "cloudflare-api-token",
+          cloudflareZones: [
+            {
+              name: "fiola.dev",
+              domains: ["current.fiola.dev", "wireguard.fiola.dev"],
+            },
+          ],
+        },
+        serviceAccount: { name: "dynamic-dns" },
+      },
+    },
   );
 
   h.namespace();

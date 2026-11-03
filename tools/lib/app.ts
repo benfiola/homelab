@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join } from "node:path";
 import { crdsApp, fluxDeclaration, listApps, networkFunction } from "./apps.ts";
-import { images } from "./images.ts";
-import { configMap } from "./k8s/config.ts";
+import { helmImage, images } from "./images.ts";
 import {
   bucketSyncPolicy,
   garageBucket,
@@ -21,10 +20,8 @@ import {
   type Target as RouteTarget,
 } from "./k8s/routes.ts";
 import type { FluxDeclaration } from "./k8s/flux.ts";
-import { addLabels } from "./k8s/labels.ts";
 import type { NetworkFunction } from "./k8s/network-policy.ts";
 import { editor, type Editor } from "./k8s/edit.ts";
-import { moveToNamespace } from "./k8s/namespace.ts";
 import { nasVolume } from "./k8s/storage.ts";
 import {
   appSecrets,
@@ -37,13 +34,11 @@ import {
   type SecretOptions,
 } from "./k8s/secrets.ts";
 import {
-  vpa,
-  type Options as VpaOptions,
-  type Target as VpaTarget,
-} from "./k8s/vpa.ts";
-import {
   securityContext,
+  vpa,
   Workload,
+  type VpaOptions,
+  type VpaTarget,
   type SecurityContextOptions,
   type WorkloadKind,
   type WorkloadOptions,
@@ -58,24 +53,19 @@ type Obj = Record<string, any>;
 // the type of an app's exported `app`; it types `h`
 export type { Env, Workload } from "./k8s/workload.ts";
 
-export interface SourceOptions {
-  // added to every object, and to the selectors that match pods
+export interface KustomizeSourceOptions {
+  // the namespace the objects move to, with what refers to them (default: the app's)
+  namespace?: string;
+  // added to every object, and to the selectors and pod templates that match them
   labels?: Record<string, string>;
 }
 
-export interface ManifestOptions extends SourceOptions {
-  // moves the objects into a namespace, as `kubectl apply -n` would: the app's if true (helm takes its
-  // namespace itself)
-  namespace?: boolean | string;
-}
-
-export interface HelmSourceOptions extends SourceOptions {
+export interface HelmSourceOptions {
   // the namespace to render the chart for (default: the app's)
   namespace?: string;
   // defaults to the chart's name
   release?: string;
-  // values files, named relative to the app's directory
-  values?: string | string[];
+  values?: Obj;
   // include the chart's crds (default true)
   crds?: boolean;
   kubeVersion?: string;
@@ -94,8 +84,8 @@ export class App {
   readonly app: string;
   readonly dir: string;
 
-  // the namespace of everything added that names none; the app's name unless set. what is added reads
-  // it when it is added, so it can only be set before anything is
+  // the namespace of what names none: the app's name unless set. read as things are added, so it
+  // can only be set before the first
   private _namespaceName: string;
   get namespaceName(): string {
     return this._namespaceName;
@@ -127,6 +117,7 @@ export class App {
   }
 
   readonly images = images;
+  readonly helmImage = helmImage;
   readonly timezone = "America/Los_Angeles";
 
   // everything added, with the namespace it was added for
@@ -166,67 +157,53 @@ export class App {
     return this;
   }
 
-  // collects something to build when the app finishes. what it makes is given the `namespace` (the
-  // app's, unless told otherwise) where it names none. that is read now: workloads, routes and
-  // sources aren't built until the app finishes, and namespaceName can't change once one is added
+  // queues something to build when the app finishes, in `namespace` where it names none. that is
+  // fixed now, as namespaceName can't change once something is queued
   private track(resource: Resource, namespace = this.namespaceName): void {
     this.resources.push({ resource, namespace });
   }
 
   // sources fetch as soon as they are declared, and are awaited when the app finishes
-  private source(
-    objects: Promise<Obj[]>,
-    opts: ManifestOptions = {},
-    stamp?: string,
-  ): this {
-    const namespace =
-      opts.namespace === true
-        ? this.namespaceName
-        : opts.namespace || undefined;
-    const labelled = objects.then((o) => {
-      const moved = namespace ? moveToNamespace(o, namespace) : o;
-      return opts.labels
-        ? moved.map((obj) => addLabels(obj, opts.labels!))
-        : moved;
-    });
+  private source(objects: Promise<Obj[]>, namespace?: string): this {
     // avoids an unhandled rejection before the app is awaited
-    labelled.catch(() => {});
-    this.track(labelled, stamp);
+    objects.catch(() => {});
+    this.track(objects, namespace);
     return this;
   }
 
   // the objects of a helm chart: `<repository url>/<chart>?version=<version>` (see parseChartUrl)
-  helm(
-    chart: string,
-    { values, labels, namespace, ...opts }: HelmSourceOptions = {},
-  ): this {
-    const files = [values ?? []].flat().map((file) => resolve(this.dir, file));
+  helm(chart: string, { namespace, ...opts }: HelmSourceOptions = {}): this {
     const objects = helm(
-      { ...parseChartUrl(chart), ...opts, values: files },
+      { ...parseChartUrl(chart), ...opts },
       namespace ?? this.namespaceName,
     );
     // objects the chart leaves without a namespace are given the one it was rendered for
-    return this.source(objects, { labels }, namespace);
+    return this.source(objects, namespace);
   }
 
   // the objects of a manifest: a url, or a path relative to the app's directory
-  manifest(source: string, opts?: ManifestOptions): this {
-    return this.source(manifest(source, this.dir), opts);
+  manifest(source: string): this {
+    return this.source(manifest(source, this.dir));
   }
 
-  // the objects of an upstream kustomize overlay (a git url)
-  kustomize(url: string, opts?: ManifestOptions): this {
-    return this.source(kustomize(url), opts);
+  // the objects of an upstream kustomize overlay (a git url), or of a manifest at a url that needs
+  // changing
+  kustomize(source: string, opts: KustomizeSourceOptions = {}): this {
+    return this.source(
+      kustomize(source, {
+        namespace: opts.namespace ?? this.namespaceName,
+        labels: opts.labels,
+      }),
+    );
   }
 
-  // evaluates a jsonnet file of the app's directory, with its jsonnetfile.json libraries. awaited, as the app uses the data
+  // the data of a jsonnet file of the app's directory (with its jsonnetfile.json libraries)
   jsonnet(file: string): Promise<any> {
     return jsonnet(file, this.dir);
   }
 
-  // changes the objects the app made, once it is complete: they are built by then (and have their
-  // namespaces), so the hook edits what will be published, whichever way it was made. the editor finds
-  // objects and parts of them, and fails when it can't, so that a changed upstream is noticed
+  // edits the built objects once the app is complete, whichever way they were made. the editor
+  // fails when it finds nothing, so that a changed upstream is noticed
   postRender(hook: (e: Editor) => void): this {
     this.hooks.push(hook);
     return this;
@@ -305,16 +282,18 @@ export class App {
     return this.add(vpa("target" in target ? target.target : target, opts));
   }
 
-  // a Secret in the app's namespace, holding keys of the app's section of the `apps` secret. returns
-  // the Secret, to read its keys through. it may be put in another `namespace`, or built from the
-  // section `from` another app
+  // a Secret holding keys of the app's section of the `apps` secret, and the handle to read its
+  // keys through. `namespace` and `from` (another app's section) override the defaults
   secrets<K extends string>(
     name: string,
     keys: readonly K[],
     opts: SecretOptions = {},
   ): SecretKeys<K> {
     const namespace = opts.namespace ?? this.namespaceName;
-    this.push(namespace, appSecrets(this.app, name, keys, { ...opts, namespace }));
+    this.push(
+      namespace,
+      appSecrets(this.app, name, keys, { ...opts, namespace }),
+    );
     return secretKeys(name, keys);
   }
 
@@ -337,7 +316,7 @@ export class App {
     return secretRef(key, this.app);
   }
 
-  // the objects that push Secrets into a namespace, and the store they push through (one a namespace)
+  // the objects that push Secrets into a namespace, and the store they push through (one per namespace)
   private push(namespace: string, objects: Obj[]): this {
     for (const { metadata } of objects) {
       if (this.pushed.has(metadata.name)) {
@@ -359,7 +338,12 @@ export class App {
     data: Record<string, string>,
     opts: { namespace?: string } = {},
   ): Obj {
-    const object = configMap(name, data);
+    const object = {
+      apiVersion: "v1",
+      kind: "ConfigMap",
+      metadata: { name },
+      data,
+    };
     this.track(object, opts.namespace);
     return object;
   }
@@ -459,21 +443,12 @@ export class App {
     return { url: `http://assets-server.${namespace}.svc:8080` };
   }
 
-  // what the app publishes: everything it created, in creation order. each object has a namespace
-  // (see `track`) and is checked to be an object at all; the post-render hooks then change them, and
-  // the result is tidied
+  // what the app publishes: everything it created, in creation order, after the post-render hooks
   async objects(): Promise<Obj[]> {
     const objects = (
       await Promise.all(
-        this.resources.map(async ({ resource: r, namespace }) => {
-          const built =
-            r instanceof Promise
-              ? await r
-              : r instanceof Workload
-                ? [r.object()]
-                : r instanceof HttpRoute || r instanceof GrpcRoute
-                  ? r.objects()
-                  : [r];
+        this.resources.map(async ({ resource, namespace }) => {
+          const built = await build(resource);
           // a copy, so that hooks never change what was added, or accumulate over repeated calls
           return stampNamespace(structuredClone(built), namespace);
         }),
@@ -494,6 +469,19 @@ export class App {
   }
 }
 
+const build = async (resource: Resource): Promise<Obj[]> => {
+  if (resource instanceof Promise) {
+    return resource;
+  }
+  if (resource instanceof Workload) {
+    return [resource.object()];
+  }
+  if (resource instanceof HttpRoute || resource instanceof GrpcRoute) {
+    return resource.objects();
+  }
+  return [resource];
+};
+
 // flux applies a namespace-less object to 'default', and identifies every object, cluster-scoped ones
 // included, as <namespace>_<name>_<group>_<kind>. so every object is stamped (kubernetes ignores the
 // namespace on cluster-scoped kinds): changing a stamp changes the id, and flux prunes the object.
@@ -504,7 +492,7 @@ const stampNamespace = (items: Obj[], namespace: string): Obj[] =>
       : { ...obj, metadata: { ...obj?.metadata, namespace } },
   );
 
-// what `kubectl apply` needs of an object: where it came from is named, for the error
+// what `kubectl apply` needs of an object; `origin` is named in the error
 const validate = (origin: string, objects: Obj[]): Obj[] => {
   objects.forEach((obj, i) => {
     for (const field of ["apiVersion", "kind"]) {

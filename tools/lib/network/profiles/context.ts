@@ -1,5 +1,8 @@
-import { resolve } from "../template.ts";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import type { run } from "../../exec.ts";
 import type { Device, Model } from "../model.ts";
+import { checkTemplate, resolve } from "../template.ts";
 
 type Obj = Record<string, any>;
 
@@ -18,12 +21,8 @@ export interface Profile {
   apply: (content: string, options: Resolved) => Promise<void>;
 }
 
-// runs a command, with the given standard input; `interactive` hands it the terminal
-export type Run = (
-  command: string,
-  args: string[],
-  options?: { input?: string; interactive?: boolean },
-) => Promise<void>;
+// replaceable, so that tests can see what would be run
+export type Run = typeof run;
 
 export interface ApplyOptions {
   address: string;
@@ -43,10 +42,16 @@ export type Resolved = ApplyOptions & {
   log: (message: string) => void;
 };
 
+// a device's script, and where it is named in an error
+export const readScript = (device: Device, ctx: Context, extension: string) => {
+  const origin = `${device.name}${extension} (${device.script})`;
+  const text = readFileSync(join(ctx.scripts, device.script!), "utf-8");
+  checkTemplate(text, origin);
+  return { origin, text };
+};
+
 export const secret = (ctx: Context, path: string, origin: string): string =>
   String(resolve({ secrets: ctx.secrets }, `secrets.${path}`, origin));
-
-export const upper = (s: string) => s.toUpperCase();
 
 // bfiola-home-laptop -> bfiolaHomeLaptop
 export const camel = (s: string) =>

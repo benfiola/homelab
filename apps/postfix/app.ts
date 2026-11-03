@@ -9,7 +9,50 @@ import {
 export const app: AppFunction = (h) => {
   h.helm("https://bokysan.github.io/docker-postfix/mail?version=5.2.0", {
     release: "postfix",
-    values: "values.yaml",
+    values: {
+      config: {
+        general: {
+          ALLOW_EMPTY_SENDER_DOMAINS: "true",
+          RELAYHOST: "[smtp.mailgun.org]:587",
+          RELAYHOST_USERNAME: "noreply@cluster.fiola.dev",
+        },
+      },
+      existingSecret: "secrets",
+      recreateOnRedeploy: false,
+      container: {
+        postfix: {
+          securityContext: {
+            allowPrivilegeEscalation: false,
+            capabilities: {
+              drop: ["ALL"],
+              add: [
+                "CHOWN",
+                "DAC_OVERRIDE",
+                "NET_BIND_SERVICE",
+                "SYS_CHROOT",
+                "SETGID",
+                "SETUID",
+              ],
+            },
+            runAsNonRoot: false,
+            runAsUser: 0,
+            runAsGroup: 0,
+          },
+        },
+      },
+      persistence: { enabled: false },
+      pod: {
+        annotations: { "app.kubernetes.io/name": "postfix" },
+        securityContext: {
+          fsGroup: 0,
+          runAsNonRoot: false,
+          runAsUser: 0,
+          runAsGroup: 0,
+          seccompProfile: { type: "RuntimeDefault" },
+        },
+      },
+      resources: null,
+    },
   });
 
   h.namespace({ privileged: true });

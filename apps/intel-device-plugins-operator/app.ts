@@ -8,7 +8,11 @@ import {
 export const app: AppFunction = (h) => {
   h.helm(
     "https://intel.github.io/helm-charts/intel-device-plugins-operator?version=0.37.1",
-    { values: "values.yaml" },
+    {
+      values: {
+        resources: { requests: { cpu: "100m", memory: "128Mi" }, limits: null },
+      },
+    },
   );
 
   h.namespace({ privileged: true });

@@ -1,19 +1,6 @@
-type Obj = Record<string, any>;
+import { compact } from "../object.ts";
 
-// removes undefined values, recursively (empty arrays and objects stay)
-export const compact = <T>(value: T): T => {
-  if (Array.isArray(value)) {
-    return value.map(compact) as T;
-  }
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value as Obj)
-        .filter(([, v]) => v !== undefined)
-        .map(([k, v]) => [k, compact(v)]),
-    ) as T;
-  }
-  return value;
-};
+type Obj = Record<string, any>;
 
 export interface SecurityContextOptions {
   gid?: number;
@@ -389,3 +376,37 @@ export class Workload {
     });
   }
 }
+
+const vpaWorkloads = ["Deployment", "StatefulSet", "DaemonSet"];
+
+export interface VpaTarget {
+  kind: string;
+  name: string;
+  // required for targets that aren't a Deployment, StatefulSet or DaemonSet
+  apiVersion?: string;
+}
+
+export interface VpaOptions {
+  // recommend only: never evict or resize
+  advisory?: boolean;
+  namespace?: string;
+}
+
+// a VerticalPodAutoscaler for a workload, resizing pods in place where it can
+export const vpa = (target: VpaTarget, opts: VpaOptions = {}): Obj => {
+  const apiVersion = vpaWorkloads.includes(target.kind)
+    ? "apps/v1"
+    : target.apiVersion;
+  return {
+    apiVersion: "autoscaling.k8s.io/v1",
+    kind: "VerticalPodAutoscaler",
+    metadata: {
+      name: target.name,
+      ...(opts.namespace && { namespace: opts.namespace }),
+    },
+    spec: {
+      targetRef: { apiVersion, kind: target.kind, name: target.name },
+      updatePolicy: { updateMode: opts.advisory ? "Off" : "InPlaceOrRecreate" },
+    },
+  };
+};

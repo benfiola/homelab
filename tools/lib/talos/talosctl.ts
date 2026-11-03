@@ -1,19 +1,8 @@
-import { execFile, spawn } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { promisify } from "node:util";
-import { parseAllDocuments, stringify } from "yaml";
+import { capture, run, withTempFile } from "../exec.ts";
+import { parseDocuments, toYaml } from "../yaml.ts";
 import type { Profile, Node, Talos } from "./config.ts";
 
-const run = promisify(execFile);
-
 type Obj = Record<string, any>;
-
-const documents = (text: string): Obj[] =>
-  parseAllDocuments(text)
-    .map((doc) => doc.toJSON())
-    .filter(Boolean);
 
 // `talosctl gen config`, from the cluster's secrets bundle so that every run (and every node) agrees
 const generate = async (
@@ -22,7 +11,7 @@ const generate = async (
   args: string[],
 ): Promise<Obj[]> => {
   const { cluster } = talos;
-  const { stdout } = await run(
+  const stdout = await capture(
     "talosctl",
     [
       "gen",
@@ -33,13 +22,9 @@ const generate = async (
       `--with-secrets=${secrets}`,
       ...args,
     ],
-    { maxBuffer: 64 * 1024 * 1024 },
-  ).catch((e) => {
-    throw new Error(
-      `talosctl gen config: ${String(e.stderr || e.message).trim()}`,
-    );
-  });
-  return documents(stdout);
+    { context: "talosctl gen config" },
+  );
+  return parseDocuments(stdout);
 };
 
 // what talos generates for a node's role, before any of our configuration is merged over it
@@ -75,45 +60,26 @@ export const generateClientConfig = async (
   return config;
 };
 
-export const toYaml = (docs: Obj[]) =>
-  docs
-    .map((doc) =>
-      stringify(doc, { lineWidth: 0, aliasDuplicateObjects: false }),
-    )
-    .join("---\n");
-
-const inherit = (args: string[]) =>
-  new Promise<void>((resolve, reject) => {
-    const child = spawn("talosctl", args, { stdio: "inherit" });
-    child.on("error", reject);
-    child.on("exit", (code) =>
-      code === 0
-        ? resolve()
-        : reject(new Error(`talosctl ${args[0]} exited with ${code}`)),
-    );
-  });
-
-export const applyConfig = async (
+export const applyConfig = (
   node: Node,
   docs: Obj[],
   opts: { insecure?: boolean } = {},
-) => {
-  const dir = mkdtempSync(join(tmpdir(), "talos-"));
-  try {
-    const file = join(dir, "config.yaml");
-    writeFileSync(file, toYaml(docs), { mode: 0o600 });
-    await inherit([
-      "apply-config",
-      `--file=${file}`,
-      ...(opts.insecure === undefined ? [] : [`--insecure=${opts.insecure}`]),
-      `--nodes=${node.hostname}`,
-    ]);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-};
+) =>
+  withTempFile("config.yaml", toYaml(docs), (file) =>
+    run(
+      "talosctl",
+      [
+        "apply-config",
+        `--file=${file}`,
+        ...(opts.insecure === undefined ? [] : [`--insecure=${opts.insecure}`]),
+        `--nodes=${node.hostname}`,
+      ],
+      { interactive: true },
+    ),
+  );
 
-export const talosctl = (args: string[]) => inherit(args);
+export const talosctl = (args: string[]) =>
+  run("talosctl", args, { interactive: true });
 
 // registers an image's schematic with the image factory, which returns the id the image is named by
 export const createSchematic = async (schematic: Obj): Promise<string> => {
@@ -129,4 +95,65 @@ export const createSchematic = async (schematic: Obj): Promise<string> => {
     throw new Error("unexpected image factory response");
   }
   return id;
+};
+
+// the node arguments talosctl takes: --nodes a,b / --nodes=a,b / -n a,b
+const nodeArgument = (
+  args: string[],
+  i: number,
+): { names: string[]; skip: number } | undefined => {
+  const arg = args[i];
+  if (arg.startsWith("--nodes=")) {
+    return { names: arg.slice("--nodes=".length).split(","), skip: 0 };
+  }
+  if ((arg === "--nodes" || arg === "-n") && args[i + 1] !== undefined) {
+    return { names: args[i + 1].split(","), skip: 1 };
+  }
+  return undefined;
+};
+
+// makes talosctl easier to use with this cluster, by filling in what is known:
+//  - nodes may be given by name (samoyed) rather than by hostname
+//  - `upgrade` gets the --image of its nodes' profile, which has to be one image
+//  - `upgrade-k8s` gets --to the cluster's kubernetes version
+export const translateArguments = (talos: Talos, args: string[]): string[] => {
+  const hostnames = new Map(talos.nodes.map((n) => [n.name, n.hostname]));
+  const images = new Map(
+    talos.nodes.flatMap((n) => {
+      const image = talos.profiles[n.profile].image;
+      return [
+        [n.name, image],
+        [n.hostname, image],
+      ] as const;
+    }),
+  );
+
+  const result: string[] = [];
+  const named = new Set<string>();
+  for (let i = 0; i < args.length; i++) {
+    const nodes = nodeArgument(args, i);
+    if (!nodes) {
+      result.push(args[i]);
+      continue;
+    }
+    i += nodes.skip;
+    nodes.names.forEach((name) => named.add(name));
+    result.push(
+      `--nodes=${nodes.names.map((name) => hostnames.get(name) ?? name).join(",")}`,
+    );
+  }
+
+  if (args.includes("upgrade") && !args.some((a) => a.startsWith("--image"))) {
+    const found = new Set([...named].map((name) => images.get(name)));
+    if (found.size !== 1 || found.has(undefined)) {
+      throw new Error(
+        "unable to resolve a single image for the nodes (give --image, or nodes of one profile)",
+      );
+    }
+    result.push(`--image=${[...found][0]}`);
+  }
+  if (args.includes("upgrade-k8s") && !args.some((a) => a.startsWith("--to"))) {
+    result.push(`--to=${talos.cluster.kubernetes}`);
+  }
+  return result;
 };

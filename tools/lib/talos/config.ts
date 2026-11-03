@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { parse, parseAllDocuments } from "yaml";
-import { parseWith, z } from "../schema.ts";
+import { z } from "../schema.ts";
+import { parseDocuments, readYaml } from "../yaml.ts";
 
 type Obj = Record<string, any>;
 
@@ -88,9 +88,6 @@ const nodes = z.strictObject({
     .min(1),
 });
 
-const read = <T extends z.ZodType>(path: string, schema: T): z.output<T> =>
-  parseWith(schema, parse(readFileSync(path, "utf-8")), path);
-
 const yamlFiles = (dir: string) =>
   readdirSync(dir)
     .filter((name) => /\.ya?ml$/.test(name))
@@ -102,17 +99,20 @@ const yamlFiles = (dir: string) =>
 //   profiles/*.yaml  one file per kind of machine, named for it
 //   config/*.yaml    machine configuration documents for every node
 export const loadTalos = (dir: string): Talos => {
-  const cluster_ = read(join(dir, "cluster.yaml"), cluster);
+  const cluster_ = readYaml(join(dir, "cluster.yaml"), cluster);
 
   const profiles: Record<string, Profile> = {};
   for (const file of yamlFiles(join(dir, "profiles"))) {
     const name = file.replace(/\.ya?ml$/, "");
-    const { imageConfig, ...rest } = read(join(dir, "profiles", file), profile);
+    const { imageConfig, ...rest } = readYaml(
+      join(dir, "profiles", file),
+      profile,
+    );
     profiles[name] = { name, ...rest, imageConfig };
   }
 
   const nodesPath = join(dir, "nodes.yaml");
-  const nodes_ = read(nodesPath, nodes).nodes.map((n): Node => {
+  const nodes_ = readYaml(nodesPath, nodes).nodes.map((n): Node => {
     if (!profiles[n.profile]) {
       throw new Error(
         `${nodesPath}: ${n.name}: no profile '${n.profile}' (have: ${Object.keys(profiles).join(", ")})`,
@@ -126,9 +126,7 @@ export const loadTalos = (dir: string): Talos => {
   }
 
   const documents = yamlFiles(join(dir, "config")).flatMap((file) =>
-    parseAllDocuments(readFileSync(join(dir, "config", file), "utf-8"))
-      .map((doc) => doc.toJSON())
-      .filter(Boolean),
+    parseDocuments(readFileSync(join(dir, "config", file), "utf-8")),
   );
 
   return { cluster: cluster_, nodes: nodes_, profiles, documents };

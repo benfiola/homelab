@@ -3,7 +3,18 @@ import type { AppFunction } from "../../tools/lib/app.ts";
 export const app: AppFunction = (h) => {
   h.helm(
     "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts/csi-driver-nfs?version=4.13.6",
-    { values: "values.yaml" },
+    {
+      values: {
+        controller: {
+          resources: {
+            csiProvisioner: { limits: null, requests: null },
+            csiResizer: { limits: null, requests: null },
+            livenessProbe: { limits: null, requests: null },
+            nfs: { limits: null, requests: null },
+          },
+        },
+      },
+    },
   );
 
   h.namespace({ privileged: true });

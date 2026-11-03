@@ -8,7 +8,14 @@ import {
 export const app: AppFunction = (h) => {
   h.helm(
     "https://kubernetes-sigs.github.io/metrics-server/metrics-server?version=3.14.0",
-    { values: "values.yaml" },
+    {
+      values: {
+        args: [
+          "--kubelet-insecure-tls",
+          "--kubelet-preferred-address-types=InternalIP",
+        ],
+      },
+    },
   );
 
   h.namespace();

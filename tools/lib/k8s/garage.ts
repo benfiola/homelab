@@ -2,7 +2,6 @@ type Obj = Record<string, any>;
 
 export const garageCluster = { name: "garage", namespace: "garage" };
 
-// where the cluster's s3 api is found
 export const garageEndpoint = `http://${garageCluster.name}.${garageCluster.namespace}.svc:3900`;
 
 export interface GarageKey {
