@@ -39,7 +39,7 @@ const checked = (what: string, value: string) => {
 // password. `fail` is not available in external secrets' templates, so an invalid regular
 // expression (which says which key is missing) is how the template fails.
 export const secretRef = (key: string, from: string) => {
-  const section = `(index (fromYaml (toString .${blobSecret})).secrets "${checked("app", from)}")`;
+  const section = `(index (fromYaml (toString .${blobSecret})) "${checked("app", from)}")`;
   const name = checked("key", key);
   return `{{ if hasKey ${section} "${name}" }}{{ index ${section} "${name}" }}{{ else }}{{ mustRegexMatch "( missing key ${from}.${name}" "" }}{{ end }}`;
 };

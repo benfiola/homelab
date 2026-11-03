@@ -17,6 +17,9 @@ export const secretPath = (name: string) => join(homelabDir(), `${name}.yaml`);
 
 export const tokenPath = () => join(homelabDir(), "bws-token");
 
+// the github token that flux is bootstrapped with
+export const fluxTokenPath = () => join(homelabDir(), "flux-git-token");
+
 // a secrets file is for its owner alone, as ssh insists of a private key
 export const checkPrivate = (file: string): string => {
   const mode = statSync(file).mode & 0o777;

@@ -54,19 +54,15 @@ stages:
           - --branch=${FLUX_BRANCH:-main}
           - --network-policy=false
           - --path=./flux
-        requires: [GITHUB_TOKEN]
+        requires: [FLUX_GIT_TOKEN]
 
-  # applies the `flux` app, which defines every other app's Kustomization. created here, once: nothing
-  # in the cluster owns it.
+  # bootstrap flux via an app-of-apps
   - name: flux-bootstrap
     kustomizations:
       - name: flux-bootstrap
         path: ./apps/flux
 
-  # the token of the machine account that external secrets reads bitwarden with: the one secret that
-  # can't come from bitwarden. flux makes the namespace, so this waits for it. the token is read from
-  # ~/.homelab/eso-token (owner only, as for the other secrets), without its newline, and is never in
-  # a command line
+  # wait for external-secrets-operator to come online, then bootstrap external-secrets-operator with a Bitwarden token
   - name: external-secrets
     run:
       - command:
@@ -82,9 +78,14 @@ stages:
           - pipefail
           - -c
           - |
-            file="$HOME/.homelab/eso-token"
-            [ "$(stat -c %a "$file")" = 600 ] || { echo "$file must be readable by its owner only (chmod 600 $file)" >&2; exit 1; }
+            if [ -n "${ESO_BWS_TOKEN-}" ]; then
+              token="$ESO_BWS_TOKEN"
+            else
+              file="$HOME/.homelab/eso-bws-token"
+              [ "$(stat -c %a "$file")" = 600 ] || { echo "$file must be readable by its owner only (chmod 600 $file)" >&2; exit 1; }
+              token="$(tr -d '\n' < "$file")"
+            fi
             kubectl create secret generic bitwarden-credentials \
               --namespace=external-secrets-operator \
-              --from-file=token=<(tr -d '\n' < "$file") \
+              --from-file=token=<(printf %s "$token") \
               --dry-run=client --output=yaml | kubectl apply --filename=-

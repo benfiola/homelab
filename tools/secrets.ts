@@ -13,7 +13,7 @@ import { project } from "./lib/secrets/bitwarden.ts";
 
 // each secret of the Bitwarden Secrets Manager project is a file, stored whole
 
-const names = ["talos", "network", "flux", "apps"];
+const names = ["talos", "network", "apps"];
 
 const name = (value: string) => {
   if (!names.includes(value)) {

@@ -3,12 +3,11 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { Command } from "commander";
-import { parse } from "yaml";
 import { exit, run } from "./lib/cli.ts";
 import { run as exec } from "./lib/exec.ts";
 import { fluxKustomization } from "./lib/k8s/flux.ts";
-import { parseWith, z } from "./lib/schema.ts";
-import { readSecret, secretsFile } from "./lib/secrets/local.ts";
+import { z } from "./lib/schema.ts";
+import { fluxTokenPath, readSecret } from "./lib/secrets/local.ts";
 import { readYaml, toYaml } from "./lib/yaml.ts";
 
 // runs the stages of bootstrap.yaml in order
@@ -41,17 +40,20 @@ const stagesSchema = z
     { message: "stage names must be unique", path: ["stages"] },
   );
 
-const fluxSecretSchema = z.object({ token: z.string().min(1) });
-
-// GITHUB_TOKEN, else the token in the flux secret this machine holds (`just secrets pull flux`)
-export const githubToken = (): string | undefined => {
-  if (process.env.GITHUB_TOKEN) {
-    return process.env.GITHUB_TOKEN;
+// FLUX_GIT_TOKEN, else the contents of ~/.homelab/flux-git-token, if this machine has one
+export const fluxGitToken = (): string | undefined => {
+  if (process.env.FLUX_GIT_TOKEN) {
+    return process.env.FLUX_GIT_TOKEN;
   }
-  const file = secretsFile(undefined, "flux");
-  return file
-    ? parseWith(fluxSecretSchema, parse(readSecret(file)), file).token
-    : undefined;
+  const file = fluxTokenPath();
+  if (!existsSync(file)) {
+    return undefined;
+  }
+  const token = readSecret(file).trim();
+  if (!token) {
+    throw new Error(`${file} is empty`);
+  }
+  return token;
 };
 
 export type RunStep = z.output<typeof runStepSchema>;
@@ -202,8 +204,10 @@ const program = new Command()
         );
         return exit(1);
       }
-      const token = githubToken();
+      const token = fluxGitToken();
       if (token) {
+        process.env.FLUX_GIT_TOKEN = token;
+        // the variable `flux bootstrap github` reads
         process.env.GITHUB_TOKEN = token;
       }
       const missingEnv = [...new Set(steps.flatMap((s) => s.requires))].filter(
@@ -211,7 +215,7 @@ const program = new Command()
       );
       if (missingEnv.length > 0) {
         console.error(
-          `required environment variables are not set: ${missingEnv.join(", ")} (GITHUB_TOKEN can come from the flux secret: \`just secrets pull flux\`)`,
+          `required environment variables are not set: ${missingEnv.join(", ")} (FLUX_GIT_TOKEN can come from ${fluxTokenPath()})`,
         );
         return exit(1);
       }

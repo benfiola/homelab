@@ -7,7 +7,7 @@ import { parse } from "yaml";
 import { credentialsSecret, esoNamespace } from "./lib/k8s/secrets.ts";
 import {
   expand,
-  githubToken,
+  fluxGitToken,
   loadStages,
   plan,
   type Stage,
@@ -105,7 +105,7 @@ describe("bootstrap.yaml", () => {
     const steps = plan(real, { builtDir: "out", env: {} });
     const flux = steps.find((s) => s.command[0] === "flux")!;
     assert.ok(flux.command.includes("--branch=main"));
-    assert.deepEqual(flux.requires, ["GITHUB_TOKEN"]);
+    assert.deepEqual(flux.requires, ["FLUX_GIT_TOKEN"]);
     assert.deepEqual(
       real.map((s) => s.name),
       [
@@ -130,27 +130,38 @@ describe("bootstrap.yaml", () => {
     assert.ok(wait.includes(`namespace/${esoNamespace}`));
     assert.ok(create.includes(`create secret generic ${credentialsSecret}`));
     assert.ok(create.includes(`--namespace=${esoNamespace}`));
-    assert.ok(create.includes("eso-token"));
+    assert.ok(create.includes("eso-bws-token"));
     assert.deepEqual(
       steps.map((s) => s.retry),
       [900, undefined],
     );
   });
+
+  test("reads ESO_BWS_TOKEN in the shell, so the token is not in the command it plans", () => {
+    const steps = plan(loadStages("../bootstrap.yaml"), {
+      builtDir: "out",
+      env: { ESO_BWS_TOKEN: "secret-value" },
+      only: "external-secrets",
+    });
+    const create = steps[1].command.join(" ");
+    assert.ok(create.includes("ESO_BWS_TOKEN"));
+    assert.ok(!create.includes("secret-value"));
+  });
 });
 
-describe("githubToken", () => {
+describe("fluxGitToken", () => {
   const home = join(tmpdir(), `bootstrap-test-${process.pid}`);
   const saved = { ...process.env };
 
   const flux = (content: string, mode = 0o600) => {
     mkdirSync(home, { recursive: true });
-    writeFileSync(join(home, "flux.yaml"), content, { mode });
-    chmodSync(join(home, "flux.yaml"), mode);
+    writeFileSync(join(home, "flux-git-token"), content, { mode });
+    chmodSync(join(home, "flux-git-token"), mode);
   };
 
   beforeEach(() => {
     rmSync(home, { recursive: true, force: true });
-    delete process.env.GITHUB_TOKEN;
+    delete process.env.FLUX_GIT_TOKEN;
     process.env.HOMELAB_DIR = home;
   });
 
@@ -160,27 +171,27 @@ describe("githubToken", () => {
   });
 
   test("is the environment variable, when set", () => {
-    flux("token: from-file\n");
-    process.env.GITHUB_TOKEN = "from-env";
-    assert.equal(githubToken(), "from-env");
+    flux("from-file\n");
+    process.env.FLUX_GIT_TOKEN = "from-env";
+    assert.equal(fluxGitToken(), "from-env");
   });
 
-  test("is the token in the flux secret, otherwise", () => {
-    flux("token: from-file\n");
-    assert.equal(githubToken(), "from-file");
+  test("is the contents of the flux-git-token file, otherwise", () => {
+    flux("from-file\n");
+    assert.equal(fluxGitToken(), "from-file");
   });
 
   test("is nothing without either", () => {
-    assert.equal(githubToken(), undefined);
+    assert.equal(fluxGitToken(), undefined);
   });
 
-  test("rejects a flux secret without a token", () => {
-    flux("other: x\n");
-    assert.throws(() => githubToken(), /flux\.yaml\.token/);
+  test("rejects an empty flux-git-token file", () => {
+    flux("\n");
+    assert.throws(() => fluxGitToken(), /flux-git-token is empty/);
   });
 
-  test("rejects a flux secret others can read", () => {
-    flux("token: x\n", 0o644);
-    assert.throws(() => githubToken(), /must be readable by its owner only/);
+  test("rejects a flux-git-token file others can read", () => {
+    flux("x\n", 0o644);
+    assert.throws(() => fluxGitToken(), /must be readable by its owner only/);
   });
 });

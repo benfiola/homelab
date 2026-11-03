@@ -213,12 +213,11 @@ describe(
       join(chart, "values.yaml"),
       [
         "apps: |",
-        "  secrets:",
-        "    web:",
-        '      api-token: "tok:with/odd chars"',
-        '      empty: ""',
-        "    other:",
-        "      api-token: other-token",
+        "  web:",
+        '    api-token: "tok:with/odd chars"',
+        '    empty: ""',
+        "  other:",
+        "    api-token: other-token",
         "",
       ].join("\n"),
     );

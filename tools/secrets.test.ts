@@ -96,7 +96,6 @@ beforeEach(() => {
   bitwarden({
     talos: "talos: bundle\n",
     network: "wifi: {}\n",
-    flux: "token: t\n",
     apps: "secrets: {}\n",
     other: "x",
   });
@@ -135,7 +134,7 @@ describe("pull", () => {
     assert.equal(existsSync(join(home, "other.yaml")), false);
     assert.match(
       result.stdout,
-      /^talos {2}.*talos\.yaml\nnetwork {2}.*network\.yaml\nflux {2}.*flux\.yaml\napps {2}.*apps\.yaml\n$/,
+      /^talos {2}.*talos\.yaml\nnetwork {2}.*network\.yaml\napps {2}.*apps\.yaml\n$/,
     );
   });
 
@@ -178,7 +177,7 @@ describe("pull", () => {
     assert.equal(result.code, 1);
     assert.match(
       result.stderr,
-      /no secret 'other' \(have: talos, network, flux, apps\)/,
+      /no secret 'other' \(have: talos, network, apps\)/,
     );
     assert.deepEqual(calls(), []);
   });

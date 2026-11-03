@@ -30,7 +30,7 @@ Secrets live in Bitwarden Secrets Manager. This machine keeps a copy in `~/.home
 
 ### Pull secrets and client configuration
 
-`just init` pulls the secrets (the Talos bundle, the network secrets, the `flux` token and the `apps` secrets), then writes `~/.talos/config` and `~/.kube/config` from them. The kubeconfig needs the cluster to be reachable (on the VPN): if it isn't, `init` gives up after 30 seconds and can be run again. The devcontainer runs it when it is created, once you have signed in.
+`just init` pulls the secrets (the Talos bundle, the network secrets and the `apps` secrets), then writes `~/.talos/config` and `~/.kube/config` from them. The kubeconfig needs the cluster to be reachable (on the VPN): if it isn't, `init` gives up after 30 seconds and can be run again. The devcontainer runs it when it is created, once you have signed in.
 
 `just secrets pull [name...]` pulls the secrets alone.
 
@@ -167,11 +167,10 @@ just talos apply --insecure                 # every enabled node, still in maint
 just talos ctl -n samoyed bootstrap         # waits until a CNI is deployed
 just talos ctl -n samoyed kubeconfig
 just build
-just secrets pull flux
 just bootstrap                      # crds, network policies, cilium, flux
 ```
 
-Flux is bootstrapped with the token in `~/.homelab/flux.yaml` (`token:`), unless `GITHUB_TOKEN` is set. `just bootstrap --dry-run` prints the steps without running them, and `--from <stage>` resumes after a failure.
+Flux is bootstrapped with the GitHub token in `~/.homelab/flux-git-token` unless `FLUX_GIT_TOKEN` is set. External Secrets is bootstrapped with the Bitwarden token `~/.homelab/eso-bws-token` unless `ESO_BWS_TOKEN` is set. `just bootstrap --dry-run` prints the steps without running them, and `--from <stage>` resumes after a failure.
 
 ### Add a node
 

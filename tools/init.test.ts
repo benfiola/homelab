@@ -22,13 +22,13 @@ const stub = (name: string, source: string) => {
   chmodSync(join(bin, name), 0o755);
 };
 
-// stand-ins for bws, which lists three secrets, and for talosctl, which generates a client
+// stand-ins for bws, which lists the secrets, and for talosctl, which generates a client
 // configuration and records the kubeconfig it is asked for (or never answers, if told to hang)
 const bin = join(root, "bin");
 mkdirSync(bin);
 stub(
   "bws",
-  `process.stdout.write(JSON.stringify(["talos", "network", "flux", "apps"].map((key, i) => ({ id: "" + i, key, value: key + ": x\\n", projectId: "p" }))));`,
+  `process.stdout.write(JSON.stringify(["talos", "network", "apps"].map((key, i) => ({ id: "" + i, key, value: key + ": x\\n", projectId: "p" }))));`,
 );
 stub(
   "talosctl",
@@ -91,8 +91,8 @@ describe("init", () => {
     const result = await init();
     assert.equal(result.code, 0, result.stderr);
     assert.equal(
-      readFileSync(join(home, ".homelab", "flux.yaml"), "utf-8"),
-      "flux: x\n",
+      readFileSync(join(home, ".homelab", "apps.yaml"), "utf-8"),
+      "apps: x\n",
     );
     const talosconfig = join(home, ".talos", "config");
     assert.match(readFileSync(talosconfig, "utf-8"), /^context: homelab$/m);
