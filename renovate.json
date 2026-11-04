@@ -6,7 +6,7 @@
   ],
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
-  "dependencyDashboardApproval": true,
+  "dependencyDashboardApproval": false,
   "ignoreUnstable": true,
   "minimumReleaseAge": "3 days",
   "semanticCommits": "disabled",
