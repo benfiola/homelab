@@ -4,6 +4,25 @@ export const garageCluster = { name: "garage", namespace: "garage" };
 
 export const garageEndpoint = `http://${garageCluster.name}.${garageCluster.namespace}.svc:3900`;
 
+// lets `kinds` in `namespace` reference the cluster (cross-namespace references require one, in
+// the cluster's namespace). named for the namespace and `name`, as a PushSecret is
+export const garageReferenceGrant = (
+  namespace: string,
+  name: string,
+  kinds: string[] = [],
+): Obj => ({
+  apiVersion: "garage.rajsingh.info/v1beta1",
+  kind: "GarageReferenceGrant",
+  metadata: {
+    name: `${namespace}-${name}`,
+    namespace: garageCluster.namespace,
+  },
+  spec: {
+    from: kinds.map((kind) => ({ kind, namespace })),
+    to: [{ kind: "GarageCluster", name: garageCluster.name }],
+  },
+});
+
 export interface GarageKey {
   name: string;
   // the Secret holding the key, and its entries
@@ -39,7 +58,7 @@ export const garageKey = (
     accessKeyIdKey,
     secretAccessKeyKey,
     object: {
-      apiVersion: "garage.rajsingh.info/v1alpha1",
+      apiVersion: "garage.rajsingh.info/v1beta1",
       kind: "GarageKey",
       metadata: { name },
       spec: {
@@ -76,14 +95,14 @@ export const garageBucket = (
   opts: GarageBucketOptions = {},
 ): Obj => {
   const permission = (key: GarageKey, owner: boolean, write: boolean) => ({
-    keyRef: key.name,
+    keyRef: { name: key.name },
     owner,
     read: true,
     write,
   });
 
   return {
-    apiVersion: "garage.rajsingh.info/v1alpha1",
+    apiVersion: "garage.rajsingh.info/v1beta1",
     kind: "GarageBucket",
     metadata: { name },
     spec: {

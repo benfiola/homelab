@@ -2,15 +2,20 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { crdsApp, fluxDeclaration, listApps, networkFunction } from "./apps.ts";
 import { helmImage, images } from "./images.ts";
+import { editor, type Editor } from "./k8s/edit.ts";
+import type { FluxDeclaration } from "./k8s/flux.ts";
 import {
   bucketSyncPolicy,
   garageBucket,
+  garageCluster,
   garageEndpoint,
   garageKey,
-  type GarageKey,
+  garageReferenceGrant,
   type GarageBucketOptions,
+  type GarageKey,
   type GarageKeyOptions,
 } from "./k8s/garage.ts";
+import type { NetworkFunction } from "./k8s/network-policy.ts";
 import {
   GrpcRoute,
   HttpRoute,
@@ -19,10 +24,6 @@ import {
   type Gateway,
   type Target as RouteTarget,
 } from "./k8s/routes.ts";
-import type { FluxDeclaration } from "./k8s/flux.ts";
-import type { NetworkFunction } from "./k8s/network-policy.ts";
-import { editor, type Editor } from "./k8s/edit.ts";
-import { nasVolume } from "./k8s/storage.ts";
 import {
   appSecrets,
   appTemplatedSecrets,
@@ -33,13 +34,14 @@ import {
   type SecretKeys,
   type SecretOptions,
 } from "./k8s/secrets.ts";
+import { nasVolume } from "./k8s/storage.ts";
 import {
   securityContext,
   vpa,
   Workload,
+  type SecurityContextOptions,
   type VpaOptions,
   type VpaTarget,
-  type SecurityContextOptions,
   type WorkloadKind,
   type WorkloadOptions,
 } from "./k8s/workload.ts";
@@ -125,6 +127,7 @@ export class App {
   private readonly hooks: ((e: Editor) => void)[] = [];
   private readonly pushStores = new Set<string>();
   private readonly pushed = new Set<string>();
+  private readonly garageGrants = new Map<string, Obj>();
 
   constructor(app: string, dir: string) {
     this.app = app;
@@ -368,6 +371,7 @@ export class App {
   ): GarageKey {
     const key = garageKey(name, opts);
     this.track(key.object, namespace);
+    this.grantGarage(namespace ?? this.namespaceName, key.object.kind);
     return key;
   }
 
@@ -379,7 +383,25 @@ export class App {
   ): Obj {
     const bucket = garageBucket(name, owners, opts);
     this.track(bucket, namespace);
+    this.grantGarage(namespace ?? this.namespaceName, bucket.kind);
     return bucket;
+  }
+
+  // lets a namespace's garage resources of `kind` reference the cluster: one grant per namespace,
+  // widened as kinds are added to it. named for the app too, so apps sharing a namespace don't share a grant
+  private grantGarage(namespace: string, kind: string): void {
+    if (namespace === garageCluster.namespace) {
+      return;
+    }
+    let grant = this.garageGrants.get(namespace);
+    if (!grant) {
+      grant = garageReferenceGrant(namespace, this.app);
+      this.garageGrants.set(namespace, grant);
+      this.track(grant, garageCluster.namespace);
+    }
+    if (!grant.spec.from.some((f: Obj) => f.kind === kind)) {
+      grant.spec.from.push({ kind, namespace });
+    }
   }
 
   // serves files synced from backblaze into a garage bucket named after the app (bucket, keys, sync
@@ -391,12 +413,16 @@ export class App {
     const name = `${this.app}-assets`;
     const key = garageKey(name);
     const readKey = garageKey(`${name}-read`);
+    const bucket = garageBucket(name, [key], { roKeys: [readKey] });
+    [key.object, readKey.object, bucket].forEach((o) =>
+      this.grantGarage(namespace, o.kind),
+    );
     const credentials = `bucket-sync-${name}`;
 
     const objects = [
       key.object,
       readKey.object,
-      garageBucket(name, [key], { roKeys: [readKey] }),
+      bucket,
       bucketSyncPolicy({
         bucket: name,
         key,
