@@ -153,7 +153,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi"), data },
     })
     .addContainer("sonarr", {
-      image: "lscr.io/linuxserver/sonarr:4.0.19",
+      image: "lscr.io/linuxserver/sonarr:4.0.20",
       containerPorts: { web: 8989 },
       env: { ...linuxserver, ...arr("SONARR") },
       volumeMounts: { data: "/data", config: "/config" },
