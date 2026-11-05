@@ -11,7 +11,7 @@ export const app: AppFunction = (h) => {
   const workload = h
     .deployment("wyoming-openai")
     .addContainer("wyoming-openai", {
-      image: "ghcr.io/roryeckel/wyoming_openai:0.5.0",
+      image: "ghcr.io/roryeckel/wyoming_openai:0.9.0",
       env: {
         WYOMING_URI: "tcp://0.0.0.0:10300",
         WYOMING_LOG_LEVEL: "INFO",
