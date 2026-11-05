@@ -167,7 +167,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi"), data },
     })
     .addContainer("radarr", {
-      image: "lscr.io/linuxserver/radarr:6.2.1",
+      image: "lscr.io/linuxserver/radarr:6.4.4",
       containerPorts: { web: 7878 },
       env: { ...linuxserver, ...arr("RADARR") },
       volumeMounts: { data: "/data", config: "/config" },
