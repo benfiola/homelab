@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "oci://registry.k8s.io/nfd/charts/node-feature-discovery?version=0.18.3",
+    "oci://registry.k8s.io/nfd/charts/node-feature-discovery?version=0.20.1",
     {
       values: {
         master: { resources: { limits: null } },
