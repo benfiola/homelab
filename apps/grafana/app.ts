@@ -99,7 +99,7 @@ export const app: AppFunction = (h) => {
                   ],
                 },
                 {
-                  image: "ghcr.io/kiwigrid/k8s-sidecar:2.14.1",
+                  image: "ghcr.io/kiwigrid/k8s-sidecar:2.14.3",
                   name: "dashboard-sidecar",
                   env: [
                     { name: "LABEL", value: "grafana_dashboard" },
