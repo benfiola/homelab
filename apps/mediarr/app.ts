@@ -108,7 +108,7 @@ export const app: AppFunction = (h) => {
     }
 
     workload.addContainer("gluetun", {
-      image: "ghcr.io/qdm12/gluetun:v3.41.1",
+      image: "ghcr.io/qdm12/gluetun:v3.41.3",
       securityContext: {
         uid: 0,
         gid: 0,
@@ -133,7 +133,7 @@ export const app: AppFunction = (h) => {
       configMap: scripts.metadata.name,
     });
     workload.addContainer("mss-clamp", {
-      image: "ghcr.io/qdm12/gluetun:v3.41.1",
+      image: "ghcr.io/qdm12/gluetun:v3.41.3",
       securityContext: {
         uid: 0,
         gid: 0,
