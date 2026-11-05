@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.21.3", {
+  h.helm("oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.25.0", {
     values: {
       podSecurityContext: {
         fsGroup: 65534,
