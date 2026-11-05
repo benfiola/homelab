@@ -192,7 +192,7 @@ export const app: AppFunction = (h) => {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: { config: config("1Gi") },
   }).addContainer("profilarr", {
-    image: "ghcr.io/dictionarry-hub/profilarr:2.0.9",
+    image: "ghcr.io/dictionarry-hub/profilarr:2.3.1",
     containerPorts: { web: 6868 },
     env: { ...linuxserver, AUTH: "local" },
     volumeMounts: { config: "/config" },
