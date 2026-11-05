@@ -9,6 +9,10 @@
   "dependencyDashboardApproval": false,
   "ignoreUnstable": true,
   "minimumReleaseAge": "3 days",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
+  "prBodyNotes": [
+    "{{#if releaseTimestamp}}{{else}}⚠️ No release timestamp is available for this dependency, so `minimumReleaseAge` was **not enforced**. Review the upstream release before merging.{{/if}}"
+  ],
   "semanticCommits": "disabled",
   "commitMessageAction": "bump",
   "commitMessageTopic": "{{depName}}",
