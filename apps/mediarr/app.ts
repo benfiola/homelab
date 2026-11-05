@@ -204,7 +204,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi") },
     })
     .addContainer("maintainerr", {
-      image: "ghcr.io/maintainerr/maintainerr:3.18.0",
+      image: "ghcr.io/maintainerr/maintainerr:3.32.0",
       containerPorts: { web: 6246 },
       env: { TZ: h.timezone },
       volumeMounts: { config: "/opt/data" },
