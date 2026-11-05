@@ -1,6 +1,7 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
   appLabel,
+  component,
   tcp,
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
@@ -36,6 +37,13 @@ export const app: AppFunction = (h) => {
   });
 
   h.vpa({ kind: "Deployment", name: "gpu-operator" });
+
+  h.postRender((e) => {
+    const job = e.find({ kind: "Job", name: "gpu-operator-upgrade-crd" });
+    for (const meta of [job.metadata, job.spec.template.metadata]) {
+      meta.labels["app.kubernetes.io/component"] = "gpu-operator-upgrade-crd";
+    }
+  });
 };
 
 export const network: NetworkFunction = (n) => {
@@ -51,6 +59,10 @@ export const network: NetworkFunction = (n) => {
     "nvidia-gpu-operator",
     appLabel("gpu-operator", "nvidia-gpu-operator"),
   );
+  const nvidiaGpuOperatorUpgradeCrd = n.subject(
+    "nvidia-gpu-operator-upgrade-crd",
+    component("gpu-operator-upgrade-crd", "nvidia-gpu-operator"),
+  );
   const nvidiaOperatorValidator = n.subject(
     "nvidia-operator-validator",
     appLabel("nvidia-operator-validator", "nvidia-gpu-operator"),
@@ -60,5 +72,6 @@ export const network: NetworkFunction = (n) => {
   nvidiaGpuFeatureDiscovery.to(n.kubeApiServer, tcp(6443));
   nvidiaGpuOperator.to(n.kubeApiServer, tcp(6443));
   n.host.to(nvidiaGpuOperator, tcp(8081));
+  nvidiaGpuOperatorUpgradeCrd.to(n.kubeApiServer, tcp(6443));
   nvidiaOperatorValidator.to(n.kubeApiServer, tcp(6443));
 };
