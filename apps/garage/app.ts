@@ -14,28 +14,27 @@ export const app: AppFunction = (h) => {
   const security = h.securityContext();
 
   h.add({
-    apiVersion: "garage.rajsingh.info/v1alpha1",
+    apiVersion: "garage.rajsingh.info/v1beta2",
     kind: "GarageCluster",
     metadata: { name: "garage" },
     spec: {
       admin: {
         adminTokenSecretRef: secrets.key("admin-token").secretKeyRef,
-        enabled: true,
       },
-      containerSecurityContext: security.container,
       image: "dxflrs/garage:v2.5.0",
-      podLabels: {
-        "app.kubernetes.io/name": "garage",
-      },
-      replicas: 3,
       replication: {
         factor: 2,
       },
       security: {
-        allowWorldReadableSecrets: true,
+        allowInsecureSecretPermissions: true,
       },
-      securityContext: security.pod,
       storage: {
+        containerSecurityContext: security.container,
+        podLabels: {
+          "app.kubernetes.io/name": "garage",
+        },
+        replicas: 3,
+        securityContext: security.pod,
         data: {
           size: "300Gi",
           storageClassName: "standard",
@@ -50,7 +49,7 @@ export const app: AppFunction = (h) => {
   h.vpa({
     kind: "GarageCluster",
     name: "garage",
-    apiVersion: "garage.rajsingh.info/v1alpha1",
+    apiVersion: "garage.rajsingh.info/v1beta2",
   });
 };
 

@@ -684,8 +684,49 @@ describe("namespaces", () => {
       h.garageBucket("b", [key], { namespace: other });
       assert.deepEqual(await namespaces(h), [
         `GarageKey/k=${other}`,
+        `GarageReferenceGrant/${other}-web=garage`,
         `GarageBucket/b=${other}`,
       ]);
+    });
+
+    test("a grant for the cluster, widened as kinds are added", async () => {
+      const grant = async (h: App) =>
+        (await h.objects()).filter((o) => o.kind === "GarageReferenceGrant");
+
+      const keys = new App("web", "/apps/web");
+      keys.garageKey("k", { namespace: other });
+      keys.garageKey("l", { namespace: other });
+      assert.deepEqual((await grant(keys)).map((g) => g.spec.from), [
+        [{ kind: "GarageKey", namespace: other }],
+      ]);
+
+      const both = new App("web", "/apps/web");
+      const key = both.garageKey("k", { namespace: other });
+      both.garageBucket("b", [key], { namespace: other });
+      both.garageKey("m", { namespace: "elsewhere" });
+      const grants = await grant(both);
+      assert.deepEqual(
+        grants.map((g) => [g.metadata.name, g.metadata.namespace]),
+        [
+          [`${other}-web`, "garage"],
+          ["elsewhere-web", "garage"],
+        ],
+      );
+      assert.deepEqual(grants[0].spec.from, [
+        { kind: "GarageKey", namespace: other },
+        { kind: "GarageBucket", namespace: other },
+      ]);
+      assert.deepEqual(grants[0].spec.to, [
+        { kind: "GarageCluster", name: "garage" },
+      ]);
+    });
+
+    test("no grant within the cluster's own namespace", async () => {
+      const h = new App("web", "/apps/web");
+      h.garageKey("k", { namespace: "garage" });
+      assert.ok(
+        !(await h.objects()).some((o) => o.kind === "GarageReferenceGrant"),
+      );
     });
 
     test("secrets pushed through external secrets", async () => {
@@ -704,7 +745,15 @@ describe("namespaces", () => {
       const { url } = h.assetsServer({ namespace: other });
       // the objects that push Secrets live in external-secrets-operator, and push into the namespace
       const pushes = /^(SecretStore|PushSecret)\//;
-      const found = (await namespaces(h)).filter((f) => !pushes.test(f));
+      const grants = (await namespaces(h)).filter((f) =>
+        f.startsWith("GarageReferenceGrant/"),
+      );
+      assert.deepEqual(grants, [
+        `GarageReferenceGrant/${other}-llama-cpp=garage`,
+      ]);
+      const found = (await namespaces(h)).filter(
+        (f) => !pushes.test(f) && !f.startsWith("GarageReferenceGrant/"),
+      );
       assert.ok(found.length > 5);
       assert.ok(
         found.every((f) => f.endsWith(`=${other}`)),
