@@ -8,7 +8,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync?version=1.2.5",
+    "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync?version=1.2.6",
   );
 
   h.namespace();
