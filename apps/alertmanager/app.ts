@@ -155,6 +155,7 @@ export const app: AppFunction = (h) => {
       ],
       storage: {
         volumeClaimTemplate: {
+          metadata: { name: "data" },
           spec: {
             resources: { requests: { storage: "10Gi" } },
             storageClassName: "standard",

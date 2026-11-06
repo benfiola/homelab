@@ -279,6 +279,34 @@ describe("App", () => {
       "PersistentVolumeClaim/media",
     ]);
   });
+
+  test("volumeBackup adds the backup and the Secret it reads, pushed into the app's namespace", async () => {
+    const h = new App("web", "/apps/web");
+    h.volumeBackup("config", { schedule: "0 3 * * *" });
+    assert.deepEqual(await kinds(h), [
+      "SecretStore/web",
+      "PushSecret/web-volsync-mover-config",
+      "ReplicationSource/config",
+    ]);
+    const [, push, source] = await h.objects();
+    assert.equal(
+      push.spec.template.data.RESTIC_REPOSITORY.includes("/web/config"),
+      true,
+    );
+    assert.equal(source.spec.trigger.schedule, "0 3 * * *");
+  });
+
+  test("volumeBackup of a PVC in another namespace uses that namespace for the repository too", async () => {
+    const h = new App("web", "/apps/web");
+    h.volumeBackup("config", { namespace: "other" });
+    const [store, push, source] = await h.objects();
+    assert.equal(store.metadata.name, "other");
+    assert.equal(push.metadata.name, "other-volsync-mover-config");
+    assert.equal(source.metadata.namespace, "other");
+    assert.ok(
+      push.spec.template.data.RESTIC_REPOSITORY.endsWith("/other/config"),
+    );
+  });
 });
 
 describe("App.namespace", () => {
@@ -696,9 +724,10 @@ describe("namespaces", () => {
       const keys = new App("web", "/apps/web");
       keys.garageKey("k", { namespace: other });
       keys.garageKey("l", { namespace: other });
-      assert.deepEqual((await grant(keys)).map((g) => g.spec.from), [
-        [{ kind: "GarageKey", namespace: other }],
-      ]);
+      assert.deepEqual(
+        (await grant(keys)).map((g) => g.spec.from),
+        [[{ kind: "GarageKey", namespace: other }]],
+      );
 
       const both = new App("web", "/apps/web");
       const key = both.garageKey("k", { namespace: other });
