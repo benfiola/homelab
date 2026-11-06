@@ -35,6 +35,7 @@ import {
   type SecretOptions,
 } from "./k8s/secrets.ts";
 import { nasVolume } from "./k8s/storage.ts";
+import { volsyncBackup, type VolsyncBackupOptions } from "./k8s/volsync.ts";
 import {
   securityContext,
   vpa,
@@ -361,6 +362,24 @@ export class App {
   // a share on the nas: a PersistentVolume and its claim (mount it with `{ pvc: { name } }`)
   nasVolume(name: string, opts: { namespace?: string } = {}): this {
     nasVolume(name).forEach((object) => this.track(object, opts.namespace));
+    return this;
+  }
+
+  // backs up a PVC of the app (or of `namespace`) to backblaze, with the credentials in volsync's
+  // section of the `apps` file
+  volumeBackup(
+    pvc: string,
+    opts: VolsyncBackupOptions & { namespace?: string } = {},
+  ): this {
+    const namespace = opts.namespace ?? this.namespaceName;
+    const { secret, source } = volsyncBackup(pvc, namespace, opts);
+    this.push(
+      namespace,
+      appTemplatedSecrets(this.app, secret.name, secret.templates, {
+        namespace,
+      }),
+    );
+    this.track(source, opts.namespace);
     return this;
   }
 
