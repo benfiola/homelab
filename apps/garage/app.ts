@@ -37,6 +37,7 @@ export const app: AppFunction = (h) => {
           storageClassName: "standard",
         },
         metadata: {
+          size: "10Gi",
           storageClassName: "standard",
         },
       },
