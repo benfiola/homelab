@@ -48,7 +48,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("frigate", {
-      image: "ghcr.io/benfiola/homelab-images/frigate:1.1.2",
+      image: "ghcr.io/benfiola/homelab-images/frigate:1.1.4",
       containerPorts: {
         "http-insecure": 5000,
       },
