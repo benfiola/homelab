@@ -30,9 +30,6 @@ export const app: AppFunction = (h) => {
       },
       storage: {
         containerSecurityContext: security.container,
-        podLabels: {
-          "app.kubernetes.io/name": "garage",
-        },
         replicas: 3,
         securityContext: security.pod,
         data: {
