@@ -74,6 +74,7 @@ export const app: AppFunction = (h) => {
               },
             },
             spec: {
+              securityContext: { fsGroup: security.pod.fsGroup },
               containers: [
                 {
                   name: "grafana",
