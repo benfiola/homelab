@@ -21,7 +21,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("music-assistant", {
-      image: "ghcr.io/benfiola/homelab-images/music-assistant:1.1.1",
+      image: "ghcr.io/benfiola/homelab-images/music-assistant:1.1.3",
       containerPorts: {
         internal: [8094, "TCP"],
         ui: [8095, "TCP"],
