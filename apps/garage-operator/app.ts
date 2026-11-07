@@ -6,7 +6,7 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.helm("oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.8.3", {
+  h.helm("oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.9.0", {
     values: { resources: null },
   });
 
