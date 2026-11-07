@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "https://prometheus-community.github.io/helm-charts/kube-state-metrics?version=8.8.0",
+    "https://prometheus-community.github.io/helm-charts/kube-state-metrics?version=9.0.0",
   );
 
   h.namespace();
