@@ -2,7 +2,7 @@
 // like any other.
 const list = [
   { key: "alpine", image: "alpine:3.24.3" },
-  { key: "toolbox", image: "ghcr.io/benfiola/homelab-images/toolbox:1.2.3" },
+  { key: "toolbox", image: "ghcr.io/benfiola/homelab-images/toolbox:1.2.4" },
   { key: "rclone", image: "rclone/rclone:1.75.2" },
 ] as const;
 
