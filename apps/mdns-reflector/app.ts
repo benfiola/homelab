@@ -9,7 +9,7 @@ export const app: AppFunction = (h) => {
       securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
     })
     .addContainer(h.app, {
-      image: "ghcr.io/benfiola/homelab-images/mdns-reflector:3.0.4",
+      image: "ghcr.io/benfiola/homelab-images/mdns-reflector:3.0.5",
       env: {
         EXTRA_INTERFACES: "mdns0",
       },
