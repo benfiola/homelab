@@ -36,7 +36,7 @@ export const app: AppFunction = (h) => {
         config: { pvc: { storageClass: "replicated", size: "1Gi" } },
         configmap: { configMap: config.metadata.name },
         data: { pvc: { name: "nvr" } },
-        shm: { emptyDir: { medium: "Memory", sizeLimit: "768Mi" } },
+        shm: { memory: { sizeLimit: "768Mi" } },
       },
     })
     .addInitContainer("copy-config", {

@@ -14,7 +14,7 @@ export const app: AppFunction = (h) => {
       metadata: { name: h.app },
       spec: {
         nfsServer: { enabled: false },
-        properties: [{ name: "DrbdOptions/auto-diskful", value: "30" }],
+        properties: [{ name: "DrbdOptions/auto-diskful", value: "10" }],
       },
     },
     {

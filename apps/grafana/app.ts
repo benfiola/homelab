@@ -118,7 +118,18 @@ export const app: AppFunction = (h) => {
                 },
               ],
               volumes: [
-                { name: "dashboards", emptyDir: {} },
+                {
+                  name: "dashboards",
+                  ephemeral: {
+                    volumeClaimTemplate: {
+                      spec: {
+                        accessModes: ["ReadWriteOnce"],
+                        storageClassName: "standard",
+                        resources: { requests: { storage: "1Gi" } },
+                      },
+                    },
+                  },
+                },
                 {
                   name: "provisioning",
                   configMap: { name: provisioning.metadata.name },

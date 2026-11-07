@@ -63,7 +63,8 @@ export type Volume =
   | { pvc: { size: string; storageClass: string } | { name: string } }
   | { configMap: string; items?: VolumeItem[]; defaultMode?: number }
   | { secret: string; items?: VolumeItem[]; defaultMode?: number }
-  | { emptyDir: { medium?: "Memory"; sizeLimit?: string } }
+  | { memory: { sizeLimit?: string } }
+  | { ephemeral: { size: string } }
   | { hostPath: { path: string; type?: string } };
 
 export type Volumes = Record<string, Volume>;
@@ -188,9 +189,23 @@ const inlineVolume = (name: string, v: Volume): Obj => {
   if ("hostPath" in v) {
     return { name, hostPath: v.hostPath };
   }
+  if ("ephemeral" in v) {
+    return {
+      name,
+      ephemeral: {
+        volumeClaimTemplate: {
+          spec: {
+            accessModes: ["ReadWriteOnce"],
+            storageClassName: "standard",
+            resources: { requests: { storage: v.ephemeral.size } },
+          },
+        },
+      },
+    };
+  }
   return {
     name,
-    emptyDir: { medium: v.emptyDir.medium, sizeLimit: v.emptyDir.sizeLimit },
+    emptyDir: { medium: "Memory", sizeLimit: v.memory.sizeLimit },
   };
 };
 

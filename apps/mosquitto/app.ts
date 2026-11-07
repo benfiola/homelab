@@ -21,7 +21,7 @@ export const app: AppFunction = (h) => {
   const workload = h
     .statefulSet("mosquitto", {
       volumes: {
-        auth: { emptyDir: {} },
+        auth: { ephemeral: { size: "1Gi" } },
         config: { configMap: config.metadata.name },
         scripts: { configMap: scripts.metadata.name },
         data: { pvc: { size: "10Gi", storageClass: "replicated" } },

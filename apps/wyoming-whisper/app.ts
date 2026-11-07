@@ -14,8 +14,8 @@ export const app: AppFunction = (h) => {
   const workload = h
     .deployment("wyoming-whisper", {
       volumes: {
-        cache: { emptyDir: {} },
-        data: { emptyDir: {} },
+        cache: { ephemeral: { size: "1Gi" } },
+        data: { ephemeral: { size: "5Gi" } },
       },
     })
     .addContainer("wyoming-whisper", {

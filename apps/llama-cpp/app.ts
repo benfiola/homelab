@@ -26,7 +26,7 @@ export const app: AppFunction = (h) => {
     .statefulSet("llama-cpp", {
       securityContext: { uid: 1000, gid: 1000 },
       volumes: {
-        data: { emptyDir: {} },
+        data: { ephemeral: { size: "20Gi" } },
         scripts: { configMap: scripts.metadata.name },
       },
       nodeSelector: {

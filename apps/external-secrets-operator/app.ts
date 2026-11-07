@@ -70,7 +70,7 @@ export const app: AppFunction = (h) => {
             { key: "tls.key", path: "key.pem" },
           ],
         },
-        state: { emptyDir: { medium: "Memory" } },
+        state: { memory: {} },
       },
     })
     .addContainer(server, {

@@ -83,7 +83,9 @@ export const app: AppFunction = (h) => {
     },
   ) => {
     workload.addVolume("gt-tun", { hostPath: { path: "/dev/net/tun" } });
-    workload.addVolume("gt-state", { emptyDir: {} });
+    workload.addVolume("gt-state", {
+      ephemeral: { size: "1Gi" },
+    });
     workload.addVolume("gt-scripts", { configMap: scripts.metadata.name });
 
     const env: Env = {
@@ -228,7 +230,7 @@ export const app: AppFunction = (h) => {
       volumes: {
         config: config("20Gi"),
         data,
-        cache: { emptyDir: { sizeLimit: "50Gi" } },
+        cache: { ephemeral: { size: "50Gi" } },
       },
     })
     .addContainer("jellyfin", {
