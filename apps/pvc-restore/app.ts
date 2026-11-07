@@ -7,7 +7,7 @@ import {
 
 export const app: AppFunction = (h) => {
   h.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/pvc-restore?version=1.0.8",
+    "oci://ghcr.io/benfiola/homelab-images/charts/pvc-restore?version=1.0.9",
     { values: { config: { cacheStorageClass: "standard" } } },
   );
 
