@@ -8,10 +8,10 @@
 
 The toolchain comes from a [nix](https://nixos.org) dev shell: open the devcontainer, or run `nix develop`. Run everything from the repo root; [just](https://just.systems) lists the commands.
 
-Then, once per machine: install the dependencies (the devcontainer does this itself), sign in to Bitwarden, and set up this machine for the cluster.
+Once per machine (the devcontainer installs dependencies itself):
 
 ```sh
-just install          # install dependencies
+just install
 just secrets login    # asks for a Bitwarden access token
 just init             # pulls the secrets, then writes the talos and kube configuration
 ```
@@ -26,11 +26,11 @@ just init             # pulls the secrets, then writes the talos and kube config
 
 ## Secrets
 
-Secrets live in Bitwarden Secrets Manager. This machine keeps a copy in `~/.homelab` (a devcontainer volume, so it survives a rebuild), which the tools read by default: files others can read are refused. Neither is ever in the repository.
+Secrets live in Bitwarden Secrets Manager. This machine keeps a copy in `~/.homelab`.
 
 ### Pull secrets and client configuration
 
-`just init` pulls the secrets (the Talos bundle, the network secrets and the `apps` secrets), then writes `~/.talos/config` and `~/.kube/config` from them. The kubeconfig needs the cluster to be reachable (on the VPN): if it isn't, `init` gives up after 30 seconds and can be run again. The devcontainer runs it when it is created, once you have signed in.
+`just init` pulls homelab secrets, then writes `~/.talos/config` and `~/.kube/config` from them. The kubeconfig needs the cluster to be reachable: if it isn't, `init` gives up after 30 seconds and can be run again. The devcontainer runs this automatically when it is created.
 
 `just secrets pull [name...]` pulls the secrets alone.
 
@@ -106,7 +106,7 @@ homeAssistant.to(n.ref("mosquitto"), tcp(1883));
 
 ### Troubleshoot network policies
 
-Hubble shows what Cilium allows and drops. Flows set up while a pod starts only show if you restart the pod.
+Hubble shows what Cilium allows and drops.
 
 ```sh
 hubble observe --server tls://flows.fiola.dev --verdict DROPPED --from-pod my-namespace/my-pod
@@ -125,7 +125,7 @@ metadata:
 
 ### Update a dependency
 
-Renovate opens a pull request only once you tick its box in the Dependency Dashboard issue. The pinned tools also carry download hashes Renovate can't compute:
+Renovate opens a pull request once you tick its box in the Dependency Dashboard issue on [GitHub](https://github.com/benfiola/homelab/issues). Pinned tools also carry download hashes Renovate can't compute, so refresh them on its branch:
 
 ```sh
 just pins set kubectl <version>    # set a version, and refresh its hashes
@@ -170,7 +170,9 @@ just build
 just bootstrap                      # crds, network policies, cilium, flux
 ```
 
-Flux is bootstrapped with the GitHub token in `~/.homelab/flux-git-token` unless `FLUX_GIT_TOKEN` is set. External Secrets is bootstrapped with the Bitwarden token `~/.homelab/eso-bws-token` unless `ESO_BWS_TOKEN` is set. `just bootstrap --dry-run` prints the steps without running them, and `--from <stage>` resumes after a failure.
+Flux is bootstrapped with the GitHub token in `~/.homelab/flux-git-token` unless `FLUX_GIT_TOKEN` is set. External Secrets is bootstrapped with the Bitwarden token `~/.homelab/eso-bws-token` unless `ESO_BWS_TOKEN` is set.
+
+`just bootstrap --dry-run` prints the steps without running them, and `--from <stage>` resumes after a failure.
 
 ### Add a node
 
@@ -184,7 +186,7 @@ kubectl get nodes
 
 ### Reset a node
 
-This removes all data and configuration. Talos drains the node first, which can't work when every control-plane node is reset: add `--graceful=false` then.
+This removes all data and configuration. Add `--graceful=false` when resetting every control-plane node, since Talos can't drain them.
 
 ```sh
 just talos ctl -n node-1,node-2 reset --reboot --system-labels-to-wipe=EPHEMERAL,STATE
@@ -217,7 +219,7 @@ just talos images <version>
 just pins set talosctl <version>
 ```
 
-Then upgrade one node at a time, control plane first. Replicated volumes (two replicas and a tiebreaker) survive one node down but not two, so before each node, check that every volume is in sync, and drain it so nothing is using storage on it when it reboots. Volumes on the `standard` storage class have one replica: their pods wait for the node to return. Cancelling the upgrade command does not cancel the upgrade.
+Then upgrade one node at a time, control plane first. Replicated volumes (two replicas and a tiebreaker) survive one node down but not two, so before each node, check that every volume is in sync, and drain it so nothing is using storage on it when it reboots. Cancelling the upgrade command does not cancel the upgrade.
 
 ```sh
 linstor() { kubectl -n piraeus-operator exec deploy/linstor-controller -- linstor "$@"; }
@@ -231,7 +233,7 @@ linstor resource list    # repeat until every volume is in sync, then do the nex
 
 ## Network
 
-The router, access points and switches take configuration from scratch, not as changes: factory-reset a device, then apply. Edit `network/network.yaml` (VLANs, hosts, WireGuard, devices) and `network/scripts/`.
+The router, access points and switches are factory-reset, then configured from scratch. Edit `network/network.yaml` (VLANs, hosts, WireGuard, devices) and `network/scripts/`.
 
 ### Render configuration
 
@@ -253,7 +255,7 @@ A host is a DHCP reservation, and optionally a DNS record, firewall allowances a
 
 ### Apply to the router
 
-The router is reset to the script. Add `--dry-run` to see what would be run, and omit `--reset` to only copy the script. Afterwards, log in as `admin` and set a password.
+Applying resets the router and loads the script. Add `--dry-run` to see what would be run, and omit `--reset` to only copy the script. Afterwards, log in as `admin` and set a password.
 
 ```sh
 just network apply router.rsc --address <router> --reset
@@ -293,7 +295,7 @@ just network render wireguard.new-phone.conf
 
 ### Type check and test
 
-The tools in `tools/` and every `apps/*/app.ts` are TypeScript that node runs directly. `just check` typechecks them all, then runs the tests. Run it after changing either.
+The tools in `tools/` and every `apps/*/app.ts` are TypeScript that node runs directly. `just check` typechecks them all, then runs the tests.
 
 ```sh
 just check
