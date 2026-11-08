@@ -271,7 +271,11 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 8080 },
       env: linuxserver,
       volumeMounts: { config: "/config", data: "/data" },
-      ...h.probes({ http: { path: "/sabnzbd/api?mode=version", port: 8080 } }),
+      securityContext: {
+        ...rootWithCaps,
+        caps: [...rootWithCaps.caps, "DAC_READ_SEARCH"],
+      },
+      ...h.probes({ http: { path: "/api?mode=version", port: 8080 } }),
     });
   addVpnSidecar(sabnzbd, { firewallInputPorts: [8080] });
   addWaitForDataInitContainer(sabnzbd);
