@@ -78,6 +78,11 @@ export const app: AppFunction = (h) => {
               containers: [
                 {
                   name: "grafana",
+                  livenessProbe: {
+                    httpGet: { path: "/api/health", port: 3000 },
+                    timeoutSeconds: 5,
+                    failureThreshold: 6,
+                  },
                   resources: {
                     requests: { cpu: "100m", memory: "256Mi" },
                   },

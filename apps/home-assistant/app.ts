@@ -54,6 +54,7 @@ export const app: AppFunction = (h) => {
         config: "/config",
         media: "/media",
       },
+      ...h.probes({ http: { path: "/", port: 8123 } }),
     });
   const service = workload.service({ web: 8123 });
 
@@ -67,6 +68,7 @@ export const network: NetworkFunction = (n) => {
     pod("home-assistant", "home-assistant"),
   );
 
+  n.host.to(homeAssistant, tcp(8123));
   homeAssistant
     .from(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("224.0.0.251/32"), udp(5353))

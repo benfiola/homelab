@@ -37,9 +37,12 @@ import {
 import { nasVolume } from "./k8s/storage.ts";
 import { volsyncBackup, type VolsyncBackupOptions } from "./k8s/volsync.ts";
 import {
+  probes,
   securityContext,
   vpa,
   Workload,
+  type ProbeTarget,
+  type ProbesOptions,
   type SecurityContextOptions,
   type VpaOptions,
   type VpaTarget,
@@ -139,6 +142,10 @@ export class App {
   // restricted security contexts, the default for workloads
   securityContext(opts?: SecurityContextOptions) {
     return securityContext(opts);
+  }
+
+  probes(target: ProbeTarget, opts?: ProbesOptions) {
+    return probes(target, opts);
   }
 
   // the app's namespace, or another by `name`. `privileged` lifts pod security admission for apps
@@ -466,6 +473,12 @@ export class App {
       image: this.images.rclone,
       containerPorts: { http: 8080 },
       args: ["serve", "http", `source:${name}`, "--addr=:8080"],
+      // listing the bucket also proves garage is reachable. liveness is only the socket: restarting
+      // rclone wouldn't fix garage
+      ...this.probes(
+        { tcp: { port: 8080 } },
+        { ready: { http: { path: "/", port: 8080 } }, startup: false },
+      ),
       env: {
         RCLONE_CONFIG_SOURCE_TYPE: "s3",
         RCLONE_CONFIG_SOURCE_PROVIDER: "Other",

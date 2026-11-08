@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { securityContext, vpa, Workload } from "./workload.ts";
+import { probes, securityContext, vpa, Workload } from "./workload.ts";
 
 describe("volumes", () => {
   const volumes = (v: Record<string, any>) =>
@@ -168,5 +168,50 @@ describe("vpa", () => {
       "namespace" in vpa({ kind: "Deployment", name: "d" }).metadata,
       false,
     );
+  });
+});
+
+describe("probes", () => {
+  const web = { http: { path: "/health", port: 8080 } };
+
+  test("one check serves readiness, liveness and startup", () => {
+    const p = probes(web);
+    assert.deepEqual(p.readiness, { ...web, timeoutSeconds: 5 });
+    assert.deepEqual(p.liveness, {
+      ...web,
+      timeoutSeconds: 5,
+      failureThreshold: 6,
+    });
+    assert.deepEqual(p.startup, {
+      ...web,
+      periodSeconds: 10,
+      failureThreshold: 18,
+    });
+  });
+
+  test("readiness and startup can check something other than liveness", () => {
+    const ready = { http: { path: "/ready", port: 8080 } };
+    const p = probes(web, { ready });
+    assert.equal(p.liveness?.http?.path, "/health");
+    assert.equal(p.readiness?.http?.path, "/ready");
+    assert.equal(p.startup?.http?.path, "/ready");
+  });
+
+  test("startup is given in seconds", () => {
+    assert.equal(probes(web, { startup: 600 }).startup?.failureThreshold, 60);
+    assert.equal(probes(web, { startup: 95 }).startup?.failureThreshold, 10);
+  });
+
+  test("startup can be left out", () => {
+    assert.equal(probes(web, { startup: false }).startup, undefined);
+  });
+
+  test("a workload renders the probes on its container", () => {
+    const container = new Workload("Deployment", "x")
+      .addContainer("x", { image: "i", ...probes({ tcp: { port: 1 } }) })
+      .object().spec.template.spec.containers[0];
+    assert.deepEqual(container.livenessProbe.tcpSocket, { port: 1 });
+    assert.deepEqual(container.readinessProbe.tcpSocket, { port: 1 });
+    assert.deepEqual(container.startupProbe.tcpSocket, { port: 1 });
   });
 });

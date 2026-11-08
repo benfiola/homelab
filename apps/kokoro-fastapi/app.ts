@@ -23,18 +23,7 @@ export const app: AppFunction = (h) => {
         limits: { "nvidia.com/gpu": "1" },
         requests: { "nvidia.com/gpu": "1" },
       },
-      readiness: {
-        http: { path: "/health", port: 8880 },
-        initialDelaySeconds: 30,
-        periodSeconds: 30,
-        timeoutSeconds: 5,
-      },
-      liveness: {
-        http: { path: "/health", port: 8880 },
-        initialDelaySeconds: 30,
-        periodSeconds: 30,
-        timeoutSeconds: 5,
-      },
+      ...h.probes({ http: { path: "/health", port: 8880 } }),
     });
 
   workload.service({ http: 8880 });

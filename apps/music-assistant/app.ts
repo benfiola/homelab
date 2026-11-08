@@ -33,6 +33,7 @@ export const app: AppFunction = (h) => {
       volumeMounts: {
         data: "/data",
       },
+      ...h.probes({ http: { path: "/info", port: 8095 } }),
     });
   const service = workload.service({ internal: 8094, ui: 8095, stream: 8097 });
 
@@ -47,6 +48,7 @@ export const network: NetworkFunction = (n) => {
     pod("music-assistant", "music-assistant"),
   );
 
+  n.host.to(musicAssistant, tcp(8095));
   musicAssistant
     .from(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("224.0.0.251/32"), udp(5353))

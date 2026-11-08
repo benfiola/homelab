@@ -41,6 +41,8 @@ export const app: AppFunction = (h) => {
         cache: "/nonexistent/.cache",
         data: "/data",
       },
+      // the model is downloaded and loaded onto the gpu before the server listens
+      ...h.probes({ tcp: { port: 10300 } }, { startup: 300 }),
     });
 
   workload.service({ wyoming: 10300 });
@@ -53,6 +55,7 @@ export const network: NetworkFunction = (n) => {
     pod("wyoming-whisper", "wyoming-whisper"),
   );
 
+  n.host.to(wyomingWhisper, tcp(10300));
   wyomingWhisper
     .to(n.ref("home-assistant"), tcp(8123))
     .to(dns("us.aws.cdn.hf.co"), tcp(443))

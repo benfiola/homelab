@@ -159,6 +159,7 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 8989 },
       env: { ...linuxserver, ...arr("SONARR") },
       volumeMounts: { data: "/data", config: "/config" },
+      ...h.probes({ http: { path: "/ping", port: 8989 } }),
     });
   addWaitForDataInitContainer(sonarr);
   sonarr.service({ web: 8989 });
@@ -173,6 +174,7 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 7878 },
       env: { ...linuxserver, ...arr("RADARR") },
       volumeMounts: { data: "/data", config: "/config" },
+      ...h.probes({ http: { path: "/ping", port: 7878 } }),
     });
   addWaitForDataInitContainer(radarr);
   radarr.service({ web: 7878 });
@@ -187,6 +189,7 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 9696 },
       env: { ...linuxserver, ...arr("PROWLARR") },
       volumeMounts: { config: "/config" },
+      ...h.probes({ http: { path: "/ping", port: 9696 } }),
     });
   prowlarr.service({ web: 9696 });
 
@@ -198,6 +201,7 @@ export const app: AppFunction = (h) => {
     containerPorts: { web: 6868 },
     env: { ...linuxserver, AUTH: "local" },
     volumeMounts: { config: "/config" },
+    ...h.probes({ http: { path: "/api/v1/health", port: 6868 } }),
   });
 
   const maintainerr = h
@@ -210,6 +214,10 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 6246 },
       env: { TZ: h.timezone },
       volumeMounts: { config: "/opt/data" },
+      ...h.probes(
+        { http: { path: "/api/health/live", port: 6246 } },
+        { ready: { http: { path: "/api/health/ready", port: 6246 } } },
+      ),
     });
 
   const seerr = h
@@ -221,6 +229,7 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 5055 },
       env: { TZ: h.timezone },
       volumeMounts: { config: "/app/config" },
+      ...h.probes({ http: { path: "/api/v1/status", port: 5055 } }),
     });
   const seerrService = seerr.service({ web: 5055 });
 
@@ -246,6 +255,7 @@ export const app: AppFunction = (h) => {
         data: "/data",
         cache: "/config/cache",
       },
+      ...h.probes({ http: { path: "/health", port: 8096 } }),
     });
   addWaitForDataInitContainer(jellyfin);
   const jellyfinService = jellyfin.service({ web: 8096 });
@@ -261,6 +271,7 @@ export const app: AppFunction = (h) => {
       containerPorts: { web: 8080 },
       env: linuxserver,
       volumeMounts: { config: "/config", data: "/data" },
+      ...h.probes({ http: { path: "/sabnzbd/api?mode=version", port: 8080 } }),
     });
   addVpnSidecar(sabnzbd, { firewallInputPorts: [8080] });
   addWaitForDataInitContainer(sabnzbd);
@@ -368,6 +379,15 @@ export const network: NetworkFunction = (n) => {
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
+  n.host
+    .to(mediarrJellyfin, tcp(8096))
+    .to(mediarrMaintainerr, tcp(6246))
+    .to(mediarrProfilarr, tcp(6868))
+    .to(mediarrProwlarr, tcp(9696))
+    .to(mediarrRadarr, tcp(7878))
+    .to(mediarrSabnzbd, tcp(8080))
+    .to(mediarrSeerr, tcp(5055))
+    .to(mediarrSonarr, tcp(8989));
   n.ref("gateway-friends")
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrSeerr, tcp(5055));

@@ -21,6 +21,7 @@ export const app: AppFunction = (h) => {
         TTS_BACKEND: "KOKORO_FASTAPI",
       },
       containerPorts: { wyoming: 10300 },
+      ...h.probes({ tcp: { port: 10300 } }),
     });
 
   workload.service({ wyoming: 10300 });
@@ -34,4 +35,5 @@ export const network: NetworkFunction = (n) => {
   );
 
   wyomingOpenai.to(n.ref("kokoro-fastapi"), tcp(8880));
+  n.host.to(wyomingOpenai, tcp(10300));
 };

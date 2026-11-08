@@ -90,6 +90,7 @@ export const app: AppFunction = (h) => {
       volumeMounts: {
         data: "/data",
       },
+      ...h.probes({ http: { path: "/health", port: 8080 } }),
     });
 
   workload.service({ web: 8080 });
@@ -104,4 +105,5 @@ export const network: NetworkFunction = (n) => {
   const llamaCppServer = n.subject("llama-cpp", pod("llama-cpp", "llama-cpp"));
 
   llamaCppServer.to(llamaCppAssetsServer, tcp(8080));
+  n.host.to(llamaCppAssetsServer, tcp(8080)).to(llamaCppServer, tcp(8080));
 };

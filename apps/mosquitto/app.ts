@@ -1,6 +1,7 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
   pod,
+  tcp,
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
@@ -52,6 +53,7 @@ export const app: AppFunction = (h) => {
       env: {
         MOSQUITTO_UNSAFE_ALLOW_SYMLINKS: "",
       },
+      ...h.probes({ tcp: { port: 1883 } }, { startup: false }),
     });
 
   workload.service({ db: 1883 });
@@ -59,5 +61,7 @@ export const app: AppFunction = (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  n.subject("mosquitto", pod("mosquitto", "mosquitto"));
+  const mosquitto = n.subject("mosquitto", pod("mosquitto", "mosquitto"));
+
+  n.host.to(mosquitto, tcp(1883));
 };

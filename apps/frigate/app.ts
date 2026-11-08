@@ -73,14 +73,7 @@ export const app: AppFunction = (h) => {
         shm: "/dev/shm",
         data: "/media/frigate",
       },
-      liveness: {
-        http: { path: "/api/", port: 5000 },
-        initialDelaySeconds: 60,
-      },
-      readiness: {
-        http: { path: "/api/", port: 5000 },
-        initialDelaySeconds: 60,
-      },
+      ...h.probes({ http: { path: "/api/", port: 5000 } }),
     });
 
   workload.service({ "http-insecure": 5000 });

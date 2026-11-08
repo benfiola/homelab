@@ -61,6 +61,11 @@ loki.write "default" {
 `,
         },
         enableReporting: false,
+        livenessProbe: {
+          httpGet: { path: "/-/healthy", port: 12345 },
+          timeoutSeconds: 5,
+          failureThreshold: 6,
+        },
         securityContext,
       },
       configReloader: {

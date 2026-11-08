@@ -14,6 +14,11 @@ export const app: AppFunction = (h) => {
       backend: { replicas: 0 },
       deploymentMode: "SingleBinary",
       gateway: {
+        livenessProbe: {
+          httpGet: { path: "/", port: "http-metrics" },
+          timeoutSeconds: 5,
+          failureThreshold: 6,
+        },
         containerSecurityContext: {
           allowPrivilegeEscalation: false,
           capabilities: { drop: ["ALL"], add: [] },
@@ -42,6 +47,14 @@ export const app: AppFunction = (h) => {
           runAsGroup: 65534,
         },
         ingester: { chunk_encoding: "snappy" },
+        livenessProbe: {
+          httpGet: {
+            path: "/loki/api/v1/status/buildinfo",
+            port: "http-metrics",
+          },
+          timeoutSeconds: 5,
+          failureThreshold: 6,
+        },
         limits_config: {
           allow_structured_metadata: true,
           retention_period: "168h",

@@ -28,12 +28,16 @@ export const app: AppFunction = (h) => {
       // deployed by the app itself (see below): the chart's lags upstream
       "bitwarden-sdk-server": { enabled: false },
       certController: {
+        livenessProbe: { enabled: true },
         podSecurityContext: { fsGroup: 65534 },
         securityContext: { runAsUser: 65534, runAsGroup: 65534 },
       },
+      livenessProbe: { enabled: true },
       podSecurityContext: { fsGroup: 65534 },
+      readinessProbe: { enabled: true },
       securityContext: { runAsUser: 65534, runAsGroup: 65534 },
       webhook: {
+        livenessProbe: { enabled: true },
         podSecurityContext: { fsGroup: 65534 },
         securityContext: { runAsUser: 65534, runAsGroup: 65534 },
       },
@@ -76,8 +80,13 @@ export const app: AppFunction = (h) => {
     .addContainer(server, {
       image: "ghcr.io/external-secrets/bitwarden-sdk-server:v0.8.1",
       containerPorts: { https: 9998 },
-      liveness: { http: { path: "/live", port: "https", scheme: "HTTPS" } },
-      readiness: { http: { path: "/ready", port: "https", scheme: "HTTPS" } },
+      ...h.probes(
+        { http: { path: "/live", port: "https", scheme: "HTTPS" } },
+        {
+          ready: { http: { path: "/ready", port: "https", scheme: "HTTPS" } },
+          startup: false,
+        },
+      ),
       args: ["--state-path=/state/session"],
       volumeMounts: { certs: "/certs", state: "/state" },
     });
@@ -197,6 +206,7 @@ export const network: NetworkFunction = (n) => {
   certController.to(n.kubeApiServer, tcp(6443));
 
   controller.to(n.kubeApiServer, tcp(6443)).to(sdkServer, tcp(9998));
+  n.host.to(controller, tcp(8082));
 
   n.host.to(sdkServer, tcp(9998));
   sdkServer

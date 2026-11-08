@@ -100,6 +100,34 @@ export interface ContainerOptions {
   startup?: Probe;
 }
 
+export type ProbeTarget = Pick<Probe, "http" | "tcp" | "exec">;
+
+export interface ProbesOptions {
+  // what readiness and startup check, when it differs from liveness
+  ready?: ProbeTarget;
+  // seconds the app has to start before liveness takes over (default 180), or false for no startup probe
+  startup?: number | false;
+}
+
+export const probes = (
+  target: ProbeTarget,
+  opts: ProbesOptions = {},
+): Pick<ContainerOptions, "readiness" | "liveness" | "startup"> => {
+  const ready = opts.ready ?? target;
+  return {
+    readiness: { ...ready, timeoutSeconds: 5 },
+    liveness: { ...target, timeoutSeconds: 5, failureThreshold: 6 },
+    startup:
+      opts.startup === false
+        ? undefined
+        : {
+            ...ready,
+            periodSeconds: 10,
+            failureThreshold: Math.ceil((opts.startup ?? 180) / 10),
+          },
+  };
+};
+
 const containerPorts = (ports: Ports | undefined) =>
   ports &&
   Object.entries(ports).map(([name, v]) => {
