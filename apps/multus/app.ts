@@ -2,7 +2,7 @@ import type { AppFunction } from "../../tools/lib/app.ts";
 
 export const app: AppFunction = (h) => {
   h.kustomize(
-    "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.3.1/deployments/multus-daemonset-thick.yml",
+    "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.3.2/deployments/multus-daemonset-thick.yml",
     { labels: { "app.kubernetes.io/name": h.app } },
   );
 
