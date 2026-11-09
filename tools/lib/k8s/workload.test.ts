@@ -4,8 +4,8 @@ import { probes, securityContext, vpa, Workload } from "./workload.ts";
 
 describe("volumes", () => {
   const volumes = (v: Record<string, any>) =>
-    new Workload("Deployment", "x", { volumes: v }).object().spec.template.spec
-      .volumes;
+    new Workload("Deployment", "x", { volumes: v }).objects()[0].spec.template
+      .spec.volumes;
 
   test("a config map or secret takes the mode it is given", () => {
     assert.deepEqual(
@@ -54,20 +54,24 @@ describe("Workload", () => {
   const claim = { pvc: { size: "1Gi", storageClass: "fast" } };
 
   test("a deployment has a replica unless told otherwise, and the others have no replicas", () => {
-    assert.equal(new Workload("Deployment", "x").object().spec.replicas, 1);
+    assert.equal(new Workload("Deployment", "x").objects()[0].spec.replicas, 1);
     assert.equal(
-      new Workload("Deployment", "x", { replicas: 3 }).object().spec.replicas,
+      new Workload("Deployment", "x", { replicas: 3 }).objects()[0].spec
+        .replicas,
       3,
     );
     for (const kind of ["StatefulSet", "DaemonSet"] as const) {
-      assert.equal("replicas" in new Workload(kind, "x").object().spec, false);
+      assert.equal(
+        "replicas" in new Workload(kind, "x").objects()[0].spec,
+        false,
+      );
     }
   });
 
   test("a stateful set's pvc with a size is a claim template, not a volume", () => {
     const spec = new Workload("StatefulSet", "x", {
       volumes: { data: claim },
-    }).object().spec;
+    }).objects()[0].spec;
     assert.deepEqual(spec.volumeClaimTemplates, [
       {
         metadata: { name: "data" },
@@ -82,7 +86,7 @@ describe("Workload", () => {
   });
 
   test("a workload without claims has no claim templates", () => {
-    const spec = new Workload("StatefulSet", "x").object().spec;
+    const spec = new Workload("StatefulSet", "x").objects()[0].spec;
     assert.equal("volumeClaimTemplates" in spec, false);
   });
 
@@ -102,7 +106,7 @@ describe("Workload", () => {
   test("a pod template is annotated for stateful sets and daemon sets only", () => {
     const annotations = { a: "b" };
     const annotated = (kind: "Deployment" | "StatefulSet" | "DaemonSet") =>
-      new Workload(kind, "x", { podAnnotations: annotations }).object().spec
+      new Workload(kind, "x", { podAnnotations: annotations }).objects()[0].spec
         .template.metadata.annotations;
     assert.deepEqual(annotated("StatefulSet"), annotations);
     assert.deepEqual(annotated("DaemonSet"), annotations);
@@ -158,12 +162,7 @@ describe("vpa", () => {
     );
   });
 
-  test("is in the namespace it is given, and otherwise in none", () => {
-    assert.equal(
-      vpa({ kind: "Deployment", name: "d" }, { namespace: "other" }).metadata
-        .namespace,
-      "other",
-    );
+  test("has no namespace of its own: it gets one the same way everything else does", () => {
     assert.equal(
       "namespace" in vpa({ kind: "Deployment", name: "d" }).metadata,
       false,
@@ -209,7 +208,7 @@ describe("probes", () => {
   test("a workload renders the probes on its container", () => {
     const container = new Workload("Deployment", "x")
       .addContainer("x", { image: "i", ...probes({ tcp: { port: 1 } }) })
-      .object().spec.template.spec.containers[0];
+      .objects()[0].spec.template.spec.containers[0];
     assert.deepEqual(container.livenessProbe.tcpSocket, { port: 1 });
     assert.deepEqual(container.readinessProbe.tcpSocket, { port: 1 });
     assert.deepEqual(container.startupProbe.tcpSocket, { port: 1 });

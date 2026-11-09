@@ -5,12 +5,12 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.kustomize(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.kustomize(
     "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.2/bundle.yaml",
   );
-
-  h.namespace();
 
   // endpoints -> endpointslices
   h.postRender((e) => {
@@ -50,7 +50,7 @@ export const app: AppFunction = (h) => {
     );
   });
 
-  h.vpa({ kind: "Deployment", name: "prometheus-operator" });
+  ns.vpa({ kind: "Deployment", name: "prometheus-operator" });
 };
 
 export const network: NetworkFunction = (n) => {

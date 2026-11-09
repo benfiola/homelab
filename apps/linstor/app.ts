@@ -5,9 +5,9 @@ import type { AppFunction } from "../../tools/lib/app.ts";
 const workers = ["chihuahua", "husky", "malamute", "shiba"];
 
 export const app: AppFunction = (h) => {
-  h.namespaceName = "piraeus-operator";
+  const ns = h.namespace({ name: "piraeus-operator", external: true });
 
-  h.add(
+  ns.add(
     {
       apiVersion: "piraeus.io/v1",
       kind: "LinstorCluster",
@@ -84,12 +84,12 @@ export const app: AppFunction = (h) => {
   );
 
   const advisory = { advisory: true };
-  h.vpa({ kind: "DaemonSet", name: "ha-controller" }, advisory);
-  h.vpa({ kind: "Deployment", name: "linstor-affinity-controller" }, advisory);
-  h.vpa({ kind: "Deployment", name: "linstor-controller" }, advisory);
-  h.vpa({ kind: "DaemonSet", name: "linstor-csi-nfs-server" }, advisory);
-  h.vpa({ kind: "DaemonSet", name: "linstor-csi-node" }, advisory);
+  ns.vpa({ kind: "DaemonSet", name: "ha-controller" }, advisory);
+  ns.vpa({ kind: "Deployment", name: "linstor-affinity-controller" }, advisory);
+  ns.vpa({ kind: "Deployment", name: "linstor-controller" }, advisory);
+  ns.vpa({ kind: "DaemonSet", name: "linstor-csi-nfs-server" }, advisory);
+  ns.vpa({ kind: "DaemonSet", name: "linstor-csi-node" }, advisory);
   for (const node of workers) {
-    h.vpa({ kind: "DaemonSet", name: `linstor-satellite.${node}` }, advisory);
+    ns.vpa({ kind: "DaemonSet", name: `linstor-satellite.${node}` }, advisory);
   }
 };

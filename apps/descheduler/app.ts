@@ -5,26 +5,18 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  const security = h.securityContext();
+
+  await ns.helm(
     "https://kubernetes-sigs.github.io/descheduler/descheduler?version=0.37.0",
     {
       values: {
         kind: "Deployment",
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
-        securityContext: {
-          allowPrivilegeEscalation: false,
-          capabilities: { drop: ["ALL"], add: [] },
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-        },
+        podSecurityContext: security.pod,
+        securityContext: security.container,
         resources: { requests: { cpu: "25m", memory: "256Mi" }, limits: null },
         deschedulerPolicy: {
           profiles: [
@@ -92,9 +84,7 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "descheduler" });
+  ns.vpa({ kind: "Deployment", name: "descheduler" });
 };
 
 export const network: NetworkFunction = (n) => {

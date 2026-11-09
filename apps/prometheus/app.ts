@@ -6,9 +6,11 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const security = h.securityContext();
 
-  h.add(
+  const ns = h.namespace();
+
+  ns.add(
     {
       apiVersion: "v1",
       kind: "ServiceAccount",
@@ -108,13 +110,7 @@ export const app: AppFunction = (h) => {
         scrapeConfigNamespaceSelector: {},
         scrapeConfigSelector: {},
         scrapeInterval: "30s",
-        securityContext: {
-          fsGroup: 65534,
-          runAsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        securityContext: security.pod,
         serviceAccountName: "prometheus",
         serviceMonitorNamespaceSelector: {},
         serviceMonitorSelector: {},
@@ -132,7 +128,7 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.vpa({
+  ns.vpa({
     kind: "Prometheus",
     name: "prometheus",
     apiVersion: "monitoring.coreos.com/v1",

@@ -33,13 +33,7 @@ export const renderApp = async (dir: string): Promise<Obj[]> => {
   }
 
   const h = new App(basename(dir), dir);
-  const returned = await imported.app(h);
-  if (returned !== undefined && !Array.isArray(returned)) {
-    throw new Error(
-      `${module}: 'app' must return nothing, or an array of objects`,
-    );
-  }
-  h.add(...(returned ?? []));
+  await imported.app(h);
   return h.objects();
 };
 

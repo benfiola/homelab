@@ -7,13 +7,13 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  const secrets = h.secrets("secrets", ["admin-token"]);
+  const secrets = ns.secrets("secrets", ["admin-token"]);
 
   const security = h.securityContext();
 
-  h.add({
+  ns.add({
     apiVersion: "garage.rajsingh.info/v1beta2",
     kind: "GarageCluster",
     metadata: { name: "garage" },
@@ -44,7 +44,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.vpa({
+  ns.vpa({
     kind: "GarageCluster",
     name: "garage",
     apiVersion: "garage.rajsingh.info/v1beta2",

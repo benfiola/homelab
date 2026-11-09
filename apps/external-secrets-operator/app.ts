@@ -19,44 +19,47 @@ import {
 
 const tlsSecret = "bitwarden-tls-certs";
 
-export const app: AppFunction = (h) => {
+export const app: AppFunction = async (h) => {
   // the helpers that push Secrets put their objects here
-  h.namespaceName = esoNamespace;
+  const ns = h.namespace({ name: esoNamespace });
 
-  h.helm("https://charts.external-secrets.io/external-secrets?version=2.14.0", {
-    values: {
-      // deployed by the app itself (see below): the chart's lags upstream
-      "bitwarden-sdk-server": { enabled: false },
-      certController: {
+  const security = h.securityContext();
+
+  await ns.helm(
+    "https://charts.external-secrets.io/external-secrets?version=2.14.0",
+    {
+      values: {
+        // deployed by the app itself (see below): the chart's lags upstream
+        "bitwarden-sdk-server": { enabled: false },
+        certController: {
+          livenessProbe: { enabled: true },
+          podSecurityContext: security.pod,
+          securityContext: security.container,
+        },
         livenessProbe: { enabled: true },
-        podSecurityContext: { fsGroup: 65534 },
-        securityContext: { runAsUser: 65534, runAsGroup: 65534 },
-      },
-      livenessProbe: { enabled: true },
-      podSecurityContext: { fsGroup: 65534 },
-      readinessProbe: { enabled: true },
-      securityContext: { runAsUser: 65534, runAsGroup: 65534 },
-      webhook: {
-        livenessProbe: { enabled: true },
-        podSecurityContext: { fsGroup: 65534 },
-        securityContext: { runAsUser: 65534, runAsGroup: 65534 },
+        podSecurityContext: security.pod,
+        readinessProbe: { enabled: true },
+        securityContext: security.container,
+        webhook: {
+          livenessProbe: { enabled: true },
+          podSecurityContext: security.pod,
+          securityContext: security.container,
+        },
       },
     },
-  });
-
-  h.namespace();
+  );
 
   const server = "bitwarden-sdk-server";
-  h.add({
+  ns.add({
     apiVersion: "cert-manager.io/v1",
     kind: "Certificate",
     metadata: { name: server },
     spec: {
       dnsNames: [
         server,
-        `${server}.${h.namespaceName}`,
-        `${server}.${h.namespaceName}.svc`,
-        `${server}.${h.namespaceName}.svc.cluster.local`,
+        `${server}.${ns.name}`,
+        `${server}.${ns.name}.svc`,
+        `${server}.${ns.name}.svc.cluster.local`,
       ],
       duration: "8760h",
       issuerRef: { kind: "ClusterIssuer", name: "self-signed" },
@@ -64,7 +67,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  const sdkServer = h
+  const sdkServer = ns
     .deployment(server, {
       volumes: {
         certs: {
@@ -92,7 +95,7 @@ export const app: AppFunction = (h) => {
     });
   sdkServer.service({ https: 9998 });
 
-  h.add({
+  ns.add({
     apiVersion: "external-secrets.io/v1",
     kind: "SecretStore",
     metadata: { name: "bitwarden" },
@@ -105,7 +108,7 @@ export const app: AppFunction = (h) => {
               credentials: { key: "token", name: credentialsSecret },
             },
           },
-          bitwardenServerSDKURL: `https://${server}.${h.namespaceName}.svc.cluster.local:9998`,
+          bitwardenServerSDKURL: `https://${server}.${ns.name}.svc.cluster.local:9998`,
           caProvider: { key: "ca.crt", name: tlsSecret, type: "Secret" },
           identityURL: "https://identity.bitwarden.com",
           organizationID: organization,
@@ -115,7 +118,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "external-secrets.io/v1",
     kind: "ExternalSecret",
     metadata: { name: blobSecret },
@@ -127,7 +130,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add(
+  ns.add(
     {
       apiVersion: "v1",
       kind: "ServiceAccount",
@@ -171,16 +174,16 @@ export const app: AppFunction = (h) => {
         {
           kind: "ServiceAccount",
           name: pusherServiceAccount,
-          namespace: h.namespaceName,
+          namespace: ns.name,
         },
       ],
     },
   );
 
-  h.vpa({ kind: "Deployment", name: "external-secrets" });
-  h.vpa({ kind: "Deployment", name: "external-secrets-cert-controller" });
-  h.vpa({ kind: "Deployment", name: "external-secrets-webhook" });
-  h.vpa(sdkServer);
+  ns.vpa({ kind: "Deployment", name: "external-secrets" });
+  ns.vpa({ kind: "Deployment", name: "external-secrets-cert-controller" });
+  ns.vpa({ kind: "Deployment", name: "external-secrets-webhook" });
+  ns.vpa(sdkServer);
 };
 
 export const network: NetworkFunction = (n) => {

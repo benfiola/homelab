@@ -1,9 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace({ privileged: true });
+  const ns = h.namespace({ privileged: true });
 
-  const workload = h
+  const workload = ns
     .daemonSet(h.app, {
       hostNetwork: true,
       securityContext: { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] },
@@ -15,5 +15,5 @@ export const app: AppFunction = (h) => {
       },
     });
 
-  h.vpa(workload);
+  ns.vpa(workload);
 };

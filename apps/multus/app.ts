@@ -1,13 +1,14 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 
-export const app: AppFunction = (h) => {
-  h.kustomize(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  await ns.kustomize(
     "https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/refs/tags/v4.3.2/deployments/multus-daemonset-thick.yml",
     { labels: { "app.kubernetes.io/name": h.app } },
   );
 
-  h.namespace({ privileged: true });
-  h.vpa({ kind: "DaemonSet", name: "kube-multus-ds" }, { advisory: true });
+  ns.vpa({ kind: "DaemonSet", name: "kube-multus-ds" }, { advisory: true });
 
   h.postRender((e) => {
     const daemonSet = e.find({ kind: "DaemonSet", name: "kube-multus-ds" });

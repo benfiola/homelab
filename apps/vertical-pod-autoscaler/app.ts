@@ -5,8 +5,12 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  const security = h.securityContext();
+
+  await ns.helm(
     "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.15.0",
     {
       values: {
@@ -14,20 +18,8 @@ export const app: AppFunction = (h) => {
           certGen: { enabled: false },
           certManager: { enabled: true, issuerRef: { name: "self-signed" } },
         },
-        containerSecurityContext: {
-          allowPrivilegeEscalation: false,
-          capabilities: { drop: ["ALL"], add: [] },
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-        },
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        containerSecurityContext: security.container,
+        podSecurityContext: security.pod,
         recommender: {
           extraArgs: [
             "--round-cpu-millicores=25",
@@ -44,21 +36,19 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace();
-
   const advisory = { advisory: true };
-  h.vpa(
+  ns.vpa(
     {
       kind: "Deployment",
       name: "vertical-pod-autoscaler-admission-controller",
     },
     advisory,
   );
-  h.vpa(
+  ns.vpa(
     { kind: "Deployment", name: "vertical-pod-autoscaler-recommender" },
     advisory,
   );
-  h.vpa(
+  ns.vpa(
     { kind: "Deployment", name: "vertical-pod-autoscaler-updater" },
     advisory,
   );

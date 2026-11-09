@@ -15,9 +15,9 @@ const staticIps = {
 };
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  h.add({
+  ns.add({
     apiVersion: "gateway.networking.k8s.io/v1",
     kind: "GatewayClass",
     metadata: { name: "default" },
@@ -25,7 +25,7 @@ export const app: AppFunction = (h) => {
   });
 
   for (const [name, staticIp] of Object.entries(staticIps)) {
-    h.add({
+    ns.add({
       apiVersion: "gateway.networking.k8s.io/v1",
       kind: "Gateway",
       metadata: { name },
@@ -74,17 +74,12 @@ export const network: NetworkFunction = (n) => {
       "192.168.9.0/24",
       "192.168.16.0/24",
       "192.168.17.0/24",
-      // iot + iot_allow_intranet (projector)
+      // iot devices individually allowed past the vlan's isolation (iot_allow_intranet)
       "192.168.24.2/32",
-      // iot + iot_allow_intranet (sonos (play right))
       "192.168.24.3/32",
-      // iot + iot_allow_intranet (sonos (play left))
       "192.168.24.4/32",
-      // iot + iot_allow_intranet (sonos (bedroom-2 right))
       "192.168.24.6/32",
-      // iot + iot_allow_intranet (sonos (bedroom-2 left))
       "192.168.24.7/32",
-      // iot + iot_allow_intranet (bedroom-2.assistant)
       "192.168.24.14/32",
     ),
     tcp(8097, 10443),
@@ -101,17 +96,12 @@ export const network: NetworkFunction = (n) => {
       "192.168.17.0/24",
       "192.168.40.0/24",
       "192.168.41.0/24",
-      // iot + iot_allow_intranet (projector)
+      // iot devices individually allowed past the vlan's isolation (iot_allow_intranet)
       "192.168.24.2/32",
-      // iot + iot_allow_intranet (sonos (play right))
       "192.168.24.3/32",
-      // iot + iot_allow_intranet (sonos (play left))
       "192.168.24.4/32",
-      // iot + iot_allow_intranet (sonos (bedroom-2 right))
       "192.168.24.6/32",
-      // iot + iot_allow_intranet (sonos (bedroom-2 left))
       "192.168.24.7/32",
-      // iot + iot_allow_intranet (bedroom-2.assistant)
       "192.168.24.14/32",
     ),
     tcp(10443),

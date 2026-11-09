@@ -26,7 +26,7 @@ export const app: AppFunction = async (h) => {
     network?.(registry.network(name));
   }
 
-  h.add(...registry.objects());
+  h.namespace().add(...registry.objects());
 };
 
 // infrastructure, and the connections that belong to no app
@@ -65,7 +65,8 @@ export const network: NetworkFunction = (n) => {
   n.nodes.to(n.nodes, icmpv4(5, 8));
   n.nodes.to(n.pods, icmpv4(5, 8));
   // general - image registries
-  // cilium 1.18 has no dns-based rules for host policies, so host egress to 0.0.0.0/32:443 is allowed
+  // cilium's dns-based host policies are beta and route through the agent's own dns proxy, which
+  // breaks during agent restarts; a wildcard egress avoids that risk for something this foundational
   n.nodes.to(cidrs("0.0.0.0/0"), tcp(443));
   // general - kube-apiserver
   n.nodes.to(n.kubeApiServer, tcp(6443));

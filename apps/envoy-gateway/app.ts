@@ -5,13 +5,15 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("oci://docker.io/envoyproxy/gateway-crds-helm?version=v1.9.3", {
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm("oci://docker.io/envoyproxy/gateway-crds-helm?version=v1.9.3", {
     release: "envoy-gateway",
     values: { crds: { envoyGateway: { enabled: true } } },
   });
 
-  h.helm("oci://docker.io/envoyproxy/gateway-helm?version=v1.9.3", {
+  await ns.helm("oci://docker.io/envoyproxy/gateway-helm?version=v1.9.3", {
     release: "envoy-gateway",
     values: {
       certgen: {
@@ -33,9 +35,7 @@ export const app: AppFunction = (h) => {
     crds: false,
   });
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "envoy-gateway" }, { advisory: true });
+  ns.vpa({ kind: "Deployment", name: "envoy-gateway" }, { advisory: true });
 };
 
 export const network: NetworkFunction = (n) => {

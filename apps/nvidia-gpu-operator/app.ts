@@ -6,25 +6,28 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2", {
-    release: "nvidia-gpu-operator",
-    values: {
-      dcgmExporter: { enabled: false },
-      devicePlugin: { config: { name: "user-config", default: "any" } },
-      driver: { enabled: false },
-      hostPaths: { driverInstallDir: "/usr/local" },
-      migManager: { enabled: false },
-      nfd: { enabled: false },
-      nodeStatusExporter: { enabled: false },
-      operator: { resources: null },
-      toolkit: { enabled: false },
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  await ns.helm(
+    "https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2",
+    {
+      release: "nvidia-gpu-operator",
+      values: {
+        dcgmExporter: { enabled: false },
+        devicePlugin: { config: { name: "user-config", default: "any" } },
+        driver: { enabled: false },
+        hostPaths: { driverInstallDir: "/usr/local" },
+        migManager: { enabled: false },
+        nfd: { enabled: false },
+        nodeStatusExporter: { enabled: false },
+        operator: { resources: null },
+        toolkit: { enabled: false },
+      },
     },
-  });
+  );
 
-  h.namespace({ privileged: true });
-
-  h.configMap("user-config", {
+  ns.configMap("user-config", {
     any: `"version": "v1"
 "flags":
   "migStrategy": "none"
@@ -36,7 +39,7 @@ export const app: AppFunction = (h) => {
 `,
   });
 
-  h.vpa({ kind: "Deployment", name: "gpu-operator" });
+  ns.vpa({ kind: "Deployment", name: "gpu-operator" });
 
   h.postRender((e) => {
     const job = e.find({ kind: "Job", name: "gpu-operator-upgrade-crd" });

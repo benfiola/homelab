@@ -6,8 +6,10 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("https://bokysan.github.io/docker-postfix/mail?version=5.2.1", {
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  await ns.helm("https://bokysan.github.io/docker-postfix/mail?version=5.2.1", {
     release: "postfix",
     values: {
       config: {
@@ -55,13 +57,11 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.namespace({ privileged: true });
-
-  h.templatedSecrets("secrets", {
+  ns.templatedSecrets("secrets", {
     RELAYHOST_PASSWORD: h.secretRef("mailgun-smtp-password"),
   });
 
-  h.vpa({ kind: "StatefulSet", name: "postfix-mail" });
+  ns.vpa({ kind: "StatefulSet", name: "postfix-mail" });
 };
 
 export const network: NetworkFunction = (n) => {

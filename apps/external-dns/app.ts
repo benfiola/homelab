@@ -6,12 +6,14 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
   const externalDns = h.helmImage(
     "registry.k8s.io/external-dns/external-dns:v0.24.0",
   );
 
-  h.helm(
+  await ns.helm(
     "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.23.0",
     {
       release: "external-dns-mikrotik",
@@ -63,7 +65,7 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.helm(
+  await ns.helm(
     "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.23.0",
     {
       release: "external-dns-cloudflare",
@@ -94,17 +96,15 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace();
-
-  h.configMap("config", {
+  ns.configMap("config", {
     "routeros-username": "external-dns",
   });
 
-  h.secrets("secrets", ["cloudflare-api-token", "routeros-password"]);
+  ns.secrets("secrets", ["cloudflare-api-token", "routeros-password"]);
 
-  h.vpa({ kind: "Deployment", name: "external-dns-mikrotik" });
+  ns.vpa({ kind: "Deployment", name: "external-dns-mikrotik" });
 
-  h.vpa({ kind: "Deployment", name: "external-dns-cloudflare" });
+  ns.vpa({ kind: "Deployment", name: "external-dns-cloudflare" });
 };
 
 export const network: NetworkFunction = (n) => {

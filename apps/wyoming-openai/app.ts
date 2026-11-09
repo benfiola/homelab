@@ -6,9 +6,9 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  const workload = h
+  const workload = ns
     .deployment("wyoming-openai")
     .addContainer("wyoming-openai", {
       image: "ghcr.io/roryeckel/wyoming_openai:0.9.0",
@@ -25,7 +25,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ wyoming: 10300 });
-  h.vpa(workload);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

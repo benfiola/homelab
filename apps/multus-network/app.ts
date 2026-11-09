@@ -1,9 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  h.add({
+  ns.add({
     apiVersion: "k8s.cni.cncf.io/v1",
     kind: "NetworkAttachmentDefinition",
     metadata: {

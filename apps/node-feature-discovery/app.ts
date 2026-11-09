@@ -5,8 +5,10 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  await ns.helm(
     "oci://registry.k8s.io/nfd/charts/node-feature-discovery?version=0.20.1",
     {
       values: {
@@ -20,11 +22,9 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace({ privileged: true });
+  ns.vpa({ kind: "Deployment", name: "node-feature-discovery-master" });
 
-  h.vpa({ kind: "Deployment", name: "node-feature-discovery-master" });
-
-  h.vpa({ kind: "Deployment", name: "node-feature-discovery-gc" });
+  ns.vpa({ kind: "Deployment", name: "node-feature-discovery-gc" });
 };
 
 export const network: NetworkFunction = (n) => {

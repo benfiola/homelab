@@ -50,8 +50,8 @@ An app is a directory of `apps/` with an `app.ts`: `app` says what to deploy, an
 
 ```ts
 // apps/descheduler/app.ts
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  await h.helm(
     "https://kubernetes-sigs.github.io/descheduler/descheduler?version=0.36.0",
     { values: { kind: "Deployment" } },
   );

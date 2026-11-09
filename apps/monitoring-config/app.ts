@@ -6,12 +6,12 @@ const k8sName = (name: string) => name.replace(/[._]/g, "-");
 const instanceSelector = () => ({ matchLabels: { instance: "grafana" } });
 
 export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
   // { alerts, dashboards, rules } from the kubernetes-mixin (see main.jsonnet)
-  const mixin = await h.jsonnet("main.jsonnet");
+  const mixin = await ns.jsonnet("main.jsonnet");
 
-  h.namespace();
-
-  h.add({
+  ns.add({
     apiVersion: "grafana.integreatly.org/v1beta1",
     kind: "GrafanaDatasource",
     metadata: { name: "prometheus" },
@@ -29,7 +29,7 @@ export const app: AppFunction = async (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "grafana.integreatly.org/v1beta1",
     kind: "GrafanaDatasource",
     metadata: { name: "loki" },
@@ -47,7 +47,7 @@ export const app: AppFunction = async (h) => {
   });
 
   // what prometheus scrapes with: a service account and a token for it
-  h.add(
+  ns.add(
     {
       apiVersion: "v1",
       kind: "ServiceAccount",
@@ -76,9 +76,7 @@ export const app: AppFunction = async (h) => {
         kind: "ClusterRole",
         name: h.app,
       },
-      subjects: [
-        { kind: "ServiceAccount", name: h.app, namespace: h.namespaceName },
-      ],
+      subjects: [{ kind: "ServiceAccount", name: h.app, namespace: ns.name }],
     },
     {
       apiVersion: "v1",
@@ -97,7 +95,7 @@ export const app: AppFunction = async (h) => {
     tlsConfig: { insecureSkipVerify: true },
   });
   const monitor = (name: string, spec: Record<string, any>) =>
-    h.add({
+    ns.add({
       apiVersion: "monitoring.coreos.com/v1",
       kind: "ServiceMonitor",
       metadata: { name },
@@ -189,7 +187,7 @@ export const app: AppFunction = async (h) => {
     ["kube-controller-manager", 10257],
     ["kube-scheduler", 10259],
   ] as const) {
-    h.add({
+    ns.add({
       apiVersion: "v1",
       kind: "Service",
       metadata: {
@@ -219,7 +217,7 @@ export const app: AppFunction = async (h) => {
   }
 
   const prometheusRule = (name: string, group: Record<string, any>) =>
-    h.add({
+    ns.add({
       apiVersion: "monitoring.coreos.com/v1",
       kind: "PrometheusRule",
       metadata: { name },
@@ -253,7 +251,7 @@ export const app: AppFunction = async (h) => {
 
   // grafana picks up any ConfigMap labelled as a dashboard
   for (const [name, dashboard] of Object.entries(mixin.dashboards)) {
-    h.add({
+    ns.add({
       apiVersion: "v1",
       kind: "ConfigMap",
       metadata: {

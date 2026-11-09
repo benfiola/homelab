@@ -6,20 +6,23 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("https://backube.github.io/helm-charts/volsync?version=0.17.0", {
-    values: {
-      "kube-rbac-proxy-resources": {
-        requests: { cpu: "5m", memory: "64Mi" },
-        limits: null,
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm(
+    "https://backube.github.io/helm-charts/volsync?version=0.17.0",
+    {
+      values: {
+        "kube-rbac-proxy-resources": {
+          requests: { cpu: "5m", memory: "64Mi" },
+          limits: null,
+        },
+        resources: { requests: { cpu: "100m", memory: "64Mi" }, limits: null },
       },
-      resources: { requests: { cpu: "100m", memory: "64Mi" }, limits: null },
     },
-  });
+  );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "volsync" });
+  ns.vpa({ kind: "Deployment", name: "volsync" });
 };
 
 export const network: NetworkFunction = (n) => {
