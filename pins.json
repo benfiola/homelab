@@ -14,7 +14,7 @@
     }
   },
   "hubble": {
-    "version": "1.20.2",
+    "version": "1.20.4",
     "url": "https://github.com/cilium/hubble/releases/download/v${version}/hubble-linux-${arch}.tar.gz",
     "checksum": "${url}.sha256sum",
     "unpack": "tar",
