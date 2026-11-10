@@ -48,7 +48,7 @@ const workspace = (apps: Record<string, App | string>) => {
       writeFileSync(
         join(dir, "app.ts"),
         spec.appTs ??
-          'export const app = (h) => { h.manifest("manifest.yaml"); };\n',
+          'export const app = async (h) => { await h.namespace().manifest("manifest.yaml"); };\n',
       );
     }
   }
@@ -73,6 +73,7 @@ describe("build", () => {
     assert.equal(result.built, 2);
     assert.equal(result.failures.length, 0);
     assert.deepEqual(names(join(root, "out/apps/a/manifest.yaml")), [
+      "Namespace/a",
       "ConfigMap/a",
     ]);
     assert.match(
@@ -138,7 +139,7 @@ describe("namespaces", () => {
       docs(join(root, "out/apps/a/manifest.yaml")).map(
         (o) => o.metadata.namespace,
       ),
-      ["a", "other"],
+      ["a", "a", "other"],
     );
   });
 
@@ -147,12 +148,13 @@ describe("namespaces", () => {
       a: {
         manifest: clusterRole,
         appTs:
-          'export const app = (h) => { h.namespaceName = "team"; h.manifest("manifest.yaml"); };\n',
+          'export const app = async (h) => { await h.namespace({ name: "team" }).manifest("manifest.yaml"); };\n',
       },
     });
     await build(opts);
+    const docList = docs(join(root, "out/apps/a/manifest.yaml"));
     assert.equal(
-      docs(join(root, "out/apps/a/manifest.yaml"))[0].metadata.namespace,
+      docList.find((o) => o.kind === "ClusterRole")!.metadata.namespace,
       "team",
     );
   });
@@ -165,6 +167,7 @@ describe("crds", () => {
     });
     const result = await build(opts);
     assert.deepEqual(names(join(root, "out/apps/a/manifest.yaml")), [
+      "Namespace/a",
       "ConfigMap/a",
     ]);
     assert.deepEqual(names(join(root, "out/apps/crds/manifest.yaml")), [
@@ -229,13 +232,12 @@ describe("crds", () => {
     assert.deepEqual(namespaces, ["crds", "crds"]);
   });
 
-  test("an app that is only crds builds to an empty manifest", async () => {
+  test("an app that is only crds keeps just its Namespace, once the crd is pulled out", async () => {
     const { root, opts } = workspace({ a: crd("x.example.com") });
     await build(opts);
-    assert.equal(
-      readFileSync(join(root, "out/apps/a/manifest.yaml"), "utf-8"),
-      "",
-    );
+    assert.deepEqual(names(join(root, "out/apps/a/manifest.yaml")), [
+      "Namespace/a",
+    ]);
     assert.ok(existsSync(join(root, "out/apps/a/kustomization.yaml")));
   });
 

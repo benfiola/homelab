@@ -5,14 +5,14 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm(
     "https://prometheus-community.github.io/helm-charts/kube-state-metrics?version=9.0.0",
   );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "kube-state-metrics" });
+  ns.vpa({ kind: "Deployment", name: "kube-state-metrics" });
 };
 
 export const network: NetworkFunction = (n) => {

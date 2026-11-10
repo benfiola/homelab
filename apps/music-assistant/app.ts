@@ -9,9 +9,9 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  const workload = h
+  const workload = ns
     .statefulSet("music-assistant", {
       volumes: {
         data: { pvc: { size: "10Gi", storageClass: "standard" } },
@@ -37,9 +37,9 @@ export const app: AppFunction = (h) => {
     });
   const service = workload.service({ internal: 8094, ui: 8095, stream: 8097 });
 
-  h.httpRoute("family", "listen.fiola.dev").match(service, 8095);
-  h.tcpRoute("family", "stream.listen.fiola.dev", 8097, service, 8097);
-  h.vpa(workload);
+  ns.httpRoute("family", "listen.fiola.dev").match(service, 8095);
+  ns.tcpRoute("family", "stream.listen.fiola.dev", 8097, service, 8097);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

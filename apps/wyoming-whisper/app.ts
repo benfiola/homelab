@@ -7,11 +7,11 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  const secrets = h.secrets("secrets", ["hass-token"]);
+  const secrets = ns.secrets("secrets", ["hass-token"]);
 
-  const workload = h
+  const workload = ns
     .deployment("wyoming-whisper", {
       volumes: {
         cache: { ephemeral: { size: "1Gi" } },
@@ -46,7 +46,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ wyoming: 10300 });
-  h.vpa(workload);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

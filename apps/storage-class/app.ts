@@ -1,7 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 
 export const app: AppFunction = (h) => {
-  h.add({
+  const ns = h.namespace();
+
+  ns.add({
     apiVersion: "storage.k8s.io/v1",
     kind: "StorageClass",
     metadata: {
@@ -17,7 +19,7 @@ export const app: AppFunction = (h) => {
     volumeBindingMode: "WaitForFirstConsumer",
   });
 
-  h.add({
+  ns.add({
     apiVersion: "storage.k8s.io/v1",
     kind: "StorageClass",
     metadata: {
@@ -33,7 +35,7 @@ export const app: AppFunction = (h) => {
     volumeBindingMode: "WaitForFirstConsumer",
   });
 
-  h.add({
+  ns.add({
     apiVersion: "storage.k8s.io/v1",
     kind: "StorageClass",
     metadata: {

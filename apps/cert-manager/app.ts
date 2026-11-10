@@ -7,8 +7,10 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("oci://quay.io/jetstack/charts/cert-manager?version=v1.21.3", {
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm("oci://quay.io/jetstack/charts/cert-manager?version=v1.21.3", {
     values: {
       config: {
         apiVersion: "controller.config.cert-manager.io/v1alpha1",
@@ -20,9 +22,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.namespace();
-
-  h.add({
+  ns.add({
     apiVersion: "cert-manager.io/v1",
     kind: "ClusterIssuer",
     metadata: {
@@ -51,7 +51,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "cert-manager.io/v1",
     kind: "ClusterIssuer",
     metadata: {
@@ -62,13 +62,13 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.secrets("secrets", ["cloudflare-api-token"]);
+  ns.secrets("secrets", ["cloudflare-api-token"]);
 
-  h.vpa({ kind: "Deployment", name: "cert-manager" });
+  ns.vpa({ kind: "Deployment", name: "cert-manager" });
 
-  h.vpa({ kind: "Deployment", name: "cert-manager-cainjector" });
+  ns.vpa({ kind: "Deployment", name: "cert-manager-cainjector" });
 
-  h.vpa({ kind: "Deployment", name: "cert-manager-webhook" });
+  ns.vpa({ kind: "Deployment", name: "cert-manager-webhook" });
 };
 
 export const network: NetworkFunction = (n) => {

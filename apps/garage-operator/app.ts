@@ -5,14 +5,17 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.8.3", {
-    values: { resources: null },
-  });
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
 
-  h.namespace();
+  await ns.helm(
+    "oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.8.3",
+    {
+      values: { resources: null },
+    },
+  );
 
-  h.vpa({ kind: "Deployment", name: "garage-operator" });
+  ns.vpa({ kind: "Deployment", name: "garage-operator" });
 };
 
 export const network: NetworkFunction = (n) => {

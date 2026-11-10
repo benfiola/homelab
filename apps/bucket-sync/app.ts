@@ -6,14 +6,14 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync?version=1.2.7",
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm(
+    "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync?version=1.2.6",
   );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "bucket-sync" });
+  ns.vpa({ kind: "Deployment", name: "bucket-sync" });
 };
 
 export const network: NetworkFunction = (n) => {

@@ -5,29 +5,22 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.25.0", {
-    values: {
-      podSecurityContext: {
-        fsGroup: 65534,
-        runAsNonRoot: true,
-        runAsUser: 65534,
-        runAsGroup: 65534,
-        seccompProfile: { type: "RuntimeDefault" },
-      },
-      securityContext: {
-        allowPrivilegeEscalation: false,
-        capabilities: { drop: ["ALL"], add: [] },
-        runAsNonRoot: true,
-        runAsUser: 65534,
-        runAsGroup: 65534,
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  const security = h.securityContext();
+
+  await ns.helm(
+    "oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.25.0",
+    {
+      values: {
+        podSecurityContext: security.pod,
+        securityContext: security.container,
       },
     },
-  });
+  );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "grafana-operator" });
+  ns.vpa({ kind: "Deployment", name: "grafana-operator" });
 };
 
 export const network: NetworkFunction = (n) => {

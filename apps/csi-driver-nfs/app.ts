@@ -1,7 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  await ns.helm(
     "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts/csi-driver-nfs?version=4.13.6",
     {
       values: {
@@ -17,7 +19,5 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace({ privileged: true });
-
-  h.vpa({ kind: "Deployment", name: "csi-nfs-controller" });
+  ns.vpa({ kind: "Deployment", name: "csi-nfs-controller" });
 };

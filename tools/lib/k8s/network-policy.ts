@@ -214,18 +214,21 @@ type Peer = Subject | External;
 
 class PolicyBuilder {
   readonly subject: Subject;
-  private readonly name: string;
-  private readonly spec: Obj;
+  private readonly obj: Obj;
   private used = false;
 
   constructor(name: string, subject: Subject) {
-    this.name = name;
     this.subject = subject;
     const node = nodeSelector(subject);
     const endpoint = endpointSelector(subject);
-    this.spec = {
-      ...(node && { nodeSelector: node }),
-      ...(endpoint && { endpointSelector: endpoint }),
+    this.obj = {
+      apiVersion: "cilium.io/v2",
+      kind: "CiliumClusterwideNetworkPolicy",
+      metadata: { name },
+      spec: {
+        ...(node && { nodeSelector: node }),
+        ...(endpoint && { endpointSelector: endpoint }),
+      },
     };
   }
 
@@ -233,27 +236,27 @@ class PolicyBuilder {
     return this.used;
   }
 
-  // the policy. cilium reads its rules as a set, so they are put in an order that doesn't depend on
-  // the order they were declared in: the output stays the same however the apps are arranged.
-  object(): Obj {
-    const sorted = (rules: Obj[]) =>
-      [...rules].sort((a, b) => canonical(a).localeCompare(canonical(b)));
-    const { ingress, egress, ...rest } = this.spec;
-    return {
-      apiVersion: "cilium.io/v2",
-      kind: "CiliumClusterwideNetworkPolicy",
-      metadata: { name: this.name },
-      spec: {
-        ...rest,
-        ...(ingress && { ingress: sorted(ingress) }),
-        ...(egress && { egress: sorted(egress) }),
+  // ingress and egress sort first by whichever edge is declared first across every app, so they
+  // are put back in a fixed order: the key order stays the same however the apps are arranged.
+  objects(): Obj[] {
+    const { ingress, egress, ...rest } = this.obj.spec;
+    return [
+      {
+        ...this.obj,
+        spec: {
+          ...rest,
+          ...(ingress && { ingress }),
+          ...(egress && { egress }),
+        },
       },
-    };
+    ];
   }
 
+  // cilium reads a policy's rules as a set, so allow() keeps them sorted as they are added: the
+  // output stays the same however the apps are arranged.
   allow(peer: Peer, specifiers: Specifier[], direction: "ingress" | "egress") {
     this.used = true;
-    const rules = (this.spec[direction] ??= []);
+    const rules = (this.obj.spec[direction] ??= []);
     const prefix = direction === "ingress" ? "from" : "to";
 
     const nodes = ruleNodeSelector(peer);
@@ -305,6 +308,7 @@ class PolicyBuilder {
       rule.icmps = [{ fields: icmps }];
     }
     rules.push(rule);
+    rules.sort((a: Obj, b: Obj) => canonical(a).localeCompare(canonical(b)));
   }
 }
 
@@ -495,7 +499,7 @@ export class PolicyRegistry {
 
     return [...builders.values()]
       .filter((b) => b.wasUsed())
-      .map((b) => b.object())
+      .flatMap((b) => b.objects())
       .sort((a, b) => a.metadata.name.localeCompare(b.metadata.name));
   }
 }

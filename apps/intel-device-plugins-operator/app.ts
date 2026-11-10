@@ -5,8 +5,10 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  await ns.helm(
     "https://intel.github.io/helm-charts/intel-device-plugins-operator?version=0.37.1",
     {
       values: {
@@ -15,9 +17,7 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace({ privileged: true });
-
-  h.vpa({ kind: "Deployment", name: "inteldeviceplugins-controller-manager" });
+  ns.vpa({ kind: "Deployment", name: "inteldeviceplugins-controller-manager" });
 
   // the operator's pods are selected by app name, like every other app's
   h.postRender((e) => {

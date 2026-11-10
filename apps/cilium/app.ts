@@ -5,8 +5,12 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("https://helm.cilium.io/cilium?version=1.20.4", {
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace({ privileged: true });
+
+  const security = h.securityContext();
+
+  await ns.helm("https://helm.cilium.io/cilium?version=1.20.4", {
     values: {
       bgpControlPlane: { enabled: true },
       bpf: { masquerade: true },
@@ -28,20 +32,8 @@ export const app: AppFunction = (h) => {
         },
         relay: {
           enabled: true,
-          podSecurityContext: {
-            fsGroup: 65534,
-            runAsNonRoot: true,
-            runAsUser: 65534,
-            runAsGroup: 65534,
-            seccompProfile: { type: "RuntimeDefault" },
-          },
-          securityContext: {
-            allowPrivilegeEscalation: false,
-            capabilities: { drop: ["ALL"], add: [] },
-            runAsNonRoot: true,
-            runAsUser: 65534,
-            runAsGroup: 65534,
-          },
+          podSecurityContext: security.pod,
+          securityContext: security.container,
         },
         tls: {
           auto: {
@@ -55,31 +47,9 @@ export const app: AppFunction = (h) => {
         },
         ui: {
           enabled: true,
-          backend: {
-            securityContext: {
-              allowPrivilegeEscalation: false,
-              capabilities: { drop: ["ALL"], add: [] },
-              runAsNonRoot: true,
-              runAsUser: 65534,
-              runAsGroup: 65534,
-            },
-          },
-          frontend: {
-            securityContext: {
-              allowPrivilegeEscalation: false,
-              capabilities: { drop: ["ALL"], add: [] },
-              runAsNonRoot: true,
-              runAsUser: 65534,
-              runAsGroup: 65534,
-            },
-          },
-          securityContext: {
-            fsGroup: 65534,
-            runAsNonRoot: true,
-            runAsUser: 65534,
-            runAsGroup: 65534,
-            seccompProfile: { type: "RuntimeDefault" },
-          },
+          backend: { securityContext: security.container },
+          frontend: { securityContext: security.container },
+          securityContext: security.pod,
         },
       },
       ipam: { mode: "kubernetes" },
@@ -93,20 +63,8 @@ export const app: AppFunction = (h) => {
         "io\\.cilium\\.k8s\\.policy\\.cluster node-role\\.kubernetes\\.io/control-plane kubernetes\\.io/hostname",
       nodeSelectorLabels: true,
       operator: {
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
-        securityContext: {
-          allowPrivilegeEscalation: false,
-          capabilities: { drop: ["ALL"], add: [] },
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-        },
+        podSecurityContext: security.pod,
+        securityContext: security.container,
         skipCRDCreation: true,
       },
       policyAuditMode: false,
@@ -132,10 +90,8 @@ export const app: AppFunction = (h) => {
           cleanCiliumState: ["NET_ADMIN", "SYS_ADMIN", "SYS_RESOURCE"],
         },
       },
-      // these chart defaults are null, and the chart only renders them when the key exists. helm 3
-      // rendered them as empty values and helm 4 drops them. they are set explicitly so the rendered
-      // config (and the config checksum that rolls the agents) matches what is deployed; remove them,
-      // deliberately, to let cilium roll out the leaner config.
+      // these chart defaults are null; helm 4 drops a null key instead of rendering it empty like helm 3
+      // did. set explicitly so the config checksum matches what's deployed; remove deliberately for leaner defaults.
       debug: { verbose: "" },
       nodePort: { addresses: [] },
       policyCIDRMatchMode: [],
@@ -169,10 +125,10 @@ export const app: AppFunction = (h) => {
     "v2alpha1/ciliuml2announcementpolicies",
     "v2alpha1/ciliumpodippools",
   ]) {
-    h.manifest(`${crds}/${file}.yaml`);
+    await ns.manifest(`${crds}/${file}.yaml`);
   }
 
-  h.add({
+  ns.add({
     apiVersion: "cert-manager.io/v1",
     kind: "Certificate",
     metadata: {
@@ -194,7 +150,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "cert-manager.io/v1",
     kind: "Issuer",
     metadata: {
@@ -207,7 +163,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "cilium.io/v2",
     kind: "CiliumLoadBalancerIPPool",
     metadata: {
@@ -223,7 +179,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "cilium.io/v2",
     kind: "CiliumBGPAdvertisement",
     metadata: {
@@ -252,7 +208,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "cilium.io/v2",
     kind: "CiliumBGPPeerConfig",
     metadata: {
@@ -282,7 +238,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.add({
+  ns.add({
     apiVersion: "cilium.io/v2",
     kind: "CiliumBGPClusterConfig",
     metadata: {
@@ -309,16 +265,14 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.namespace({ privileged: true });
-
   const advisory = { advisory: true };
-  h.vpa({ kind: "DaemonSet", name: "cilium" }, advisory);
-  h.vpa({ kind: "DaemonSet", name: "cilium-envoy" }, advisory);
-  h.vpa({ kind: "Deployment", name: "cilium-operator" }, advisory);
-  h.vpa({ kind: "Deployment", name: "hubble-relay" });
-  h.vpa({ kind: "Deployment", name: "hubble-ui" });
+  ns.vpa({ kind: "DaemonSet", name: "cilium" }, advisory);
+  ns.vpa({ kind: "DaemonSet", name: "cilium-envoy" }, advisory);
+  ns.vpa({ kind: "Deployment", name: "cilium-operator" }, advisory);
+  ns.vpa({ kind: "Deployment", name: "hubble-relay" });
+  ns.vpa({ kind: "Deployment", name: "hubble-ui" });
 
-  h.grpcRoute("infrastructure", "flows.fiola.dev", { timeout: "0s" }).match(
+  ns.grpcRoute("infrastructure", "flows.fiola.dev", { timeout: "0s" }).match(
     { kind: "Service", name: "hubble-relay" },
     80,
   );

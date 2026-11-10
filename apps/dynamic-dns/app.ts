@@ -6,8 +6,10 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm(
     "oci://ghcr.io/benfiola/homelab-images/charts/dynamic-dns?version=1.0.11",
     {
       values: {
@@ -26,11 +28,9 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace();
+  ns.secrets("secrets", ["cloudflare-api-token"]);
 
-  h.secrets("secrets", ["cloudflare-api-token"]);
-
-  h.vpa({ kind: "Deployment", name: "dynamic-dns" });
+  ns.vpa({ kind: "Deployment", name: "dynamic-dns" });
 };
 
 export const network: NetworkFunction = (n) => {

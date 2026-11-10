@@ -5,16 +5,12 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  const securityContext = {
-    allowPrivilegeEscalation: false,
-    capabilities: { drop: ["ALL"], add: [] },
-    runAsNonRoot: true,
-    runAsUser: 65534,
-    runAsGroup: 65534,
-  };
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
 
-  h.helm("https://grafana.github.io/helm-charts/alloy?version=1.15.0", {
+  const security = h.securityContext();
+
+  await ns.helm("https://grafana.github.io/helm-charts/alloy?version=1.15.0", {
     values: {
       alloy: {
         configMap: {
@@ -66,27 +62,19 @@ loki.write "default" {
           timeoutSeconds: 5,
           failureThreshold: 6,
         },
-        securityContext,
+        securityContext: security.container,
       },
       configReloader: {
-        securityContext,
+        securityContext: security.container,
       },
       crds: { enable: false },
       global: {
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        podSecurityContext: security.pod,
       },
     },
   });
 
-  h.namespace();
-
-  h.vpa({ kind: "DaemonSet", name: "alloy" });
+  ns.vpa({ kind: "DaemonSet", name: "alloy" });
 };
 
 export const network: NetworkFunction = (n) => {

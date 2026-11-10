@@ -6,10 +6,10 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
   // the image runs as appuser (1001), which owns /app
-  const workload = h
+  const workload = ns
     .deployment("kokoro-fastapi", {
       securityContext: { uid: 1001, gid: 1001 },
     })
@@ -27,7 +27,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ http: 8880 });
-  h.vpa(workload);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

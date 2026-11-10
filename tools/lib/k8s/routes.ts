@@ -139,13 +139,16 @@ export interface HttpMatch {
 
 // an https route for a hostname; add where it sends traffic with `match`
 export class HttpRoute {
-  private readonly rules: Obj[] = [];
-  private readonly gateway: Gateway;
-  private readonly hostname: string;
+  private readonly listener: Obj;
+  private readonly route: Obj;
 
   constructor(gateway: Gateway, hostname: string) {
-    this.gateway = gateway;
-    this.hostname = hostname;
+    [this.listener, this.route] = hostRoutes(
+      "HTTPRoute",
+      gateway,
+      hostname,
+      [],
+    );
   }
 
   match(to: Target, port: number, ...matches: HttpMatch[]): this {
@@ -154,7 +157,7 @@ export class HttpRoute {
       pathType = "PathPrefix",
       timeout,
     } of matches.length ? matches : [{}]) {
-      this.rules.push({
+      this.route.spec.rules.push({
         backendRefs: [{ ...ref(to), port }],
         matches: [{ path: { type: pathType, value: path } }],
         ...(timeout && { timeouts: { request: timeout } }),
@@ -164,7 +167,7 @@ export class HttpRoute {
   }
 
   objects(): Obj[] {
-    return hostRoutes("HTTPRoute", this.gateway, this.hostname, this.rules);
+    return [this.listener, this.route];
   }
 }
 
@@ -176,39 +179,23 @@ export interface GrpcMatch {
 
 // an https route for grpc traffic; `timeout` also adds a BackendTrafficPolicy
 export class GrpcRoute {
-  private readonly rules: Obj[] = [];
-  private readonly gateway: Gateway;
-  private readonly hostname: string;
-  private readonly opts: { timeout?: string };
+  private readonly listener: Obj;
+  private readonly route: Obj;
+  private readonly policy?: Obj;
 
   constructor(
     gateway: Gateway,
     hostname: string,
     opts: { timeout?: string } = {},
   ) {
-    this.gateway = gateway;
-    this.hostname = hostname;
-    this.opts = opts;
-  }
-
-  match(to: Target, port: number, ...matches: GrpcMatch[]): this {
-    for (const { service, method, type } of matches.length ? matches : [{}]) {
-      const hasMethodMatch = service !== undefined || method !== undefined;
-      this.rules.push({
-        backendRefs: [{ ...ref(to), port }],
-        ...(hasMethodMatch && {
-          matches: [{ method: { service, method, type } }],
-        }),
-      });
-    }
-    return this;
-  }
-
-  objects(): Obj[] {
-    const { gateway, hostname } = this;
-    const objects = hostRoutes("GRPCRoute", gateway, hostname, this.rules);
-    if (this.opts.timeout) {
-      objects.push({
+    [this.listener, this.route] = hostRoutes(
+      "GRPCRoute",
+      gateway,
+      hostname,
+      [],
+    );
+    if (opts.timeout) {
+      this.policy = {
         apiVersion: "gateway.envoyproxy.io/v1alpha1",
         kind: "BackendTrafficPolicy",
         metadata: { name: hostname },
@@ -222,13 +209,32 @@ export class GrpcRoute {
           ],
           timeout: {
             http: {
-              maxStreamDuration: this.opts.timeout,
-              requestTimeout: this.opts.timeout,
+              maxStreamDuration: opts.timeout,
+              requestTimeout: opts.timeout,
             },
           },
         },
+      };
+    }
+  }
+
+  match(to: Target, port: number, ...matches: GrpcMatch[]): this {
+    for (const { service, method, type } of matches.length ? matches : [{}]) {
+      const hasMethodMatch = service !== undefined || method !== undefined;
+      this.route.spec.rules.push({
+        backendRefs: [{ ...ref(to), port }],
+        ...(hasMethodMatch && {
+          matches: [{ method: { service, method, type } }],
+        }),
       });
     }
+    return this;
+  }
+
+  objects(): Obj[] {
+    const objects = [this.listener, this.route, this.policy].filter(
+      (o): o is Obj => o !== undefined,
+    );
     return compact(objects);
   }
 }

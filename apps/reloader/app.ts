@@ -5,35 +5,28 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm("https://stakater.github.io/stakater-charts/reloader?version=2.2.19", {
-    values: {
-      reloader: {
-        autoReloadAll: true,
-        deployment: {
-          securityContext: {
-            fsGroup: 65534,
-            runAsNonRoot: true,
-            runAsUser: 65534,
-            runAsGroup: 65534,
-            seccompProfile: { type: "RuntimeDefault" },
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  const security = h.securityContext();
+
+  await ns.helm(
+    "https://stakater.github.io/stakater-charts/reloader?version=2.2.19",
+    {
+      values: {
+        reloader: {
+          autoReloadAll: true,
+          deployment: {
+            securityContext: security.pod,
+            containerSecurityContext: security.container,
           },
-          containerSecurityContext: {
-            allowPrivilegeEscalation: false,
-            capabilities: { drop: ["ALL"], add: [] },
-            runAsNonRoot: true,
-            runAsUser: 65534,
-            runAsGroup: 65534,
-          },
+          reloadStrategy: "annotations",
         },
-        reloadStrategy: "annotations",
       },
     },
-  });
+  );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "reloader-reloader" });
+  ns.vpa({ kind: "Deployment", name: "reloader-reloader" });
 };
 
 export const network: NetworkFunction = (n) => {

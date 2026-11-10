@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": [
     "No pull request is opened until its checkbox is ticked in the dependency dashboard (dependencyDashboardApproval), because merging to main publishes manifests that flux applies to the cluster. Commits read 'bump <name> to <version>', rather than using semantic commits.",
-    "Detection: jsonnetfile.json (with its lock file) is handled by the jsonnet-bundler manager. TypeScript has no built-in manager, so what an app.ts declares is found by shape (see tools/checks/renovate.test.ts, which fails if something is written in a way these rules can't see): container images (`image: \"repo/name:tag\"`, or `h.helmImage(\"repo/name:tag\")` in a chart's values), helm charts (`h.helm(\"<repository url>/<chart>?version=<version>\")`), upstream kustomize overlays (`h.kustomize(\"github.com/org/repo/path?ref=tag\")`), and versioned github urls."
+    "Detection: jsonnetfile.json (with its lock file) is handled by the jsonnet-bundler manager. TypeScript has no built-in manager, so what an app.ts declares is found by shape (see tools/checks/renovate.test.ts, which fails if something is written in a way these rules can't see): container images (`image: \"repo/name:tag\"`, or `h.helmImage(\"repo/name:tag\")` in a chart's values), helm charts (`ns.helm(\"<repository url>/<chart>?version=<version>\")`), upstream kustomize overlays (`ns.kustomize(\"github.com/org/repo/path?ref=tag\")`), and versioned github urls."
   ],
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
@@ -57,28 +57,28 @@
     },
     {
       "customType": "regex",
-      "description": "upstream kustomize overlays, pinned by `?ref=` (h.kustomize)",
+      "description": "upstream kustomize overlays, pinned by `?ref=` (ns.kustomize)",
       "managerFilePatterns": ["/^apps/[^/]+/app\\.ts$/"],
       "matchStrings": [
-        "\\bh\\.kustomize\\(\\s*\"github\\.com/(?<depName>[^/\\s\"]+/[^/\\s\"]+)/[^\"\\s?]*\\?ref=(?<currentValue>[^\"\\s&]+)\""
+        "\\bns\\.kustomize\\(\\s*\"github\\.com/(?<depName>[^/\\s\"]+/[^/\\s\"]+)/[^\"\\s?]*\\?ref=(?<currentValue>[^\"\\s&]+)\""
       ],
       "datasourceTemplate": "github-tags"
     },
     {
       "customType": "regex",
-      "description": "helm charts from a repository (h.helm), written as the repository's url plus the chart's name",
+      "description": "helm charts from a repository (ns.helm), written as the repository's url plus the chart's name",
       "managerFilePatterns": ["/^apps/[^/]+/app\\.ts$/"],
       "matchStrings": [
-        "\\bh\\.helm\\(\\s*\"(?<registryUrl>https?://[^\"?]+)/(?<depName>[^/\"?]+)\\?version=(?<currentValue>[^\"&]+)\""
+        "\\bns\\.helm\\(\\s*\"(?<registryUrl>https?://[^\"?]+)/(?<depName>[^/\"?]+)\\?version=(?<currentValue>[^\"&]+)\""
       ],
       "datasourceTemplate": "helm"
     },
     {
       "customType": "regex",
-      "description": "helm charts from an oci registry (h.helm)",
+      "description": "helm charts from an oci registry (ns.helm)",
       "managerFilePatterns": ["/^apps/[^/]+/app\\.ts$/"],
       "matchStrings": [
-        "\\bh\\.helm\\(\\s*\"oci://(?<depName>[^\"?]+)\\?version=(?<currentValue>[^\"&]+)\""
+        "\\bns\\.helm\\(\\s*\"oci://(?<depName>[^\"?]+)\\?version=(?<currentValue>[^\"&]+)\""
       ],
       "datasourceTemplate": "docker",
       "depTypeTemplate": "helm-chart"

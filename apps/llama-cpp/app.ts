@@ -7,11 +7,11 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  const assets = h.assetsServer();
+  const assets = ns.assetsServer();
 
-  const scripts = h.configMap(
+  const scripts = ns.configMap(
     "llama-cpp-llama-cpp-config-map-scripts",
     h.files("download-models.sh"),
   );
@@ -22,7 +22,7 @@ export const app: AppFunction = (h) => {
     mtp: "mtp-gemma-4-12b-it-Q8_0.gguf",
   } as const;
 
-  const workload = h
+  const workload = ns
     .statefulSet("llama-cpp", {
       securityContext: { uid: 1000, gid: 1000 },
       volumes: {
@@ -94,7 +94,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ web: 8080 });
-  h.vpa(workload);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

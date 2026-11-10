@@ -248,27 +248,48 @@ export interface WorkloadOptions {
   replicas?: number;
 }
 
-export type WorkloadKind = "StatefulSet" | "Deployment" | "DaemonSet";
+export const workloadKinds = [
+  "Deployment",
+  "StatefulSet",
+  "DaemonSet",
+] as const;
+export type WorkloadKind = (typeof workloadKinds)[number];
 
-// a StatefulSet, Deployment or DaemonSet, with the restricted security contexts by default
+// a StatefulSet, Deployment or DaemonSet, with the restricted security contexts by default. the
+// constructor builds a fresh one; `wrap` adopts an existing object (e.g. from a chart) instead.
 export class Workload {
   readonly kind: WorkloadKind;
   readonly name: string;
-  private readonly opts: WorkloadOptions;
-  private readonly selector: Record<string, string>;
-  private readonly containers: Obj[] = [];
-  private readonly initContainers: Obj[] = [];
-  private readonly volumes: Obj[];
+  private readonly containerSecurityContext?: SecurityContextOptions;
   private readonly volumeNames: Set<string>;
   private readonly sink?: (object: Obj) => void;
+  private readonly obj: Obj;
 
-  // `sink` receives the Service created by `service()`
+  // `sink` receives the Service created by `service()`, and the VerticalPodAutoscaler from `vpa()`
   constructor(
     kind: WorkloadKind,
     name: string,
     opts: WorkloadOptions = {},
     sink?: (object: Obj) => void,
+    adopt?: Obj,
   ) {
+    this.kind = kind;
+    this.name = name;
+    this.sink = sink;
+
+    if (adopt) {
+      this.containerSecurityContext = undefined;
+      this.volumeNames = new Set(
+        (adopt.spec?.template?.spec?.volumes ?? []).map((v: Obj) => v.name),
+      );
+      const spec = (adopt.spec.template.spec ??= {});
+      spec.containers ??= [];
+      spec.initContainers ??= [];
+      spec.volumes ??= [];
+      this.obj = adopt;
+      return;
+    }
+
     const claims = Object.entries(opts.volumes ?? {}).filter(([, v]) =>
       isClaimTemplate(v),
     );
@@ -277,20 +298,75 @@ export class Workload {
         `${kind} does not support PVC templates (${claims.map(([n]) => n).join(", ")}). Use a StatefulSet for per-replica storage, or reference an existing PVC with { pvc: { name } }.`,
       );
     }
-    this.kind = kind;
-    this.name = name;
-    this.opts = opts;
-    this.sink = sink;
-    this.selector = { "app.kubernetes.io/name": name };
+    this.containerSecurityContext = opts.securityContext;
     this.volumeNames = new Set(Object.keys(opts.volumes ?? {}));
-    this.volumes = Object.entries(opts.volumes ?? {})
+
+    const volumes = Object.entries(opts.volumes ?? {})
       .filter(([, v]) => !isClaimTemplate(v))
       .map(([n, v]) => inlineVolume(n, v));
+
+    const claimTemplates = Object.entries(opts.volumes ?? {})
+      .filter(
+        (
+          entry,
+        ): entry is [string, { pvc: { size: string; storageClass: string } }] =>
+          isClaimTemplate(entry[1]),
+      )
+      .map(([name, { pvc }]) => ({
+        metadata: { name },
+        spec: {
+          accessModes: ["ReadWriteOnce"],
+          resources: { requests: { storage: pvc.size } },
+          storageClassName: pvc.storageClass,
+        },
+      }));
+
+    const selector = { "app.kubernetes.io/name": name };
+    const sec = securityContext(opts.securityContext);
+    const podSpec = {
+      hostNetwork: opts.hostNetwork,
+      nodeSelector: opts.nodeSelector,
+      securityContext: sec.pod,
+      dnsConfig: opts.dnsConfig?.ndots
+        ? { options: [{ name: "ndots", value: String(opts.dnsConfig.ndots) }] }
+        : undefined,
+      volumes,
+      initContainers: [],
+      containers: [],
+    };
+
+    // deployments don't annotate their pods; stateful sets and daemon sets do
+    const template =
+      this.kind === "Deployment"
+        ? { metadata: { labels: selector }, spec: podSpec }
+        : {
+            metadata: { labels: selector, annotations: opts.podAnnotations },
+            spec: podSpec,
+          };
+
+    this.obj = {
+      apiVersion: "apps/v1",
+      kind: this.kind,
+      metadata: { name: this.name },
+      spec: {
+        replicas: this.kind === "Deployment" ? (opts.replicas ?? 1) : undefined,
+        selector: { matchLabels: selector },
+        template,
+        volumeClaimTemplates:
+          claimTemplates.length > 0 ? claimTemplates : undefined,
+      },
+    };
+  }
+
+  // adopts an existing object (e.g. found in a chart or manifest): its own selector is kept,
+  // whatever it is, and its container/volume lists are mutated in place
+  static wrap(obj: Obj, sink?: (object: Obj) => void): Workload {
+    return new Workload(obj.kind, obj.metadata.name, {}, sink, obj);
   }
 
   private container(name: string, opts: ContainerOptions) {
     const { container } = securityContext({
-      ...this.opts.securityContext,
+      ...this.containerSecurityContext,
       ...opts.securityContext,
     });
     return {
@@ -316,12 +392,12 @@ export class Workload {
   }
 
   addContainer(name: string, opts: ContainerOptions): this {
-    this.containers.push(this.container(name, opts));
+    this.obj.spec.template.spec.containers.push(this.container(name, opts));
     return this;
   }
 
   addInitContainer(name: string, opts: ContainerOptions): this {
-    this.initContainers.push(this.container(name, opts));
+    this.obj.spec.template.spec.initContainers.push(this.container(name, opts));
     return this;
   }
 
@@ -334,7 +410,7 @@ export class Workload {
         `addVolume does not support PVC templates (${name}). Declare it in the workload's volumes instead.`,
       );
     }
-    this.volumes.push(inlineVolume(name, volume));
+    this.obj.spec.template.spec.volumes.push(inlineVolume(name, volume));
     this.volumeNames.add(name);
     return this;
   }
@@ -347,7 +423,7 @@ export class Workload {
       kind: "Service",
       metadata: { name: this.name },
       spec: {
-        selector: this.selector,
+        selector: this.obj.spec.selector.matchLabels,
         ports: Object.entries(ports).map(([name, config]) =>
           compact({ name, ...servicePort(config) }),
         ),
@@ -358,95 +434,41 @@ export class Workload {
   }
 
   // what routes and autoscalers point at
-  get target() {
+  get target(): VpaTarget {
     return { kind: this.kind, name: this.name };
   }
 
-  object(): Obj {
-    const { opts } = this;
-    const sec = securityContext(opts.securityContext);
-    const podSpec = {
-      hostNetwork: opts.hostNetwork,
-      nodeSelector: opts.nodeSelector,
-      securityContext: sec.pod,
-      dnsConfig: opts.dnsConfig?.ndots
-        ? { options: [{ name: "ndots", value: String(opts.dnsConfig.ndots) }] }
-        : undefined,
-      volumes: this.volumes,
-      initContainers: this.initContainers,
-      containers: this.containers,
-    };
+  vpa(opts?: VpaOptions): this {
+    this.sink?.(vpa(this.target, opts));
+    return this;
+  }
 
-    const claimTemplates = Object.entries(opts.volumes ?? {})
-      .filter(
-        (
-          entry,
-        ): entry is [string, { pvc: { size: string; storageClass: string } }] =>
-          isClaimTemplate(entry[1]),
-      )
-      .map(([name, { pvc }]) => ({
-        metadata: { name },
-        spec: {
-          accessModes: ["ReadWriteOnce"],
-          resources: { requests: { storage: pvc.size } },
-          storageClassName: pvc.storageClass,
-        },
-      }));
-
-    // deployments don't annotate their pods; stateful sets and daemon sets do
-    const template =
-      this.kind === "Deployment"
-        ? { metadata: { labels: this.selector }, spec: podSpec }
-        : {
-            metadata: {
-              labels: this.selector,
-              annotations: opts.podAnnotations,
-            },
-            spec: podSpec,
-          };
-
-    return compact({
-      apiVersion: "apps/v1",
-      kind: this.kind,
-      metadata: { name: this.name },
-      spec: {
-        replicas: this.kind === "Deployment" ? (opts.replicas ?? 1) : undefined,
-        selector: { matchLabels: this.selector },
-        template,
-        volumeClaimTemplates:
-          claimTemplates.length > 0 ? claimTemplates : undefined,
-      },
-    });
+  objects(): Obj[] {
+    return [compact(this.obj)];
   }
 }
-
-const vpaWorkloads = ["Deployment", "StatefulSet", "DaemonSet"];
 
 export interface VpaTarget {
   kind: string;
   name: string;
-  // required for targets that aren't a Deployment, StatefulSet or DaemonSet
+  // required for targets outside workloadKinds, which otherwise default to apps/v1
   apiVersion?: string;
 }
 
 export interface VpaOptions {
   // recommend only: never evict or resize
   advisory?: boolean;
-  namespace?: string;
 }
 
 // a VerticalPodAutoscaler for a workload, resizing pods in place where it can
 export const vpa = (target: VpaTarget, opts: VpaOptions = {}): Obj => {
-  const apiVersion = vpaWorkloads.includes(target.kind)
+  const apiVersion = (workloadKinds as readonly string[]).includes(target.kind)
     ? "apps/v1"
     : target.apiVersion;
   return {
     apiVersion: "autoscaling.k8s.io/v1",
     kind: "VerticalPodAutoscaler",
-    metadata: {
-      name: target.name,
-      ...(opts.namespace && { namespace: opts.namespace }),
-    },
+    metadata: { name: target.name },
     spec: {
       targetRef: { apiVersion, kind: target.kind, name: target.name },
       updatePolicy: { updateMode: opts.advisory ? "Off" : "InPlaceOrRecreate" },

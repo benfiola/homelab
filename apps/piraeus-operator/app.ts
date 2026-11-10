@@ -5,16 +5,19 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.kustomize(
+export const app: AppFunction = async (h) => {
+  // the overlay's own base already declares (and privileges) this namespace, renamed to the
+  // app's by the namespace transform below: a Namespace of our own would conflict with it
+  const ns = h.namespace({ external: true });
+  await ns.kustomize(
     "github.com/piraeusdatastore/piraeus-operator/config/default?ref=v2.12.1",
     {
       labels: { "app.kubernetes.io/name": h.app },
     },
   );
 
-  h.vpa({ kind: "Deployment", name: "piraeus-operator-controller-manager" });
-  h.vpa({ kind: "Deployment", name: "piraeus-operator-gencert" });
+  ns.vpa({ kind: "Deployment", name: "piraeus-operator-controller-manager" });
+  ns.vpa({ kind: "Deployment", name: "piraeus-operator-gencert" });
 
   // no limits: the autoscaler sizes requests
   h.postRender((e) => {

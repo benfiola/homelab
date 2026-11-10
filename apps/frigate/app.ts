@@ -7,9 +7,9 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace({ privileged: true });
+  const ns = h.namespace({ privileged: true });
 
-  const secrets = h.secrets("secrets", [
+  const secrets = ns.secrets("secrets", [
     "camera-doorbell-password",
     "camera-front-yard-password",
     "camera-garage-password",
@@ -17,12 +17,12 @@ export const app: AppFunction = (h) => {
     "mqtt-password",
   ]);
 
-  const config = h.configMap("frigate-config", {
+  const config = ns.configMap("frigate-config", {
     "config.yml": h.files("config.yaml")["config.yaml"],
   });
-  h.nasVolume("nvr");
+  ns.nasVolume("nvr");
 
-  const workload = h
+  const workload = ns
     .statefulSet("frigate", {
       nodeSelector: {
         "intel.feature.node.kubernetes.io/gpu": "true",
@@ -77,7 +77,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ "http-insecure": 5000 });
-  h.vpa(workload);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

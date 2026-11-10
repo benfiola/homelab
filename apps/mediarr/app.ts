@@ -10,16 +10,16 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace({ privileged: true });
+  const ns = h.namespace({ privileged: true });
 
-  const secrets = h.secrets("secrets", [
+  const secrets = ns.secrets("secrets", [
     "vpn-server-countries",
     "vpn-server-cities",
     "vpn-wireguard-private-key",
   ]);
-  h.nasVolume("media");
+  ns.nasVolume("media");
 
-  const scripts = h.configMap(
+  const scripts = ns.configMap(
     "mediarr-mediarr-config-map-scripts",
     h.files(
       "init-data.sh",
@@ -45,7 +45,7 @@ export const app: AppFunction = (h) => {
   });
   const rootWithCaps = { uid: 0, gid: 0, caps: ["CHOWN", "SETUID", "SETGID"] };
 
-  h.deployment("init-fs", {
+  ns.deployment("init-fs", {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: {
       data,
@@ -149,7 +149,7 @@ export const app: AppFunction = (h) => {
     });
   };
 
-  const sonarr = h
+  const sonarr = ns
     .statefulSet("sonarr", {
       securityContext: rootWithCaps,
       volumes: { config: config("1Gi"), data },
@@ -164,7 +164,7 @@ export const app: AppFunction = (h) => {
   addWaitForDataInitContainer(sonarr);
   sonarr.service({ web: 8989 });
 
-  const radarr = h
+  const radarr = ns
     .statefulSet("radarr", {
       securityContext: rootWithCaps,
       volumes: { config: config("1Gi"), data },
@@ -179,7 +179,7 @@ export const app: AppFunction = (h) => {
   addWaitForDataInitContainer(radarr);
   radarr.service({ web: 7878 });
 
-  const prowlarr = h
+  const prowlarr = ns
     .statefulSet("prowlarr", {
       securityContext: rootWithCaps,
       volumes: { config: config("1Gi") },
@@ -193,7 +193,7 @@ export const app: AppFunction = (h) => {
     });
   prowlarr.service({ web: 9696 });
 
-  h.statefulSet("profilarr", {
+  ns.statefulSet("profilarr", {
     securityContext: { uid: 1000, gid: 1000 },
     volumes: { config: config("1Gi") },
   }).addContainer("profilarr", {
@@ -204,7 +204,7 @@ export const app: AppFunction = (h) => {
     ...h.probes({ http: { path: "/api/v1/health", port: 6868 } }),
   });
 
-  const maintainerr = h
+  const maintainerr = ns
     .statefulSet("maintainerr", {
       securityContext: { uid: 1000, gid: 1000 },
       volumes: { config: config("1Gi") },
@@ -220,7 +220,7 @@ export const app: AppFunction = (h) => {
       ),
     });
 
-  const seerr = h
+  const seerr = ns
     .statefulSet("seerr", {
       volumes: { config: config("1Gi") },
     })
@@ -233,7 +233,7 @@ export const app: AppFunction = (h) => {
     });
   const seerrService = seerr.service({ web: 5055 });
 
-  const jellyfin = h
+  const jellyfin = ns
     .statefulSet("jellyfin", {
       securityContext: rootWithCaps,
       volumes: {
@@ -260,7 +260,7 @@ export const app: AppFunction = (h) => {
   addWaitForDataInitContainer(jellyfin);
   const jellyfinService = jellyfin.service({ web: 8096 });
 
-  const sabnzbd = h
+  const sabnzbd = ns
     .statefulSet("sabnzbd", {
       securityContext: rootWithCaps,
       volumes: { config: config("1Gi"), data },
@@ -290,11 +290,11 @@ export const app: AppFunction = (h) => {
     jellyfin,
     sabnzbd,
   ]) {
-    h.vpa(workload);
+    ns.vpa(workload);
   }
 
-  h.httpRoute("friends", "discover.fiola.dev").match(seerrService, 5055);
-  h.httpRoute("friends", "watch.fiola.dev").match(
+  ns.httpRoute("friends", "discover.fiola.dev").match(seerrService, 5055);
+  ns.httpRoute("friends", "watch.fiola.dev").match(
     jellyfinService,
     8096,
     {},

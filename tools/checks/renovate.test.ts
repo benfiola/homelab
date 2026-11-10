@@ -99,9 +99,9 @@ describe("sources in typescript", () => {
     const missed: string[] = [];
     let charts = 0;
     for (const { file, source } of sources) {
-      const calls = [...source.matchAll(/\bh\.helm\(/g)].length;
+      const calls = [...source.matchAll(/\bns\.helm\(/g)].length;
       const matched = found(file, source, (m) =>
-        m.matchStrings.some((s) => s.includes("h\\.helm\\(")),
+        m.matchStrings.some((s) => s.includes("ns\\.helm\\(")),
       ).length;
       charts += calls;
       if (calls !== matched) {
@@ -116,10 +116,10 @@ describe("sources in typescript", () => {
   test("every upstream kustomize overlay is found, which needs it pinned with ?ref=", () => {
     const missed: string[] = [];
     for (const { file, source } of sources) {
-      const calls = [...source.matchAll(/\bh\.kustomize\(\s*"(?!https:)/g)]
+      const calls = [...source.matchAll(/\bns\.kustomize\(\s*"(?!https:)/g)]
         .length;
       const matched = found(file, source, (m) =>
-        m.matchStrings.some((s) => s.includes("h\\.kustomize")),
+        m.matchStrings.some((s) => s.includes("ns\\.kustomize")),
       ).length;
       if (calls !== matched) {
         missed.push(`${file}: ${calls} overlays, ${matched} found`);

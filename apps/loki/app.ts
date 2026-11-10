@@ -5,11 +5,14 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  // loki stores its data in garage, and reads the key from the Secret garage generates
-  const key = h.garageKey(h.app);
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
 
-  h.helm("https://grafana.github.io/helm-charts/loki?version=7.5.0", {
+  // loki stores its data in garage, and reads the key from the Secret garage generates
+  const key = ns.garageKey(h.app);
+  const security = h.securityContext();
+
+  await ns.helm("https://grafana.github.io/helm-charts/loki?version=7.5.0", {
     values: {
       backend: { replicas: 0 },
       deploymentMode: "SingleBinary",
@@ -19,33 +22,15 @@ export const app: AppFunction = (h) => {
           timeoutSeconds: 5,
           failureThreshold: 6,
         },
-        containerSecurityContext: {
-          allowPrivilegeEscalation: false,
-          capabilities: { drop: ["ALL"], add: [] },
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-        },
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        containerSecurityContext: security.container,
+        podSecurityContext: security.pod,
       },
       loki: {
         analytics: { reporting_enabled: false },
         auth_enabled: false,
         commonConfig: { replication_factor: 1 },
         compactor: { delete_request_store: "s3", retention_enabled: true },
-        containerSecurityContext: {
-          allowPrivilegeEscalation: false,
-          capabilities: { drop: ["ALL"], add: [] },
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-        },
+        containerSecurityContext: security.container,
         ingester: { chunk_encoding: "snappy" },
         livenessProbe: {
           httpGet: {
@@ -61,13 +46,7 @@ export const app: AppFunction = (h) => {
           volume_enabled: true,
         },
         pattern_ingester: { enabled: true },
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        podSecurityContext: security.pod,
         querier: { max_concurrent: 1 },
         schemaConfig: {
           configs: [
@@ -99,20 +78,8 @@ export const app: AppFunction = (h) => {
       },
       lokiCanary: { enabled: false },
       memcached: {
-        containerSecurityContext: {
-          allowPrivilegeEscalation: false,
-          capabilities: { drop: ["ALL"], add: [] },
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-        },
-        podSecurityContext: {
-          fsGroup: 65534,
-          runAsNonRoot: true,
-          runAsUser: 65534,
-          runAsGroup: 65534,
-          seccompProfile: { type: "RuntimeDefault" },
-        },
+        containerSecurityContext: security.container,
+        podSecurityContext: security.pod,
       },
       minio: { enabled: false },
       resultsCache: {
@@ -152,16 +119,14 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.namespace();
+  ns.garageBucket(`${h.app}-admin`, [key]);
+  ns.garageBucket(`${h.app}-chunks`, [key]);
+  ns.garageBucket(`${h.app}-ruler`, [key]);
 
-  h.garageBucket(`${h.app}-admin`, [key]);
-  h.garageBucket(`${h.app}-chunks`, [key]);
-  h.garageBucket(`${h.app}-ruler`, [key]);
-
-  h.vpa({ kind: "StatefulSet", name: "loki-chunks-cache" });
-  h.vpa({ kind: "StatefulSet", name: "loki" });
-  h.vpa({ kind: "Deployment", name: "loki-gateway" });
-  h.vpa({ kind: "StatefulSet", name: "loki-results-cache" });
+  ns.vpa({ kind: "StatefulSet", name: "loki-chunks-cache" });
+  ns.vpa({ kind: "StatefulSet", name: "loki" });
+  ns.vpa({ kind: "Deployment", name: "loki-gateway" });
+  ns.vpa({ kind: "StatefulSet", name: "loki-results-cache" });
 };
 
 export const network: NetworkFunction = (n) => {

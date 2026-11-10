@@ -12,12 +12,12 @@ export const flux = false;
 
 // a Kustomization for every app (see `export const flux` in tools/lib/k8s/flux.ts)
 export const app: AppFunction = async (h) => {
-  h.namespaceName = "flux-system";
+  const ns = h.namespace({ name: "flux-system" });
 
   for (const name of h.apps) {
     const kustomization = appKustomization(name, await h.fluxDeclaration(name));
     if (kustomization) {
-      h.add(kustomization);
+      ns.add(kustomization);
     }
   }
 
@@ -27,7 +27,7 @@ export const app: AppFunction = async (h) => {
     "notification-controller",
     "source-controller",
   ]) {
-    h.vpa({ kind: "Deployment", name: controller });
+    ns.vpa({ kind: "Deployment", name: controller });
   }
 };
 

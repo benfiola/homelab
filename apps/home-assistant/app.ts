@@ -9,9 +9,9 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace({ privileged: true });
+  const ns = h.namespace({ privileged: true });
 
-  const config = h.configMap(
+  const config = ns.configMap(
     "home-assistant",
     h.files(
       "automations.yaml",
@@ -22,7 +22,7 @@ export const app: AppFunction = (h) => {
     ),
   );
 
-  const workload = h
+  const workload = ns
     .statefulSet("home-assistant", {
       securityContext: { gid: 0, uid: 0 },
       volumes: {
@@ -58,8 +58,8 @@ export const app: AppFunction = (h) => {
     });
   const service = workload.service({ web: 8123 });
 
-  h.httpRoute("family", "automation.fiola.dev").match(service, 8123);
-  h.vpa(workload);
+  ns.httpRoute("family", "automation.fiola.dev").match(service, 8123);
+  ns.vpa(workload);
 };
 
 export const network: NetworkFunction = (n) => {

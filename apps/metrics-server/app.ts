@@ -5,8 +5,10 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.helm(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.helm(
     "https://kubernetes-sigs.github.io/metrics-server/metrics-server?version=3.14.0",
     {
       values: {
@@ -18,9 +20,7 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  h.namespace();
-
-  h.vpa({ kind: "Deployment", name: "metrics-server" });
+  ns.vpa({ kind: "Deployment", name: "metrics-server" });
 };
 
 export const network: NetworkFunction = (n) => {

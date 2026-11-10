@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, test } from "node:test";
-import { App } from "./app.ts";
+import { App, type Namespace } from "./app.ts";
 import { bucketSyncKeys, secretRef } from "./k8s/secrets.ts";
 import { hasCommand, serve } from "./testing.ts";
 
@@ -45,18 +45,26 @@ after(() => server.close());
 const dirs: string[] = [];
 after(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
 
+// most tests only care about what they added, not the Namespace object a handle to add it
+// through brings with it
+const withoutNamespace = (objects: any[]) =>
+  objects.filter((o) => o.kind !== "Namespace");
+
 const kinds = async (h: App) =>
-  (await h.objects()).map((o) => `${o.kind}/${o.metadata.name}`);
+  withoutNamespace(await h.objects()).map(
+    (o) => `${o.kind}/${o.metadata.name}`,
+  );
 
 describe("App", () => {
   test("collects everything created through it, in creation order", async () => {
     const h = new App("web", "/apps/web");
-    h.add({ apiVersion: "v1", kind: "ConfigMap", metadata: { name: "one" } });
-    const workload = h
+    const ns = h.namespace();
+    ns.add({ apiVersion: "v1", kind: "ConfigMap", metadata: { name: "one" } });
+    const workload = ns
       .deployment("web")
       .addContainer("web", { image: "image:1" });
     workload.service({ http: 80 });
-    h.vpa(workload);
+    ns.vpa(workload);
     assert.deepEqual(await kinds(h), [
       "ConfigMap/one",
       "Deployment/web",
@@ -67,10 +75,10 @@ describe("App", () => {
 
   test("builds a workload when the app finishes, so later containers are included", async () => {
     const h = new App("web", "/apps/web");
-    const workload = h.statefulSet("web");
+    const workload = h.namespace().statefulSet("web");
     workload.addContainer("first", { image: "image:1" });
     workload.addContainer("second", { image: "image:2" });
-    const [object] = await h.objects();
+    const [object] = withoutNamespace(await h.objects());
     assert.deepEqual(
       object.spec.template.spec.containers.map((c: any) => c.name),
       ["first", "second"],
@@ -79,8 +87,9 @@ describe("App", () => {
 
   test("builds a route when the app finishes, so later matches are included", async () => {
     const h = new App("web", "/apps/web");
-    const service = h.deployment("web").service({ http: 80 });
-    const route = h.httpRoute("family", "web.fiola.dev");
+    const ns = h.namespace();
+    const service = ns.deployment("web").service({ http: 80 });
+    const route = ns.httpRoute("family", "web.fiola.dev");
     route.match(service, 80, { path: "/a" });
     route.match(service, 80, { path: "/b" });
     const http = (await h.objects()).find((o) => o.kind === "HTTPRoute")!;
@@ -93,16 +102,17 @@ describe("App", () => {
 
   test("registers tcp routes and the vpa of a workload or a plain target", async () => {
     const h = new App("web", "/apps/web");
-    const workload = h.deployment("web");
-    h.tcpRoute(
+    const ns = h.namespace();
+    const workload = ns.deployment("web");
+    ns.tcpRoute(
       "family",
       "web.fiola.dev",
       9000,
       { kind: "Service", name: "web" },
       9000,
     );
-    h.vpa(workload);
-    h.vpa(
+    ns.vpa(workload);
+    ns.vpa(
       { kind: "Rollout", name: "x", apiVersion: "argoproj.io/v1alpha1" },
       { advisory: true },
     );
@@ -122,8 +132,10 @@ describe("App", () => {
     };
 
     test("an app names its Secret and lists its keys, and is given a store and a push in external-secrets-operator", async () => {
-      const h = await via("web", (h) => h.secrets("credentials", ["token"]));
-      const objects = await h.objects();
+      const h = await via("web", (h) =>
+        h.namespace().secrets("credentials", ["token"]),
+      );
+      const objects = withoutNamespace(await h.objects());
       assert.deepEqual(
         objects.map((o) => `${o.kind}/${o.metadata.name}`),
         ["SecretStore/web", "PushSecret/web-credentials"],
@@ -135,9 +147,9 @@ describe("App", () => {
     });
 
     test("the keys are read through the Secret it returns", async () => {
-      let credentials: ReturnType<App["secrets"]> | undefined;
+      let credentials: ReturnType<Namespace["secrets"]> | undefined;
       await via("web", (h) => {
-        credentials = h.secrets("credentials", ["token"]);
+        credentials = h.namespace().secrets("credentials", ["token"]);
       });
       assert.deepEqual((credentials as any).key("token"), {
         secretKeyRef: { name: "credentials", key: "token" },
@@ -146,18 +158,18 @@ describe("App", () => {
 
     test("an app that names its namespace is pushed to that namespace", async () => {
       const h = await via("web", (h) => {
-        h.namespaceName = "elsewhere";
-        h.secrets("credentials", ["token"]);
+        h.namespace({ name: "elsewhere" }).secrets("credentials", ["token"]);
       });
-      const [store, push] = await h.objects();
+      const [store, push] = withoutNamespace(await h.objects());
       assert.equal(store.spec.provider.kubernetes.remoteNamespace, "elsewhere");
       assert.equal(push.metadata.name, "elsewhere-credentials");
     });
 
     test("the store is added once, however many Secrets are pushed", async () => {
       const h = await via("mail", (h) => {
-        h.secrets("one", ["a"]);
-        h.templatedSecrets("two", { B: h.secretRef("b") });
+        const ns = h.namespace();
+        ns.secrets("one", ["a"]);
+        ns.templatedSecrets("two", { B: h.secretRef("b") });
       });
       assert.deepEqual(await kinds(h), [
         "SecretStore/mail",
@@ -168,20 +180,12 @@ describe("App", () => {
 
     test("a Secret can be put in another namespace, which gets a store of its own", async () => {
       const h = await via("cilium", (h) => {
-        h.namespaceName = "cilium";
-        h.secrets("credentials", ["a"]);
-        h.secrets("elsewhere-credentials", ["a"], {
-          namespace: "cilium-secrets",
-        });
-        h.templatedSecrets(
-          "rendered",
-          { B: h.secretRef("b") },
-          {
-            namespace: "cilium-secrets",
-          },
-        );
+        h.namespace().secrets("credentials", ["a"]);
+        const secrets = h.namespace({ name: "cilium-secrets" });
+        secrets.secrets("elsewhere-credentials", ["a"]);
+        secrets.templatedSecrets("rendered", { B: h.secretRef("b") });
       });
-      const objects = await h.objects();
+      const objects = withoutNamespace(await h.objects());
       assert.deepEqual(
         objects.map((o) => `${o.kind}/${o.metadata.name}`),
         [
@@ -200,9 +204,9 @@ describe("App", () => {
 
     test("a section other than the app's own can be read", async () => {
       const h = await via("web", (h) => {
-        h.secrets("shared", ["token"], { from: "shared-app" });
+        h.namespace().secrets("shared", ["token"], { from: "shared-app" });
       });
-      const push = (await h.objects())[1];
+      const push = withoutNamespace(await h.objects())[1];
       assert.equal(
         push.spec.template.data.token,
         secretRef("token", "shared-app"),
@@ -213,8 +217,9 @@ describe("App", () => {
       await assert.rejects(
         async () =>
           via("mail", (h) => {
-            h.secrets("one", ["a"]);
-            h.templatedSecrets("one", { B: h.secretRef("b") });
+            const ns = h.namespace();
+            ns.secrets("one", ["a"]);
+            ns.templatedSecrets("one", { B: h.secretRef("b") });
           }),
         /pushes the Secret behind mail-one twice/,
       );
@@ -228,8 +233,8 @@ describe("App", () => {
     });
 
     test("assets are synced with bucket-sync's credentials, pushed from its own section", async () => {
-      const h = await via("llama-cpp", (h) => h.assetsServer());
-      const objects = await h.objects();
+      const h = await via("llama-cpp", (h) => h.namespace().assetsServer());
+      const objects = withoutNamespace(await h.objects());
       const push = objects.find((o) => o.kind === "PushSecret")!;
       assert.equal(
         push.metadata.name,
@@ -247,10 +252,9 @@ describe("App", () => {
     });
 
     test("the assets server is found in the app's namespace, wherever that is", async () => {
-      const named = async (namespace?: string) => {
+      const named = async (namespaceName?: string) => {
         const h = new App("llama-cpp", "/apps/llama-cpp");
-        if (namespace) h.namespaceName = namespace;
-        return h.assetsServer().url;
+        return h.namespace({ name: namespaceName }).assetsServer().url;
       };
       assert.equal(await named(), "http://assets-server.llama-cpp.svc:8080");
       assert.equal(
@@ -265,7 +269,7 @@ describe("App", () => {
     dirs.push(dir);
     writeFileSync(join(dir, "a.conf"), "hello\n");
     const h = new App("web", dir);
-    const config = h.configMap("web-config", h.files("a.conf"));
+    const config = h.namespace().configMap("web-config", h.files("a.conf"));
     assert.equal(config.metadata.name, "web-config");
     assert.deepEqual(config.data, { "a.conf": "hello\n" });
     assert.deepEqual(await kinds(h), ["ConfigMap/web-config"]);
@@ -273,7 +277,7 @@ describe("App", () => {
 
   test("nasVolume adds a volume and its claim", async () => {
     const h = new App("web", "/apps/web");
-    h.nasVolume("media");
+    h.namespace().nasVolume("media");
     assert.deepEqual(await kinds(h), [
       "PersistentVolume/media",
       "PersistentVolumeClaim/media",
@@ -282,13 +286,13 @@ describe("App", () => {
 
   test("volumeBackup adds the backup and the Secret it reads, pushed into the app's namespace", async () => {
     const h = new App("web", "/apps/web");
-    h.volumeBackup("config", { schedule: "0 3 * * *" });
+    h.namespace().volumeBackup("config", { schedule: "0 3 * * *" });
     assert.deepEqual(await kinds(h), [
       "SecretStore/web",
       "PushSecret/web-volsync-mover-config",
       "ReplicationSource/config",
     ]);
-    const [, push, source] = await h.objects();
+    const [, push, source] = withoutNamespace(await h.objects());
     assert.equal(
       push.spec.template.data.RESTIC_REPOSITORY.includes("/web/config"),
       true,
@@ -298,8 +302,8 @@ describe("App", () => {
 
   test("volumeBackup of a PVC in another namespace uses that namespace for the repository too", async () => {
     const h = new App("web", "/apps/web");
-    h.volumeBackup("config", { namespace: "other" });
-    const [store, push, source] = await h.objects();
+    h.namespace({ name: "other" }).volumeBackup("config");
+    const [store, push, source] = withoutNamespace(await h.objects());
     assert.equal(store.metadata.name, "other");
     assert.equal(push.metadata.name, "other-volsync-mover-config");
     assert.equal(source.metadata.namespace, "other");
@@ -311,15 +315,33 @@ describe("App", () => {
 
 describe("App.namespace", () => {
   test("creates the app's namespace, privileged on request", async () => {
-    const [plain] = await new App("web", "/apps/web").namespace().objects();
+    const h = new App("web", "/apps/web");
+    h.namespace();
+    const [plain] = await h.objects();
     assert.deepEqual(plain.metadata, { name: "web", namespace: "web" });
-    const [privileged] = await new App("web", "/apps/web")
-      .namespace({ privileged: true })
-      .objects();
+
+    const h2 = new App("web", "/apps/web");
+    h2.namespace({ privileged: true });
+    const [privileged] = await h2.objects();
     assert.equal(
       privileged.metadata.labels["pod-security.kubernetes.io/enforce"],
       "privileged",
     );
+  });
+
+  test("the handle it returns creates everything in that namespace", async () => {
+    const h = new App("web", "/apps/web");
+    const ns = h.namespace({ name: "other" });
+    assert.equal(ns.name, "other");
+  });
+
+  test("external skips declaring the namespace, for one another app owns", async () => {
+    const h = new App("web", "/apps/web");
+    const ns = h.namespace({ name: "other", external: true });
+    ns.configMap("cfg", {});
+    const objects = await h.objects();
+    assert.equal(objects.some((o) => o.kind === "Namespace"), false);
+    assert.equal(objects[0].metadata.namespace, "other");
   });
 });
 
@@ -333,10 +355,15 @@ describe("App.manifest and App.postRender", () => {
     return dir;
   };
 
-  test("adds the objects of a manifest in the app's directory, without waiting", async () => {
+  test("adds the objects of a manifest in the app's directory", async () => {
     const h = new App("web", write({ "manifest.yaml": deployment }));
-    h.manifest("manifest.yaml");
-    h.add({ apiVersion: "v1", kind: "ConfigMap", metadata: { name: "after" } });
+    const ns = h.namespace();
+    await ns.manifest("manifest.yaml");
+    ns.add({
+      apiVersion: "v1",
+      kind: "ConfigMap",
+      metadata: { name: "after" },
+    });
     assert.deepEqual(await kinds(h), [
       "Deployment/web",
       "ServiceAccount/web",
@@ -354,7 +381,9 @@ describe("App.manifest and App.postRender", () => {
     kustomizeOptions,
     async () => {
       const h = new App("web", "/apps/web");
-      h.kustomize(server.url("deployment.yaml"), { namespace: "moved" });
+      await h
+        .namespace({ name: "moved" })
+        .kustomize(server.url("deployment.yaml"));
       const objects = await h.objects();
       const find = (kind: string) => objects.find((o) => o.kind === kind)!;
       assert.equal(find("Deployment").metadata.namespace, "moved");
@@ -367,7 +396,7 @@ describe("App.manifest and App.postRender", () => {
     kustomizeOptions,
     async () => {
       const h = new App("web", "/apps/web");
-      h.kustomize(server.url("deployment.yaml"), {
+      await h.namespace().kustomize(server.url("deployment.yaml"), {
         labels: { "app.kubernetes.io/name": "web" },
       });
       const d = (await h.objects()).find((o) => o.kind === "Deployment")!;
@@ -383,10 +412,12 @@ describe("App.manifest and App.postRender", () => {
     },
   );
 
-  test("a missing manifest fails when the app is built, not when it is declared", async () => {
+  test("a missing manifest fails as soon as it is awaited", async () => {
     const h = new App("web", write({}));
-    h.manifest("missing.yaml");
-    await assert.rejects(() => h.objects(), /missing\.yaml/);
+    await assert.rejects(
+      () => h.namespace().manifest("missing.yaml"),
+      /missing\.yaml/,
+    );
   });
 
   test("post-render hooks change the objects they find, whatever added them", async () => {
@@ -397,8 +428,8 @@ describe("App.manifest and App.postRender", () => {
         name: "web",
       }).spec.template.spec.containers[0].image = "web:2";
     });
-    h.manifest("manifest.yaml");
-    const [d] = await h.objects();
+    await h.namespace().manifest("manifest.yaml");
+    const [d] = withoutNamespace(await h.objects());
     assert.equal(d.spec.template.spec.containers[0].image, "web:2");
   });
 
@@ -417,17 +448,19 @@ describe("App.manifest and App.postRender", () => {
       c.data.second =
         c.data.first + e.find({ kind: "ConfigMap", name: "d" }).metadata.name;
     });
-    h.configMap("c", {});
-    h.configMap("d", {});
-    const objects = await h.objects();
+    const ns = h.namespace();
+    ns.configMap("c", {});
+    ns.configMap("d", {});
+    const objects = withoutNamespace(await h.objects());
     assert.deepEqual(seen, ["first", "second"]);
     assert.deepEqual(objects[0].data, { first: "1", second: "1d" });
   });
 
   test("one hook can change several objects", async () => {
     const h = new App("web", write({}));
-    h.configMap("a", {});
-    h.configMap("b", {});
+    const ns = h.namespace();
+    ns.configMap("a", {});
+    ns.configMap("b", {});
     h.postRender((e) => {
       for (const c of [
         e.find({ kind: "ConfigMap", name: "a" }),
@@ -437,15 +470,16 @@ describe("App.manifest and App.postRender", () => {
       }
     });
     assert.deepEqual(
-      (await h.objects()).map((o) => o.data),
+      withoutNamespace(await h.objects()).map((o) => o.data),
       [{ changed: "yes" }, { changed: "yes" }],
     );
   });
 
   test("hooks don't accumulate when the objects are read twice, whether a source or an add made them", async () => {
     const h = new App("web", write({ "manifest.yaml": deployment }));
-    h.manifest("manifest.yaml");
-    h.add({
+    const ns = h.namespace();
+    await ns.manifest("manifest.yaml");
+    ns.add({
       kind: "Thing",
       apiVersion: "v1",
       metadata: { name: "t" },
@@ -475,22 +509,22 @@ describe("App.manifest and App.postRender", () => {
       metadata: { name: "t" },
       spec: { n: 1 },
     };
-    h.add(added);
+    h.namespace().add(added);
     h.postRender((e) => {
       e.find({ kind: "Thing", name: "t" }).spec.n = 2;
     });
-    const [thing] = await h.objects();
+    const [thing] = withoutNamespace(await h.objects());
     assert.equal(thing.spec.n, 2);
     assert.equal(added.spec.n, 1);
   });
 
   test("a hook that finds nothing is an error naming the app, so a changed upstream is noticed", async () => {
     const h = new App("web", write({ "manifest.yaml": deployment }));
-    h.manifest("manifest.yaml");
+    await h.namespace().manifest("manifest.yaml");
     h.postRender((e) => {
       e.find({ kind: "Deployment", name: "renamed" });
     });
-    await assert.rejects(
+    assert.throws(
       () => h.objects(),
       /^Error: web: no object matches Deployment\/renamed$/,
     );
@@ -498,13 +532,123 @@ describe("App.manifest and App.postRender", () => {
 
   test("a hook can select by api group", async () => {
     const h = new App("web", write({ "manifest.yaml": deployment }));
-    h.manifest("manifest.yaml");
+    await h.namespace().manifest("manifest.yaml");
     h.postRender((e) => {
       e.find({ kind: "Deployment", name: "web", group: "extensions" });
     });
-    await assert.rejects(
+    assert.throws(
       () => h.objects(),
       /web: no object matches extensions\/Deployment\/web/,
+    );
+  });
+});
+
+describe("Source.find", () => {
+  const write = (files: Record<string, string>) => {
+    const dir = mkdtempSync(join(tmpdir(), "app-"));
+    dirs.push(dir);
+    for (const [name, content] of Object.entries(files)) {
+      writeFileSync(join(dir, name), content);
+    }
+    return dir;
+  };
+
+  // a deployment with its own selector (unlike one `h.deployment` would build) and no volumes,
+  // so wrapping it can be checked against what it actually has rather than Workload's conventions
+  const demo = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+spec:
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+        - name: demo
+          image: demo:1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-config
+data:
+  a: b
+`;
+
+  test("a Deployment, StatefulSet or DaemonSet is found as a Workload", async () => {
+    const h = new App("web", write({ "manifest.yaml": demo }));
+    const source = await h.namespace().manifest("manifest.yaml");
+    const workload = source.find("Deployment", "demo");
+    assert.equal(workload.kind, "Deployment");
+    assert.equal(workload.name, "demo");
+  });
+
+  test("anything else is found as an ObjectRef", async () => {
+    const h = new App("web", write({ "manifest.yaml": demo }));
+    const source = await h.namespace().manifest("manifest.yaml");
+    const config = source.find("ConfigMap", "demo-config");
+    assert.equal(config.kind, "ConfigMap");
+    assert.equal(config.name, "demo-config");
+  });
+
+  test("vpa on a found Workload or ObjectRef targets it, in the namespace it was rendered for", async () => {
+    const h = new App("web", write({ "manifest.yaml": demo }));
+    const source = await h.namespace().manifest("manifest.yaml");
+    source.find("Deployment", "demo").vpa();
+    source.find("ConfigMap", "demo-config").vpa({ advisory: true });
+    const vpas = (await h.objects()).filter(
+      (o) => o.kind === "VerticalPodAutoscaler",
+    );
+    assert.deepEqual(
+      vpas.map((v) => [
+        v.metadata.name,
+        v.metadata.namespace,
+        v.spec.targetRef.kind,
+      ]),
+      [
+        ["demo", "web", "Deployment"],
+        ["demo-config", "web", "ConfigMap"],
+      ],
+    );
+    assert.equal(vpas[1].spec.updatePolicy.updateMode, "Off");
+  });
+
+  test("a found Workload's service uses its own selector, not the app.kubernetes.io/name convention", async () => {
+    const h = new App("web", write({ "manifest.yaml": demo }));
+    const source = await h.namespace().manifest("manifest.yaml");
+    const service = source.find("Deployment", "demo").service({ http: 80 });
+    assert.deepEqual(service.spec.selector, { app: "demo" });
+  });
+
+  test("a found Workload's containers and volumes are added to what it already has", async () => {
+    const h = new App("web", write({ "manifest.yaml": demo }));
+    const source = await h.namespace().manifest("manifest.yaml");
+    source
+      .find("Deployment", "demo")
+      .addContainer("sidecar", { image: "sidecar:1" })
+      .addVolume("data", { memory: {} });
+    const [deployment] = withoutNamespace(await h.objects());
+    assert.deepEqual(
+      deployment.spec.template.spec.containers.map((c: any) => c.name),
+      ["demo", "sidecar"],
+    );
+    assert.deepEqual(
+      deployment.spec.template.spec.volumes.map((v: any) => v.name),
+      ["data"],
+    );
+  });
+
+  test("find fails when there's no match, naming what it looked for", async () => {
+    const h = new App("web", write({ "manifest.yaml": demo }));
+    const source = await h.namespace().manifest("manifest.yaml");
+    assert.throws(
+      () => source.find("Deployment", "missing"),
+      /no object matches Deployment\/missing/,
     );
   });
 });
@@ -515,8 +659,9 @@ describe("App.jsonnet", () => {
     dirs.push(dir);
     writeFileSync(join(dir, "main.jsonnet"), "{ names: ['a', 'b'] }");
     const h = new App("web", dir);
-    for (const name of (await h.jsonnet("main.jsonnet")).names) {
-      h.add({ apiVersion: "v1", kind: "ConfigMap", metadata: { name } });
+    const ns = h.namespace();
+    for (const name of (await ns.jsonnet("main.jsonnet")).names) {
+      ns.add({ apiVersion: "v1", kind: "ConfigMap", metadata: { name } });
     }
     assert.deepEqual(await kinds(h), ["ConfigMap/a", "ConfigMap/b"]);
   });
@@ -541,51 +686,14 @@ describe("App.apps", () => {
 
 describe("namespaces", () => {
   const namespaces = async (h: App) =>
-    (await h.objects()).map(
+    withoutNamespace(await h.objects()).map(
       (o) => `${o.kind}/${o.metadata.name}=${o.metadata.namespace ?? ""}`,
     );
 
-  describe("namespaceName", () => {
-    test("is the app's name, unless it is set before anything is added", async () => {
-      const h = new App("web", "/apps/web");
-      assert.equal(h.namespaceName, "web");
-      h.namespaceName = "elsewhere";
-      assert.equal(h.namespaceName, "elsewhere");
-      h.namespace();
-      assert.deepEqual(await namespaces(h), ["Namespace/elsewhere=elsewhere"]);
-    });
-
-    test("can't be set once something was added, however it was added", () => {
-      const adders: [string, (h: App) => unknown][] = [
-        [
-          "add",
-          (h) =>
-            h.add({ apiVersion: "v1", kind: "A", metadata: { name: "a" } }),
-        ],
-        ["namespace", (h) => h.namespace()],
-        ["deployment", (h) => h.deployment("web")],
-        ["httpRoute", (h) => h.httpRoute("family", "a.example.test")],
-        ["configMap", (h) => h.configMap("c", {})],
-        ["vpa", (h) => h.vpa({ kind: "Deployment", name: "web" })],
-      ];
-      for (const [name, add] of adders) {
-        const h = new App("web", "/apps/web");
-        add(h);
-        assert.throws(
-          () => {
-            h.namespaceName = "late";
-          },
-          /namespaceName is set after something was added \(which used web\)/,
-          name,
-        );
-        assert.equal(h.namespaceName, "web", name);
-      }
-    });
-  });
-
-  test("a Namespace can be made for another name, without moving the app", async () => {
+  test("a second Namespace can be declared for another name, without moving the app", async () => {
     const h = new App("cilium", "/apps/cilium");
-    h.namespace().namespace({ name: "cilium-secrets", privileged: true });
+    h.namespace();
+    h.namespace({ name: "cilium-secrets", privileged: true });
     const objects = await h.objects();
     assert.deepEqual(
       objects.map((o) => o.metadata.name),
@@ -595,24 +703,24 @@ describe("namespaces", () => {
       objects[1].metadata.labels["pod-security.kubernetes.io/enforce"],
       "privileged",
     );
-    assert.equal(h.namespaceName, "cilium");
   });
 
   describe("every helper that makes resources takes a namespace", () => {
     const other = "other";
 
-    test("and gives the app's namespace to everything that isn't given one", async () => {
+    test("and gives the namespace it was created through to everything that isn't given one", async () => {
       const h = new App("web", "/apps/web");
-      h.configMap("c", {});
-      h.nasVolume("share");
-      h.deployment("d").addContainer("c", { image: "i" });
-      h.httpRoute("family", "a.example.test");
-      h.add({
+      const ns = h.namespace();
+      ns.configMap("c", {});
+      ns.nasVolume("share");
+      ns.deployment("d").addContainer("c", { image: "i" });
+      ns.httpRoute("family", "a.example.test");
+      ns.add({
         apiVersion: "v1",
         kind: "Named",
         metadata: { name: "n", namespace: "kept" },
       });
-      h.add({ apiVersion: "v1", kind: "Unnamed", metadata: { name: "u" } });
+      ns.add({ apiVersion: "v1", kind: "Unnamed", metadata: { name: "u" } });
       const found = await namespaces(h);
       assert.ok(found.length > 5);
       assert.deepEqual(
@@ -621,24 +729,24 @@ describe("namespaces", () => {
       );
     });
 
-    test("whatever the app's namespace is set to before anything is added", async () => {
+    test("whatever name the namespace is given", async () => {
       const h = new App("web", "/apps/web");
-      h.namespaceName = "elsewhere";
-      h.configMap("c", {});
-      h.deployment("d");
-      h.httpRoute("family", "a.example.test");
+      const ns = h.namespace({ name: "elsewhere" });
+      ns.configMap("c", {});
+      ns.deployment("d");
+      ns.httpRoute("family", "a.example.test");
       assert.ok((await namespaces(h)).every((f) => f.endsWith("=elsewhere")));
     });
 
     test("configMap", async () => {
       const h = new App("web", "/apps/web");
-      h.configMap("c", { a: "b" }, { namespace: other });
+      h.namespace({ name: other }).configMap("c", { a: "b" });
       assert.deepEqual(await namespaces(h), [`ConfigMap/c=${other}`]);
     });
 
     test("nasVolume, whose cluster-scoped volume is given it too, as every object is", async () => {
       const h = new App("web", "/apps/web");
-      h.nasVolume("share", { namespace: other });
+      h.namespace({ name: other }).nasVolume("share");
       assert.deepEqual(await namespaces(h), [
         `PersistentVolume/share=${other}`,
         `PersistentVolumeClaim/share=${other}`,
@@ -647,11 +755,12 @@ describe("namespaces", () => {
 
     test("workloads, and the services they make", async () => {
       const h = new App("web", "/apps/web");
-      const d = h.deployment("d", { namespace: other });
+      const ns = h.namespace({ name: other });
+      const d = ns.deployment("d");
       d.addContainer("c", { image: "i" });
       d.service({ http: 80 });
-      h.statefulSet("s", { namespace: other });
-      h.daemonSet("n", { namespace: other });
+      ns.statefulSet("s");
+      ns.daemonSet("n");
       assert.deepEqual(await namespaces(h), [
         `Deployment/d=${other}`,
         `Service/d=${other}`,
@@ -662,33 +771,28 @@ describe("namespaces", () => {
 
     test("routes", async () => {
       const h = new App("web", "/apps/web");
-      h.httpRoute("family", "http.example.test", { namespace: other }).match(
+      const ns = h.namespace({ name: other });
+      ns.httpRoute("family", "http.example.test").match(
         { kind: "Service", name: "svc" },
         80,
       );
-      h.grpcRoute("family", "grpc.example.test", {
-        namespace: other,
-        timeout: "1m",
-      }).match({ kind: "Service", name: "svc" }, 80);
-      h.tcpRoute(
+      ns.grpcRoute("family", "grpc.example.test", { timeout: "1m" }).match(
+        { kind: "Service", name: "svc" },
+        80,
+      );
+      ns.tcpRoute(
         "family",
         "tcp.example.test",
         22,
         { kind: "Service", name: "svc" },
         22,
-        {
-          namespace: other,
-        },
       );
-      h.udpRoute(
+      ns.udpRoute(
         "family",
         "udp.example.test",
         53,
         { kind: "Service", name: "svc" },
         53,
-        {
-          namespace: other,
-        },
       );
       const found = await namespaces(h);
       assert.equal(found.length, 2 + 3 + 2 + 2);
@@ -700,7 +804,7 @@ describe("namespaces", () => {
 
     test("autoscalers", async () => {
       const h = new App("web", "/apps/web");
-      h.vpa({ kind: "Deployment", name: "d" }, { namespace: other });
+      h.namespace({ name: other }).vpa({ kind: "Deployment", name: "d" });
       assert.deepEqual(await namespaces(h), [
         `VerticalPodAutoscaler/d=${other}`,
       ]);
@@ -708,8 +812,9 @@ describe("namespaces", () => {
 
     test("garage keys and buckets", async () => {
       const h = new App("web", "/apps/web");
-      const key = h.garageKey("k", { namespace: other });
-      h.garageBucket("b", [key], { namespace: other });
+      const ns = h.namespace({ name: other });
+      const key = ns.garageKey("k");
+      ns.garageBucket("b", [key]);
       assert.deepEqual(await namespaces(h), [
         `GarageKey/k=${other}`,
         `GarageReferenceGrant/${other}-web=garage`,
@@ -722,17 +827,19 @@ describe("namespaces", () => {
         (await h.objects()).filter((o) => o.kind === "GarageReferenceGrant");
 
       const keys = new App("web", "/apps/web");
-      keys.garageKey("k", { namespace: other });
-      keys.garageKey("l", { namespace: other });
+      const keysNs = keys.namespace({ name: other });
+      keysNs.garageKey("k");
+      keysNs.garageKey("l");
       assert.deepEqual(
         (await grant(keys)).map((g) => g.spec.from),
         [[{ kind: "GarageKey", namespace: other }]],
       );
 
       const both = new App("web", "/apps/web");
-      const key = both.garageKey("k", { namespace: other });
-      both.garageBucket("b", [key], { namespace: other });
-      both.garageKey("m", { namespace: "elsewhere" });
+      const bothNs = both.namespace({ name: other });
+      const key = bothNs.garageKey("k");
+      bothNs.garageBucket("b", [key]);
+      both.namespace({ name: "elsewhere" }).garageKey("m");
       const grants = await grant(both);
       assert.deepEqual(
         grants.map((g) => [g.metadata.name, g.metadata.namespace]),
@@ -752,7 +859,7 @@ describe("namespaces", () => {
 
     test("no grant within the cluster's own namespace", async () => {
       const h = new App("web", "/apps/web");
-      h.garageKey("k", { namespace: "garage" });
+      h.namespace({ name: "garage" }).garageKey("k");
       assert.ok(
         !(await h.objects()).some((o) => o.kind === "GarageReferenceGrant"),
       );
@@ -760,7 +867,7 @@ describe("namespaces", () => {
 
     test("secrets pushed through external secrets", async () => {
       const h = new App("web", "/apps/web");
-      h.secrets("one", ["a"], { namespace: other });
+      h.namespace({ name: other }).secrets("one", ["a"]);
       const objects = await h.objects();
       assert.equal(
         objects.find((o) => o.kind === "SecretStore")!.spec.provider.kubernetes
@@ -771,7 +878,7 @@ describe("namespaces", () => {
 
     test("an assets server, with all that it makes", async () => {
       const h = new App("llama-cpp", "/apps/llama-cpp");
-      const { url } = h.assetsServer({ namespace: other });
+      const { url } = h.namespace({ name: other }).assetsServer();
       // the objects that push Secrets live in external-secrets-operator, and push into the namespace
       const pushes = /^(SecretStore|PushSecret)\//;
       const grants = (await namespaces(h)).filter((f) =>
@@ -801,13 +908,13 @@ describe("namespaces", () => {
         { skip: !hasCommand("kustomize") && "kustomize is not installed" },
         async () => {
           const named = new App("web", "/apps/web");
-          named.kustomize(sa, { namespace: other });
+          await named.namespace({ name: other }).kustomize(sa);
           assert.deepEqual(await namespaces(named), [
             `ServiceAccount/a=${other}`,
           ]);
 
           const own = new App("web", "/apps/web");
-          own.kustomize(sa);
+          await own.namespace().kustomize(sa);
           assert.deepEqual(await namespaces(own), ["ServiceAccount/a=web"]);
         },
       );
@@ -848,11 +955,14 @@ metadata:
     );
     const url = "https://example.test/demo?version=1.0.0";
 
-    test("is rendered for the app's namespace, which objects that name none are given too", async () => {
+    test("is rendered for the namespace it was created through, which objects that name none are given too", async () => {
       const h = new App("web", "/apps/web");
-      h.helm(url);
+      await h.namespace().helm(url);
       assert.deepEqual(
-        (await h.objects()).map((o) => [o.metadata.name, o.metadata.namespace]),
+        withoutNamespace(await h.objects()).map((o) => [
+          o.metadata.name,
+          o.metadata.namespace,
+        ]),
         [
           ["named", "web"],
           ["unnamed", "web"],
@@ -860,11 +970,14 @@ metadata:
       );
     });
 
-    test("is rendered for the namespace it is given, which objects that name none are given too", async () => {
+    test("is rendered for another namespace the same way", async () => {
       const h = new App("web", "/apps/web");
-      h.helm(url, { namespace: "other" });
+      await h.namespace({ name: "other" }).helm(url);
       assert.deepEqual(
-        (await h.objects()).map((o) => [o.metadata.name, o.metadata.namespace]),
+        withoutNamespace(await h.objects()).map((o) => [
+          o.metadata.name,
+          o.metadata.namespace,
+        ]),
         [
           ["named", "other"],
           ["unnamed", "other"],
@@ -887,7 +1000,7 @@ describe("the objects an app publishes", () => {
 
   test("have a null creationTimestamp, and empty labels and annotations, dropped", async () => {
     const h = new App("web", "/apps/web");
-    h.add(
+    h.namespace().add(
       thing({
         name: "x",
         creationTimestamp: null,
@@ -895,20 +1008,20 @@ describe("the objects an app publishes", () => {
         annotations: {},
       }),
     );
-    const [object] = await h.objects();
+    const [object] = withoutNamespace(await h.objects());
     assert.deepEqual(object.metadata, { name: "x", namespace: "web" });
   });
 
   test("keep everything else", async () => {
     const h = new App("web", "/apps/web");
-    h.add(
+    h.namespace().add(
       thing({
         name: "x",
         labels: { a: "b" },
         creationTimestamp: "2020-01-01T00:00:00Z",
       }),
     );
-    const [object] = await h.objects();
+    const [object] = withoutNamespace(await h.objects());
     assert.deepEqual(object.metadata, {
       name: "x",
       namespace: "web",
@@ -919,20 +1032,21 @@ describe("the objects an app publishes", () => {
 
   test("are tidied after the hooks, which can add what is dropped", async () => {
     const h = new App("web", "/apps/web");
-    h.add(thing({ name: "x" }));
+    h.namespace().add(thing({ name: "x" }));
     h.postRender((e) => {
       e.find({ kind: "Thing", name: "x" }).metadata.labels = {};
     });
-    const [object] = await h.objects();
+    const [object] = withoutNamespace(await h.objects());
     assert.equal("labels" in object.metadata, false);
   });
 
   test("are stamped with a namespace, cluster-scoped ones included", async () => {
     const h = new App("web", "/apps/web");
-    h.add({ apiVersion: "v1", kind: "ClusterRole", metadata: { name: "a" } });
-    h.add(thing({ name: "b", namespace: "other" }));
+    const ns = h.namespace();
+    ns.add({ apiVersion: "v1", kind: "ClusterRole", metadata: { name: "a" } });
+    ns.add(thing({ name: "b", namespace: "other" }));
     assert.deepEqual(
-      (await h.objects()).map((o) => o.metadata.namespace),
+      withoutNamespace(await h.objects()).map((o) => o.metadata.namespace),
       ["web", "other"],
     );
   });
@@ -940,31 +1054,31 @@ describe("the objects an app publishes", () => {
   test("must each have an apiVersion, a kind and a name, and the error names the app's file", async () => {
     const without = async (object: Record<string, any>) => {
       const h = new App("web", "/apps/web");
-      h.add(object);
+      h.namespace().add(object);
       return h.objects();
     };
     await assert.rejects(
       () => without({ kind: "Thing", metadata: { name: "x" } }),
-      /\/apps\/web\/app\.ts: object 0 has no 'apiVersion'/,
+      /\/apps\/web\/app\.ts: object 1 has no 'apiVersion'/,
     );
     await assert.rejects(
       () => without({ apiVersion: "v1", metadata: { name: "x" } }),
-      /object 0 has no 'kind'/,
+      /object 1 has no 'kind'/,
     );
     await assert.rejects(
       () => without({ apiVersion: "v1", kind: "Thing", metadata: {} }),
-      /Thing \(object 0\) has no 'metadata.name'/,
+      /Thing \(object 1\) has no 'metadata.name'/,
     );
   });
 
   test("are checked before the hooks run", async () => {
     const h = new App("web", "/apps/web");
-    h.add({ kind: "Thing", metadata: { name: "x" } });
+    h.namespace().add({ kind: "Thing", metadata: { name: "x" } });
     let ran = false;
     h.postRender(() => {
       ran = true;
     });
-    await assert.rejects(() => h.objects(), /has no 'apiVersion'/);
+    assert.throws(() => h.objects(), /has no 'apiVersion'/);
     assert.equal(ran, false);
   });
 });

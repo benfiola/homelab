@@ -6,9 +6,9 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  h.add({
+  ns.add({
     apiVersion: "monitoring.coreos.com/v1alpha1",
     kind: "AlertmanagerConfig",
     metadata: {
@@ -126,7 +126,7 @@ export const app: AppFunction = (h) => {
 
   const security = h.securityContext();
 
-  h.add({
+  ns.add({
     apiVersion: "monitoring.coreos.com/v1",
     kind: "Alertmanager",
     metadata: { name: "alertmanager" },
@@ -165,7 +165,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.vpa({
+  ns.vpa({
     kind: "Alertmanager",
     name: "alertmanager",
     apiVersion: "monitoring.coreos.com/v1",

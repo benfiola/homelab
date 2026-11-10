@@ -5,15 +5,16 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
-  h.kustomize(
+export const app: AppFunction = async (h) => {
+  const ns = h.namespace();
+
+  await ns.kustomize(
     "github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.7.0",
   );
 
-  h.namespace();
+  ns.vpa({ kind: "Deployment", name: "snapshot-controller" });
 
-  h.vpa({ kind: "Deployment", name: "snapshot-controller" });
-
+  const security = h.securityContext();
   h.postRender((e) => {
     const deployment = e.find({
       kind: "Deployment",
@@ -21,20 +22,8 @@ export const app: AppFunction = (h) => {
     });
     const controller = e.container(deployment, "snapshot-controller");
     controller.image = "registry.k8s.io/sig-storage/snapshot-controller:v8.7.0";
-    deployment.spec.template.spec.securityContext = {
-      fsGroup: 65534,
-      runAsNonRoot: true,
-      runAsUser: 65534,
-      runAsGroup: 65534,
-      seccompProfile: { type: "RuntimeDefault" },
-    };
-    controller.securityContext = {
-      allowPrivilegeEscalation: false,
-      capabilities: { drop: ["ALL"], add: [] },
-      runAsNonRoot: true,
-      runAsUser: 65534,
-      runAsGroup: 65534,
-    };
+    deployment.spec.template.spec.securityContext = security.pod;
+    controller.securityContext = security.container;
   });
 };
 

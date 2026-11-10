@@ -6,11 +6,11 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
-  h.namespace();
+  const ns = h.namespace();
 
-  const secrets = h.secrets("secrets", ["admin-password"]);
+  const secrets = ns.secrets("secrets", ["admin-password"]);
 
-  h.add(
+  ns.add(
     {
       apiVersion: "rbac.authorization.k8s.io/v1",
       kind: "ClusterRole",
@@ -38,7 +38,7 @@ export const app: AppFunction = (h) => {
     },
   );
 
-  const provisioning = h.configMap(
+  const provisioning = ns.configMap(
     "provisioning",
     h.files("provisioning.yaml"),
   );
@@ -46,7 +46,7 @@ export const app: AppFunction = (h) => {
   const security = h.securityContext();
   const externalUrl = new URL("https://metrics.fiola.dev");
 
-  h.add({
+  ns.add({
     apiVersion: "grafana.integreatly.org/v1beta1",
     kind: "Grafana",
     metadata: { name: "grafana", labels: { instance: h.app } },
@@ -149,7 +149,7 @@ export const app: AppFunction = (h) => {
     },
   });
 
-  h.httpRoute("infrastructure", externalUrl.hostname).match(
+  ns.httpRoute("infrastructure", externalUrl.hostname).match(
     { kind: "Service", name: "grafana-service" },
     3000,
   );
