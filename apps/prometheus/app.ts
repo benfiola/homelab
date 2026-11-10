@@ -150,7 +150,7 @@ export const network: NetworkFunction = (n) => {
   prometheus
     .to(prometheus, tcp(9090))
     .to(n.ref("alertmanager"), tcp(9093))
-    // node exporter, kubelet, the control plane, and cilium's agent, operator, envoy and hubble
-    .to(n.nodes, tcp(9100, 9962, 9963, 9964, 9965, 10250, 10257, 10259))
+    // node exporter, kubelet, the control plane, and cilium's agent, operator and envoy
+    .to(n.nodes, tcp(9100, 9962, 9963, 9964, 10250, 10257, 10259))
     .to(n.kubeApiServer, tcp(6443));
 };

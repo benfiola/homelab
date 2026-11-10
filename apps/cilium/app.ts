@@ -19,18 +19,6 @@ export const app: AppFunction = async (h) => {
       cni: { exclusive: false },
       hostFirewall: { enabled: true },
       hubble: {
-        metrics: {
-          enabled: [
-            "dns",
-            "drop",
-            "tcp",
-            "flow",
-            "port-distribution",
-            "icmp",
-            "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction",
-          ],
-          serviceMonitor: { enabled: true },
-        },
         relay: {
           enabled: true,
           podSecurityContext: security.pod,
