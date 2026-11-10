@@ -8,7 +8,7 @@ import {
 export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
-  await ns.helm("oci://docker.io/envoyproxy/gateway-crds-helm?version=v1.9.3", {
+  await ns.helm("oci://docker.io/envoyproxy/gateway-crds-helm?version=1.10.0", {
     release: "envoy-gateway",
     values: { crds: { envoyGateway: { enabled: true } } },
   });
