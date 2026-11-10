@@ -4,7 +4,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
   await ns.helm(
-    "https://prometheus-community.github.io/helm-charts/prometheus-node-exporter?version=4.60.1",
+    "https://prometheus-community.github.io/helm-charts/prometheus-node-exporter?version=5.0.0",
     {
       values: {
         // the kubernetes mixin selects node exporter by this job name
