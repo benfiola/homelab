@@ -13,6 +13,7 @@ export const app: AppFunction = async (h) => {
     "https://backube.github.io/helm-charts/volsync?version=0.17.0",
     {
       values: {
+        metrics: { disableAuth: true },
         "kube-rbac-proxy-resources": {
           requests: { cpu: "5m", memory: "64Mi" },
           limits: null,

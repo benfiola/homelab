@@ -9,7 +9,7 @@ import {
 export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
-  const chart = await ns.helm(
+  await ns.helm(
     "https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2",
     {
       release: "nvidia-gpu-operator",
@@ -26,8 +26,6 @@ export const app: AppFunction = async (h) => {
       },
     },
   );
-
-  chart.find("Deployment", "gpu-operator").podMonitor("metrics");
 
   ns.configMap("user-config", {
     any: `"version": "v1"
