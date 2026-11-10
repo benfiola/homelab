@@ -12,6 +12,7 @@ export const app: AppFunction = async (h) => {
 
   await ns.helm("https://grafana.github.io/helm-charts/alloy?version=1.15.0", {
     values: {
+      serviceMonitor: { enabled: true },
       alloy: {
         configMap: {
           content: `discovery.kubernetes "pod" {
@@ -82,4 +83,5 @@ export const network: NetworkFunction = (n) => {
 
   alloy.to(n.kubeApiServer, tcp(6443)).to(n.ref("loki-gateway"), tcp(8080));
   n.host.to(alloy, tcp(12345));
+  n.ref("prometheus").to(alloy, tcp(12345));
 };

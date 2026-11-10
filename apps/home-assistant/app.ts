@@ -68,7 +68,6 @@ export const network: NetworkFunction = (n) => {
     pod("home-assistant", "home-assistant"),
   );
 
-  n.host.to(homeAssistant, tcp(8123));
   homeAssistant
     .from(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("224.0.0.251/32"), udp(5353))
@@ -80,5 +79,6 @@ export const network: NetworkFunction = (n) => {
     .to(n.ref("wyoming-openai"), tcp(10300))
     .to(n.ref("wyoming-whisper"), tcp(10300))
     .to(dns("mobile-apps.home-assistant.io"), tcp(443));
+  n.host.to(homeAssistant, tcp(8123));
   n.ref("gateway-family").to(homeAssistant, tcp(8123));
 };

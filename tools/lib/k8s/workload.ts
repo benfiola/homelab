@@ -1,4 +1,5 @@
 import { compact } from "../object.ts";
+import { podMonitor, Service, type MonitorOptions } from "./monitoring.ts";
 
 type Obj = Record<string, any>;
 
@@ -415,9 +416,7 @@ export class Workload {
     return this;
   }
 
-  service(
-    ports: ServicePorts,
-  ): Obj & { kind: string; metadata: { name: string } } {
+  service(ports: ServicePorts): Service {
     const service = {
       apiVersion: "v1",
       kind: "Service",
@@ -430,7 +429,15 @@ export class Workload {
       },
     };
     this.sink?.(service);
-    return service;
+    return new Service(service, (object) => this.sink?.(object));
+  }
+
+  // scrapes the pods' container port named `port`
+  podMonitor(port: string, opts?: MonitorOptions): this {
+    this.sink?.(
+      podMonitor(this.name, this.obj.spec.selector.matchLabels, port, opts),
+    );
+    return this;
   }
 
   // what routes and autoscalers point at

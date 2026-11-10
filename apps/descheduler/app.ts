@@ -15,6 +15,7 @@ export const app: AppFunction = async (h) => {
     {
       values: {
         kind: "Deployment",
+        serviceMonitor: { enabled: true },
         podSecurityContext: security.pod,
         securityContext: security.container,
         resources: { requests: { cpu: "25m", memory: "256Mi" }, limits: null },
@@ -95,4 +96,5 @@ export const network: NetworkFunction = (n) => {
 
   descheduler.to(n.kubeApiServer, tcp(6443));
   n.host.to(descheduler, tcp(10258));
+  n.ref("prometheus").to(descheduler, tcp(10258));
 };

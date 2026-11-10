@@ -12,6 +12,8 @@ export const app: AppFunction = async (h) => {
     "https://kubernetes-sigs.github.io/metrics-server/metrics-server?version=3.14.0",
     {
       values: {
+        metrics: { enabled: true },
+        serviceMonitor: { enabled: true },
         args: [
           "--kubelet-insecure-tls",
           "--kubelet-preferred-address-types=InternalIP",
@@ -29,7 +31,8 @@ export const network: NetworkFunction = (n) => {
     pod("metrics-server", "metrics-server"),
   );
 
+  metricsServer.to(n.kubeApiServer, tcp(6443)).to(n.nodes, tcp(10250));
   n.controlPlane.to(metricsServer, tcp(10250));
   n.host.to(metricsServer, tcp(10250));
-  metricsServer.to(n.kubeApiServer, tcp(6443)).to(n.nodes, tcp(10250));
+  n.ref("prometheus").to(metricsServer, tcp(10250));
 };

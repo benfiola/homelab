@@ -20,6 +20,7 @@ export const app: AppFunction = async (h) => {
             securityContext: security.pod,
             containerSecurityContext: security.container,
           },
+          podMonitor: { enabled: true },
           reloadStrategy: "annotations",
         },
       },
@@ -34,4 +35,5 @@ export const network: NetworkFunction = (n) => {
 
   reloader.to(n.kubeApiServer, tcp(6443));
   n.host.to(reloader, tcp(9090));
+  n.ref("prometheus").to(reloader, tcp(9090));
 };

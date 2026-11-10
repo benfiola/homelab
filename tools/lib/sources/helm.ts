@@ -10,6 +10,14 @@ type Obj = Record<string, any>;
 // cluster (or tool) it runs against
 export const kubeVersion = "1.34.0";
 
+// the monitors the cluster's prometheus operator provides. charts check for these before they
+// render their own monitors, and a render has no cluster to ask
+const apiVersions = [
+  "monitoring.coreos.com/v1",
+  "monitoring.coreos.com/v1/PodMonitor",
+  "monitoring.coreos.com/v1/ServiceMonitor",
+];
+
 export interface HelmOptions {
   // where the chart is published: a repository url, or an `oci://` registry path
   repo: string;
@@ -116,6 +124,7 @@ export const helm = async (
     "--kube-version",
     opts.kubeVersion ?? kubeVersion,
     "--skip-tests",
+    ...apiVersions.flatMap((v) => ["--api-versions", v]),
     ...(opts.crds === false ? [] : ["--include-crds"]),
   ];
   const template = (extra: string[]) =>

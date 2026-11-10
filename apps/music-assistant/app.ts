@@ -48,7 +48,6 @@ export const network: NetworkFunction = (n) => {
     pod("music-assistant", "music-assistant"),
   );
 
-  n.host.to(musicAssistant, tcp(8095));
   musicAssistant
     .from(cidrs("224.0.0.251/32"), udp(5353))
     .to(cidrs("224.0.0.251/32"), udp(5353))
@@ -58,5 +57,6 @@ export const network: NetworkFunction = (n) => {
     .to(dns("tidal.com"), tcp(443))
     .to(dns("*.tidal.com"), tcp(443))
     .to(dns("*.*.tidal.com"), tcp(443));
+  n.host.to(musicAssistant, tcp(8095));
   n.ref("gateway-family").to(musicAssistant, tcp(8095, 8097));
 };

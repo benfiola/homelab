@@ -35,7 +35,7 @@ export const network: NetworkFunction = (n) => {
     pod("intel-device-plugins-operator", "intel-device-plugins-operator"),
   );
 
-  n.controlPlane.to(intelDevicePluginsOperator, tcp(9443));
   intelDevicePluginsOperator.to(n.kubeApiServer, tcp(6443));
+  n.controlPlane.to(intelDevicePluginsOperator, tcp(9443));
   n.host.to(intelDevicePluginsOperator, tcp(8081, 9443));
 };

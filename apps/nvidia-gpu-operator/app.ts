@@ -9,7 +9,7 @@ import {
 export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
-  await ns.helm(
+  const chart = await ns.helm(
     "https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2",
     {
       release: "nvidia-gpu-operator",
@@ -26,6 +26,8 @@ export const app: AppFunction = async (h) => {
       },
     },
   );
+
+  chart.find("Deployment", "gpu-operator").podMonitor("metrics");
 
   ns.configMap("user-config", {
     any: `"version": "v1"
@@ -72,9 +74,14 @@ export const network: NetworkFunction = (n) => {
   );
 
   nvidiaDevicePlugin.to(n.kubeApiServer, tcp(6443));
+
   nvidiaGpuFeatureDiscovery.to(n.kubeApiServer, tcp(6443));
+
   nvidiaGpuOperator.to(n.kubeApiServer, tcp(6443));
   n.host.to(nvidiaGpuOperator, tcp(8081));
+  n.ref("prometheus").to(nvidiaGpuOperator, tcp(8080));
+
   nvidiaGpuOperatorUpgradeCrd.to(n.kubeApiServer, tcp(6443));
+
   nvidiaOperatorValidator.to(n.kubeApiServer, tcp(6443));
 };

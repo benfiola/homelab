@@ -339,6 +339,17 @@ export const network: NetworkFunction = (n) => {
     .to(dns("m.media-amazon.com"), tcp(443))
     .to(dns("www.omdbapi.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443));
+  n.host.to(mediarrJellyfin, tcp(8096));
+  n.ref("gateway-friends").to(mediarrJellyfin, tcp(8096));
+
+  mediarrMaintainerr
+    .to(mediarrRadarr, tcp(7878))
+    .to(mediarrSeerr, tcp(5055))
+    .to(mediarrSonarr, tcp(8989))
+    .to(mediarrJellyfin, tcp(8096))
+    .to(dns("api.themoviedb.org"), tcp(443));
+  n.host.to(mediarrMaintainerr, tcp(6246));
+
   mediarrProfilarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSonarr, tcp(8989))
@@ -346,23 +357,29 @@ export const network: NetworkFunction = (n) => {
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
-  mediarrMaintainerr
-    .to(mediarrRadarr, tcp(7878))
-    .to(mediarrSeerr, tcp(5055))
-    .to(mediarrSonarr, tcp(8989))
-    .to(mediarrJellyfin, tcp(8096))
-    .to(dns("api.themoviedb.org"), tcp(443));
+  n.host.to(mediarrProfilarr, tcp(6868));
+
   mediarrProwlarr
     .to(mediarrRadarr, tcp(7878))
     .to(mediarrSabnzbd, tcp(8080))
     .to(mediarrSonarr, tcp(8989))
     // needs access to all indexers
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
+  n.host.to(mediarrProwlarr, tcp(9696));
+
   mediarrRadarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
+  n.host.to(mediarrRadarr, tcp(7878));
+
+  mediarrSabnzbd
+    // needs access to general VPNs (and VPN healthchecks)
+    .to(cidrs("0.0.0.0/0"), udp(51820))
+    .to(cidrs("0.0.0.0/0"), icmpv4(3));
+  n.host.to(mediarrSabnzbd, tcp(8080));
+
   mediarrSeerr
     .to(mediarrJellyfin, tcp(8096))
     .to(mediarrRadarr, tcp(7878))
@@ -374,25 +391,13 @@ export const network: NetworkFunction = (n) => {
     .to(dns("api4.thetvdb.com"), tcp(443))
     // rotten tomatoes ratings
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
+  n.host.to(mediarrSeerr, tcp(5055));
+  n.ref("gateway-friends").to(mediarrSeerr, tcp(5055));
+
   mediarrSonarr
     .to(mediarrProwlarr, tcp(9696))
     .to(mediarrSabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  mediarrSabnzbd
-    // needs access to general VPNs (and VPN healthchecks)
-    .to(cidrs("0.0.0.0/0"), udp(51820))
-    .to(cidrs("0.0.0.0/0"), icmpv4(3));
-  n.host
-    .to(mediarrJellyfin, tcp(8096))
-    .to(mediarrMaintainerr, tcp(6246))
-    .to(mediarrProfilarr, tcp(6868))
-    .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrRadarr, tcp(7878))
-    .to(mediarrSabnzbd, tcp(8080))
-    .to(mediarrSeerr, tcp(5055))
-    .to(mediarrSonarr, tcp(8989));
-  n.ref("gateway-friends")
-    .to(mediarrJellyfin, tcp(8096))
-    .to(mediarrSeerr, tcp(5055));
+  n.host.to(mediarrSonarr, tcp(8989));
 };

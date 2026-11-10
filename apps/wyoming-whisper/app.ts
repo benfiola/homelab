@@ -55,10 +55,10 @@ export const network: NetworkFunction = (n) => {
     pod("wyoming-whisper", "wyoming-whisper"),
   );
 
-  n.host.to(wyomingWhisper, tcp(10300));
   wyomingWhisper
     .to(n.ref("home-assistant"), tcp(8123))
     .to(dns("us.aws.cdn.hf.co"), tcp(443))
     .to(dns("cas-server.xethub.hf.co"), tcp(443))
     .to(dns("huggingface.co"), tcp(443));
+  n.host.to(wyomingWhisper, tcp(10300));
 };

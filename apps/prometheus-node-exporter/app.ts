@@ -5,7 +5,18 @@ export const app: AppFunction = async (h) => {
 
   await ns.helm(
     "https://prometheus-community.github.io/helm-charts/prometheus-node-exporter?version=4.60.1",
-    { values: { tolerations: [{ operator: "Exists" }] } },
+    {
+      values: {
+        // the kubernetes mixin selects node exporter by this job name
+        prometheus: {
+          monitor: {
+            enabled: true,
+            relabelings: [{ targetLabel: "job", replacement: "node-exporter" }],
+          },
+        },
+        tolerations: [{ operator: "Exists" }],
+      },
+    },
   );
 
   ns.vpa({ kind: "DaemonSet", name: "prometheus-node-exporter" });

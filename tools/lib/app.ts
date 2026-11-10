@@ -33,6 +33,7 @@ import {
   secretRef,
   type SecretKeys,
 } from "./k8s/secrets.ts";
+import { podMonitor, Service, type MonitorOptions } from "./k8s/monitoring.ts";
 import { nasVolume } from "./k8s/storage.ts";
 import { volsyncBackup, type VolsyncBackupOptions } from "./k8s/volsync.ts";
 import {
@@ -57,6 +58,7 @@ import { manifest } from "./sources/manifest.ts";
 
 type Obj = Record<string, any>;
 
+export type { Service } from "./k8s/monitoring.ts";
 export type { Env, Workload } from "./k8s/workload.ts";
 
 export interface KustomizeSourceOptions {
@@ -365,6 +367,17 @@ export class Namespace {
     return this;
   }
 
+  // scrapes pods that no Workload made (an operator's, say): those labelled `selector`, on the
+  // container port named `port`. pods made through a Workload use `Workload.podMonitor` instead
+  podMonitor(
+    name: string,
+    selector: Record<string, string>,
+    port: string,
+    opts?: MonitorOptions,
+  ): this {
+    return this.add(podMonitor(name, selector, port, opts));
+  }
+
   vpa(target: VpaTarget | { target: VpaTarget }, opts?: VpaOptions): this {
     return this.add(vpa("target" in target ? target.target : target, opts));
   }
@@ -540,13 +553,16 @@ export class ObjectRef {
 const wrapFound = (
   obj: Obj,
   sink: (object: Obj) => void,
-): Workload | ObjectRef =>
+): Workload | Service | ObjectRef =>
   (workloadKinds as readonly string[]).includes(obj.kind)
     ? Workload.wrap(obj, sink)
-    : new ObjectRef(obj, sink);
+    : obj.kind === "Service"
+      ? new Service(obj, sink)
+      : new ObjectRef(obj, sink);
 
 // the objects of a `helm`, `kustomize` or `manifest` call, already added. `find` gives a handle
-// to one of them (a Workload, or an ObjectRef) so helpers like `vpa` can be called on it directly
+// to one of them (a Workload, a Service, or an ObjectRef) so helpers like `vpa` and the monitors
+// can be called on it directly
 export class Source {
   private readonly objects: Obj[];
   private readonly sink: (object: Obj) => void;
@@ -557,14 +573,16 @@ export class Source {
   }
 
   find(kind: WorkloadKind, name: string): Workload;
+  find(kind: "Service", name: string): Service;
   find(kind: string, name: string): ObjectRef;
-  find(kind: string, name: string): Workload | ObjectRef {
+  find(kind: string, name: string): Workload | Service | ObjectRef {
     return wrapFound(editor(this.objects).find({ kind, name }), this.sink);
   }
 
   findAll(kind: WorkloadKind, name: string): Workload[];
+  findAll(kind: "Service", name: string): Service[];
   findAll(kind: string, name: string): ObjectRef[];
-  findAll(kind: string, name: string): (Workload | ObjectRef)[] {
+  findAll(kind: string, name: string): (Workload | Service | ObjectRef)[] {
     return editor(this.objects)
       .findAll({ kind, name })
       .map((obj) => wrapFound(obj, this.sink));

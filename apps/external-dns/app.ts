@@ -23,6 +23,7 @@ export const app: AppFunction = async (h) => {
         image: externalDns,
         nameOverride: "external-dns-mikrotik",
         policy: "sync",
+        serviceMonitor: { enabled: true },
         provider: {
           name: "webhook",
           webhook: {
@@ -83,6 +84,7 @@ export const app: AppFunction = async (h) => {
         ],
         nameOverride: "external-dns-cloudflare",
         policy: "sync",
+        serviceMonitor: { enabled: true },
         provider: { name: "cloudflare" },
         sources: [
           "gateway-grpcroute",
@@ -121,8 +123,11 @@ export const network: NetworkFunction = (n) => {
     .to(n.kubeApiServer, tcp(6443))
     .to(dns("api.cloudflare.com"), tcp(443));
   n.host.to(externalDnsCloudflare, tcp(7979, 8080));
+  n.ref("prometheus").to(externalDnsCloudflare, tcp(7979));
+
   externalDnsMikrotik
     .to(n.kubeApiServer, tcp(6443))
     .to(dns("router.fiola.dev"), tcp(80));
   n.host.to(externalDnsMikrotik, tcp(7979, 8080));
+  n.ref("prometheus").to(externalDnsMikrotik, tcp(7979, 8080));
 };

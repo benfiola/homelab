@@ -19,6 +19,7 @@ export const app: AppFunction = async (h) => {
         gatewayAPI: { enabled: true, enableListenerSet: true },
       },
       crds: { enabled: true, keep: false },
+      prometheus: { servicemonitor: { enabled: true } },
     },
   });
 
@@ -90,14 +91,20 @@ export const network: NetworkFunction = (n) => {
   );
 
   certManagerCainjector.to(n.kubeApiServer, tcp(6443));
+  n.ref("prometheus").to(certManagerCainjector, tcp(9402));
+
   certManagerController
     .to(n.kubeApiServer, tcp(6443))
     .to(dns("api.cloudflare.com"), tcp(443))
     .to(dns("*.ns.cloudflare.com"), udp(53))
     .to(dns("*.api.letsencrypt.org"), tcp(443));
   n.host.to(certManagerController, tcp(9403));
+  n.ref("prometheus").to(certManagerController, tcp(9402));
+
   certManagerStartupapicheck.to(n.kubeApiServer, tcp(6443));
+
   certManagerWebhook.to(n.kubeApiServer, tcp(6443));
   n.controlPlane.to(certManagerWebhook, tcp(10250));
   n.host.to(certManagerWebhook, tcp(6080));
+  n.ref("prometheus").to(certManagerWebhook, tcp(9402));
 };

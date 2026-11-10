@@ -56,5 +56,6 @@ export const network: NetworkFunction = (n) => {
   const garage = n.subject("garage", pod("garage", "garage"));
 
   assets.to(garage, tcp(3900));
+
   garage.to(garage, tcp(3901));
 };

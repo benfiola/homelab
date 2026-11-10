@@ -10,7 +10,7 @@ export const app: AppFunction = async (h) => {
 
   const security = h.securityContext();
 
-  await ns.helm(
+  const chart = await ns.helm(
     "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.15.0",
     {
       values: {
@@ -35,6 +35,12 @@ export const app: AppFunction = async (h) => {
       },
     },
   );
+
+  for (const component of ["admission-controller", "recommender", "updater"]) {
+    chart
+      .find("Deployment", `vertical-pod-autoscaler-${component}`)
+      .podMonitor("prometheus");
+  }
 
   const advisory = { advisory: true };
   ns.vpa(
@@ -68,11 +74,16 @@ export const network: NetworkFunction = (n) => {
     component("updater", "vertical-pod-autoscaler"),
   );
 
+  verticalPodAutoscalerAdmissionController.to(n.kubeApiServer, tcp(6443));
   n.controlPlane.to(verticalPodAutoscalerAdmissionController, tcp(8000));
   n.host.to(verticalPodAutoscalerAdmissionController, tcp(8000, 8944));
-  verticalPodAutoscalerAdmissionController.to(n.kubeApiServer, tcp(6443));
-  n.host.to(verticalPodAutoscalerRecommender, tcp(8942));
+  n.ref("prometheus").to(verticalPodAutoscalerAdmissionController, tcp(8944));
+
   verticalPodAutoscalerRecommender.to(n.kubeApiServer, tcp(6443));
-  n.host.to(verticalPodAutoscalerUpdater, tcp(8943));
+  n.host.to(verticalPodAutoscalerRecommender, tcp(8942));
+  n.ref("prometheus").to(verticalPodAutoscalerRecommender, tcp(8942));
+
   verticalPodAutoscalerUpdater.to(n.kubeApiServer, tcp(6443));
+  n.host.to(verticalPodAutoscalerUpdater, tcp(8943));
+  n.ref("prometheus").to(verticalPodAutoscalerUpdater, tcp(8943));
 };

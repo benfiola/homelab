@@ -16,6 +16,7 @@ export const app: AppFunction = async (h) => {
       values: {
         podSecurityContext: security.pod,
         securityContext: security.container,
+        serviceMonitor: { enabled: true },
       },
     },
   );
@@ -33,4 +34,5 @@ export const network: NetworkFunction = (n) => {
     .to(n.kubeApiServer, tcp(6443))
     .to(n.ref("grafana"), tcp(3000));
   n.host.to(grafanaOperator, tcp(8081));
+  n.ref("prometheus").to(grafanaOperator, tcp(9090));
 };

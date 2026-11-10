@@ -8,7 +8,7 @@ import {
 export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
-  await ns.kustomize(
+  const bundle = await ns.kustomize(
     "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.2/bundle.yaml",
   );
 
@@ -50,6 +50,8 @@ export const app: AppFunction = async (h) => {
     );
   });
 
+  bundle.find("Deployment", "prometheus-operator").podMonitor("http");
+
   ns.vpa({ kind: "Deployment", name: "prometheus-operator" });
 };
 
@@ -60,4 +62,5 @@ export const network: NetworkFunction = (n) => {
   );
 
   prometheusOperator.to(n.kubeApiServer, tcp(6443));
+  n.ref("prometheus").to(prometheusOperator, tcp(8080));
 };

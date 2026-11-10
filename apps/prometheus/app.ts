@@ -128,6 +128,12 @@ export const app: AppFunction = (h) => {
     },
   );
 
+  ns.podMonitor(
+    "prometheus",
+    { "app.kubernetes.io/name": "prometheus" },
+    "web",
+  );
+
   ns.vpa({
     kind: "Prometheus",
     name: "prometheus",
@@ -139,10 +145,12 @@ export const network: NetworkFunction = (n) => {
   const prometheus = n.subject("prometheus", pod("prometheus", "prometheus"));
 
   n.host.to(prometheus, tcp(9090));
+  // what it scrapes outside the apps' own monitors. each app allows prometheus to reach the
+  // metrics of its own subjects (`n.ref("prometheus").to(subject, ...)`)
   prometheus
+    .to(prometheus, tcp(9090))
     .to(n.ref("alertmanager"), tcp(9093))
-    .to(n.nodes, tcp(9100, 10250, 10257, 10259))
-    .to(n.kubeApiServer, tcp(6443))
-    .to(n.ref("kube-state-metrics"), tcp(8080))
-    .to(n.ref("nvidia-gpu-operator"), tcp(8080));
+    // node exporter, kubelet, the control plane, and cilium's agent, operator, envoy and hubble
+    .to(n.nodes, tcp(9100, 9962, 9963, 9964, 9965, 10250, 10257, 10259))
+    .to(n.kubeApiServer, tcp(6443));
 };

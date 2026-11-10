@@ -20,6 +20,7 @@ export const app: AppFunction = async (h) => {
         },
       },
       existingSecret: "secrets",
+      metrics: { enabled: true, serviceMonitor: { enabled: true } },
       recreateOnRedeploy: false,
       container: {
         postfix: {
@@ -68,4 +69,5 @@ export const network: NetworkFunction = (n) => {
   const postfix = n.subject("postfix", pod("mail", "postfix"));
 
   postfix.to(dns("smtp.mailgun.org"), tcp(587));
+  n.ref("prometheus").to(postfix, tcp(9154));
 };

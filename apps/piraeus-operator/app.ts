@@ -65,31 +65,38 @@ export const network: NetworkFunction = (n) => {
     component("ha-controller", "piraeus-operator"),
   );
 
-  n.host.to(linstorAffinityController, tcp(8000));
   linstorAffinityController
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
-  n.nodes.to(linstorController, tcp(3370));
+  n.host.to(linstorAffinityController, tcp(8000));
+
   linstorController
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorSatellite, tcp(3366));
-  n.host.to(linstorCsiController, tcp([9808, 9813]));
+  n.nodes.to(linstorController, tcp(3370));
+
   linstorCsiController
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
-  n.nodes.to(linstorCsiNfsServer, tcp(1000));
+  n.host.to(linstorCsiController, tcp([9808, 9813]));
+
   linstorCsiNfsServer
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
+  n.nodes.to(linstorCsiNfsServer, tcp(1000));
+
   linstorSatellite.to(linstorSatellite, tcp([7000, 7999]));
   n.nodes.to(linstorSatellite, tcp(3366, 9942));
-  n.host.to(piraeusOperatorHaController, tcp(8000));
-  piraeusOperatorHaController.to(n.kubeApiServer, tcp(6443));
-  n.controlPlane.to(piraeusOperator, tcp(9443));
-  n.host.to(piraeusOperator, tcp(8081));
+
   piraeusOperator
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
+  n.controlPlane.to(piraeusOperator, tcp(9443));
+  n.host.to(piraeusOperator, tcp(8081));
+
   piraeusOperatorGencert.to(n.kubeApiServer, tcp(6443));
   n.host.to(piraeusOperatorGencert, tcp(8081));
+
+  piraeusOperatorHaController.to(n.kubeApiServer, tcp(6443));
+  n.host.to(piraeusOperatorHaController, tcp(8000));
 };

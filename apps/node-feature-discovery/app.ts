@@ -18,6 +18,7 @@ export const app: AppFunction = async (h) => {
           resources: { limits: null },
         },
         gc: { resources: { limits: null } },
+        prometheus: { enable: true },
       },
     },
   );
@@ -35,4 +36,5 @@ export const network: NetworkFunction = (n) => {
 
   nodeFeatureDiscovery.to(n.kubeApiServer, tcp(6443));
   n.host.to(nodeFeatureDiscovery, tcp(8080));
+  n.ref("prometheus").to(nodeFeatureDiscovery, tcp(8080));
 };

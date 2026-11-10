@@ -28,6 +28,7 @@ export const network: NetworkFunction = (n) => {
 
   bucketSync.to(n.kubeApiServer, tcp(6443));
   n.host.to(bucketSync, tcp(8081));
+
   bucketSyncJob
     .to(n.ref("garage"), tcp(3900))
     .to(dns("*.backblazeb2.com"), tcp(443))

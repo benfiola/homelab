@@ -139,32 +139,6 @@ export const app: AppFunction = async (h) => {
     serviceDiscoveryRole: "EndpointSlice",
   });
 
-  monitor("kube-state-metrics", {
-    endpoints: [
-      {
-        bearerTokenSecret: token(),
-        port: "http",
-        interval: "30s",
-        honorLabels: true,
-      },
-    ],
-    namespaceSelector: { matchNames: ["kube-state-metrics"] },
-    selector: nameSelector("kube-state-metrics"),
-  });
-
-  monitor("prometheus-node-exporter", {
-    endpoints: [
-      {
-        bearerTokenSecret: token(),
-        port: "metrics",
-        interval: "30s",
-        relabelings: [{ targetLabel: "job", replacement: "node-exporter" }],
-      },
-    ],
-    namespaceSelector: { matchNames: ["prometheus-node-exporter"] },
-    selector: nameSelector("prometheus-node-exporter"),
-  });
-
   monitor("kube-apiserver", {
     endpoints: [
       {

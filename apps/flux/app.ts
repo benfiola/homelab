@@ -51,13 +51,16 @@ export const network: NetworkFunction = (n) => {
 
   fluxHelmController.to(n.kubeApiServer, tcp(6443));
   n.host.to(fluxHelmController, tcp(9440));
+
   fluxKustomizeController
     .to(n.kubeApiServer, tcp(6443))
     .to(fluxNotificationController, tcp(9090))
     .to(fluxSourceController, tcp(9090));
   n.host.to(fluxKustomizeController, tcp(9440));
+
   fluxNotificationController.to(n.kubeApiServer, tcp(6443));
   n.host.to(fluxNotificationController, tcp(9440));
+
   fluxSourceController
     .to(n.kubeApiServer, tcp(6443))
     .to(fluxNotificationController, tcp(9090))

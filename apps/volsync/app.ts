@@ -31,6 +31,8 @@ export const network: NetworkFunction = (n) => {
 
   volsync.to(n.kubeApiServer, tcp(6443));
   n.host.to(volsync, tcp(8081));
+  n.ref("prometheus").to(volsync, tcp(8443));
+
   volsyncMover
     .to(dns("*.backblazeb2.com"), tcp(443))
     .to(dns("*.backblaze.com"), tcp(443));

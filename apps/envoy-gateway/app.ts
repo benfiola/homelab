@@ -13,27 +13,32 @@ export const app: AppFunction = async (h) => {
     values: { crds: { envoyGateway: { enabled: true } } },
   });
 
-  await ns.helm("oci://docker.io/envoyproxy/gateway-helm?version=v1.9.3", {
-    release: "envoy-gateway",
-    values: {
-      certgen: {
-        job: {
-          pod: { labels: { "app.kubernetes.io/component": "certgen" } },
-          ttlSecondsAfterFinished: null,
-        },
-      },
-      deployment: {
-        envoyGateway: {
-          resources: {
-            requests: { cpu: "100m", memory: "256Mi" },
-            limits: null,
+  const chart = await ns.helm(
+    "oci://docker.io/envoyproxy/gateway-helm?version=v1.9.3",
+    {
+      release: "envoy-gateway",
+      values: {
+        certgen: {
+          job: {
+            pod: { labels: { "app.kubernetes.io/component": "certgen" } },
+            ttlSecondsAfterFinished: null,
           },
         },
-        pod: { labels: { "app.kubernetes.io/component": "controller" } },
+        deployment: {
+          envoyGateway: {
+            resources: {
+              requests: { cpu: "100m", memory: "256Mi" },
+              limits: null,
+            },
+          },
+          pod: { labels: { "app.kubernetes.io/component": "controller" } },
+        },
       },
+      crds: false,
     },
-    crds: false,
-  });
+  );
+
+  chart.find("Service", "envoy-gateway").serviceMonitor("metrics");
 
   ns.vpa({ kind: "Deployment", name: "envoy-gateway" }, { advisory: true });
 };
@@ -53,12 +58,15 @@ export const network: NetworkFunction = (n) => {
   );
 
   envoyGatewayCertgen.to(n.kubeApiServer, tcp(6443));
-  n.controlPlane.to(envoyGatewayController, tcp(9443));
+
   envoyGatewayController.to(n.kubeApiServer, tcp(6443));
+  n.controlPlane.to(envoyGatewayController, tcp(9443));
   n.host.to(envoyGatewayController, tcp(8081));
-  n.host.to(envoyGatewayProxy, tcp(19002, 19003));
   n.ref("gateway-family").to(envoyGatewayController, tcp(18000));
-  n.ref("gateway-personal").to(envoyGatewayController, tcp(18000));
   n.ref("gateway-friends").to(envoyGatewayController, tcp(18000));
   n.ref("gateway-infrastructure").to(envoyGatewayController, tcp(18000));
+  n.ref("gateway-personal").to(envoyGatewayController, tcp(18000));
+  n.ref("prometheus").to(envoyGatewayController, tcp(19001));
+
+  n.host.to(envoyGatewayProxy, tcp(19002, 19003));
 };

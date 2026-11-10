@@ -165,6 +165,12 @@ export const app: AppFunction = (h) => {
     },
   });
 
+  ns.podMonitor(
+    "alertmanager",
+    { "app.kubernetes.io/name": "alertmanager" },
+    "web",
+  );
+
   ns.vpa({
     kind: "Alertmanager",
     name: "alertmanager",

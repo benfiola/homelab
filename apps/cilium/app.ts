@@ -29,10 +29,15 @@ export const app: AppFunction = async (h) => {
             "icmp",
             "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction",
           ],
+          serviceMonitor: { enabled: true },
         },
         relay: {
           enabled: true,
           podSecurityContext: security.pod,
+          prometheus: {
+            enabled: true,
+            serviceMonitor: { enabled: true },
+          },
           securityContext: security.container,
         },
         tls: {
@@ -62,12 +67,24 @@ export const app: AppFunction = async (h) => {
       nodeLabels:
         "io\\.cilium\\.k8s\\.policy\\.cluster node-role\\.kubernetes\\.io/control-plane kubernetes\\.io/hostname",
       nodeSelectorLabels: true,
+      envoy: {
+        prometheus: { serviceMonitor: { enabled: true } },
+      },
       operator: {
         podSecurityContext: security.pod,
+        prometheus: {
+          enabled: true,
+          metricsService: true,
+          serviceMonitor: { enabled: true },
+        },
         securityContext: security.container,
         skipCRDCreation: true,
       },
       policyAuditMode: false,
+      prometheus: {
+        enabled: true,
+        serviceMonitor: { enabled: true },
+      },
       policyEnforcementMode: "always",
       rollOutCiliumPods: true,
       tunnelProtocol: "geneve",
@@ -290,9 +307,11 @@ export const network: NetworkFunction = (n) => {
 
   ciliumHubbleRelay.to(n.nodes, tcp(4244));
   n.host.to(ciliumHubbleRelay, tcp(4222));
+  n.ref("gateway-infrastructure").to(ciliumHubbleRelay, tcp(4245));
+  n.ref("prometheus").to(ciliumHubbleRelay, tcp(9966));
+
   ciliumHubbleUi
     .to(ciliumHubbleRelay, tcp(4245))
     .to(n.kubeApiServer, tcp(6443));
   n.host.to(ciliumHubbleUi, tcp(8081));
-  n.ref("gateway-infrastructure").to(ciliumHubbleRelay, tcp(4245));
 };

@@ -82,6 +82,7 @@ export const app: AppFunction = async (h) => {
         podSecurityContext: security.pod,
       },
       minio: { enabled: false },
+      monitoring: { serviceMonitor: { enabled: true } },
       resultsCache: {
         resources: { requests: { memory: "128Mi" }, limits: null },
       },
@@ -147,8 +148,15 @@ export const network: NetworkFunction = (n) => {
     .to(lokiMemcachedChunksCache, tcp(11211))
     .to(lokiMemcachedResultsCache, tcp(11211));
   n.host.to(loki, tcp(3100));
+  n.ref("prometheus").to(loki, tcp(3100));
+
   lokiGateway.to(loki, tcp(3100));
   n.host.to(lokiGateway, tcp(8080));
+  n.ref("prometheus").to(lokiGateway, tcp(8080));
+
   n.host.to(lokiMemcachedChunksCache, tcp(9150, 11211));
+  n.ref("prometheus").to(lokiMemcachedChunksCache, tcp(9150));
+
   n.host.to(lokiMemcachedResultsCache, tcp(9150, 11211));
+  n.ref("prometheus").to(lokiMemcachedResultsCache, tcp(9150));
 };

@@ -40,6 +40,7 @@ export const app: AppFunction = async (h) => {
         podSecurityContext: security.pod,
         readinessProbe: { enabled: true },
         securityContext: security.container,
+        serviceMonitor: { enabled: true },
         webhook: {
           livenessProbe: { enabled: true },
           podSecurityContext: security.pod,
@@ -205,18 +206,21 @@ export const network: NetworkFunction = (n) => {
     pod("external-secrets-webhook", namespace),
   );
 
-  n.host.to(certController, tcp(8081));
   certController.to(n.kubeApiServer, tcp(6443));
+  n.host.to(certController, tcp(8081));
+  n.ref("prometheus").to(certController, tcp(8080));
 
   controller.to(n.kubeApiServer, tcp(6443)).to(sdkServer, tcp(9998));
   n.host.to(controller, tcp(8082));
+  n.ref("prometheus").to(controller, tcp(8080));
 
-  n.host.to(sdkServer, tcp(9998));
   sdkServer
     .to(dns("api.bitwarden.com"), tcp(443))
     .to(dns("identity.bitwarden.com"), tcp(443));
+  n.host.to(sdkServer, tcp(9998));
 
+  webhook.to(n.kubeApiServer, tcp(6443));
   n.controlPlane.to(webhook, tcp(10250));
   n.host.to(webhook, tcp(8081));
-  webhook.to(n.kubeApiServer, tcp(6443));
+  n.ref("prometheus").to(webhook, tcp(8080));
 };
