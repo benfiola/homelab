@@ -14,7 +14,7 @@ export const app: AppFunction = (h) => {
       securityContext: { uid: 1001, gid: 1001 },
     })
     .addContainer("kokoro-fastapi", {
-      image: "ghcr.io/remsky/kokoro-fastapi-gpu:v0.9.2-cu128",
+      image: "ghcr.io/remsky/kokoro-fastapi-gpu:v0.10.0-cu128",
       env: {
         USE_GPU: "true",
       },
