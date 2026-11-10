@@ -14,7 +14,7 @@ export const app: AppFunction = async (h) => {
   });
 
   const chart = await ns.helm(
-    "oci://docker.io/envoyproxy/gateway-helm?version=v1.9.3",
+    "oci://docker.io/envoyproxy/gateway-helm?version=1.10.0",
     {
       release: "envoy-gateway",
       values: {
