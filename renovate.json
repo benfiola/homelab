@@ -148,7 +148,8 @@
     {
       "description": "VERSIONS: llama.cpp releases are monotonically increasing build numbers.",
       "matchPackageNames": ["ghcr.io/ggml-org/llama.cpp"],
-      "versioning": "regex:^server-cuda-b(?<major>\\d+)$"
+      "versioning": "regex:^server-cuda-b(?<major>\\d+)$",
+      "separateMajorMinor": false
     },
     {
       "description": "PR NOTE: envoy-gateway supports a specific range of gateway-api releases.",
