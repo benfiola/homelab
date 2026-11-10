@@ -69,5 +69,6 @@ export const network: NetworkFunction = (n) => {
   const postfix = n.subject("postfix", pod("mail", "postfix"));
 
   postfix.to(dns("smtp.mailgun.org"), tcp(587));
+  n.host.to(postfix, tcp(9154));
   n.ref("prometheus").to(postfix, tcp(9154));
 };
