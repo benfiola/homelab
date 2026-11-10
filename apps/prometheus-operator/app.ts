@@ -9,7 +9,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   const bundle = await ns.kustomize(
-    "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.2/bundle.yaml",
+    "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.95.1/bundle.yaml",
   );
 
   // endpoints -> endpointslices
