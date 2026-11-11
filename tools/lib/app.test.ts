@@ -275,6 +275,22 @@ describe("App", () => {
     assert.deepEqual(await kinds(h), ["ConfigMap/web-config"]);
   });
 
+  test("configMap takes labels and annotations, and adds neither by default", () => {
+    const ns = new App("web", "/apps/web").namespace();
+    const plain = ns.configMap("plain", {});
+    assert.deepEqual(plain.metadata, { name: "plain" });
+    const tagged = ns.configMap(
+      "tagged",
+      {},
+      { labels: { a: "1" }, annotations: { b: "2" } },
+    );
+    assert.deepEqual(tagged.metadata, {
+      name: "tagged",
+      labels: { a: "1" },
+      annotations: { b: "2" },
+    });
+  });
+
   test("nasVolume adds a volume and its claim", async () => {
     const h = new App("web", "/apps/web");
     h.namespace().nasVolume("media");
@@ -340,7 +356,10 @@ describe("App.namespace", () => {
     const ns = h.namespace({ name: "other", external: true });
     ns.configMap("cfg", {});
     const objects = await h.objects();
-    assert.equal(objects.some((o) => o.kind === "Namespace"), false);
+    assert.equal(
+      objects.some((o) => o.kind === "Namespace"),
+      false,
+    );
     assert.equal(objects[0].metadata.namespace, "other");
   });
 });

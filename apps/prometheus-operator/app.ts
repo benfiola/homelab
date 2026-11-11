@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   component,
   tcp,
@@ -51,6 +52,10 @@ export const app: AppFunction = async (h) => {
   });
 
   bundle.find("Deployment", "prometheus-operator").podMonitor("http");
+
+  // the prometheus-operator mixin (see main.jsonnet)
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(...prometheusRules("alert", mixin.alerts));
 
   ns.vpa({ kind: "Deployment", name: "prometheus-operator" });
 };

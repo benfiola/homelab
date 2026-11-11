@@ -1,11 +1,15 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
+  dashboardConfigMaps,
+  prometheusRules,
+} from "../../tools/lib/k8s/monitoring.ts";
+import {
   pod,
   tcp,
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
+export const app: AppFunction = async (h) => {
   const security = h.securityContext();
 
   const ns = h.namespace();
@@ -258,6 +262,13 @@ export const app: AppFunction = (h) => {
       selector: nameSelector(name),
     });
   }
+
+  // the prometheus-mixin (see main.jsonnet)
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(
+    ...prometheusRules("alert", mixin.alerts),
+    ...dashboardConfigMaps(h.app, mixin.dashboards),
+  );
 
   ns.podMonitor(
     "prometheus",

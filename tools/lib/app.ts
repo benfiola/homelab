@@ -61,6 +61,11 @@ type Obj = Record<string, any>;
 export type { Service } from "./k8s/monitoring.ts";
 export type { Env, Workload } from "./k8s/workload.ts";
 
+export interface ConfigMapOptions {
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+}
+
 export interface KustomizeSourceOptions {
   // added to every object, and to the selectors and pod templates that match them
   labels?: Record<string, string>;
@@ -410,11 +415,20 @@ export class Namespace {
     return secretKeys(name, Object.keys(templates) as K[]);
   }
 
-  configMap(name: string, data: Record<string, string>): Obj {
+  configMap(
+    name: string,
+    data: Record<string, string>,
+    opts: ConfigMapOptions = {},
+  ): Obj {
+    const { labels, annotations } = opts;
     const object = {
       apiVersion: "v1",
       kind: "ConfigMap",
-      metadata: { name },
+      metadata: {
+        name,
+        ...(labels && { labels }),
+        ...(annotations && { annotations }),
+      },
       data,
     };
     this.app.track(object, this.name);

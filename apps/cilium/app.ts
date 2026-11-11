@@ -351,6 +351,12 @@ export const app: AppFunction = async (h) => {
     },
   });
 
+  // the aggregated policy verdicts the hubble-flows sidecar ships to loki, as a filterable table
+  ns.configMap("dashboard--policy-flows", h.files("policy-flows.json"), {
+    labels: { grafana_dashboard: "1" },
+    annotations: { grafana_folder: h.app },
+  });
+
   const advisory = { advisory: true };
   h.postRender((e) => {
     dashboard(e, "cilium-dashboard", (d) =>

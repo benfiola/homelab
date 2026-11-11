@@ -1,0 +1,181 @@
+{
+  "uid": "hubble-policy-flows",
+  "title": "Network policy flows",
+  "editable": false,
+  "schemaVersion": 39,
+  "tags": ["cilium", "network-policy"],
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "refresh": "",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Loki",
+        "type": "datasource",
+        "query": "loki",
+        "current": {},
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "One row per distinct flow over the selected time range, from Cilium's aggregated policy-verdict export. **events** is the number of connections. Filter any column from its header.\n\n- **Policies to add:** filter *verdict* to `DROPPED`. *destination names* and *destination ip* are only filled for drops (names come from Cilium's DNS cache).\n- **Policies to remove:** a policy that never appears in *policy* over a long range (30d or more; weekly and monthly jobs are rare) may be unused. Rows with an empty *policy* were allowed without one being named (host and kubelet probes, Geneve), so host-firewall policies cannot be judged here."
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Flows",
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 28
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "queryType": "instant",
+          "instant": true,
+          "expr": "sum_over_time(\n  {namespace=\"cilium\", container=\"hubble-flows\"} |= \"\\\"flow\\\":\"\n  | json verdict=\"flow.verdict\", dir=\"flow.traffic_direction\", reason=\"flow.drop_reason_desc\", e=\"flow.aggregate.egress_flow_count\", i=\"flow.aggregate.ingress_flow_count\", ep=\"flow.egress_allowed_by[0].name\", ip=\"flow.ingress_allowed_by[0].name\", src_ns=\"flow.source.namespace\", dst_ns=\"flow.destination.namespace\", src_labels=\"flow.source.labels\", dst_labels=\"flow.destination.labels\", names=\"flow.destination_names\", src_ip=\"flow.IP.source\", dst_ip=\"flow.IP.destination\", tcp=\"flow.l4.TCP.destination_port\", udp=\"flow.l4.UDP.destination_port\", icmp=\"flow.l4.ICMPv4.type\", src_id=\"flow.source.identity\", dst_id=\"flow.destination.identity\"\n  | label_format policy=`{{ or .ep .ip }}`, events=`{{ add (int (or .e \"0\")) (int (or .i \"0\")) }}`, port=`{{ if .tcp }}TCP/{{ .tcp }}{{ else if .udp }}UDP/{{ .udp }}{{ else if .icmp }}ICMP/{{ .icmp }}{{ end }}`\n  | label_format src=`{{ or .src_ns (regexReplaceAll \"^.*?\\\"((?:reserved|cidr):[^\\\"]+)\\\".*$\" .src_labels \"${1}\") (printf \"identity %s\" .src_id) }}`, dst=`{{ or .dst_ns (regexReplaceAll \"^.*?\\\"((?:reserved|cidr):[^\\\"]+)\\\".*$\" .dst_labels \"${1}\") (printf \"identity %s\" .dst_id) }}`, names=`{{ regexReplaceAll \"[\\\\[\\\\]\\\"]\" .names \"\" }}`\n  | label_format src_ip=`{{ if eq .verdict \"DROPPED\" }}{{ .src_ip }}{{ end }}`, dst_ip=`{{ if eq .verdict \"DROPPED\" }}{{ .dst_ip }}{{ end }}`\n  | keep verdict, dir, src, dst, names, port, policy, reason, src_ip, dst_ip, events\n  | unwrap events [$__range]\n)"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "src": "source",
+              "dst": "destination",
+              "names": "destination names",
+              "port": "port",
+              "dir": "direction",
+              "verdict": "verdict",
+              "policy": "policy",
+              "reason": "drop reason",
+              "src_ip": "source ip",
+              "dst_ip": "destination ip",
+              "Value": "events"
+            },
+            "indexByName": {
+              "source": 0,
+              "destination": 1,
+              "destination names": 2,
+              "port": 3,
+              "direction": 4,
+              "verdict": 5,
+              "policy": 6,
+              "drop reason": 7,
+              "source ip": 8,
+              "destination ip": 9,
+              "events": 10
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "verdict"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "DROPPED": {
+                        "color": "red",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "events"
+            },
+            "properties": [
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "events",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": false
+        }
+      }
+    }
+  ]
+}

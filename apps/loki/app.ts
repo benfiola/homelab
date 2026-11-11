@@ -63,6 +63,8 @@ export const app: AppFunction = async (h) => {
         limits_config: {
           allow_structured_metadata: true,
           retention_period: "168h",
+          // the hubble flows dashboard (apps/cilium) returns a series per distinct flow, about 600 and growing
+          max_query_series: 5000,
           // aggregated hubble policy verdicts (see apps/cilium): small, and stale policies only show
           // up over weeks
           retention_stream: [

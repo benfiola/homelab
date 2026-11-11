@@ -240,3 +240,32 @@ export const dashboard = (
 
   edit(d);
 };
+
+// a ConfigMap grafana's sidecar loads for each dashboard of a mixin ({ "file.json": dashboard }),
+// placed in the grafana folder `folder`. named `dashboard--<file>`, which `dashboard` edits them by
+export const dashboardConfigMaps = (
+  folder: string,
+  dashboards: Record<string, unknown>,
+): Obj[] =>
+  Object.entries(dashboards).map(([file, dashboard]) => ({
+    apiVersion: "v1",
+    kind: "ConfigMap",
+    metadata: {
+      name: `dashboard--${file.replace(/[._]/g, "-")}`,
+      labels: { grafana_dashboard: "1" },
+      annotations: { grafana_folder: folder },
+    },
+    data: { [file]: JSON.stringify(dashboard) },
+  }));
+
+// a PrometheusRule for each group of a mixin's rules or alerts, named `<kind>--<group>`
+export const prometheusRules = (
+  kind: "alert" | "rule",
+  groups: Record<string, any>[],
+): Obj[] =>
+  groups.map((group) => ({
+    apiVersion: "monitoring.coreos.com/v1",
+    kind: "PrometheusRule",
+    metadata: { name: `${kind}--${group.name.replace(/[._]/g, "-")}` },
+    spec: { groups: [group] },
+  }));

@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
 import {
   component,
   tcp,
@@ -40,6 +41,47 @@ export const app: AppFunction = async (h) => {
 
   chart.find("Service", "envoy-gateway").serviceMonitor("metrics");
 
+  // the proxies envoy gateway runs for each Gateway
+  ns.podMonitor(
+    "envoy-gateway-proxy",
+    {
+      "app.kubernetes.io/component": "proxy",
+      "app.kubernetes.io/name": "envoy",
+    },
+    "metrics",
+    { path: "/stats/prometheus" },
+  );
+
+  // the addons chart is used only for its dashboards: everything else it bundles is disabled
+  await ns.helm(
+    "oci://docker.io/envoyproxy/gateway-addons-helm?version=1.10.0",
+    {
+      release: "envoy-gateway-addons",
+      values: {
+        alloy: { enabled: false },
+        dashboard: {
+          annotations: { grafana_folder: h.app },
+          labels: { grafana_dashboard: "1" },
+        },
+        "fluent-bit": { enabled: false },
+        grafana: { enabled: false },
+        loki: { enabled: false },
+        "opentelemetry-collector": { enabled: false },
+        prometheus: { enabled: false },
+        tempo: { enabled: false },
+      },
+    },
+  );
+
+  h.postRender((e) => {
+    dashboard(e, "grafana-dashboards", (d) =>
+      d
+        // the panels that pin the datasource the dashboard was exported from
+        .replace('"uid": "PBFA97CFB590B2093"', '"uid": "$datasource"')
+        .replace("envoy-gateway-system", h.app),
+    );
+  });
+
   ns.vpa({ kind: "Deployment", name: "envoy-gateway" }, { advisory: true });
 };
 
@@ -69,4 +111,5 @@ export const network: NetworkFunction = (n) => {
   n.ref("prometheus").to(envoyGatewayController, tcp(19001));
 
   n.host.to(envoyGatewayProxy, tcp(19002, 19003));
+  n.ref("prometheus").to(envoyGatewayProxy, tcp(19001));
 };
