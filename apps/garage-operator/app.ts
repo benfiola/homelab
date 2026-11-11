@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
 import {
   pod,
   tcp,
@@ -21,6 +22,12 @@ export const app: AppFunction = async (h) => {
       },
     },
   );
+
+  h.postRender((e) => {
+    dashboard(e, "garage-operator-garage-dashboard", (d) =>
+      d.replace("_duration{", "_duration_bucket{"),
+    );
+  });
 
   ns.vpa({ kind: "Deployment", name: "garage-operator" });
 };

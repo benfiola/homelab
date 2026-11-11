@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
 import {
   component,
   tcp,
@@ -27,17 +28,9 @@ export const app: AppFunction = async (h) => {
   );
 
   h.postRender((e) => {
-    const dashboard = e.find({
-      kind: "ConfigMap",
-      name: "grafana-operator-dashboard",
-    });
-    const from = 'job=\\"apiserver\\"';
-    const to = 'job=\\"kube-apiserver\\"';
-    const data = dashboard.data["grafana-operator.json"];
-    if (!data.includes(from)) {
-      throw new Error(`dashboard no longer contains ${from}`);
-    }
-    dashboard.data["grafana-operator.json"] = data.replaceAll(from, to);
+    dashboard(e, "grafana-operator-dashboard", (d) =>
+      d.replace('job=\\"apiserver\\"', 'job=\\"kube-apiserver\\"'),
+    );
   });
 
   ns.vpa({ kind: "Deployment", name: "grafana-operator" });

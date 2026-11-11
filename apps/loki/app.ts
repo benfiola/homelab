@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
 import {
   component,
   tcp,
@@ -62,6 +63,15 @@ export const app: AppFunction = async (h) => {
         limits_config: {
           allow_structured_metadata: true,
           retention_period: "168h",
+          // aggregated hubble policy verdicts (see apps/cilium): small, and stale policies only show
+          // up over weeks
+          retention_stream: [
+            {
+              selector: '{namespace="cilium", container="hubble-flows"}',
+              priority: 1,
+              period: "2160h",
+            },
+          ],
           volume_enabled: true,
         },
         pattern_ingester: { enabled: true },
@@ -146,6 +156,19 @@ export const app: AppFunction = async (h) => {
   ns.garageBucket(`${h.app}-admin`, [key]);
   ns.garageBucket(`${h.app}-chunks`, [key]);
   ns.garageBucket(`${h.app}-ruler`, [key]);
+
+  h.postRender((e) => {
+    const jobs = "(loki|enterprise-logs)";
+    dashboard(e, ["loki-dashboards-1", "loki-dashboards-2"], (d) => {
+      for (const role of ["read", "write"]) {
+        d.replace(`${jobs}-${role}.*`, `${jobs}-[0-9]+`);
+        d.replace(`${jobs}-${role}`, jobs);
+      }
+      d.replace("$namespace/ingester", "$namespace/loki")
+        .dropRows("Consul", "Big Table", "GCS", "Dynamo", "Azure Blob")
+        .dropDashboards("loki-mixin-recording-rules.json");
+    });
+  });
 
   ns.vpa({ kind: "StatefulSet", name: "loki-chunks-cache" });
   ns.vpa({ kind: "StatefulSet", name: "loki" });
