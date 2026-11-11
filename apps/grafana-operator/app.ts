@@ -14,6 +14,11 @@ export const app: AppFunction = async (h) => {
     "oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.25.0",
     {
       values: {
+        dashboard: {
+          enabled: true,
+          annotations: { grafana_folder: h.app },
+          labels: { grafana_dashboard: "1" },
+        },
         podSecurityContext: security.pod,
         securityContext: security.container,
         serviceMonitor: { enabled: true },

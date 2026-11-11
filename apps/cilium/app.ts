@@ -28,6 +28,7 @@ export const app: AppFunction = async (h) => {
       cgroup: { automount: { enabled: false }, hostRoot: "/sys/fs/cgroup" },
       clustermesh: { policyDefaultLocalCluster: true },
       cni: { exclusive: false },
+      dashboards: { enabled: true, annotations: { grafana_folder: h.app } },
       hostFirewall: { enabled: true },
       hubble: {
         relay: {
@@ -70,6 +71,7 @@ export const app: AppFunction = async (h) => {
         prometheus: { serviceMonitor: { enabled: true } },
       },
       operator: {
+        dashboards: { enabled: true, annotations: { grafana_folder: h.app } },
         podSecurityContext: security.pod,
         prometheus: {
           enabled: true,

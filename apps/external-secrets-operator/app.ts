@@ -36,6 +36,10 @@ export const app: AppFunction = async (h) => {
           podSecurityContext: security.pod,
           securityContext: security.container,
         },
+        grafanaDashboard: {
+          enabled: true,
+          annotations: { grafana_folder: h.app },
+        },
         livenessProbe: { enabled: true },
         podSecurityContext: security.pod,
         readinessProbe: { enabled: true },

@@ -100,7 +100,11 @@ export const app: AppFunction = async (h) => {
         podSecurityContext: security.pod,
       },
       minio: { enabled: false },
-      monitoring: { serviceMonitor: { enabled: true } },
+      monitoring: {
+        dashboards: { enabled: true, annotations: { grafana_folder: h.app } },
+        rules: { enabled: true },
+        serviceMonitor: { enabled: true },
+      },
       resultsCache: {
         resources: { requests: { memory: "128Mi" }, limits: null },
       },

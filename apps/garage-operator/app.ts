@@ -11,7 +11,14 @@ export const app: AppFunction = async (h) => {
   await ns.helm(
     "oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.9.0",
     {
-      values: { resources: null, serviceMonitor: { enabled: true } },
+      values: {
+        grafanaDashboard: {
+          enabled: true,
+          annotations: { grafana_folder: h.app },
+        },
+        resources: null,
+        serviceMonitor: { enabled: true },
+      },
     },
   );
 
