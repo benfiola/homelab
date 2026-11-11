@@ -25,7 +25,7 @@ export const app: AppFunction = async (h) => {
 
   h.postRender((e) => {
     dashboard(e, "garage-operator-garage-dashboard", (d) =>
-      d.replace(/rate\(([a-z0-9_]+_duration)\{/, "rate($1_bucket{"),
+      d.replace("_duration{", "_duration_bucket{"),
     );
   });
 

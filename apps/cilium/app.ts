@@ -353,11 +353,16 @@ export const app: AppFunction = async (h) => {
   const advisory = { advisory: true };
   h.postRender((e) => {
     dashboard(e, "cilium-dashboard", (d) =>
-      d
-        .dropPanels(/^IPv6 Conntrack /)
-        .dropPanels(
-          /^(kvstore|# operations \((sum all nodes|max node)\)|latency \((average|max) node\)|Events received \(average node\))$/,
-        ),
+      d.dropPanels(
+        "IPv6 Conntrack TCP",
+        "IPv6 Conntrack Non-TCP",
+        "kvstore",
+        "# operations (sum all nodes)",
+        "# operations (max node)",
+        "latency (average node)",
+        "latency (max node)",
+        "Events received (average node)",
+      ),
     );
     dashboard(e, "cilium-operator-dashboard", (d) => d.dropRows("IPAM"));
   });

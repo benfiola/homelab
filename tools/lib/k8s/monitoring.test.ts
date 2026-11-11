@@ -112,25 +112,12 @@ describe("dashboard", () => {
       "1.json": { expr: 'up{job="x"} + up{job="x"}' },
       "2.json": { expr: 'up{job="x"}' },
     });
-    edit([map], "a", (d: any) => d.replace('job=\\"x\\"', 'job=\\"$1\\"'));
+    edit([map], "a", (d: any) => d.replace('job=\\"x\\"', 'job=\\"$1.*\\"'));
     assert.equal(
       map.data["1.json"],
-      '{"expr":"up{job=\\"$1\\"} + up{job=\\"$1\\"}"}',
+      '{"expr":"up{job=\\"$1.*\\"} + up{job=\\"$1.*\\"}"}',
     );
-    assert.equal(map.data["2.json"], '{"expr":"up{job=\\"$1\\"}"}');
-  });
-
-  test("replace with a regular expression expands capture groups, everywhere", () => {
-    const map = configMap("a", {
-      "a.json": { e: "rate(x_duration{) rate(y_duration{)" },
-    });
-    edit([map], "a", (d: any) =>
-      d.replace(/rate\(([a-z]+_duration)\{/, "rate($1_bucket{"),
-    );
-    assert.equal(
-      map.data["a.json"],
-      '{"e":"rate(x_duration_bucket{) rate(y_duration_bucket{)"}',
-    );
+    assert.equal(map.data["2.json"], '{"expr":"up{job=\\"$1.*\\"}"}');
   });
 
   test("operations apply in order", () => {
@@ -148,7 +135,7 @@ describe("dashboard", () => {
     assert.equal(a.data["a.json"], '{"e":"baz"}');
     assert.throws(
       () => edit([a, b], ["a", "b"], (d: any) => d.replace("nope", "x")),
-      /replace nope matches nothing in the dashboards of a, b/,
+      /replace 'nope' matches nothing in the dashboards of a, b/,
     );
   });
 
@@ -156,12 +143,13 @@ describe("dashboard", () => {
     assert.throws(() => edit([], "a", () => {}), /no object matches/);
   });
 
-  test("dropPanels removes panels by title, wherever they are", () => {
+  test("dropPanels removes panels by exact title, wherever they are", () => {
     const map = configMap("a", {
       "a.json": {
         panels: [
           { title: "keep" },
           { title: "gone" },
+          { title: "also gone" },
           {
             type: "row",
             title: "r",
@@ -173,7 +161,7 @@ describe("dashboard", () => {
         ],
       },
     });
-    edit([map], "a", (d: any) => d.dropPanels("gone"));
+    edit([map], "a", (d: any) => d.dropPanels("gone", "also gone"));
     assert.deepEqual(JSON.parse(map.data["a.json"]), {
       panels: [
         { title: "keep" },
@@ -183,19 +171,21 @@ describe("dashboard", () => {
     });
   });
 
-  test("dropPanels with a regular expression, and a title that is nowhere is an error", () => {
+  test("a title that is nowhere is an error, and so is a part of one", () => {
     const map = configMap("a", {
       "a.json": { panels: [{ title: "Bigtable Latency" }, { title: "ok" }] },
     });
-    edit([map], "a", (d: any) => d.dropPanels(/bigtable/i));
-    assert.deepEqual(JSON.parse(map.data["a.json"]).panels, [{ title: "ok" }]);
     assert.throws(
-      () => edit([map], "a", (d: any) => d.dropPanels("bigtable")),
-      /matches nothing/,
+      () => edit([map], "a", (d: any) => d.dropPanels("Bigtable")),
+      /dropPanels 'Bigtable' matches nothing/,
+    );
+    assert.throws(
+      () => edit([map], "a", (d: any) => d.dropPanels("ok", "missing")),
+      /dropPanels 'missing' matches nothing/,
     );
   });
 
-  test("a title is exact, so dropPanels doesn't remove a row of that name", () => {
+  test("dropPanels doesn't remove a row of that name", () => {
     const map = configMap("a", {
       "a.json": { panels: [{ type: "row", title: "x", panels: [] }] },
     });
@@ -205,13 +195,13 @@ describe("dashboard", () => {
     );
   });
 
-  test("dropRows removes a row with its panels, collapsed or not", () => {
+  test("dropRows removes rows with their panels, collapsed or not", () => {
     const map = configMap("a", {
       "a.json": {
         panels: [
           { title: "top" },
           { type: "row", title: "gone", panels: [{ title: "in" }] },
-          { type: "row", title: "gone" },
+          { type: "row", title: "gone too" },
           { title: "follows" },
           { type: "row", title: "kept" },
           { title: "kept panel" },
@@ -219,7 +209,7 @@ describe("dashboard", () => {
         rows: [{ title: "gone", panels: [] }, { title: "other" }],
       },
     });
-    edit([map], "a", (d: any) => d.dropRows("gone"));
+    edit([map], "a", (d: any) => d.dropRows("gone", "gone too"));
     assert.deepEqual(JSON.parse(map.data["a.json"]), {
       panels: [
         { title: "top" },
@@ -230,13 +220,13 @@ describe("dashboard", () => {
     });
   });
 
-  test("dropDashboard removes a file, and a file that isn't there is an error", () => {
-    const map = configMap("a", { "a.json": {}, "b.json": {} });
-    edit([map], "a", (d: any) => d.dropDashboard("a.json"));
-    assert.deepEqual(Object.keys(map.data), ["b.json"]);
+  test("dropDashboards removes files, and a file that isn't there is an error", () => {
+    const map = configMap("a", { "a.json": {}, "b.json": {}, "c.json": {} });
+    edit([map], "a", (d: any) => d.dropDashboards("a.json", "b.json"));
+    assert.deepEqual(Object.keys(map.data), ["c.json"]);
     assert.throws(
-      () => edit([map], "a", (d: any) => d.dropDashboard("a.json")),
-      /dropDashboard a.json matches nothing/,
+      () => edit([map], "a", (d: any) => d.dropDashboards("a.json")),
+      /dropDashboards 'a.json' matches nothing/,
     );
   });
 });

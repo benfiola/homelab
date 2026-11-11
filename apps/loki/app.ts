@@ -158,22 +158,16 @@ export const app: AppFunction = async (h) => {
   ns.garageBucket(`${h.app}-ruler`, [key]);
 
   h.postRender((e) => {
-    dashboard(e, ["loki-dashboards-1", "loki-dashboards-2"], (d) =>
-      d
-        .replace(
-          "(loki|enterprise-logs)-read.*",
-          "(loki|enterprise-logs)-[0-9]+",
-        )
-        .replace(
-          "(loki|enterprise-logs)-write.*",
-          "(loki|enterprise-logs)-[0-9]+",
-        )
-        .replace("(loki|enterprise-logs)-read", "(loki|enterprise-logs)")
-        .replace("(loki|enterprise-logs)-write", "(loki|enterprise-logs)")
-        .replace("$namespace/ingester", "$namespace/loki")
-        .dropRows(/^(Consul|Big Table|GCS|Dynamo|Azure Blob)$/)
-        .dropDashboard("loki-mixin-recording-rules.json"),
-    );
+    const jobs = "(loki|enterprise-logs)";
+    dashboard(e, ["loki-dashboards-1", "loki-dashboards-2"], (d) => {
+      for (const role of ["read", "write"]) {
+        d.replace(`${jobs}-${role}.*`, `${jobs}-[0-9]+`);
+        d.replace(`${jobs}-${role}`, jobs);
+      }
+      d.replace("$namespace/ingester", "$namespace/loki")
+        .dropRows("Consul", "Big Table", "GCS", "Dynamo", "Azure Blob")
+        .dropDashboards("loki-mixin-recording-rules.json");
+    });
   });
 
   ns.vpa({ kind: "StatefulSet", name: "loki-chunks-cache" });
