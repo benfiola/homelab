@@ -11,7 +11,7 @@ export const app: AppFunction = async (h) => {
   const security = h.securityContext();
 
   const chart = await ns.helm(
-    "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.15.0",
+    "https://kubernetes.github.io/autoscaler/vertical-pod-autoscaler?version=0.16.0",
     {
       values: {
         admissionController: {
