@@ -147,10 +147,7 @@ export const app: AppFunction = async (h) => {
       policyAuditMode: false,
       prometheus: {
         enabled: true,
-        metrics: [
-          "+cilium_bpf_syscall_duration_seconds",
-          "+cilium_services_events_total",
-        ],
+        metrics: ["+cilium_bpf_syscall_duration_seconds"],
         serviceMonitor: { enabled: true },
       },
       policyEnforcementMode: "always",
@@ -362,6 +359,13 @@ export const app: AppFunction = async (h) => {
         "latency (average node)",
         "latency (max node)",
         "Events received (average node)",
+        "Service Updates",
+        "Service Events",
+        "Pod Events",
+        "Namespace Events",
+        "Endpoints Events",
+        "NetworkPolicy Events",
+        "CiliumNetworkPolicy Events",
       ),
     );
     dashboard(e, "cilium-operator-dashboard", (d) => d.dropRows("IPAM"));
