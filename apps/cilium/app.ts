@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
 import {
   cidrs,
   controlPlane,
@@ -20,6 +21,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
   const security = h.securityContext();
+  const flowsPath = "/var/run/cilium/hubble/flows.log";
 
   await ns.helm("https://helm.cilium.io/cilium?version=1.20.4", {
     values: {
@@ -30,7 +32,68 @@ export const app: AppFunction = async (h) => {
       cni: { exclusive: false },
       dashboards: { enabled: true, annotations: { grafana_folder: h.app } },
       hostFirewall: { enabled: true },
+      extraContainers: [
+        {
+          name: "hubble-flows",
+          image: h.images.alpine,
+          command: ["tail", "-n", "0", "-F", flowsPath],
+          resources: {
+            requests: { cpu: "5m", memory: "8Mi" },
+            limits: { memory: "32Mi" },
+          },
+          volumeMounts: [
+            {
+              name: "cilium-run",
+              mountPath: "/var/run/cilium",
+              readOnly: true,
+            },
+          ],
+        },
+      ],
       hubble: {
+        export: {
+          static: {
+            enabled: true,
+            filePath: flowsPath,
+            allowList: ['{"event_type":[{"type":5}]}'],
+            fieldMask: [
+              "time",
+              "verdict",
+              "traffic_direction",
+              "drop_reason_desc",
+              "IP.source",
+              "IP.destination",
+              "l4",
+              "source.identity",
+              "source.namespace",
+              "source.labels",
+              "destination.identity",
+              "destination.namespace",
+              "destination.labels",
+              "destination_names",
+              "egress_allowed_by",
+              "ingress_allowed_by",
+            ],
+            fieldAggregate: [
+              "verdict",
+              "traffic_direction",
+              "drop_reason_desc",
+              "IP.source",
+              "IP.destination",
+              "l4.TCP.destination_port",
+              "l4.UDP.destination_port",
+              "l4.ICMPv4.type",
+              "source.identity",
+              "destination.identity",
+              "destination_names",
+              "egress_allowed_by",
+              "ingress_allowed_by",
+            ],
+            aggregationInterval: "10m",
+            fileMaxSizeMb: 10,
+            fileMaxBackups: 2,
+          },
+        },
         relay: {
           enabled: true,
           podSecurityContext: security.pod,
@@ -84,6 +147,10 @@ export const app: AppFunction = async (h) => {
       policyAuditMode: false,
       prometheus: {
         enabled: true,
+        metrics: [
+          "+cilium_bpf_syscall_duration_seconds",
+          "+cilium_services_events_total",
+        ],
         serviceMonitor: { enabled: true },
       },
       policyEnforcementMode: "always",
@@ -284,6 +351,17 @@ export const app: AppFunction = async (h) => {
   });
 
   const advisory = { advisory: true };
+  h.postRender((e) => {
+    dashboard(e, "cilium-dashboard", (d) =>
+      d
+        .dropPanels(/^IPv6 Conntrack /)
+        .dropPanels(
+          /^(kvstore|# operations \((sum all nodes|max node)\)|latency \((average|max) node\)|Events received \(average node\))$/,
+        ),
+    );
+    dashboard(e, "cilium-operator-dashboard", (d) => d.dropRows("IPAM"));
+  });
+
   ns.vpa({ kind: "DaemonSet", name: "cilium" }, advisory);
   ns.vpa({ kind: "DaemonSet", name: "cilium-envoy" }, advisory);
   ns.vpa({ kind: "Deployment", name: "cilium-operator" }, advisory);

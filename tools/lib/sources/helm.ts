@@ -10,11 +10,12 @@ type Obj = Record<string, any>;
 // cluster (or tool) it runs against
 export const kubeVersion = "1.34.0";
 
-// the monitors the cluster's prometheus operator provides. charts check for these before they
+// the monitors and rules the cluster's prometheus operator provides. charts check for these before they
 // render their own monitors, and a render has no cluster to ask
 const apiVersions = [
   "monitoring.coreos.com/v1",
   "monitoring.coreos.com/v1/PodMonitor",
+  "monitoring.coreos.com/v1/PrometheusRule",
   "monitoring.coreos.com/v1/ServiceMonitor",
 ];
 
