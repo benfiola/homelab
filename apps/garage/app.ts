@@ -22,6 +22,7 @@ export const app: AppFunction = (h) => {
         adminTokenSecretRef: secrets.key("admin-token").secretKeyRef,
       },
       image: "dxflrs/garage:v2.5.0",
+      monitoring: { enabled: true },
       replication: {
         factor: 2,
       },
@@ -58,4 +59,5 @@ export const network: NetworkFunction = (n) => {
   assets.to(garage, tcp(3900));
 
   garage.to(garage, tcp(3901));
+  n.ref("prometheus").to(garage, tcp(3903));
 };

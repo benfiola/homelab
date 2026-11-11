@@ -32,6 +32,7 @@ export const app: AppFunction = async (h) => {
 
   await ns.helm("https://grafana.github.io/helm-charts/loki?version=7.5.0", {
     values: {
+      clusterLabelOverride: "cluster.fiola.dev",
       backend: { replicas: 0 },
       deploymentMode: "SingleBinary",
       gateway: {

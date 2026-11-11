@@ -26,6 +26,20 @@ export const app: AppFunction = async (h) => {
     },
   );
 
+  h.postRender((e) => {
+    const dashboard = e.find({
+      kind: "ConfigMap",
+      name: "grafana-operator-dashboard",
+    });
+    const from = 'job=\\"apiserver\\"';
+    const to = 'job=\\"kube-apiserver\\"';
+    const data = dashboard.data["grafana-operator.json"];
+    if (!data.includes(from)) {
+      throw new Error(`dashboard no longer contains ${from}`);
+    }
+    dashboard.data["grafana-operator.json"] = data.replaceAll(from, to);
+  });
+
   ns.vpa({ kind: "Deployment", name: "grafana-operator" });
 };
 
