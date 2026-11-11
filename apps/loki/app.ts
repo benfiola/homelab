@@ -166,6 +166,13 @@ export const app: AppFunction = async (h) => {
       }
       d.replace("$namespace/ingester", "$namespace/loki")
         .dropRows("Consul", "Big Table", "GCS", "Dynamo", "Azure Blob")
+        .dropPanels(
+          "bad words",
+          "Query Readiness Duration",
+          "Delete Requests Received / Day",
+          "Delete Requests Processed / Day",
+          "Lines Deleted / Sec",
+        )
         .dropDashboards("loki-mixin-recording-rules.json");
     });
   });

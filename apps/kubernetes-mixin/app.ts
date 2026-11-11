@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
 
 // kubernetes names can't contain the '.' and '_' the mixin's names do
 const k8sName = (name: string) => name.replace(/[._]/g, "-");
@@ -36,4 +37,13 @@ export const app: AppFunction = async (h) => {
       data: { [name]: JSON.stringify(dashboard) },
     });
   }
+
+  h.postRender((e) => {
+    dashboard(e, "dashboard--kubelet-json", (d) =>
+      d.dropPanels("Config Error Count", "Storage Operation Error Rate"),
+    );
+    dashboard(e, "dashboard--scheduler-json", (d) =>
+      d.dropPanels("Scheduling Rate", "Scheduling latency 99th Quantile"),
+    );
+  });
 };

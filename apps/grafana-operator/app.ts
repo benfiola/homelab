@@ -29,7 +29,9 @@ export const app: AppFunction = async (h) => {
 
   h.postRender((e) => {
     dashboard(e, "grafana-operator-dashboard", (d) =>
-      d.replace('job=\\"apiserver\\"', 'job=\\"kube-apiserver\\"'),
+      d
+        .replace('job=\\"apiserver\\"', 'job=\\"kube-apiserver\\"')
+        .replace("monitoring-system", "grafana-operator"),
     );
   });
 
