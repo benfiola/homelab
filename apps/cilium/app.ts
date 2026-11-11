@@ -1,7 +1,18 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
+  cidrs,
+  controlPlane,
+  dnsWildcard,
+  health,
+  host,
+  icmpv4,
+  kubeApiServer,
+  kubeDns,
+  nodes,
   pod,
+  pods,
   tcp,
+  udp,
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
@@ -302,4 +313,57 @@ export const network: NetworkFunction = (n) => {
     .to(ciliumHubbleRelay, tcp(4245))
     .to(n.kubeApiServer, tcp(6443));
   n.host.to(ciliumHubbleUi, tcp(8081));
+
+  // broad host-firewall policies
+  n.subject("control-plane", controlPlane());
+  n.subject("kube-apiserver", kubeApiServer());
+  n.subject("host", host());
+  n.subject("kube-dns", kubeDns());
+  n.subject("nodes", nodes());
+  n.subject("pods", pods());
+  n.subject("health", health());
+
+  // bgp
+  n.nodes
+    .from(cidrs("192.168.32.1/32"), tcp(179))
+    .to(cidrs("192.168.32.1/32"), tcp(179));
+  // cilium health
+  n.nodes.to(n.nodes, tcp(4240));
+  // dhcp
+  n.nodes.to(cidrs("192.168.32.1/32"), udp(67));
+  // dns
+  n.nodes.to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
+  // geneve
+  n.nodes.to(n.nodes, udp(6081));
+  // health
+  n.nodes.to(n.health);
+  // icmp
+  n.nodes.to(n.nodes, icmpv4(5, 8));
+  n.nodes.to(n.pods, icmpv4(5, 8));
+  // image registries
+  // cilium's dns-based host policies are beta and route through the agent's own dns proxy, which
+  // breaks during agent restarts; a wildcard egress avoids that risk for something this foundational
+  n.nodes.to(cidrs("0.0.0.0/0"), tcp(443));
+  // kube-apiserver
+  n.nodes.to(n.kubeApiServer, tcp(6443));
+  n.controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(6443));
+  // kubelet
+  n.nodes.to(n.nodes, tcp(10250));
+  // kube-system
+  n.nodes.to(n.kubeDns, tcp(53), udp(53));
+  n.host.to(n.kubeDns, tcp(8080, 8181));
+  n.kubeDns
+    .to(n.kubeApiServer, tcp(6443))
+    .to(cidrs("192.168.88.1/32"), tcp(53), udp(53));
+  n.pods.to(n.kubeDns, tcp(53), udp(53), dnsWildcard());
+  // talos
+  n.nodes.to(n.nodes, tcp(50000));
+  n.controlPlane.from(cidrs("192.168.32.0/24", "192.168.34.0/24"), tcp(50000));
+  n.nodes.to(n.controlPlane, tcp(50001));
+  // timeserver
+  n.nodes.to(
+    cidrs("162.159.200.1/32", "162.159.200.123/32"),
+    udp(123),
+    tcp(4460),
+  );
 };

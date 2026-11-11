@@ -359,7 +359,6 @@ export class Network {
     return new SubjectRef(this.registry, name, this.app);
   }
 
-  // the cluster's infrastructure (declared by the network-policy app)
   get controlPlane() {
     return this.ref("control-plane");
   }

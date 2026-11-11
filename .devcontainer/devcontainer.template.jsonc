@@ -40,8 +40,7 @@
     }
   },
   "mounts": [
-    // to mount your host claude config, add this mount
-    // "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/root/.claude,type=bind,consistency=cached",
+    "source=homelab-claude,target=/root/.claude,type=volume",
     "source=homelab-nix-store,target=/nix,type=volume",
     "source=homelab-secrets,target=/root/.homelab,type=volume"
   ],

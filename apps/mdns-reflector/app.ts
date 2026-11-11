@@ -1,4 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import {
+  cidrs,
+  udp,
+  type NetworkFunction,
+} from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = (h) => {
   const ns = h.namespace({ privileged: true });
@@ -16,4 +21,10 @@ export const app: AppFunction = (h) => {
     });
 
   ns.vpa(workload);
+};
+
+export const network: NetworkFunction = (n) => {
+  n.host
+    .to(cidrs("224.0.0.251/32"), udp(5353))
+    .from(cidrs("224.0.0.251/32"), udp(5353));
 };
