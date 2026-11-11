@@ -17,6 +17,34 @@ export const app: AppFunction = async (h) => {
     },
   );
 
+  ns.add({
+    apiVersion: "monitoring.coreos.com/v1",
+    kind: "PrometheusRule",
+    metadata: { name: "rule--pod-oom-killed" },
+    spec: {
+      groups: [
+        {
+          name: "kubernetes.rules",
+          interval: "30s",
+          rules: [
+            {
+              alert: "PodOOMKilled",
+              expr: 'kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1',
+              for: "1m",
+              labels: { severity: "critical" },
+              annotations: {
+                summary:
+                  "Pod {{ $labels.namespace }}/{{ $labels.pod }} was OOMKilled",
+                description:
+                  "Pod {{ $labels.namespace }}/{{ $labels.pod }} in container {{ $labels.container }} was OOMKilled in the last 1 minute.",
+              },
+            },
+          ],
+        },
+      ],
+    },
+  });
+
   ns.vpa({ kind: "Deployment", name: "kube-state-metrics" });
 };
 

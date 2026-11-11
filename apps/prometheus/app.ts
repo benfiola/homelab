@@ -128,6 +128,137 @@ export const app: AppFunction = (h) => {
     },
   );
 
+  // the datasource grafana queries prometheus through
+  ns.add({
+    apiVersion: "grafana.integreatly.org/v1beta1",
+    kind: "GrafanaDatasource",
+    metadata: { name: "prometheus" },
+    spec: {
+      allowCrossNamespaceImport: true,
+      datasource: {
+        access: "proxy",
+        editable: false,
+        isDefault: true,
+        name: "Prometheus",
+        type: "prometheus",
+        url: "http://prometheus-operated.prometheus.svc:9090",
+      },
+      instanceSelector: { matchLabels: { instance: "grafana" } },
+    },
+  });
+
+  // the monitors below scrape with prometheus's own service account, through a token for it
+  ns.add({
+    apiVersion: "v1",
+    kind: "Secret",
+    metadata: {
+      name: "prometheus-token",
+      annotations: { "kubernetes.io/service-account.name": "prometheus" },
+    },
+    type: "kubernetes.io/service-account-token",
+  });
+
+  const token = () => ({ key: "token", name: "prometheus-token" });
+  const insecureHttps = () => ({
+    scheme: "https",
+    tlsConfig: { insecureSkipVerify: true },
+  });
+  const monitor = (name: string, spec: Record<string, any>) =>
+    ns.add({
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "ServiceMonitor",
+      metadata: { name },
+      spec,
+    });
+  const nameSelector = (name: string) => ({
+    matchLabels: { "app.kubernetes.io/name": name },
+  });
+
+  monitor("kubelet", {
+    endpoints: [
+      {
+        bearerTokenSecret: token(),
+        interval: "30s",
+        port: "https-metrics",
+        ...insecureHttps(),
+      },
+      {
+        bearerTokenSecret: token(),
+        interval: "30s",
+        port: "https-metrics",
+        metricRelabelings: [
+          {
+            sourceLabels: ["namespace"],
+            targetLabel: "job_namespace",
+            replacement: "$1",
+          },
+          {
+            sourceLabels: ["exported_namespace"],
+            targetLabel: "namespace",
+            replacement: "$1",
+          },
+        ],
+        relabelings: [{ targetLabel: "job", replacement: "cadvisor" }],
+        ...insecureHttps(),
+        path: "/metrics/cadvisor",
+      },
+    ],
+    namespaceSelector: { matchNames: ["kube-system"] },
+    selector: nameSelector("kubelet"),
+    serviceDiscoveryRole: "EndpointSlice",
+  });
+
+  monitor("kube-apiserver", {
+    endpoints: [
+      {
+        bearerTokenSecret: token(),
+        port: "https",
+        interval: "30s",
+        relabelings: [{ targetLabel: "job", replacement: "kube-apiserver" }],
+        ...insecureHttps(),
+      },
+    ],
+    namespaceSelector: { matchNames: ["default"] },
+    selector: {
+      matchLabels: { component: "apiserver", provider: "kubernetes" },
+    },
+  });
+
+  // the control plane components run outside the cluster's services, so each gets a headless
+  // service for its metrics port (the endpoints are filled in by talos) and a monitor for it
+  for (const [name, port] of [
+    ["kube-controller-manager", 10257],
+    ["kube-scheduler", 10259],
+  ] as const) {
+    ns.add({
+      apiVersion: "v1",
+      kind: "Service",
+      metadata: {
+        name,
+        namespace: "kube-system",
+        labels: { "app.kubernetes.io/name": name },
+      },
+      spec: {
+        selector: { "app.kubernetes.io/name": name },
+        clusterIP: "None",
+        ports: [{ name: "http-metrics", port }],
+      },
+    });
+
+    monitor(name, {
+      endpoints: [
+        {
+          bearerTokenSecret: token(),
+          port: "http-metrics",
+          interval: "30s",
+          ...insecureHttps(),
+        },
+      ],
+      namespaceSelector: { matchNames: ["kube-system"] },
+      selector: nameSelector(name),
+    });
+  }
+
   ns.podMonitor(
     "prometheus",
     { "app.kubernetes.io/name": "prometheus" },

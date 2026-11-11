@@ -12,6 +12,24 @@ export const app: AppFunction = async (h) => {
   const key = ns.garageKey(h.app);
   const security = h.securityContext();
 
+  // the datasource grafana queries loki through
+  ns.add({
+    apiVersion: "grafana.integreatly.org/v1beta1",
+    kind: "GrafanaDatasource",
+    metadata: { name: "loki" },
+    spec: {
+      allowCrossNamespaceImport: true,
+      datasource: {
+        access: "proxy",
+        editable: false,
+        name: "Loki",
+        type: "loki",
+        url: "http://loki-gateway.loki.svc",
+      },
+      instanceSelector: { matchLabels: { instance: "grafana" } },
+    },
+  });
+
   await ns.helm("https://grafana.github.io/helm-charts/loki?version=7.5.0", {
     values: {
       backend: { replicas: 0 },
