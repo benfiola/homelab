@@ -51,7 +51,24 @@ loki.source.kubernetes "pod_logs" {
 }
 
 loki.process "pod_logs" {
+  forward_to = [loki.relabel.pod_logs.receiver]
+}
+
+loki.relabel "pod_logs" {
   forward_to = [loki.write.default.receiver]
+
+  rule {
+    action = "replace"
+    replacement = "cluster.fiola.dev"
+    target_label = "cluster"
+  }
+
+  rule {
+    action = "replace"
+    source_labels = ["namespace", "container"]
+    separator = "/"
+    target_label = "job"
+  }
 }
 
 loki.write "default" {

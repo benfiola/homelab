@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/NVIDIA/dcgm-exporter.git",
+          "subdir": "grafana"
+        }
+      },
+      "version": "181290c399d46a9b905e083d0204348be63cb436",
+      "sum": "fCFy5YJSTvtw2fWFUCNm9/7CKyRkw7ifdUGMpkg1PnE="
+    }
+  ],
+  "legacyImports": false
+}

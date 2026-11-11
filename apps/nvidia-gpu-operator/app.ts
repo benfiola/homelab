@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { dashboardConfigMaps } from "../../tools/lib/k8s/monitoring.ts";
 import {
   appLabel,
   component,
@@ -14,7 +15,7 @@ export const app: AppFunction = async (h) => {
     {
       release: "nvidia-gpu-operator",
       values: {
-        dcgmExporter: { enabled: false },
+        dcgmExporter: { serviceMonitor: { enabled: true } },
         devicePlugin: { config: { name: "user-config", default: "any" } },
         driver: { enabled: false },
         hostPaths: { driverInstallDir: "/usr/local" },
@@ -39,7 +40,11 @@ export const app: AppFunction = async (h) => {
 `,
   });
 
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(...dashboardConfigMaps(h.app, mixin.dashboards));
+
   ns.vpa({ kind: "Deployment", name: "gpu-operator" });
+  ns.vpa({ kind: "DaemonSet", name: "nvidia-dcgm-exporter" });
 
   h.postRender((e) => {
     const job = e.find({ kind: "Job", name: "gpu-operator-upgrade-crd" });
@@ -50,6 +55,10 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
+  const nvidiaDcgmExporter = n.subject(
+    "nvidia-dcgm-exporter",
+    appLabel("nvidia-dcgm-exporter", "nvidia-gpu-operator"),
+  );
   const nvidiaDevicePlugin = n.subject(
     "nvidia-device-plugin",
     appLabel("nvidia-device-plugin-daemonset", "nvidia-gpu-operator"),
@@ -70,6 +79,8 @@ export const network: NetworkFunction = (n) => {
     "nvidia-operator-validator",
     appLabel("nvidia-operator-validator", "nvidia-gpu-operator"),
   );
+
+  n.ref("prometheus").to(nvidiaDcgmExporter, tcp(9400));
 
   nvidiaDevicePlugin.to(n.kubeApiServer, tcp(6443));
 

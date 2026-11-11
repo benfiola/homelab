@@ -1,5 +1,10 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
+  dashboard,
+  dashboardConfigMaps,
+  prometheusRules,
+} from "../../tools/lib/k8s/monitoring.ts";
+import {
   component,
   dns,
   tcp,
@@ -64,6 +69,26 @@ export const app: AppFunction = async (h) => {
   });
 
   ns.secrets("secrets", ["cloudflare-api-token"]);
+
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(
+    ...prometheusRules("alert", mixin.alerts),
+    ...dashboardConfigMaps(h.app, mixin.dashboards),
+  );
+
+  h.postRender((e) => {
+    dashboard(e, "dashboard--cert-manager-overview-json", (d) => {
+      for (const kind of ["limits", "requests"]) {
+        d.replace(
+          `kube_pod_container_resource_${kind}_cpu_cores{`,
+          `kube_pod_container_resource_${kind}{resource=\\"cpu\\", `,
+        ).replace(
+          `kube_pod_container_resource_${kind}_memory_bytes{`,
+          `kube_pod_container_resource_${kind}{resource=\\"memory\\", `,
+        );
+      }
+    });
+  });
 
   ns.vpa({ kind: "Deployment", name: "cert-manager" });
 
