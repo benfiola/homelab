@@ -111,6 +111,7 @@ export const app: AppFunction = (h) => {
                     { name: "LABEL", value: "grafana_dashboard" },
                     { name: "LABEL_VALUE", value: "1" },
                     { name: "FOLDER", value: "/var/lib/grafana/dashboards" },
+                    { name: "FOLDER_ANNOTATION", value: "grafana_folder" },
                     { name: "NAMESPACE", value: "ALL" },
                     { name: "RESOURCE", value: "configmap" },
                   ],

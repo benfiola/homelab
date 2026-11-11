@@ -31,6 +31,7 @@ export const app: AppFunction = async (h) => {
       metadata: {
         name: `dashboard--${k8sName(name)}`,
         labels: { grafana_dashboard: "1" },
+        annotations: { grafana_folder: h.app },
       },
       data: { [name]: JSON.stringify(dashboard) },
     });
