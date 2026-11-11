@@ -24,32 +24,17 @@
   "panels": [
     {
       "id": 1,
-      "type": "text",
-      "title": "",
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 24,
-        "h": 4
-      },
-      "options": {
-        "mode": "markdown",
-        "content": "One row per distinct flow over the selected time range, from Cilium's aggregated policy-verdict export. **events** is the number of connections. Filter any column from its header.\n\n- **Policies to add:** filter *verdict* to `DROPPED`. *destination names* and *destination ip* are only filled for drops (names come from Cilium's DNS cache).\n- **Policies to remove:** a policy that never appears in *policy* over a long range (30d or more; weekly and monthly jobs are rare) may be unused. Rows with an empty *policy* were allowed without one being named (host and kubelet probes, Geneve), so host-firewall policies cannot be judged here."
-      }
-    },
-    {
-      "id": 2,
       "type": "table",
-      "title": "Flows",
+      "title": "",
       "datasource": {
         "type": "loki",
         "uid": "${datasource}"
       },
       "gridPos": {
         "x": 0,
-        "y": 4,
+        "y": 0,
         "w": 24,
-        "h": 28
+        "h": 32
       },
       "targets": [
         {
@@ -61,7 +46,18 @@
           "editorMode": "code",
           "queryType": "instant",
           "instant": true,
-          "expr": "sum_over_time(\n  {namespace=\"cilium\", container=\"hubble-flows\"} |= \"\\\"flow\\\":\"\n  | json verdict=\"flow.verdict\", dir=\"flow.traffic_direction\", reason=\"flow.drop_reason_desc\", e=\"flow.aggregate.egress_flow_count\", i=\"flow.aggregate.ingress_flow_count\", ep=\"flow.egress_allowed_by[0].name\", ip=\"flow.ingress_allowed_by[0].name\", src_ns=\"flow.source.namespace\", dst_ns=\"flow.destination.namespace\", src_labels=\"flow.source.labels\", dst_labels=\"flow.destination.labels\", names=\"flow.destination_names\", src_ip=\"flow.IP.source\", dst_ip=\"flow.IP.destination\", tcp=\"flow.l4.TCP.destination_port\", udp=\"flow.l4.UDP.destination_port\", icmp=\"flow.l4.ICMPv4.type\", src_id=\"flow.source.identity\", dst_id=\"flow.destination.identity\"\n  | label_format policy=`{{ or .ep .ip }}`, events=`{{ add (int (or .e \"0\")) (int (or .i \"0\")) }}`, port=`{{ if .tcp }}TCP/{{ .tcp }}{{ else if .udp }}UDP/{{ .udp }}{{ else if .icmp }}ICMP/{{ .icmp }}{{ end }}`\n  | label_format src=`{{ or .src_ns (regexReplaceAll \"^.*?\\\"((?:reserved|cidr):[^\\\"]+)\\\".*$\" .src_labels \"${1}\") (printf \"identity %s\" .src_id) }}`, dst=`{{ or .dst_ns (regexReplaceAll \"^.*?\\\"((?:reserved|cidr):[^\\\"]+)\\\".*$\" .dst_labels \"${1}\") (printf \"identity %s\" .dst_id) }}`, names=`{{ regexReplaceAll \"[\\\\[\\\\]\\\"]\" .names \"\" }}`\n  | label_format src_ip=`{{ if eq .verdict \"DROPPED\" }}{{ .src_ip }}{{ end }}`, dst_ip=`{{ if eq .verdict \"DROPPED\" }}{{ .dst_ip }}{{ end }}`\n  | keep verdict, dir, src, dst, names, port, policy, reason, src_ip, dst_ip, events\n  | unwrap events [$__range]\n)"
+          "expr": "sum_over_time(\n  {namespace=\"cilium\", container=\"hubble-flows\"} |= \"\\\"flow\\\":\"\n  | json verdict=\"flow.verdict\", dir=\"flow.traffic_direction\", e=\"flow.aggregate.egress_flow_count\", i=\"flow.aggregate.ingress_flow_count\", ep=\"flow.egress_allowed_by[0].name\", ip=\"flow.ingress_allowed_by[0].name\", src_ns=\"flow.source.namespace\", dst_ns=\"flow.destination.namespace\", src_pod=\"flow.source.pod_name\", dst_pod=\"flow.destination.pod_name\", src_labels=\"flow.source.labels\", dst_labels=\"flow.destination.labels\", src_names=\"flow.source_names\", dst_names=\"flow.destination_names\", src_ip=\"flow.IP.source\", dst_ip=\"flow.IP.destination\", tcp=\"flow.l4.TCP.destination_port\", udp=\"flow.l4.UDP.destination_port\", icmp=\"flow.l4.ICMPv4.type\"\n  | label_format policy=`{{ or .ep .ip }}`, events=`{{ add (int (or .e \"0\")) (int (or .i \"0\")) }}`, port=`{{ if .tcp }}TCP/{{ .tcp }}{{ else if .udp }}UDP/{{ .udp }}{{ else if .icmp }}ICMP/{{ .icmp }}{{ end }}`, src_names=`{{ regexReplaceAll \"[\\\\[\\\\]\\\"]\" .src_names \"\" }}`, dst_names=`{{ regexReplaceAll \"[\\\\[\\\\]\\\"]\" .dst_names \"\" }}`\n  | label_format source=`{{ if .src_ns }}{{ .src_ns }}{{ if .src_pod }}/{{ .src_pod }}{{ end }}{{ else if .src_names }}{{ .src_names }}{{ else if contains \"reserved:host\" .src_labels }}host{{ else if contains \"reserved:remote-node\" .src_labels }}remote-node{{ else }}{{ .src_ip }}{{ end }}`, destination=`{{ if .dst_ns }}{{ .dst_ns }}{{ if .dst_pod }}/{{ .dst_pod }}{{ end }}{{ else if .dst_names }}{{ .dst_names }}{{ else if contains \"reserved:host\" .dst_labels }}host{{ else if contains \"reserved:remote-node\" .dst_labels }}remote-node{{ else }}{{ .dst_ip }}{{ end }}`\n  | keep verdict, dir, source, destination, port, policy, events\n  | unwrap events [$__range]\n)"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "queryType": "instant",
+          "instant": true,
+          "expr": "max_over_time(\n  {namespace=\"cilium\", container=\"hubble-flows\"} |= \"\\\"flow\\\":\"\n  | json verdict=\"flow.verdict\", dir=\"flow.traffic_direction\", e=\"flow.aggregate.egress_flow_count\", i=\"flow.aggregate.ingress_flow_count\", ep=\"flow.egress_allowed_by[0].name\", ip=\"flow.ingress_allowed_by[0].name\", src_ns=\"flow.source.namespace\", dst_ns=\"flow.destination.namespace\", src_pod=\"flow.source.pod_name\", dst_pod=\"flow.destination.pod_name\", src_labels=\"flow.source.labels\", dst_labels=\"flow.destination.labels\", src_names=\"flow.source_names\", dst_names=\"flow.destination_names\", src_ip=\"flow.IP.source\", dst_ip=\"flow.IP.destination\", tcp=\"flow.l4.TCP.destination_port\", udp=\"flow.l4.UDP.destination_port\", icmp=\"flow.l4.ICMPv4.type\"\n  | label_format policy=`{{ or .ep .ip }}`, events=`{{ add (int (or .e \"0\")) (int (or .i \"0\")) }}`, port=`{{ if .tcp }}TCP/{{ .tcp }}{{ else if .udp }}UDP/{{ .udp }}{{ else if .icmp }}ICMP/{{ .icmp }}{{ end }}`, src_names=`{{ regexReplaceAll \"[\\\\[\\\\]\\\"]\" .src_names \"\" }}`, dst_names=`{{ regexReplaceAll \"[\\\\[\\\\]\\\"]\" .dst_names \"\" }}`\n  | label_format source=`{{ if .src_ns }}{{ .src_ns }}{{ if .src_pod }}/{{ .src_pod }}{{ end }}{{ else if .src_names }}{{ .src_names }}{{ else if contains \"reserved:host\" .src_labels }}host{{ else if contains \"reserved:remote-node\" .src_labels }}remote-node{{ else }}{{ .src_ip }}{{ end }}`, destination=`{{ if .dst_ns }}{{ .dst_ns }}{{ if .dst_pod }}/{{ .dst_pod }}{{ end }}{{ else if .dst_names }}{{ .dst_names }}{{ else if contains \"reserved:host\" .dst_labels }}host{{ else if contains \"reserved:remote-node\" .dst_labels }}remote-node{{ else }}{{ .dst_ip }}{{ end }}`\n  | label_format ts=`{{ __timestamp__.UnixMilli }}`\n  | keep verdict, dir, source, destination, port, policy, ts\n  | unwrap ts [$__range]\n)"
         }
       ],
       "transformations": [
@@ -82,30 +78,19 @@
               "Time": true
             },
             "renameByName": {
-              "src": "source",
-              "dst": "destination",
-              "names": "destination names",
-              "port": "port",
-              "dir": "direction",
-              "verdict": "verdict",
-              "policy": "policy",
-              "reason": "drop reason",
-              "src_ip": "source ip",
-              "dst_ip": "destination ip",
-              "Value": "events"
+              "Value #A": "events",
+              "Value #B": "last seen",
+              "dir": "direction"
             },
             "indexByName": {
-              "source": 0,
-              "destination": 1,
-              "destination names": 2,
+              "last seen": 0,
+              "source": 1,
+              "destination": 2,
               "port": 3,
               "direction": 4,
               "verdict": 5,
               "policy": 6,
-              "drop reason": 7,
-              "source ip": 8,
-              "destination ip": 9,
-              "events": 10
+              "events": 7
             }
           }
         }
@@ -152,6 +137,22 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "last seen"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "events"
             },
             "properties": [
@@ -168,7 +169,7 @@
         "cellHeight": "sm",
         "sortBy": [
           {
-            "displayName": "events",
+            "displayName": "last seen",
             "desc": true
           }
         ],

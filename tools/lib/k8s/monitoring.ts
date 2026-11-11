@@ -12,6 +12,7 @@ export interface MonitorOptions {
   https?: boolean;
   // keep the scraped labels where they clash with the target's own
   honorLabels?: boolean;
+  dropMetrics?: string;
 }
 
 const endpoint = (port: string, opts: MonitorOptions) =>
@@ -20,6 +21,13 @@ const endpoint = (port: string, opts: MonitorOptions) =>
     path: opts.path,
     interval: opts.interval,
     honorLabels: opts.honorLabels,
+    metricRelabelings: opts.dropMetrics && [
+      {
+        action: "drop",
+        sourceLabels: ["__name__"],
+        regex: opts.dropMetrics,
+      },
+    ],
     ...(opts.https && {
       scheme: "https",
       tlsConfig: { insecureSkipVerify: true },
@@ -241,8 +249,6 @@ export const dashboard = (
   edit(d);
 };
 
-// a ConfigMap grafana's sidecar loads for each dashboard of a mixin ({ "file.json": dashboard }),
-// placed in the grafana folder `folder`. named `dashboard--<file>`, which `dashboard` edits them by
 export const dashboardConfigMaps = (
   folder: string,
   dashboards: Record<string, unknown>,
@@ -258,7 +264,6 @@ export const dashboardConfigMaps = (
     data: { [file]: JSON.stringify(dashboard) },
   }));
 
-// a PrometheusRule for each group of a mixin's rules or alerts, named `<kind>--<group>`
 export const prometheusRules = (
   kind: "alert" | "rule",
   groups: Record<string, any>[],

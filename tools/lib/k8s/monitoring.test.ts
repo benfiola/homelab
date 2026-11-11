@@ -24,6 +24,13 @@ describe("monitors", () => {
     ]);
   });
 
+  test("dropMetrics drops series by metric name", () => {
+    const m = podMonitor("x", { app: "x" }, "metrics", { dropMetrics: "a|b" });
+    assert.deepEqual(m.spec.podMetricsEndpoints[0].metricRelabelings, [
+      { action: "drop", sourceLabels: ["__name__"], regex: "a|b" },
+    ]);
+  });
+
   test("https skips verification, as in-cluster certificates are self-signed", () => {
     const m = serviceMonitor("x", { app: "x" }, "https", { https: true });
     assert.deepEqual(m.spec.endpoints, [

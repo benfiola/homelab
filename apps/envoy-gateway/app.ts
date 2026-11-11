@@ -41,7 +41,6 @@ export const app: AppFunction = async (h) => {
 
   chart.find("Service", "envoy-gateway").serviceMonitor("metrics");
 
-  // the proxies envoy gateway runs for each Gateway
   ns.podMonitor(
     "envoy-gateway-proxy",
     {
@@ -49,10 +48,12 @@ export const app: AppFunction = async (h) => {
       "app.kubernetes.io/name": "envoy",
     },
     "metrics",
-    { path: "/stats/prometheus" },
+    {
+      path: "/stats/prometheus",
+      dropMetrics: "envoy_cluster_total_match_count",
+    },
   );
 
-  // the addons chart is used only for its dashboards: everything else it bundles is disabled
   await ns.helm(
     "oci://docker.io/envoyproxy/gateway-addons-helm?version=1.10.0",
     {
@@ -76,7 +77,6 @@ export const app: AppFunction = async (h) => {
   h.postRender((e) => {
     dashboard(e, "grafana-dashboards", (d) =>
       d
-        // the panels that pin the datasource the dashboard was exported from
         .replace('"uid": "PBFA97CFB590B2093"', '"uid": "$datasource"')
         .replace("envoy-gateway-system", h.app),
     );

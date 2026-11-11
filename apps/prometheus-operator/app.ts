@@ -53,7 +53,6 @@ export const app: AppFunction = async (h) => {
 
   bundle.find("Deployment", "prometheus-operator").podMonitor("http");
 
-  // the prometheus-operator mixin (see main.jsonnet)
   const mixin = await ns.jsonnet("main.jsonnet");
   ns.add(...prometheusRules("alert", mixin.alerts));
 

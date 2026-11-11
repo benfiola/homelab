@@ -263,7 +263,6 @@ export const app: AppFunction = async (h) => {
     });
   }
 
-  // the prometheus-mixin (see main.jsonnet)
   const mixin = await ns.jsonnet("main.jsonnet");
   ns.add(
     ...prometheusRules("alert", mixin.alerts),

@@ -66,10 +66,13 @@ export const app: AppFunction = async (h) => {
               "l4",
               "source.identity",
               "source.namespace",
+              "source.pod_name",
               "source.labels",
               "destination.identity",
               "destination.namespace",
+              "destination.pod_name",
               "destination.labels",
+              "source_names",
               "destination_names",
               "egress_allowed_by",
               "ingress_allowed_by",
@@ -85,10 +88,13 @@ export const app: AppFunction = async (h) => {
               "l4.ICMPv4.type",
               "source.identity",
               "source.namespace",
+              "source.pod_name",
               "source.labels",
               "destination.identity",
               "destination.namespace",
+              "destination.pod_name",
               "destination.labels",
+              "source_names",
               "destination_names",
               "egress_allowed_by",
               "ingress_allowed_by",
@@ -184,7 +190,6 @@ export const app: AppFunction = async (h) => {
     },
   });
 
-  // the chart doesn't ship these crds
   const crds =
     "https://raw.githubusercontent.com/cilium/cilium/v1.20.4/pkg/k8s/apis/cilium.io/client/crds";
   for (const file of [
@@ -351,7 +356,6 @@ export const app: AppFunction = async (h) => {
     },
   });
 
-  // the aggregated policy verdicts the hubble-flows sidecar ships to loki, as a filterable table
   ns.configMap("dashboard--policy-flows", h.files("policy-flows.json"), {
     labels: { grafana_dashboard: "1" },
     annotations: { grafana_folder: h.app },

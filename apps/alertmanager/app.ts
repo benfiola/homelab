@@ -169,7 +169,6 @@ export const app: AppFunction = async (h) => {
     },
   });
 
-  // the alertmanager-mixin (see main.jsonnet)
   const mixin = await ns.jsonnet("main.jsonnet");
   ns.add(
     ...prometheusRules("alert", mixin.alerts),

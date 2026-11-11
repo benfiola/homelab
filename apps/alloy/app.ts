@@ -1,5 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
+  dashboardConfigMaps,
+  prometheusRules,
+} from "../../tools/lib/k8s/monitoring.ts";
+import {
   pod,
   tcp,
   type NetworkFunction,
@@ -74,6 +78,12 @@ loki.write "default" {
       },
     },
   });
+
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(
+    ...prometheusRules("alert", mixin.alerts),
+    ...dashboardConfigMaps(h.app, mixin.dashboards),
+  );
 
   ns.vpa({ kind: "DaemonSet", name: "alloy" });
 };
