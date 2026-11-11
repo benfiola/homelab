@@ -53,6 +53,11 @@ describe("HttpRoute", () => {
     );
   });
 
+  test("is named without dots, which envoy reads as the end of a cluster name", () => {
+    const [, route] = objects();
+    assert.equal(route.metadata.name, "app-example-test");
+  });
+
   test("a rule with no match is the root path, and a timeout is only there if given", () => {
     const [, route] = objects();
     assert.deepEqual(route.spec.rules, [
@@ -89,6 +94,17 @@ describe("GrpcRoute timeouts", () => {
   });
 });
 
+describe("GrpcRoute policy", () => {
+  test("targets the route by its name", () => {
+    const objects = new GrpcRoute("family", "g.example.test", { timeout: "1m" })
+      .match({ kind: "Service", name: "svc" }, 1)
+      .objects();
+    const route = objects.find((o) => o.kind === "GRPCRoute")!;
+    const policy = objects.find((o) => o.kind === "BackendTrafficPolicy")!;
+    assert.equal(policy.spec.targetRefs[0].name, route.metadata.name);
+  });
+});
+
 describe("tcpRoute and udpRoute", () => {
   const to = { kind: "Service", name: "svc" };
 
@@ -117,7 +133,7 @@ describe("tcpRoute and udpRoute", () => {
     );
     assert.equal(tcpListeners.metadata.name, "h.example.test-tcp-22");
     assert.equal(udpListeners.metadata.name, "h.example.test-udp-53");
-    assert.equal(tcp.metadata.name, "h.example.test-22");
+    assert.equal(tcp.metadata.name, "h-example-test-22");
     assert.deepEqual(tcp.spec.rules[0].backendRefs, [
       { kind: "Service", name: "svc", port: 2222 },
     ]);

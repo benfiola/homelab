@@ -1,6 +1,6 @@
 local mixin = import 'alloy-mixin/mixin.libsonnet';
 
-local unused = ['cluster', 'opentelemetry', 'otel', 'remote-write'];
+local unused = ['cluster', 'logs', 'opentelemetry', 'otel', 'remote-write'];
 
 {
   alerts: [

@@ -97,6 +97,8 @@ const listenerSet = (opts: {
   });
 };
 
+const routeName = (name: string) => name.replaceAll(".", "-");
+
 const route = (kind: RouteKind, metadata: Obj, spec: Obj): Obj => ({
   apiVersion: "gateway.networking.k8s.io/v1",
   kind,
@@ -120,7 +122,7 @@ const hostRoutes = (
   }),
   route(
     kind,
-    { name: hostname, annotations: publish(gateway) },
+    { name: routeName(hostname), annotations: publish(gateway) },
     {
       hostnames: [hostname],
       parentRefs: [
@@ -204,7 +206,7 @@ export class GrpcRoute {
             {
               group: "gateway.networking.k8s.io",
               kind: "GRPCRoute",
-              name: hostname,
+              name: routeName(hostname),
             },
           ],
           timeout: {
@@ -248,7 +250,7 @@ const portRoute = (
   to: Target,
   toPort: number,
 ): Obj[] => {
-  const name = `${hostname}-${fromPort}`;
+  const name = routeName(`${hostname}-${fromPort}`);
   const listener = `${hostname}-${routeKind === "TCPRoute" ? "tcp" : "udp"}-${fromPort}`;
   return [
     listenerSet({ gateway, name: listener, port: fromPort, routeKind }),
