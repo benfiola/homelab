@@ -77,6 +77,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ "http-insecure": 5000 });
+  workload.podMonitor("http-insecure", { path: "/api/metrics" });
   ns.vpa(workload);
 };
 
@@ -88,4 +89,5 @@ export const network: NetworkFunction = (n) => {
     .to(n.ref("mosquitto"), tcp(1883))
     .to(dns("*.camera.fiola.dev"), tcp(554));
   n.host.to(frigate, tcp(5000));
+  n.ref("prometheus").to(frigate, tcp(5000));
 };

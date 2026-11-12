@@ -58,6 +58,7 @@ export const app: AppFunction = (h) => {
     });
   const service = workload.service({ web: 8123 });
 
+  workload.podMonitor("web", { path: "/api/prometheus" });
   ns.httpRoute("family", "automation.fiola.dev").match(service, 8123);
   ns.vpa(workload);
 };
@@ -80,5 +81,6 @@ export const network: NetworkFunction = (n) => {
     .to(n.ref("wyoming-whisper"), tcp(10300))
     .to(dns("mobile-apps.home-assistant.io"), tcp(443));
   n.host.to(homeAssistant, tcp(8123));
+  n.ref("prometheus").to(homeAssistant, tcp(8123));
   n.ref("gateway-family").to(homeAssistant, tcp(8123));
 };

@@ -68,6 +68,7 @@ export const app: AppFunction = (h) => {
         "--flash-attn",
         "on",
         "--jinja",
+        "--metrics",
         "--cache-type-k",
         "q8_0",
         "--cache-type-v",
@@ -94,6 +95,7 @@ export const app: AppFunction = (h) => {
     });
 
   workload.service({ web: 8080 });
+  workload.podMonitor("web");
   ns.vpa(workload);
 };
 
@@ -106,4 +108,5 @@ export const network: NetworkFunction = (n) => {
 
   llamaCppServer.to(llamaCppAssetsServer, tcp(8080));
   n.host.to(llamaCppAssetsServer, tcp(8080)).to(llamaCppServer, tcp(8080));
+  n.ref("prometheus").to(llamaCppServer, tcp(8080));
 };

@@ -38,6 +38,8 @@ lovelace:
       show_in_sidebar: true
       filename: dashboard-lights.yaml
 mobile_app: {}
+prometheus:
+  requires_auth: false
 zeroconf: {}
 automation: !include automations.yaml
 script: !include scripts.yaml
