@@ -80,6 +80,7 @@ export const network: NetworkFunction = (n) => {
     appLabel("nvidia-operator-validator", "nvidia-gpu-operator"),
   );
 
+  n.host.to(nvidiaDcgmExporter, tcp(9400));
   n.ref("prometheus").to(nvidiaDcgmExporter, tcp(9400));
 
   nvidiaDevicePlugin.to(n.kubeApiServer, tcp(6443));
