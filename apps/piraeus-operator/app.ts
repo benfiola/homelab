@@ -6,8 +6,6 @@ import {
 } from "../../tools/lib/k8s/network-policy.ts";
 
 export const app: AppFunction = async (h) => {
-  // the overlay's own base already declares (and privileges) this namespace, renamed to the
-  // app's by the namespace transform below: a Namespace of our own would conflict with it
   const ns = h.namespace({ external: true });
   await ns.kustomize(
     "github.com/piraeusdatastore/piraeus-operator/config/default?ref=v2.12.1",
@@ -16,11 +14,24 @@ export const app: AppFunction = async (h) => {
     },
   );
 
+  await ns.kustomize(
+    "github.com/piraeusdatastore/piraeus-operator/config/extras/monitoring?ref=v2.12.1",
+  );
+
   ns.vpa({ kind: "Deployment", name: "piraeus-operator-controller-manager" });
   ns.vpa({ kind: "Deployment", name: "piraeus-operator-gencert" });
 
   // no limits: the autoscaler sizes requests
   h.postRender((e) => {
+    const dashboard = e.find({
+      kind: "ConfigMap",
+      name: "piraeus-datastore-dashboard",
+    });
+    dashboard.metadata.annotations = {
+      ...dashboard.metadata.annotations,
+      grafana_folder: h.app,
+    };
+
     for (const [deployment, name] of [
       ["piraeus-operator-controller-manager", "manager"],
       ["piraeus-operator-gencert", "gencert"],
@@ -69,11 +80,13 @@ export const network: NetworkFunction = (n) => {
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorController, tcp(3370));
   n.host.to(linstorAffinityController, tcp(8000));
+  n.ref("prometheus").to(linstorAffinityController, tcp(8081));
 
   linstorController
     .to(n.kubeApiServer, tcp(6443))
     .to(linstorSatellite, tcp(3366));
   n.nodes.to(linstorController, tcp(3370));
+  n.ref("prometheus").to(linstorController, tcp(3370));
 
   linstorCsiController
     .to(n.kubeApiServer, tcp(6443))
@@ -87,6 +100,7 @@ export const network: NetworkFunction = (n) => {
 
   linstorSatellite.to(linstorSatellite, tcp([7000, 7999]));
   n.nodes.to(linstorSatellite, tcp(3366, 9942));
+  n.ref("prometheus").to(linstorSatellite, tcp(9942));
 
   piraeusOperator
     .to(n.kubeApiServer, tcp(6443))
