@@ -15,6 +15,7 @@ export const app: AppFunction = async (h) => {
     {
       values: {
         kind: "Deployment",
+        service: { enabled: true },
         serviceMonitor: { enabled: true },
         podSecurityContext: security.pod,
         securityContext: security.container,
