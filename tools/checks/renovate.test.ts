@@ -11,6 +11,7 @@ const config = JSON.parse(readFileSync(join(root, "renovate.json"), "utf-8"));
 
 interface Manager {
   description: string;
+  currentValueTemplate?: string;
   managerFilePatterns: string[];
   matchStrings: string[];
 }
@@ -55,9 +56,12 @@ describe("renovate.json", () => {
   test("every custom manager captures what renovate requires", () => {
     for (const manager of managers) {
       for (const matchString of manager.matchStrings) {
+        // a rule that follows a branch from a pinned commit has the value in its template
         assert.match(
           matchString,
-          /\(\?<currentValue>/,
+          manager.currentValueTemplate
+            ? /\(\?<currentDigest>/
+            : /\(\?<currentValue>/,
           `${manager.description}: no currentValue`,
         );
         assert.match(

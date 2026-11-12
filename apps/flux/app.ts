@@ -21,6 +21,21 @@ export const app: AppFunction = async (h) => {
     }
   }
 
+  const dashboards =
+    "https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/7ab65dc8b90f7a6751d88f18bbb4e1bee33bf334/monitoring/configs/dashboards";
+  for (const file of ["cluster", "control-plane"]) {
+    ns.configMap(
+      `dashboard--${file}`,
+      { [`${file}.json`]: await h.fetch(`${dashboards}/${file}.json`) },
+      {
+        labels: { grafana_dashboard: "1" },
+        annotations: { grafana_folder: h.app },
+      },
+    );
+  }
+
+  ns.podMonitor("flux", { "app.kubernetes.io/part-of": "flux" }, "http-prom");
+
   for (const controller of [
     "helm-controller",
     "kustomize-controller",
@@ -51,19 +66,23 @@ export const network: NetworkFunction = (n) => {
 
   fluxHelmController.to(n.kubeApiServer, tcp(6443));
   n.host.to(fluxHelmController, tcp(9440));
+  n.ref("prometheus").to(fluxHelmController, tcp(8080));
 
   fluxKustomizeController
     .to(n.kubeApiServer, tcp(6443))
     .to(fluxNotificationController, tcp(9090))
     .to(fluxSourceController, tcp(9090));
   n.host.to(fluxKustomizeController, tcp(9440));
+  n.ref("prometheus").to(fluxKustomizeController, tcp(8080));
 
   fluxNotificationController.to(n.kubeApiServer, tcp(6443));
   n.host.to(fluxNotificationController, tcp(9440));
+  n.ref("prometheus").to(fluxNotificationController, tcp(8080));
 
   fluxSourceController
     .to(n.kubeApiServer, tcp(6443))
     .to(fluxNotificationController, tcp(9090))
     .to(dns("github.com"), tcp(22));
   n.host.to(fluxSourceController, tcp(9090, 9440));
+  n.ref("prometheus").to(fluxSourceController, tcp(8080));
 };

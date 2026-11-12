@@ -87,3 +87,10 @@ export const manifest = async (
   );
   return parseManifests(await cachedText(path, () => download(source)), source);
 };
+
+// the text at a url (downloaded once, then cached): the url should be immutable, as a pinned commit or tag is
+export const remoteText = (url: string): Promise<string> =>
+  cachedText(
+    cacheDir("files", `${cacheKey(url)}-${basename(new URL(url).pathname)}`),
+    () => download(url),
+  );

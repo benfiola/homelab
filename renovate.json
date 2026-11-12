@@ -57,6 +57,17 @@
     },
     {
       "customType": "regex",
+      "description": "raw.githubusercontent.com urls pinned to a commit, for repositories without releases: the commit is moved to the head of main",
+      "managerFilePatterns": ["/^apps/[^/]+/app\\.ts$/"],
+      "matchStrings": [
+        "https://raw\\.githubusercontent\\.com/(?<depName>[^/\\s\"]+/[^/\\s\"]+)/(?<currentDigest>[0-9a-f]{40})/"
+      ],
+      "datasourceTemplate": "git-refs",
+      "packageNameTemplate": "https://github.com/{{{depName}}}",
+      "currentValueTemplate": "main"
+    },
+    {
+      "customType": "regex",
       "description": "upstream kustomize overlays, pinned by `?ref=` (ns.kustomize)",
       "managerFilePatterns": ["/^apps/[^/]+/app\\.ts$/"],
       "matchStrings": [

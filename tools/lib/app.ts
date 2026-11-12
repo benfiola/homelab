@@ -54,7 +54,7 @@ import { stampNamespace } from "./object.ts";
 import { helm, parseChartUrl } from "./sources/helm.ts";
 import { jsonnet } from "./sources/jsonnet.ts";
 import { kustomize } from "./sources/kustomize.ts";
-import { manifest } from "./sources/manifest.ts";
+import { manifest, remoteText } from "./sources/manifest.ts";
 
 type Obj = Record<string, any>;
 
@@ -221,6 +221,12 @@ export class App {
     return Object.fromEntries(
       names.map((name) => [name, readFileSync(join(this.dir, name), "utf-8")]),
     );
+  }
+
+  // the text at a url, downloaded once and cached. the url must be pinned (a tag or a commit), as
+  // what it holds is never refetched
+  fetch(url: string): Promise<string> {
+    return remoteText(url);
   }
 
   // what the app publishes: everything it created, in creation order, after the post-render hooks
