@@ -150,6 +150,12 @@ export const app: AppFunction = (h) => {
     },
   });
 
+  ns.podMonitor(
+    "grafana",
+    { "app.kubernetes.io/name": "grafana" },
+    "grafana-http",
+  );
+
   ns.httpRoute("infrastructure", externalUrl.hostname).match(
     { kind: "Service", name: "grafana-service" },
     3000,
@@ -164,5 +170,6 @@ export const network: NetworkFunction = (n) => {
     .to(n.ref("loki-gateway"), tcp(8080))
     .to(n.ref("prometheus"), tcp(9090));
   n.host.to(grafana, tcp(3000));
+  n.ref("prometheus").to(grafana, tcp(3000));
   n.ref("gateway-infrastructure").to(grafana, tcp(3000));
 };

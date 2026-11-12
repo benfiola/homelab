@@ -26,7 +26,17 @@ export const app: AppFunction = async (h) => {
       name: "inteldeviceplugins-controller-manager",
     });
     deployment.spec.template.metadata.labels["app.kubernetes.io/name"] = h.app;
+
+    const manager = e.container(deployment, "manager");
+    e.replace(manager.args, "--metrics-secure", "--metrics-secure=false");
+    manager.ports.push({ name: "metrics", containerPort: 8443 });
   });
+
+  ns.podMonitor(
+    "intel-device-plugins-operator",
+    { "app.kubernetes.io/name": h.app },
+    "metrics",
+  );
 };
 
 export const network: NetworkFunction = (n) => {
@@ -38,4 +48,5 @@ export const network: NetworkFunction = (n) => {
   intelDevicePluginsOperator.to(n.kubeApiServer, tcp(6443));
   n.controlPlane.to(intelDevicePluginsOperator, tcp(9443));
   n.host.to(intelDevicePluginsOperator, tcp(8081, 9443));
+  n.ref("prometheus").to(intelDevicePluginsOperator, tcp(8443));
 };
