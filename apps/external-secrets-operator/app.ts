@@ -28,7 +28,7 @@ export const app: AppFunction = async (h) => {
   const security = h.securityContext();
 
   await ns.helm(
-    "https://charts.external-secrets.io/external-secrets?version=2.14.0",
+    "https://charts.external-secrets.io/external-secrets?version=2.15.0",
     {
       values: {
         // deployed by the app itself (see below): the chart's lags upstream
