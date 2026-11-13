@@ -267,7 +267,7 @@ export const app: AppFunction = (h) => {
       dnsConfig: { ndots: 1 },
     })
     .addContainer("sabnzbd", {
-      image: "ghcr.io/linuxserver/sabnzbd:5.1.3-ls280",
+      image: "ghcr.io/linuxserver/sabnzbd:5.1.3-ls281",
       containerPorts: { web: 8080 },
       env: linuxserver,
       volumeMounts: { config: "/config", data: "/data" },
