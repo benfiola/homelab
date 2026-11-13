@@ -9,7 +9,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   await ns.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/pvc-restore?version=1.0.9",
+    "oci://ghcr.io/benfiola/homelab-images/charts/pvc-restore?version=1.0.10",
     { values: { config: { cacheStorageClass: "standard" } } },
   );
 
