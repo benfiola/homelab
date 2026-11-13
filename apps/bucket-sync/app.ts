@@ -10,7 +10,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   await ns.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync?version=1.2.7",
+    "oci://ghcr.io/benfiola/homelab-images/charts/bucket-sync?version=1.2.8",
   );
 
   ns.vpa({ kind: "Deployment", name: "bucket-sync" });
