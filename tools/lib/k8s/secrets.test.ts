@@ -8,10 +8,9 @@ import {
   appSecrets,
   appTemplatedSecrets,
   bucketSyncKeys,
-  generatedNames,
-  generatedObjects,
-  generatedString,
-  mergedExternalSecret,
+  generatedExternalSecret,
+  generatorObjects,
+  mergeGenerated,
   pushSecret,
   pushStore,
   secretKeys,
@@ -98,8 +97,11 @@ describe("pushSecret", () => {
   test("is named for the Secret, so that an app can push several", () => {
     const names = ["one", "two"].map(
       (name) =>
-        pushSecret({ namespace: "app", name, templates: { A: "a" } }).metadata
-          .name,
+        pushSecret({
+          namespace: "app",
+          name,
+          templates: { A: "a" },
+        }).metadata.name,
     );
     assert.deepEqual(names, ["app-one", "app-two"]);
   });
@@ -107,7 +109,11 @@ describe("pushSecret", () => {
   test("a Secret with no keys is an error", () => {
     assert.throws(
       () =>
-        pushSecret({ namespace: "app", name: "credentials", templates: {} }),
+        pushSecret({
+          namespace: "app",
+          name: "credentials",
+          templates: {},
+        }),
       /the Secret credentials in app has no keys/,
     );
   });
@@ -127,7 +133,11 @@ describe("pushSecret", () => {
       );
       assert.throws(
         () =>
-          pushSecret({ namespace: "app", name: bad, templates: { A: "a" } }),
+          pushSecret({
+            namespace: "app",
+            name: bad,
+            templates: { A: "a" },
+          }),
         /not a plain name/,
       );
     }
@@ -135,37 +145,51 @@ describe("pushSecret", () => {
 });
 
 describe("generated secrets", () => {
-  test("each value has an ExternalSecret that never refreshes, and a Secret of its own", () => {
-    const objects = generatedObjects();
-    const externals = objects.filter((o) => o.kind === "ExternalSecret");
-    assert.deepEqual(
-      externals.map((o) => o.spec.target.name),
-      generatedNames.map((n) => `generated-${n}`),
+  test("a value is generated once, into a Secret that the ExternalSecret owns", () => {
+    const { spec, metadata } = generatedExternalSecret(
+      "garage",
+      "admin-token",
+      "string",
     );
-    for (const e of externals) {
-      assert.equal(e.spec.refreshInterval, "0");
-      assert.equal(e.spec.dataFrom[0].sourceRef.generatorRef.name, "password");
-    }
-    assert.equal(objects.filter((o) => o.kind === "Password").length, 1);
+    assert.equal(metadata.name, "generated-garage-admin-token");
+    assert.equal(spec.target.name, "generated-garage-admin-token");
+    assert.equal(spec.refreshInterval, "0");
+    assert.equal(spec.dataFrom[0].sourceRef.generatorRef.name, "password");
   });
 
-  test("the merged Secret holds the apps blob and every generated value", () => {
-    const { spec } = mergedExternalSecret();
-    assert.equal(spec.refreshInterval, "5s");
-    assert.deepEqual(spec.secretStoreRef, {
+  test("the generators are created once, whatever the values", () => {
+    assert.deepEqual(
+      generatorObjects().map((o) => o.kind),
+      ["Password"],
+    );
+  });
+
+  test("the merged Secret reads the apps blob and what every app generates", () => {
+    const apps = new Map([
+      ["db", [generatedExternalSecret("db", "password", "string")]],
+      ["web", [generatedExternalSecret("web", "token", "string")]],
+    ]);
+    const [merged, ...rest] = mergeGenerated(apps);
+    assert.equal(rest.length, 0);
+    assert.deepEqual(merged.metadata, {
+      name: "merged",
+      namespace: "external-secrets-operator",
+    });
+    assert.equal(merged.spec.refreshInterval, "5s");
+    assert.deepEqual(merged.spec.secretStoreRef, {
       kind: "SecretStore",
       name: "external-secrets-operator",
     });
     assert.deepEqual(
-      spec.data.map((d: any) => d.secretKey),
-      ["apps", ...generatedNames.map((n) => `generated-${n}`)],
+      merged.spec.data.map((d: any) => d.secretKey),
+      ["apps", "generated-db-password", "generated-web-token"],
     );
-    assert.deepEqual(spec.data[0].remoteRef, { key: "apps", property: "apps" });
+    assert.deepEqual(Object.keys(merged.spec.target.template.data), ["apps"]);
   });
 
-  test("a name that isn't registered is an error", () => {
-    // @ts-expect-error: checked when the code is typed, too
-    assert.throws(() => generatedString("nope"), /not a generated string/);
+  test("with nothing generated, the merged Secret is the apps blob", () => {
+    const [merged] = mergeGenerated(new Map());
+    assert.equal(merged.spec.data.length, 1);
   });
 });
 
@@ -304,14 +328,66 @@ describe(
       );
     });
 
-    test("generated values are read from the merged Secret's keys, and fail when missing", () => {
-      const ref = generatedString("garage-admin-token");
-      const run = (t: string) =>
-        render(t.replaceAll("index . ", "index .Values "));
-      assert.match(run(ref), /^value: \|-\n\s+abc123$/);
+    // the merge reads generated values as keys of the data, like the apps blob
+    const merge = (blob: string, generated: [string, string, string][]) => {
+      const objects = generated.map(([app, key]) =>
+        generatedExternalSecret(app, key, "string"),
+      );
+      const [merged] = mergeGenerated(new Map([["all", objects]]));
+      const template = merged.spec.target.template.data.apps as string;
+      writeFileSync(
+        join(chart, "values.yaml"),
+        [
+          "apps: |",
+          ...blob.split("\n").map((l) => `  ${l}`),
+          ...generated.map(
+            ([app, key, value]) => `${generatedKeyOf(app, key)}: ${value}`,
+          ),
+          "",
+        ].join("\n"),
+      );
+      writeFileSync(
+        join(chart, "templates", "t.yaml"),
+        template
+          .replaceAll(".apps", ".Values.apps")
+          .replaceAll("index . ", "index .Values "),
+      );
+      return execFileSync("helm", ["template", "t", chart], {
+        encoding: "utf-8",
+        stdio: "pipe",
+      });
+    };
+    const generatedKeyOf = (app: string, key: string) =>
+      `generated-${app}-${key}`;
+
+    test("a generated value is added to its app's section, beside what the file has", () => {
+      const out = merge("web:\n  api-token: tok", [["web", "extra", "gen1"]]);
+      assert.match(out, /web:/);
+      assert.match(out, /api-token: tok/);
+      assert.match(out, /extra: gen1/);
+    });
+
+    test("an app with no section gets one", () => {
+      const out = merge("web:\n  api-token: tok", [["db", "password", "gen2"]]);
+      assert.match(out, /db:\s+password: gen2/);
+      assert.match(out, /api-token: tok/);
+    });
+
+    test("an empty apps file is fine, and several values go in their sections", () => {
+      const out = merge("{}", [
+        ["db", "a", "x1"],
+        ["db", "b", "x2"],
+        ["web", "c", "x3"],
+      ]);
+      assert.match(out, /a: x1/);
+      assert.match(out, /b: x2/);
+      assert.match(out, /c: x3/);
+    });
+
+    test("a generated value that the file has too fails, and says which", () => {
       assert.throws(
-        () => run(ref.replace("generated-garage", "generated-x")),
-        /missing generated value/,
+        () => merge("web:\n  extra: mine", [["web", "extra", "gen"]]),
+        /web\.extra is generated, and in the apps file/,
       );
     });
 

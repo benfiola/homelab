@@ -12,6 +12,7 @@ import { Command } from "commander";
 import { App } from "./lib/app.ts";
 import { crdsApp, listApps } from "./lib/apps.ts";
 import { exit, run } from "./lib/cli.ts";
+import { esoNamespace, mergeGenerated } from "./lib/k8s/secrets.ts";
 import { canonical } from "./lib/object.ts";
 import { toYaml } from "./lib/yaml.ts";
 
@@ -132,6 +133,15 @@ export const build = async (opts: BuildOpts): Promise<BuildResult> => {
       crds.set(crd.metadata.name, crd);
     }
   }
+
+  // the Secret merging what apps generate needs them all
+  outputs
+    .get(esoNamespace)
+    ?.rest.push(
+      ...mergeGenerated(
+        new Map([...outputs].map(([app, output]) => [app, output.rest])),
+      ),
+    );
 
   for (const [app, output] of outputs) {
     writeApp(opts.outDir, app, output.rest);

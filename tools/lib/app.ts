@@ -26,10 +26,13 @@ import {
 } from "./k8s/routes.ts";
 import {
   appSecrets,
+  type EntryName,
+  type SecretEntry,
   appTemplatedSecrets,
   bucketSyncKeys,
-  generatedString,
-  type GeneratedName,
+  esoNamespace,
+  generatedExternalSecret,
+  generatedKey,
   pushStore,
   secretKeys,
   secretRef,
@@ -119,6 +122,7 @@ export class App {
   private readonly hooks: ((e: Editor) => void)[] = [];
   private readonly pushStores = new Set<string>();
   private readonly pushed = new Set<string>();
+  private readonly generated = new Set<string>();
   private readonly garageGrants = new Map<string, Obj>();
 
   constructor(app: string, dir: string) {
@@ -218,9 +222,16 @@ export class App {
     return secretRef(key, this.app);
   }
 
-  // a generated string, inside a `templatedSecrets` template
-  generatedString(name: GeneratedName<"string">): string {
-    return generatedString(name);
+  // generates a string once, as a key of the app's section of the `apps` secret
+  stringSecret(name: string): void {
+    const key = generatedKey(this.app, name);
+    if (!this.generated.has(key)) {
+      this.generated.add(key);
+      this.track(
+        generatedExternalSecret(this.app, name, "string"),
+        esoNamespace,
+      );
+    }
   }
 
   // the contents of files in the app's directory, keyed by file name
@@ -400,18 +411,26 @@ export class Namespace {
     return this.add(vpa("target" in target ? target.target : target, opts));
   }
 
-  // a Secret holding keys of the app's section of the `apps` secret, and the handle to read its
-  // keys through. `from` (another app's section) overrides the default
-  secrets<K extends string>(
+  // a Secret holding keys of the `apps` secret (see `SecretEntry`), and the handle to read its keys
+  // through. `from` is the section plain names are read from
+  secrets<const E extends readonly SecretEntry[]>(
     name: string,
-    keys: readonly K[],
+    entries: E,
     opts: { from?: string } = {},
-  ): SecretKeys<K> {
+  ): SecretKeys<EntryName<E[number]>> {
     this.app.push(
       this.name,
-      appSecrets(this.app.app, name, keys, { ...opts, namespace: this.name }),
+      appSecrets(this.app.app, name, entries, {
+        ...opts,
+        namespace: this.name,
+      }),
     );
-    return secretKeys(name, keys);
+    return secretKeys(
+      name,
+      entries.map((e) =>
+        typeof e === "string" ? e : (e.as ?? e.key),
+      ) as EntryName<E[number]>[],
+    );
   }
 
   // the same, with the Secret's keys built from templates

@@ -9,9 +9,8 @@ import {
 export const app: AppFunction = (h) => {
   const ns = h.namespace();
 
-  const secrets = ns.templatedSecrets("secrets", {
-    "admin-token": h.generatedString("garage-admin-token"),
-  });
+  h.stringSecret("admin-token");
+  const secrets = ns.secrets("secrets", ["admin-token"]);
 
   const security = h.securityContext();
 

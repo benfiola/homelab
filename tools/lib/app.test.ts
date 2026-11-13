@@ -146,6 +146,58 @@ describe("App", () => {
       assert.deepEqual(Object.keys(objects[1].spec.template.data), ["token"]);
     });
 
+    test("an app generates a value once, however often it is asked, in the namespace of the ESO", async () => {
+      const h = await via("db", (h) => {
+        h.stringSecret("password");
+        h.stringSecret("password");
+      });
+      const generated = (await h.objects()).filter(
+        (o) => o.kind === "ExternalSecret",
+      );
+      assert.deepEqual(
+        generated.map((o) => o.metadata.name),
+        ["generated-db-password"],
+      );
+      assert.equal(
+        generated[0].metadata.namespace,
+        "external-secrets-operator",
+      );
+    });
+
+    test("entries name a key, and can take it from another section under another name", async () => {
+      let credentials: ReturnType<Namespace["secrets"]> | undefined;
+      const h = await via("web", (h) => {
+        credentials = h
+          .namespace()
+          .secrets("credentials", [
+            "token",
+            { key: "password", from: "db", as: "db-password" },
+          ]);
+      });
+      const { data } = (await h.objects()).find((o) => o.kind === "PushSecret")!
+        .spec.template;
+      assert.deepEqual(Object.keys(data), ["token", "db-password"]);
+      assert.match(data.token, /"web"/);
+      assert.match(data["db-password"], /"db"/);
+      assert.match(data["db-password"], /"password"/);
+      assert.deepEqual((credentials as any).key("db-password"), {
+        secretKeyRef: { name: "credentials", key: "db-password" },
+      });
+      assert.throws(() => (credentials as any).key("password"), /no key/);
+    });
+
+    test("a Secret can't have a key twice", async () => {
+      await assert.rejects(
+        via("web", (h) => {
+          h.namespace().secrets("credentials", [
+            "token",
+            { key: "other", as: "token" },
+          ]);
+        }),
+        /'token' twice/,
+      );
+    });
+
     test("the keys are read through the Secret it returns", async () => {
       let credentials: ReturnType<Namespace["secrets"]> | undefined;
       await via("web", (h) => {

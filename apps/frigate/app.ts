@@ -14,7 +14,7 @@ export const app: AppFunction = (h) => {
     "camera-front-yard-password",
     "camera-garage-password",
     "camera-porch-password",
-    "mqtt-password",
+    { key: "frigate-password", from: "mosquitto", as: "mqtt-password" },
   ]);
 
   const config = ns.configMap("frigate-config", {

@@ -8,6 +8,8 @@ import {
 export const app: AppFunction = (h) => {
   const ns = h.namespace();
 
+  // frigate reads this password too
+  h.stringSecret("frigate-password");
   const secrets = ns.secrets("secrets", [
     "frigate-password",
     "home-assistant-password",
