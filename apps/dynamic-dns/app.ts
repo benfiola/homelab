@@ -23,6 +23,16 @@ export const app: AppFunction = async (h) => {
             },
           ],
         },
+        metrics: {
+          alerts: { enabled: true },
+          dashboard: {
+            annotations: {
+              grafana_folder: h.app,
+            },
+            enabled: true,
+          },
+          podMonitor: { enabled: true },
+        },
         serviceAccount: { name: "dynamic-dns" },
       },
     },
@@ -42,4 +52,5 @@ export const network: NetworkFunction = (n) => {
   dynamicDns
     .to(dns("api.cloudflare.com"), tcp(443))
     .to(dns("api.ipify.org"), tcp(443));
+  n.ref("prometheus").to(dynamicDns, tcp(8080));
 };
