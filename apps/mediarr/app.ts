@@ -399,6 +399,7 @@ export const network: NetworkFunction = (n) => {
     .to(sabnzbd, tcp(8080))
     .to(seerr, tcp(5055))
     .to(sonarr, tcp(8989));
+  n.host.to(scraparr, tcp(7100));
   n.ref("prometheus").to(scraparr, tcp(7100));
 
   seerr
