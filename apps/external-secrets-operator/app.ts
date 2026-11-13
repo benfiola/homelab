@@ -9,7 +9,10 @@ import {
   blobSecret,
   credentialsSecret,
   esoNamespace,
+  generatedObjects,
+  mergedExternalSecret,
   pusherServiceAccount,
+  pushStore,
 } from "../../tools/lib/k8s/secrets.ts";
 import {
   appsSecret,
@@ -134,6 +137,13 @@ export const app: AppFunction = async (h) => {
       target: { name: blobSecret },
     },
   });
+
+  // this store lets the merged Secret read this namespace
+  ns.add(
+    pushStore(esoNamespace),
+    ...generatedObjects(),
+    mergedExternalSecret(),
+  );
 
   ns.add(
     {

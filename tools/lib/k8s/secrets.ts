@@ -5,8 +5,9 @@ type Obj = Record<string, any>;
 // keys of the app's section of the `apps` file.
 //
 // the `apps` secret of bitwarden is read into a Secret in external-secrets-operator (see that app).
-// a PushSecret there builds each app's Secret from it, and pushes it into the app's namespace
-// through a SecretStore of its own: the app's namespace holds nothing else.
+// generated values (see `generatedNames`) get Secrets of their own, merged with `apps`. a PushSecret
+// there builds each app's Secret from the result, and pushes it into the app's namespace through a
+// SecretStore of its own: the app's namespace holds nothing else.
 
 // where the pushing happens, and what it uses
 export const esoNamespace = "external-secrets-operator";
@@ -18,6 +19,23 @@ export const credentialsSecret = "bitwarden-credentials";
 
 // the Secret holding the `apps` file, in the key of the same name
 export const blobSecret = "apps";
+
+// the Secret PushSecrets read: `apps` and every generated Secret, merged. refreshed quickly: it's free
+export const mergedSecret = "merged";
+export const mergeRefreshInterval = "5s";
+
+// values generated once in the cluster, not kept in `apps`. each has its own Secret, so adding one
+// doesn't regenerate the others. add a name here to use it with `generatedRef`
+export const generatedNames = ["garage-admin-token"] as const;
+export type GeneratedName = (typeof generatedNames)[number];
+
+// the generator all of them share, and the key it writes
+export const passwordGenerator = "password";
+const generatedKey = "password";
+
+// the Secret holding a generated value (also its key in the merged Secret)
+export const generatedSecretName = (name: GeneratedName) =>
+  `generated-${checked("name", name)}`;
 
 // the keys of bucket-sync's section, which apps syncing from backblaze are given
 export const bucketSyncKeys = [
@@ -43,6 +61,70 @@ export const secretRef = (key: string, from: string) => {
   const name = checked("key", key);
   return `{{ if hasKey ${section} "${name}" }}{{ index ${section} "${name}" }}{{ else }}{{ mustRegexMatch "( missing key ${from}.${name}" "" }}{{ end }}`;
 };
+
+// refers to a generated value, inside a template. like `secretRef`, a missing value fails the sync
+export const generatedRef = (name: GeneratedName) => {
+  if (!generatedNames.includes(name)) {
+    throw new Error(`'${name}' is not a generated secret (see generatedNames)`);
+  }
+  const key = generatedSecretName(name);
+  return `{{ with index . "${key}" }}{{ toString . }}{{ else }}{{ mustRegexMatch "( missing generated value ${name}" "" }}{{ end }}`;
+};
+
+// the generator, and an ExternalSecret per name that runs it once. it owns its Secret: deleting the
+// Secret generates a new value
+export const generatedObjects = (): Obj[] => [
+  {
+    apiVersion: "generators.external-secrets.io/v1alpha1",
+    kind: "Password",
+    metadata: { name: passwordGenerator },
+    // no symbols: values go into env vars and command lines
+    spec: { length: 32, symbols: 0, allowRepeat: true },
+  },
+  ...generatedNames.map((name) => ({
+    apiVersion: "external-secrets.io/v1",
+    kind: "ExternalSecret",
+    metadata: { name: generatedSecretName(name) },
+    spec: {
+      // never refreshed: a new value would break what holds the old one
+      refreshInterval: "0",
+      target: { name: generatedSecretName(name) },
+      dataFrom: [
+        {
+          sourceRef: {
+            generatorRef: {
+              apiVersion: "generators.external-secrets.io/v1alpha1",
+              kind: "Password",
+              name: passwordGenerator,
+            },
+          },
+        },
+      ],
+    },
+  })),
+];
+
+// merges `apps` and the generated Secrets, read through `pushStore(esoNamespace)`
+export const mergedExternalSecret = (): Obj => ({
+  apiVersion: "external-secrets.io/v1",
+  kind: "ExternalSecret",
+  metadata: { name: mergedSecret },
+  spec: {
+    refreshInterval: mergeRefreshInterval,
+    secretStoreRef: { kind: "SecretStore", name: esoNamespace },
+    target: { name: mergedSecret },
+    data: [
+      {
+        secretKey: blobSecret,
+        remoteRef: { key: blobSecret, property: blobSecret },
+      },
+      ...generatedNames.map((name) => ({
+        secretKey: generatedSecretName(name),
+        remoteRef: { key: generatedSecretName(name), property: generatedKey },
+      })),
+    ],
+  },
+});
 
 // the store that writes into an app's namespace. it is used by the PushSecrets in
 // external-secrets-operator alone: a SecretStore can't be used from other namespaces
@@ -105,7 +187,7 @@ export const pushSecret = ({
       deletionPolicy: "Delete",
       updatePolicy: "Replace",
       secretStoreRefs: [{ kind: "SecretStore", name: namespace }],
-      selector: { secret: { name: blobSecret } },
+      selector: { secret: { name: mergedSecret } },
       template: { engineVersion: "v2", data: templates },
       data: keys.map((key) => ({
         match: {

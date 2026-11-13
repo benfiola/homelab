@@ -155,7 +155,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi"), data },
     })
     .addContainer("sonarr", {
-      image: "lscr.io/linuxserver/sonarr:4.0.20",
+      image: "ghcr.io/linuxserver/sonarr:4.0.20",
       containerPorts: { web: 8989 },
       env: { ...linuxserver, ...arr("SONARR") },
       volumeMounts: { data: "/data", config: "/config" },
@@ -170,7 +170,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi"), data },
     })
     .addContainer("radarr", {
-      image: "lscr.io/linuxserver/radarr:6.4.4",
+      image: "ghcr.io/linuxserver/radarr:6.4.4",
       containerPorts: { web: 7878 },
       env: { ...linuxserver, ...arr("RADARR") },
       volumeMounts: { data: "/data", config: "/config" },
@@ -185,7 +185,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi") },
     })
     .addContainer("prowlarr", {
-      image: "lscr.io/linuxserver/prowlarr:2.7.0",
+      image: "ghcr.io/linuxserver/prowlarr:2.7.0",
       containerPorts: { web: 9696 },
       env: { ...linuxserver, ...arr("PROWLARR") },
       volumeMounts: { config: "/config" },
@@ -243,7 +243,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("jellyfin", {
-      image: "lscr.io/linuxserver/jellyfin:10.11.11",
+      image: "ghcr.io/linuxserver/jellyfin:10.11.11",
       containerPorts: { web: 8096 },
       env: linuxserver,
       resources: {
@@ -267,7 +267,7 @@ export const app: AppFunction = (h) => {
       dnsConfig: { ndots: 1 },
     })
     .addContainer("sabnzbd", {
-      image: "lscr.io/linuxserver/sabnzbd:5.1.3-ls280",
+      image: "ghcr.io/linuxserver/sabnzbd:5.1.3-ls280",
       containerPorts: { web: 8080 },
       env: linuxserver,
       volumeMounts: { config: "/config", data: "/data" },

@@ -28,6 +28,8 @@ import {
   appSecrets,
   appTemplatedSecrets,
   bucketSyncKeys,
+  generatedRef,
+  type GeneratedName,
   pushStore,
   secretKeys,
   secretRef,
@@ -214,6 +216,11 @@ export class App {
   // refers to a key of the app's secrets, inside a `templatedSecrets` template
   secretRef(key: string): string {
     return secretRef(key, this.app);
+  }
+
+  // a generated value, inside a `templatedSecrets` template
+  generatedRef(name: GeneratedName): string {
+    return generatedRef(name);
   }
 
   // the contents of files in the app's directory, keyed by file name

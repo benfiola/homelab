@@ -154,7 +154,7 @@
     },
     {
       "description": "VERSIONS: linuxserver appends a '-lsNNN' build suffix that changes on every rebuild.",
-      "matchPackageNames": ["lscr.io/linuxserver/sabnzbd"],
+      "matchPackageNames": ["ghcr.io/linuxserver/sabnzbd"],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-ls(?<build>\\d+)$"
     },
     {

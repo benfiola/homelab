@@ -8,6 +8,10 @@ import {
   appSecrets,
   appTemplatedSecrets,
   bucketSyncKeys,
+  generatedNames,
+  generatedObjects,
+  generatedRef,
+  mergedExternalSecret,
   pushSecret,
   pushStore,
   secretKeys,
@@ -57,7 +61,7 @@ describe("pushSecret", () => {
       name: "app-credentials",
       namespace: "external-secrets-operator",
     });
-    assert.deepEqual(secret.spec.selector, { secret: { name: "apps" } });
+    assert.deepEqual(secret.spec.selector, { secret: { name: "merged" } });
     assert.deepEqual(secret.spec.secretStoreRefs, [
       { kind: "SecretStore", name: "app" },
     ]);
@@ -127,6 +131,41 @@ describe("pushSecret", () => {
         /not a plain name/,
       );
     }
+  });
+});
+
+describe("generated secrets", () => {
+  test("each value has an ExternalSecret that never refreshes, and a Secret of its own", () => {
+    const objects = generatedObjects();
+    const externals = objects.filter((o) => o.kind === "ExternalSecret");
+    assert.deepEqual(
+      externals.map((o) => o.spec.target.name),
+      generatedNames.map((n) => `generated-${n}`),
+    );
+    for (const e of externals) {
+      assert.equal(e.spec.refreshInterval, "0");
+      assert.equal(e.spec.dataFrom[0].sourceRef.generatorRef.name, "password");
+    }
+    assert.equal(objects.filter((o) => o.kind === "Password").length, 1);
+  });
+
+  test("the merged Secret holds the apps blob and every generated value", () => {
+    const { spec } = mergedExternalSecret();
+    assert.equal(spec.refreshInterval, "5s");
+    assert.deepEqual(spec.secretStoreRef, {
+      kind: "SecretStore",
+      name: "external-secrets-operator",
+    });
+    assert.deepEqual(
+      spec.data.map((d: any) => d.secretKey),
+      ["apps", ...generatedNames.map((n) => `generated-${n}`)],
+    );
+    assert.deepEqual(spec.data[0].remoteRef, { key: "apps", property: "apps" });
+  });
+
+  test("a name that isn't registered is an error", () => {
+    // @ts-expect-error: checked when the code is typed, too
+    assert.throws(() => generatedRef("nope"), /not a generated secret/);
   });
 });
 
@@ -212,6 +251,7 @@ describe(
     writeFileSync(
       join(chart, "values.yaml"),
       [
+        "generated-garage-admin-token: abc123",
         "apps: |",
         "  web:",
         '    api-token: "tok:with/odd chars"',
@@ -261,6 +301,17 @@ describe(
       assert.throws(
         () => render(secretRef("typo", "web")),
         /missing key web\.typo/,
+      );
+    });
+
+    test("generated values are read from the merged Secret's keys, and fail when missing", () => {
+      const ref = generatedRef("garage-admin-token");
+      const run = (t: string) =>
+        render(t.replaceAll("index . ", "index .Values "));
+      assert.match(run(ref), /^value: \|-\n\s+abc123$/);
+      assert.throws(
+        () => run(ref.replace("generated-garage", "generated-x")),
+        /missing generated value/,
       );
     });
 
