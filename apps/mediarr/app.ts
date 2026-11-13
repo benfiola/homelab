@@ -225,7 +225,7 @@ export const app: AppFunction = (h) => {
       volumes: { config: config("1Gi") },
     })
     .addContainer("seerr", {
-      image: "ghcr.io/seerr-team/seerr:v3.5.1",
+      image: "ghcr.io/seerr-team/seerr:v3.5.2",
       containerPorts: { web: 5055 },
       env: { TZ: h.timezone },
       volumeMounts: { config: "/app/config" },
