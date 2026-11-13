@@ -71,7 +71,7 @@ export const network: NetworkFunction = (n) => {
     "nvidia-gpu-operator",
     appLabel("gpu-operator", "nvidia-gpu-operator"),
   );
-  const nvidiaGpuOperatorUpgradeCrd = n.subject(
+  const upgradeCrd = n.subject(
     "nvidia-gpu-operator-upgrade-crd",
     component("gpu-operator-upgrade-crd", "nvidia-gpu-operator"),
   );
@@ -91,7 +91,7 @@ export const network: NetworkFunction = (n) => {
   n.host.to(nvidiaGpuOperator, tcp(8081));
   n.ref("prometheus").to(nvidiaGpuOperator, tcp(8080));
 
-  nvidiaGpuOperatorUpgradeCrd.to(n.kubeApiServer, tcp(6443));
+  upgradeCrd.to(n.kubeApiServer, tcp(6443));
 
   nvidiaOperatorValidator.to(n.kubeApiServer, tcp(6443));
 };

@@ -110,24 +110,22 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const externalDnsCloudflare = n.subject(
+  const cloudflare = n.subject(
     "external-dns-cloudflare",
     pod("external-dns-cloudflare", "external-dns"),
   );
-  const externalDnsMikrotik = n.subject(
+  const mikrotik = n.subject(
     "external-dns-mikrotik",
     pod("external-dns-mikrotik", "external-dns"),
   );
 
-  externalDnsCloudflare
+  cloudflare
     .to(n.kubeApiServer, tcp(6443))
     .to(dns("api.cloudflare.com"), tcp(443));
-  n.host.to(externalDnsCloudflare, tcp(7979, 8080));
-  n.ref("prometheus").to(externalDnsCloudflare, tcp(7979));
+  n.host.to(cloudflare, tcp(7979, 8080));
+  n.ref("prometheus").to(cloudflare, tcp(7979));
 
-  externalDnsMikrotik
-    .to(n.kubeApiServer, tcp(6443))
-    .to(dns("router.fiola.dev"), tcp(80));
-  n.host.to(externalDnsMikrotik, tcp(7979, 8080));
-  n.ref("prometheus").to(externalDnsMikrotik, tcp(7979, 8080));
+  mikrotik.to(n.kubeApiServer, tcp(6443)).to(dns("router.fiola.dev"), tcp(80));
+  n.host.to(mikrotik, tcp(7979, 8080));
+  n.ref("prometheus").to(mikrotik, tcp(7979, 8080));
 };

@@ -100,13 +100,13 @@ export const app: AppFunction = (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const llamaCppAssetsServer = n.subject(
+  const assets = n.subject(
     "llama-cpp-assets-server",
     assetsServer("llama-cpp"),
   );
-  const llamaCppServer = n.subject("llama-cpp", pod("llama-cpp", "llama-cpp"));
+  const server = n.subject("llama-cpp", pod("llama-cpp", "llama-cpp"));
 
-  llamaCppServer.to(llamaCppAssetsServer, tcp(8080));
-  n.host.to(llamaCppAssetsServer, tcp(8080)).to(llamaCppServer, tcp(8080));
-  n.ref("prometheus").to(llamaCppServer, tcp(8080));
+  server.to(assets, tcp(8080));
+  n.host.to(assets, tcp(8080)).to(server, tcp(8080));
+  n.ref("prometheus").to(server, tcp(8080));
 };

@@ -187,12 +187,12 @@ export const app: AppFunction = async (h) => {
 
 export const network: NetworkFunction = (n) => {
   const loki = n.subject("loki", component("single-binary", "loki"));
-  const lokiGateway = n.subject("loki-gateway", component("gateway", "loki"));
-  const lokiMemcachedChunksCache = n.subject(
+  const gateway = n.subject("loki-gateway", component("gateway", "loki"));
+  const memcachedChunksCache = n.subject(
     "loki-memcached-chunks-cache",
     component("memcached-chunks-cache", "loki"),
   );
-  const lokiMemcachedResultsCache = n.subject(
+  const memcachedResultsCache = n.subject(
     "loki-memcached-results-cache",
     component("memcached-results-cache", "loki"),
   );
@@ -200,18 +200,18 @@ export const network: NetworkFunction = (n) => {
   loki
     .to(n.kubeApiServer, tcp(6443))
     .to(n.ref("garage"), tcp(3900))
-    .to(lokiMemcachedChunksCache, tcp(11211))
-    .to(lokiMemcachedResultsCache, tcp(11211));
+    .to(memcachedChunksCache, tcp(11211))
+    .to(memcachedResultsCache, tcp(11211));
   n.host.to(loki, tcp(3100));
   n.ref("prometheus").to(loki, tcp(3100));
 
-  lokiGateway.to(loki, tcp(3100));
-  n.host.to(lokiGateway, tcp(8080));
-  n.ref("prometheus").to(lokiGateway, tcp(8080));
+  gateway.to(loki, tcp(3100));
+  n.host.to(gateway, tcp(8080));
+  n.ref("prometheus").to(gateway, tcp(8080));
 
-  n.host.to(lokiMemcachedChunksCache, tcp(9150, 11211));
-  n.ref("prometheus").to(lokiMemcachedChunksCache, tcp(9150));
+  n.host.to(memcachedChunksCache, tcp(9150, 11211));
+  n.ref("prometheus").to(memcachedChunksCache, tcp(9150));
 
-  n.host.to(lokiMemcachedResultsCache, tcp(9150, 11211));
-  n.ref("prometheus").to(lokiMemcachedResultsCache, tcp(9150));
+  n.host.to(memcachedResultsCache, tcp(9150, 11211));
+  n.ref("prometheus").to(memcachedResultsCache, tcp(9150));
 };

@@ -61,29 +61,29 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const verticalPodAutoscalerAdmissionController = n.subject(
+  const admissionController = n.subject(
     "vertical-pod-autoscaler-admission-controller",
     component("admission-controller", "vertical-pod-autoscaler"),
   );
-  const verticalPodAutoscalerRecommender = n.subject(
+  const recommender = n.subject(
     "vertical-pod-autoscaler-recommender",
     component("recommender", "vertical-pod-autoscaler"),
   );
-  const verticalPodAutoscalerUpdater = n.subject(
+  const updater = n.subject(
     "vertical-pod-autoscaler-updater",
     component("updater", "vertical-pod-autoscaler"),
   );
 
-  verticalPodAutoscalerAdmissionController.to(n.kubeApiServer, tcp(6443));
-  n.controlPlane.to(verticalPodAutoscalerAdmissionController, tcp(8000));
-  n.host.to(verticalPodAutoscalerAdmissionController, tcp(8000, 8944));
-  n.ref("prometheus").to(verticalPodAutoscalerAdmissionController, tcp(8944));
+  admissionController.to(n.kubeApiServer, tcp(6443));
+  n.controlPlane.to(admissionController, tcp(8000));
+  n.host.to(admissionController, tcp(8000, 8944));
+  n.ref("prometheus").to(admissionController, tcp(8944));
 
-  verticalPodAutoscalerRecommender.to(n.kubeApiServer, tcp(6443));
-  n.host.to(verticalPodAutoscalerRecommender, tcp(8942));
-  n.ref("prometheus").to(verticalPodAutoscalerRecommender, tcp(8942));
+  recommender.to(n.kubeApiServer, tcp(6443));
+  n.host.to(recommender, tcp(8942));
+  n.ref("prometheus").to(recommender, tcp(8942));
 
-  verticalPodAutoscalerUpdater.to(n.kubeApiServer, tcp(6443));
-  n.host.to(verticalPodAutoscalerUpdater, tcp(8943));
-  n.ref("prometheus").to(verticalPodAutoscalerUpdater, tcp(8943));
+  updater.to(n.kubeApiServer, tcp(6443));
+  n.host.to(updater, tcp(8943));
+  n.ref("prometheus").to(updater, tcp(8943));
 };

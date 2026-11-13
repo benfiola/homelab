@@ -26,6 +26,7 @@ export const app: AppFunction = (h) => {
       "wait-for-data-init.sh",
       "mss-clamp.sh",
       "run-speed-check.sh",
+      "run-scraparr.sh",
     ),
   );
 
@@ -281,7 +282,29 @@ export const app: AppFunction = (h) => {
   addWaitForDataInitContainer(sabnzbd);
   sabnzbd.service({ web: 8080 });
 
+  const scraparr = ns
+    .statefulSet("scraparr", {
+      securityContext: { uid: 1000, gid: 1000 },
+      volumes: {
+        config: config("1Gi"),
+        scripts: { configMap: scripts.metadata.name },
+      },
+    })
+    .addContainer("scraparr", {
+      image: "ghcr.io/thecfu/scraparr:3.2.0",
+      containerPorts: { metrics: 7100 },
+      cmd: ["sh", "/scripts/run-scraparr.sh"],
+      volumeMounts: {
+        config: "/config",
+        scripts: "/scripts",
+      },
+      // no liveness or startup probe to allow for adjusting configuration when broken
+      readiness: { http: { path: "/metrics", port: 7100 }, timeoutSeconds: 5 },
+    });
+  scraparr.podMonitor("metrics");
+
   for (const workload of [
+    scraparr,
     sonarr,
     radarr,
     prowlarr,
@@ -307,31 +330,20 @@ export const app: AppFunction = (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const mediarrJellyfin = n.subject(
-    "mediarr-jellyfin",
-    pod("jellyfin", "mediarr"),
-  );
-  const mediarrMaintainerr = n.subject(
+  const jellyfin = n.subject("mediarr-jellyfin", pod("jellyfin", "mediarr"));
+  const maintainerr = n.subject(
     "mediarr-maintainerr",
     pod("maintainerr", "mediarr"),
   );
-  const mediarrProfilarr = n.subject(
-    "mediarr-profilarr",
-    pod("profilarr", "mediarr"),
-  );
-  const mediarrProwlarr = n.subject(
-    "mediarr-prowlarr",
-    pod("prowlarr", "mediarr"),
-  );
-  const mediarrRadarr = n.subject("mediarr-radarr", pod("radarr", "mediarr"));
-  const mediarrSabnzbd = n.subject(
-    "mediarr-sabnzbd",
-    pod("sabnzbd", "mediarr"),
-  );
-  const mediarrSeerr = n.subject("mediarr-seerr", pod("seerr", "mediarr"));
-  const mediarrSonarr = n.subject("mediarr-sonarr", pod("sonarr", "mediarr"));
+  const profilarr = n.subject("mediarr-profilarr", pod("profilarr", "mediarr"));
+  const prowlarr = n.subject("mediarr-prowlarr", pod("prowlarr", "mediarr"));
+  const radarr = n.subject("mediarr-radarr", pod("radarr", "mediarr"));
+  const sabnzbd = n.subject("mediarr-sabnzbd", pod("sabnzbd", "mediarr"));
+  const scraparr = n.subject("mediarr-scraparr", pod("scraparr", "mediarr"));
+  const seerr = n.subject("mediarr-seerr", pod("seerr", "mediarr"));
+  const sonarr = n.subject("mediarr-sonarr", pod("sonarr", "mediarr"));
 
-  mediarrJellyfin
+  jellyfin
     .to(dns("*.mirror.jellyfin.org"), tcp(443))
     .to(dns("repo.jellyfin.org"), tcp(443))
     .to(dns("api.themoviedb.org"), tcp(443))
@@ -339,51 +351,60 @@ export const network: NetworkFunction = (n) => {
     .to(dns("m.media-amazon.com"), tcp(443))
     .to(dns("www.omdbapi.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443));
-  n.host.to(mediarrJellyfin, tcp(8096));
-  n.ref("gateway-friends").to(mediarrJellyfin, tcp(8096));
+  n.host.to(jellyfin, tcp(8096));
+  n.ref("gateway-friends").to(jellyfin, tcp(8096));
 
-  mediarrMaintainerr
-    .to(mediarrRadarr, tcp(7878))
-    .to(mediarrSeerr, tcp(5055))
-    .to(mediarrSonarr, tcp(8989))
-    .to(mediarrJellyfin, tcp(8096))
+  maintainerr
+    .to(radarr, tcp(7878))
+    .to(seerr, tcp(5055))
+    .to(sonarr, tcp(8989))
+    .to(jellyfin, tcp(8096))
     .to(dns("api.themoviedb.org"), tcp(443));
-  n.host.to(mediarrMaintainerr, tcp(6246));
+  n.host.to(maintainerr, tcp(6246));
 
-  mediarrProfilarr
-    .to(mediarrRadarr, tcp(7878))
-    .to(mediarrSonarr, tcp(8989))
+  profilarr
+    .to(radarr, tcp(7878))
+    .to(sonarr, tcp(8989))
     .to(dns("github.com"), tcp(443))
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
     .to(dns("release-assets.githubusercontent.com"), tcp(443));
-  n.host.to(mediarrProfilarr, tcp(6868));
+  n.host.to(profilarr, tcp(6868));
 
-  mediarrProwlarr
-    .to(mediarrRadarr, tcp(7878))
-    .to(mediarrSabnzbd, tcp(8080))
-    .to(mediarrSonarr, tcp(8989))
+  prowlarr
+    .to(radarr, tcp(7878))
+    .to(sabnzbd, tcp(8080))
+    .to(sonarr, tcp(8989))
     // needs access to all indexers
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  n.host.to(mediarrProwlarr, tcp(9696));
+  n.host.to(prowlarr, tcp(9696));
 
-  mediarrRadarr
-    .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrSabnzbd, tcp(8080))
+  radarr
+    .to(prowlarr, tcp(9696))
+    .to(sabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  n.host.to(mediarrRadarr, tcp(7878));
+  n.host.to(radarr, tcp(7878));
 
-  mediarrSabnzbd
+  sabnzbd
     // needs access to general VPNs (and VPN healthchecks)
     .to(cidrs("0.0.0.0/0"), udp(51820))
     .to(cidrs("0.0.0.0/0"), icmpv4(3));
-  n.host.to(mediarrSabnzbd, tcp(8080));
+  n.host.to(sabnzbd, tcp(8080));
 
-  mediarrSeerr
-    .to(mediarrJellyfin, tcp(8096))
-    .to(mediarrRadarr, tcp(7878))
-    .to(mediarrSonarr, tcp(8989))
+  scraparr
+    .to(jellyfin, tcp(8096))
+    .to(prowlarr, tcp(9696))
+    .to(radarr, tcp(7878))
+    .to(sabnzbd, tcp(8080))
+    .to(seerr, tcp(5055))
+    .to(sonarr, tcp(8989));
+  n.ref("prometheus").to(scraparr, tcp(7100));
+
+  seerr
+    .to(jellyfin, tcp(8096))
+    .to(radarr, tcp(7878))
+    .to(sonarr, tcp(8989))
     .to(dns("api.themoviedb.org"), tcp(443))
     .to(dns("api.github.com"), tcp(443))
     .to(dns("raw.githubusercontent.com"), tcp(443))
@@ -391,13 +412,13 @@ export const network: NetworkFunction = (n) => {
     .to(dns("api4.thetvdb.com"), tcp(443))
     // rotten tomatoes ratings
     .to(dns("79frdp12pn-dsn.algolia.net"), tcp(443));
-  n.host.to(mediarrSeerr, tcp(5055));
-  n.ref("gateway-friends").to(mediarrSeerr, tcp(5055));
+  n.host.to(seerr, tcp(5055));
+  n.ref("gateway-friends").to(seerr, tcp(5055));
 
-  mediarrSonarr
-    .to(mediarrProwlarr, tcp(9696))
-    .to(mediarrSabnzbd, tcp(8080))
+  sonarr
+    .to(prowlarr, tcp(9696))
+    .to(sabnzbd, tcp(8080))
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
-  n.host.to(mediarrSonarr, tcp(8989));
+  n.host.to(sonarr, tcp(8989));
 };

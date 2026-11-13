@@ -67,11 +67,11 @@ export const network: NetworkFunction = (n) => {
     "piraeus-operator",
     component("piraeus-operator", "piraeus-operator"),
   );
-  const piraeusOperatorGencert = n.subject(
+  const gencert = n.subject(
     "piraeus-operator-gencert",
     component("piraeus-operator-gencert", "piraeus-operator"),
   );
-  const piraeusOperatorHaController = n.subject(
+  const haController = n.subject(
     "piraeus-operator-ha-controller",
     component("ha-controller", "piraeus-operator"),
   );
@@ -108,9 +108,9 @@ export const network: NetworkFunction = (n) => {
   n.controlPlane.to(piraeusOperator, tcp(9443));
   n.host.to(piraeusOperator, tcp(8081));
 
-  piraeusOperatorGencert.to(n.kubeApiServer, tcp(6443));
-  n.host.to(piraeusOperatorGencert, tcp(8081));
+  gencert.to(n.kubeApiServer, tcp(6443));
+  n.host.to(gencert, tcp(8081));
 
-  piraeusOperatorHaController.to(n.kubeApiServer, tcp(6443));
-  n.host.to(piraeusOperatorHaController, tcp(8000));
+  haController.to(n.kubeApiServer, tcp(6443));
+  n.host.to(haController, tcp(8000));
 };

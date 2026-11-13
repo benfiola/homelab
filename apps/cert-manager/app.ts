@@ -98,38 +98,38 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const certManagerCainjector = n.subject(
+  const cainjector = n.subject(
     "cert-manager-cainjector",
     component("cainjector", "cert-manager"),
   );
-  const certManagerController = n.subject(
+  const controller = n.subject(
     "cert-manager-controller",
     component("controller", "cert-manager"),
   );
-  const certManagerStartupapicheck = n.subject(
+  const startupapicheck = n.subject(
     "cert-manager-startupapicheck",
     component("startupapicheck", "cert-manager"),
   );
-  const certManagerWebhook = n.subject(
+  const webhook = n.subject(
     "cert-manager-webhook",
     component("webhook", "cert-manager"),
   );
 
-  certManagerCainjector.to(n.kubeApiServer, tcp(6443));
-  n.ref("prometheus").to(certManagerCainjector, tcp(9402));
+  cainjector.to(n.kubeApiServer, tcp(6443));
+  n.ref("prometheus").to(cainjector, tcp(9402));
 
-  certManagerController
+  controller
     .to(n.kubeApiServer, tcp(6443))
     .to(dns("api.cloudflare.com"), tcp(443))
     .to(dns("*.ns.cloudflare.com"), udp(53))
     .to(dns("*.api.letsencrypt.org"), tcp(443));
-  n.host.to(certManagerController, tcp(9403));
-  n.ref("prometheus").to(certManagerController, tcp(9402));
+  n.host.to(controller, tcp(9403));
+  n.ref("prometheus").to(controller, tcp(9402));
 
-  certManagerStartupapicheck.to(n.kubeApiServer, tcp(6443));
+  startupapicheck.to(n.kubeApiServer, tcp(6443));
 
-  certManagerWebhook.to(n.kubeApiServer, tcp(6443));
-  n.controlPlane.to(certManagerWebhook, tcp(10250));
-  n.host.to(certManagerWebhook, tcp(6080));
-  n.ref("prometheus").to(certManagerWebhook, tcp(9402));
+  webhook.to(n.kubeApiServer, tcp(6443));
+  n.controlPlane.to(webhook, tcp(10250));
+  n.host.to(webhook, tcp(6080));
+  n.ref("prometheus").to(webhook, tcp(9402));
 };

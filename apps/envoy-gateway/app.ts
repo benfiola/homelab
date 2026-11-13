@@ -86,30 +86,30 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const envoyGatewayCertgen = n.subject(
+  const certgen = n.subject(
     "envoy-gateway-certgen",
     component("certgen", "envoy-gateway"),
   );
-  const envoyGatewayController = n.subject(
+  const controller = n.subject(
     "envoy-gateway-controller",
     component("controller", "envoy-gateway"),
   );
-  const envoyGatewayProxy = n.subject(
+  const proxy = n.subject(
     "envoy-gateway-proxy",
     component("proxy", "envoy-gateway"),
   );
 
-  envoyGatewayCertgen.to(n.kubeApiServer, tcp(6443));
+  certgen.to(n.kubeApiServer, tcp(6443));
 
-  envoyGatewayController.to(n.kubeApiServer, tcp(6443));
-  n.controlPlane.to(envoyGatewayController, tcp(9443));
-  n.host.to(envoyGatewayController, tcp(8081));
-  n.ref("gateway-family").to(envoyGatewayController, tcp(18000));
-  n.ref("gateway-friends").to(envoyGatewayController, tcp(18000));
-  n.ref("gateway-infrastructure").to(envoyGatewayController, tcp(18000));
-  n.ref("gateway-personal").to(envoyGatewayController, tcp(18000));
-  n.ref("prometheus").to(envoyGatewayController, tcp(19001));
+  controller.to(n.kubeApiServer, tcp(6443));
+  n.controlPlane.to(controller, tcp(9443));
+  n.host.to(controller, tcp(8081));
+  n.ref("gateway-family").to(controller, tcp(18000));
+  n.ref("gateway-friends").to(controller, tcp(18000));
+  n.ref("gateway-infrastructure").to(controller, tcp(18000));
+  n.ref("gateway-personal").to(controller, tcp(18000));
+  n.ref("prometheus").to(controller, tcp(19001));
 
-  n.host.to(envoyGatewayProxy, tcp(19002, 19003));
-  n.ref("prometheus").to(envoyGatewayProxy, tcp(19001));
+  n.host.to(proxy, tcp(19002, 19003));
+  n.ref("prometheus").to(proxy, tcp(19001));
 };

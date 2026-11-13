@@ -35,16 +35,13 @@ export const network: NetworkFunction = (n) => {
     "bucket-sync",
     pod("bucket-sync", "bucket-sync"),
   );
-  const bucketSyncJob = n.subject(
-    "bucket-sync-job",
-    pod("bucket-sync-job", "*"),
-  );
+  const job = n.subject("bucket-sync-job", pod("bucket-sync-job", "*"));
 
   bucketSync.to(n.kubeApiServer, tcp(6443));
   n.host.to(bucketSync, tcp(8081));
   n.ref("prometheus").to(bucketSync, tcp(8080));
 
-  bucketSyncJob
+  job
     .to(n.ref("garage"), tcp(3900))
     .to(dns("*.backblazeb2.com"), tcp(443))
     .to(dns("*.backblaze.com"), tcp(443));

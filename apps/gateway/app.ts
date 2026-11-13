@@ -60,15 +60,15 @@ export const app: AppFunction = (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const gatewayFamily = n.subject("gateway-family", gateway("family"));
-  const gatewayPersonal = n.subject("gateway-personal", gateway("personal"));
-  const gatewayFriends = n.subject("gateway-friends", gateway("friends"));
-  const gatewayInfrastructure = n.subject(
+  const family = n.subject("gateway-family", gateway("family"));
+  const personal = n.subject("gateway-personal", gateway("personal"));
+  const friends = n.subject("gateway-friends", gateway("friends"));
+  const infrastructure = n.subject(
     "gateway-infrastructure",
     gateway("infrastructure"),
   );
 
-  gatewayFamily.from(
+  family.from(
     cidrs(
       "192.168.8.0/24",
       "192.168.9.0/24",
@@ -84,11 +84,11 @@ export const network: NetworkFunction = (n) => {
     ),
     tcp(8097, 10443),
   );
-  gatewayPersonal.from(
+  personal.from(
     cidrs("192.168.16.0/24", "192.168.17.0/24", "192.168.34.0/24"),
     tcp(10443),
   );
-  gatewayFriends.from(
+  friends.from(
     cidrs(
       "192.168.8.0/24",
       "192.168.9.0/24",
@@ -106,5 +106,5 @@ export const network: NetworkFunction = (n) => {
     ),
     tcp(10443),
   );
-  gatewayInfrastructure.from(cidrs("192.168.34.0/24"), tcp(10443));
+  infrastructure.from(cidrs("192.168.34.0/24"), tcp(10443));
 };

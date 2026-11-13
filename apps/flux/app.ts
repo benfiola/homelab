@@ -47,42 +47,42 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const fluxHelmController = n.subject(
+  const helmController = n.subject(
     "flux-helm-controller",
     component("helm-controller", "flux-system"),
   );
-  const fluxKustomizeController = n.subject(
+  const kustomizeController = n.subject(
     "flux-kustomize-controller",
     component("kustomize-controller", "flux-system"),
   );
-  const fluxNotificationController = n.subject(
+  const notificationController = n.subject(
     "flux-notification-controller",
     component("notification-controller", "flux-system"),
   );
-  const fluxSourceController = n.subject(
+  const sourceController = n.subject(
     "flux-source-controller",
     component("source-controller", "flux-system"),
   );
 
-  fluxHelmController.to(n.kubeApiServer, tcp(6443));
-  n.host.to(fluxHelmController, tcp(9440));
-  n.ref("prometheus").to(fluxHelmController, tcp(8080));
+  helmController.to(n.kubeApiServer, tcp(6443));
+  n.host.to(helmController, tcp(9440));
+  n.ref("prometheus").to(helmController, tcp(8080));
 
-  fluxKustomizeController
+  kustomizeController
     .to(n.kubeApiServer, tcp(6443))
-    .to(fluxNotificationController, tcp(9090))
-    .to(fluxSourceController, tcp(9090));
-  n.host.to(fluxKustomizeController, tcp(9440));
-  n.ref("prometheus").to(fluxKustomizeController, tcp(8080));
+    .to(notificationController, tcp(9090))
+    .to(sourceController, tcp(9090));
+  n.host.to(kustomizeController, tcp(9440));
+  n.ref("prometheus").to(kustomizeController, tcp(8080));
 
-  fluxNotificationController.to(n.kubeApiServer, tcp(6443));
-  n.host.to(fluxNotificationController, tcp(9440));
-  n.ref("prometheus").to(fluxNotificationController, tcp(8080));
+  notificationController.to(n.kubeApiServer, tcp(6443));
+  n.host.to(notificationController, tcp(9440));
+  n.ref("prometheus").to(notificationController, tcp(8080));
 
-  fluxSourceController
+  sourceController
     .to(n.kubeApiServer, tcp(6443))
-    .to(fluxNotificationController, tcp(9090))
+    .to(notificationController, tcp(9090))
     .to(dns("github.com"), tcp(22));
-  n.host.to(fluxSourceController, tcp(9090, 9440));
-  n.ref("prometheus").to(fluxSourceController, tcp(8080));
+  n.host.to(sourceController, tcp(9090, 9440));
+  n.ref("prometheus").to(sourceController, tcp(8080));
 };

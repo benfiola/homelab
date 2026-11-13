@@ -28,13 +28,13 @@ export const app: AppFunction = async (h) => {
 
 export const network: NetworkFunction = (n) => {
   const volsync = n.subject("volsync", pod("volsync", "volsync"));
-  const volsyncMover = n.subject("volsync-mover", pod("volsync-mover", "*"));
+  const mover = n.subject("volsync-mover", pod("volsync-mover", "*"));
 
   volsync.to(n.kubeApiServer, tcp(6443));
   n.host.to(volsync, tcp(8081));
   n.ref("prometheus").to(volsync, tcp(8443));
 
-  volsyncMover
+  mover
     .to(dns("*.backblazeb2.com"), tcp(443))
     .to(dns("*.backblaze.com"), tcp(443));
 };

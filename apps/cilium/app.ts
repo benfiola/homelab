@@ -398,24 +398,19 @@ export const app: AppFunction = async (h) => {
 };
 
 export const network: NetworkFunction = (n) => {
-  const ciliumHubbleRelay = n.subject(
+  const hubbleRelay = n.subject(
     "cilium-hubble-relay",
     pod("hubble-relay", "cilium"),
   );
-  const ciliumHubbleUi = n.subject(
-    "cilium-hubble-ui",
-    pod("hubble-ui", "cilium"),
-  );
+  const hubbleUi = n.subject("cilium-hubble-ui", pod("hubble-ui", "cilium"));
 
-  ciliumHubbleRelay.to(n.nodes, tcp(4244));
-  n.host.to(ciliumHubbleRelay, tcp(4222));
-  n.ref("gateway-infrastructure").to(ciliumHubbleRelay, tcp(4245));
-  n.ref("prometheus").to(ciliumHubbleRelay, tcp(9966));
+  hubbleRelay.to(n.nodes, tcp(4244));
+  n.host.to(hubbleRelay, tcp(4222));
+  n.ref("gateway-infrastructure").to(hubbleRelay, tcp(4245));
+  n.ref("prometheus").to(hubbleRelay, tcp(9966));
 
-  ciliumHubbleUi
-    .to(ciliumHubbleRelay, tcp(4245))
-    .to(n.kubeApiServer, tcp(6443));
-  n.host.to(ciliumHubbleUi, tcp(8081));
+  hubbleUi.to(hubbleRelay, tcp(4245)).to(n.kubeApiServer, tcp(6443));
+  n.host.to(hubbleUi, tcp(8081));
 
   // broad host-firewall policies
   n.subject("control-plane", controlPlane());
