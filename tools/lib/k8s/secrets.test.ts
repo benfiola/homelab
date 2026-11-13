@@ -10,7 +10,7 @@ import {
   bucketSyncKeys,
   generatedNames,
   generatedObjects,
-  generatedRef,
+  generatedString,
   mergedExternalSecret,
   pushSecret,
   pushStore,
@@ -165,7 +165,7 @@ describe("generated secrets", () => {
 
   test("a name that isn't registered is an error", () => {
     // @ts-expect-error: checked when the code is typed, too
-    assert.throws(() => generatedRef("nope"), /not a generated secret/);
+    assert.throws(() => generatedString("nope"), /not a generated string/);
   });
 });
 
@@ -305,7 +305,7 @@ describe(
     });
 
     test("generated values are read from the merged Secret's keys, and fail when missing", () => {
-      const ref = generatedRef("garage-admin-token");
+      const ref = generatedString("garage-admin-token");
       const run = (t: string) =>
         render(t.replaceAll("index . ", "index .Values "));
       assert.match(run(ref), /^value: \|-\n\s+abc123$/);

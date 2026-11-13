@@ -24,14 +24,30 @@ export const blobSecret = "apps";
 export const mergedSecret = "merged";
 export const mergeRefreshInterval = "5s";
 
-// values generated once in the cluster, not kept in `apps`. each has its own Secret, so adding one
-// doesn't regenerate the others. add a name here to use it with `generatedRef`
-export const generatedNames = ["garage-admin-token"] as const;
-export type GeneratedName = (typeof generatedNames)[number];
+// the kinds of generated value: the generator all values of a kind share, and the key it writes
+const generators = {
+  string: {
+    object: {
+      apiVersion: "generators.external-secrets.io/v1alpha1",
+      kind: "Password",
+      metadata: { name: "password" },
+      // no symbols: values go into env vars and command lines
+      spec: { length: 32, symbols: 0, allowRepeat: true },
+    },
+    key: "password",
+  },
+} as const;
+type GeneratedKind = keyof typeof generators;
 
-// the generator all of them share, and the key it writes
-export const passwordGenerator = "password";
-const generatedKey = "password";
+// values generated once in the cluster, not kept in `apps`, and their kinds. each has its own
+// Secret, so adding one doesn't regenerate the others. add one here to use it (`generatedString`)
+export const generated = {
+  "garage-admin-token": "string",
+} as const satisfies Record<string, GeneratedKind>;
+export type GeneratedName<K extends GeneratedKind = GeneratedKind> = {
+  [N in keyof typeof generated]: (typeof generated)[N] extends K ? N : never;
+}[keyof typeof generated];
+export const generatedNames = Object.keys(generated) as GeneratedName[];
 
 // the Secret holding a generated value (also its key in the merged Secret)
 export const generatedSecretName = (name: GeneratedName) =>
@@ -62,25 +78,24 @@ export const secretRef = (key: string, from: string) => {
   return `{{ if hasKey ${section} "${name}" }}{{ index ${section} "${name}" }}{{ else }}{{ mustRegexMatch "( missing key ${from}.${name}" "" }}{{ end }}`;
 };
 
-// refers to a generated value, inside a template. like `secretRef`, a missing value fails the sync
-export const generatedRef = (name: GeneratedName) => {
-  if (!generatedNames.includes(name)) {
-    throw new Error(`'${name}' is not a generated secret (see generatedNames)`);
+const generatedRef = (name: GeneratedName, kind: GeneratedKind) => {
+  if (generated[name] !== kind) {
+    throw new Error(`'${name}' is not a generated ${kind} (see generated)`);
   }
   const key = generatedSecretName(name);
   return `{{ with index . "${key}" }}{{ toString . }}{{ else }}{{ mustRegexMatch "( missing generated value ${name}" "" }}{{ end }}`;
 };
 
-// the generator, and an ExternalSecret per name that runs it once. it owns its Secret: deleting the
-// Secret generates a new value
+// refers to a generated string, inside a template. like `secretRef`, a missing value fails the sync
+export const generatedString = (name: GeneratedName<"string">) =>
+  generatedRef(name, "string");
+
+// the generators in use, and an ExternalSecret per value that runs one once. it owns its Secret:
+// deleting the Secret generates a new value
 export const generatedObjects = (): Obj[] => [
-  {
-    apiVersion: "generators.external-secrets.io/v1alpha1",
-    kind: "Password",
-    metadata: { name: passwordGenerator },
-    // no symbols: values go into env vars and command lines
-    spec: { length: 32, symbols: 0, allowRepeat: true },
-  },
+  ...new Set(Object.values(generated))
+    .values()
+    .map((k) => generators[k].object),
   ...generatedNames.map((name) => ({
     apiVersion: "external-secrets.io/v1",
     kind: "ExternalSecret",
@@ -93,9 +108,9 @@ export const generatedObjects = (): Obj[] => [
         {
           sourceRef: {
             generatorRef: {
-              apiVersion: "generators.external-secrets.io/v1alpha1",
-              kind: "Password",
-              name: passwordGenerator,
+              apiVersion: generators[generated[name]].object.apiVersion,
+              kind: generators[generated[name]].object.kind,
+              name: generators[generated[name]].object.metadata.name,
             },
           },
         },
@@ -120,7 +135,10 @@ export const mergedExternalSecret = (): Obj => ({
       },
       ...generatedNames.map((name) => ({
         secretKey: generatedSecretName(name),
-        remoteRef: { key: generatedSecretName(name), property: generatedKey },
+        remoteRef: {
+          key: generatedSecretName(name),
+          property: generators[generated[name]].key,
+        },
       })),
     ],
   },

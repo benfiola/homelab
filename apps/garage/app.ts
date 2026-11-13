@@ -10,7 +10,7 @@ export const app: AppFunction = (h) => {
   const ns = h.namespace();
 
   const secrets = ns.templatedSecrets("secrets", {
-    "admin-token": h.generatedRef("garage-admin-token"),
+    "admin-token": h.generatedString("garage-admin-token"),
   });
 
   const security = h.securityContext();

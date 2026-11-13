@@ -28,7 +28,7 @@ import {
   appSecrets,
   appTemplatedSecrets,
   bucketSyncKeys,
-  generatedRef,
+  generatedString,
   type GeneratedName,
   pushStore,
   secretKeys,
@@ -218,9 +218,9 @@ export class App {
     return secretRef(key, this.app);
   }
 
-  // a generated value, inside a `templatedSecrets` template
-  generatedRef(name: GeneratedName): string {
-    return generatedRef(name);
+  // a generated string, inside a `templatedSecrets` template
+  generatedString(name: GeneratedName<"string">): string {
+    return generatedString(name);
   }
 
   // the contents of files in the app's directory, keyed by file name
