@@ -10,7 +10,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   await ns.helm(
-    "oci://ghcr.io/benfiola/homelab-images/charts/dynamic-dns?version=1.0.12",
+    "oci://ghcr.io/benfiola/homelab-images/charts/dynamic-dns?version=1.0.13",
     {
       values: {
         config: {
