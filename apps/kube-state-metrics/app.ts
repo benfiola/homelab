@@ -93,7 +93,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   await ns.helm(
-    "https://prometheus-community.github.io/helm-charts/kube-state-metrics?version=9.0.0",
+    "https://prometheus-community.github.io/helm-charts/kube-state-metrics?version=9.0.1",
     {
       values: {
         prometheus: { monitor: { enabled: true, http: { honorLabels: true } } },
