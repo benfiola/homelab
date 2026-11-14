@@ -11,7 +11,7 @@ export const app: AppFunction = async (h) => {
   const security = h.securityContext();
 
   await ns.helm(
-    "https://stakater.github.io/stakater-charts/reloader?version=2.2.19",
+    "https://stakater.github.io/stakater-charts/reloader?version=2.2.20",
     {
       values: {
         reloader: {
