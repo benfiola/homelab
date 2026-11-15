@@ -1,4 +1,5 @@
 import type { AppFunction, Env, Workload } from "../../tools/lib/app.ts";
+import { dashboardConfigMaps } from "../../tools/lib/k8s/monitoring.ts";
 import {
   cidrs,
   dns,
@@ -9,7 +10,7 @@ import {
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
+export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
   const secrets = ns.secrets("secrets", [
@@ -302,6 +303,9 @@ export const app: AppFunction = (h) => {
       readiness: { http: { path: "/metrics", port: 7100 }, timeoutSeconds: 5 },
     });
   scraparr.podMonitor("metrics");
+
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(...dashboardConfigMaps(h.app, mixin.dashboards));
 
   for (const workload of [
     scraparr,
