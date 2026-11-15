@@ -20,7 +20,8 @@ d.section('Radarr', [
     d.series('Movies on disk', 'sum(radarr_movies_total)', description='Rises with imports, falls with deletions'),
     d.bars('Movies by status', [
       { expr: 'sum(radarr_released_movies_total)', legend: 'released' },
-      { expr: 'sum(radarr_in_cinemas_movies_total)', legend: 'in cinemas' },
+      // scraparr never counts these (it looks for "in cinemas" where radarr says "inCinemas"): what is left over
+      { expr: 'sum(radarr_movies_total) - sum(radarr_released_movies_total) - sum(radarr_announced_movies_total) - sum(radarr_tba_movies_total) - sum(radarr_deleted_movies_total)', legend: 'in cinemas' },
       { expr: 'sum(radarr_announced_movies_total)', legend: 'announced' },
       { expr: 'sum(radarr_tba_movies_total)', legend: 'tba' },
     ]),

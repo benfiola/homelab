@@ -12,6 +12,7 @@ d.section('Seerr', [
       { expr: 'clamp_min(delta(seerr_request_movie[1d]), 0)', legend: 'movies' },
       { expr: 'clamp_min(delta(seerr_request_tv[1d]), 0)', legend: 'tv' },
     ], stack=true, min=0),
-    d.bars('Requests by status', 'sum by (status) (seerr_request_status)'),
+    // scraparr labels completed requests (status 5) 'Unknown', as it only maps the older statuses
+    d.bars('Requests by status', { expr: 'label_replace(sum by (status) (seerr_request_status), "status", "Completed", "status", "Unknown")', legend: '{{status}}' }),
   ],
 ])
