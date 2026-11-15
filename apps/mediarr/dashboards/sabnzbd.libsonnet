@@ -1,9 +1,9 @@
 local d = import 'lib.libsonnet';
 
-d.dashboard('SABnzbd', 'mediarr-sabnzbd', [
+d.section('SABnzbd', [
   [
     d.status('sabnzbd'),
-    d.stat('Speed', 'sum(sabnzbd_queue_speed_bytes)', unit='Bps', colorMode='value'),
+    d.stat('Speed', 'sum(sabnzbd_queue_speed_bytes)', unit='Bps'),
     d.stat('Queue', 'sum(sabnzbd_queue_slots)'),
     d.stat('Remaining', 'sum(sabnzbd_queue_remaining_bytes)', unit='bytes'),
     d.stat('State', 'max(sabnzbd_queue_paused)', steps=d.ok, mappings=[[0, 'Running', 'green'], [1, 'Paused', 'orange']]),

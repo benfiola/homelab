@@ -31,17 +31,20 @@ local ok = [['green'], ['orange', 1]];
 local bad = [['green'], ['red', 1]];
 
 // one row of panels shares the 24 columns equally, and is as tall as its tallest panel
-local place(rows) =
+local heightOf(rows) = std.foldl(function(a, row) a + std.foldl(function(m, p) std.max(m, p.h), row, 0), rows, 0);
+local countOf(rows) = std.foldl(function(a, row) a + std.length(row), rows, 0);
+
+local place(rows, top, base) =
   local heights = [std.foldl(function(m, p) std.max(m, p.h), row, 0) for row in rows];
   local tops = [std.foldl(function(a, h) a + h, heights[0:i], 0) for i in std.range(0, std.length(rows) - 1)];
   local firsts = [std.foldl(function(a, r) a + std.length(r), rows[0:i], 0) for i in std.range(0, std.length(rows) - 1)];
   std.flattenArrays([
     [
       rows[r][c] {
-        id: firsts[r] + c + 1,
+        id: base + firsts[r] + c + 1,
         gridPos: {
           x: c * std.floor(24 / std.length(rows[r])),
-          y: tops[r],
+          y: top + tops[r],
           w: if c == std.length(rows[r]) - 1
           then 24 - std.floor(24 / std.length(rows[r])) * (std.length(rows[r]) - 1)
           else std.floor(24 / std.length(rows[r])),
@@ -68,7 +71,10 @@ local place(rows) =
     description='Whether scraparr could reach the app on its last scrape',
   ),
 
-  stat(title, queries, unit='short', steps=green, mappings=[], noValue='0', description='', colorMode='background', decimals=null):: {
+  stat(title, queries, unit='short', steps=green, mappings=[], noValue='0', description='', colorMode='auto', decimals=null)::
+    // colour the text, not the background, and only where there is something to say
+    local mode = if colorMode != 'auto' then colorMode else if std.length(steps) > 1 || std.length(mappings) > 0 then 'value' else 'none';
+  {
     h:: 4,
     type: 'stat',
     title: title,
@@ -86,7 +92,7 @@ local place(rows) =
     },
     options: {
       reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false },
-      colorMode: colorMode,
+      colorMode: mode,
       graphMode: 'none',
       textMode: 'auto',
       justifyMode: 'center',
@@ -146,7 +152,12 @@ local place(rows) =
     },
   },
 
-  dashboard(title, uid, rows):: {
+  // a section is a collapsible row of the dashboard, holding rows of panels
+  section(title, rows):: { title: title, rows: rows },
+
+  dashboard(title, uid, sections):: {
+    local tops = [std.foldl(function(a, s) a + 1 + heightOf(s.rows), sections[0:i], 0) for i in std.range(0, std.length(sections) - 1)],
+    local bases = [std.foldl(function(a, s) a + 1 + countOf(s.rows), sections[0:i], 0) for i in std.range(0, std.length(sections) - 1)],
     title: title,
     uid: uid,
     tags: ['mediarr'],
@@ -161,6 +172,16 @@ local place(rows) =
     templating: {
       list: [{ name: 'datasource', label: 'Data source', type: 'datasource', query: 'prometheus', current: {}, hide: 0, refresh: 1 }],
     },
-    panels: place(rows),
+    panels: std.flattenArrays([
+      [{
+        type: 'row',
+        title: sections[i].title,
+        collapsed: false,
+        id: bases[i] + 1,
+        gridPos: { x: 0, y: tops[i], w: 24, h: 1 },
+        panels: [],
+      }] + place(sections[i].rows, tops[i] + 1, bases[i] + 1)
+      for i in std.range(0, std.length(sections) - 1)
+    ]),
   },
 }

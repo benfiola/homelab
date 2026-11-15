@@ -99,6 +99,8 @@ export interface ContainerOptions {
   readiness?: Probe;
   liveness?: Probe;
   startup?: Probe;
+  // command run inside the container right after it starts
+  postStart?: string[];
 }
 
 export type ProbeTarget = Pick<Probe, "http" | "tcp" | "exec">;
@@ -389,6 +391,9 @@ export class Workload {
       readinessProbe: probe(opts.readiness),
       livenessProbe: probe(opts.liveness),
       startupProbe: probe(opts.startup),
+      lifecycle: opts.postStart && {
+        postStart: { exec: { command: opts.postStart } },
+      },
     };
   }
 

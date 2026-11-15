@@ -1,6 +1,6 @@
 local d = import 'lib.libsonnet';
 
-d.dashboard('Seerr', 'mediarr-seerr', [
+d.section('Seerr', [
   [
     d.status('seerr'),
     d.stat('Requests', 'sum(seerr_request_total)'),

@@ -1,6 +1,6 @@
 local d = import 'lib.libsonnet';
 
-d.dashboard('Radarr', 'mediarr-radarr', [
+d.section('Radarr', [
   [
     d.status('radarr'),
     d.stat('Queue', 'sum(radarr_queue_count)', description='Items being downloaded, or waiting to import'),

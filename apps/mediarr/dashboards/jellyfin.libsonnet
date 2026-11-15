@@ -1,6 +1,6 @@
 local d = import 'lib.libsonnet';
 
-d.dashboard('Jellyfin', 'mediarr-jellyfin', [
+d.section('Jellyfin', [
   [
     d.status('jellyfin'),
     d.stat('Active streams', 'sum(jellyfin_sessions_total)', description='Sessions active in the last few minutes'),

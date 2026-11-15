@@ -1,10 +1,14 @@
+local d = import 'dashboards/lib.libsonnet';
+
 {
   dashboards: {
-    'jellyfin.json': import 'dashboards/jellyfin.libsonnet',
-    'prowlarr.json': import 'dashboards/prowlarr.libsonnet',
-    'radarr.json': import 'dashboards/radarr.libsonnet',
-    'sabnzbd.json': import 'dashboards/sabnzbd.libsonnet',
-    'seerr.json': import 'dashboards/seerr.libsonnet',
-    'sonarr.json': import 'dashboards/sonarr.libsonnet',
+    'mediarr.json': d.dashboard('Mediarr', 'mediarr', [
+      import 'dashboards/sonarr.libsonnet',
+      import 'dashboards/radarr.libsonnet',
+      import 'dashboards/seerr.libsonnet',
+      import 'dashboards/jellyfin.libsonnet',
+      import 'dashboards/prowlarr.libsonnet',
+      import 'dashboards/sabnzbd.libsonnet',
+    ]),
   },
 }

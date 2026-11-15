@@ -119,6 +119,13 @@ export const app: AppFunction = async (h) => {
         caps: ["CHOWN", "DAC_OVERRIDE", "NET_ADMIN", "NET_RAW"],
       },
       env,
+      // pod-shared ip rules can survive an unclean gluetun exit and break the next start
+      // https://github.com/qdm12/gluetun-wiki/blob/main/setup/advanced/kubernetes.md#adding-ipv6-rule--file-exists
+      postStart: [
+        "/bin/sh",
+        "-c",
+        "(ip rule del table 51820; ip -6 rule del table 51820) || true",
+      ],
       volumeMounts: {
         "gt-tun": "/dev/net/tun",
         "gt-state": "/tmp/gluetun",

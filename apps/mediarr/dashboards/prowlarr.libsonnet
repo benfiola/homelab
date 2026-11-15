@@ -1,6 +1,6 @@
 local d = import 'lib.libsonnet';
 
-d.dashboard('Prowlarr', 'mediarr-prowlarr', [
+d.section('Prowlarr', [
   [
     d.status('prowlarr'),
     d.stat('Indexers enabled', 'sum(prowlarr_indexer_enabled_total)', steps=[['red'], ['green', 1]], description='Indexers Prowlarr will search'),
