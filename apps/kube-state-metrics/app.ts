@@ -162,14 +162,15 @@ export const app: AppFunction = async (h) => {
           rules: [
             {
               alert: "PodOOMKilled",
-              expr: 'kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1',
-              for: "1m",
+              expr: `increase(kube_pod_container_status_restarts_total[5m]) > 0
+                and on (namespace, pod, container)
+                kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1`,
               labels: { severity: "critical" },
               annotations: {
                 summary:
                   "Pod {{ $labels.namespace }}/{{ $labels.pod }} was OOMKilled",
                 description:
-                  "Pod {{ $labels.namespace }}/{{ $labels.pod }} in container {{ $labels.container }} was OOMKilled in the last 1 minute.",
+                  "Pod {{ $labels.namespace }}/{{ $labels.pod }} in container {{ $labels.container }} was OOMKilled in the last 5 minutes.",
               },
             },
           ],

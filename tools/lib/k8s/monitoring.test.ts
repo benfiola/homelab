@@ -3,6 +3,7 @@ import { describe, test } from "node:test";
 import { editor } from "./edit.ts";
 import {
   dashboard,
+  nasShareAlerts,
   podMonitor,
   Service,
   serviceMonitor,
@@ -235,5 +236,28 @@ describe("dashboard", () => {
       () => edit([map], "a", (d: any) => d.dropDashboards("a.json")),
       /dropDashboards 'a.json' matches nothing/,
     );
+  });
+});
+
+describe("nasShareAlerts", () => {
+  test("alerts on the claim's available space, whichever node reports it", () => {
+    const group = nasShareAlerts("mediarr", "media");
+    assert.equal(group.name, "nas-share-media");
+    assert.deepEqual(
+      group.rules.map((r: any) => [r.alert, r.labels.severity]),
+      [
+        ["NASShareLowSpace", "warning"],
+        ["NASShareAlmostFull", "critical"],
+        ["NASShareFillingUp", "warning"],
+      ],
+    );
+    for (const rule of group.rules) {
+      assert.match(
+        rule.expr,
+        /max by \(exported_namespace, persistentvolumeclaim\)/,
+      );
+      assert.match(rule.expr, /exported_namespace="mediarr"/);
+      assert.match(rule.expr, /persistentvolumeclaim="media"/);
+    }
   });
 });

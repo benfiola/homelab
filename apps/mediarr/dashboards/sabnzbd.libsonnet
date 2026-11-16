@@ -8,7 +8,6 @@ d.section('SABnzbd', [
     d.stat('Remaining', 'sum(sabnzbd_queue_remaining_bytes)', unit='bytes'),
     d.stat('State', 'max(sabnzbd_queue_paused)', steps=d.ok, mappings=[[0, 'Running', 'green'], [1, 'Paused', 'orange']]),
     d.stat('Failed jobs', 'sum(sabnzbd_history_failed_jobs)', steps=d.ok, description='Failed downloads still in the history'),
-    d.stat('Free disk', '100 * max(sabnzbd_disk_space_bytes) / max(sabnzbd_disk_space_total_bytes)', unit='percent', steps=[['red'], ['orange', 10], ['green', 20]], decimals=1, description='Shared by sonarr, radarr and downloads'),
   ],
   [
     d.series('Speed', 'sum(sabnzbd_queue_speed_bytes)', unit='Bps', min=0),

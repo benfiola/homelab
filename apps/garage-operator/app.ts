@@ -1,5 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
+import { dashboard, prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   pod,
   tcp,
@@ -17,8 +17,13 @@ export const app: AppFunction = async (h) => {
           enabled: true,
           annotations: { grafana_folder: h.app },
         },
+        prometheusRules: {
+          enabled: true,
+          // replaced below: stale metric name
+          disabled: { GarageHighRPCErrorRate: true },
+        },
         resources: null,
-        serviceMonitor: { enabled: true },
+        serviceMonitor: { enabled: true, honorLabels: true },
       },
     },
   );
@@ -28,6 +33,27 @@ export const app: AppFunction = async (h) => {
       d.replace("_duration{", "_duration_bucket{"),
     );
   });
+
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "garage-rpc",
+        rules: [
+          {
+            alert: "GarageHighRPCErrorRate",
+            expr: 'sum by (instance) (rate(rpc_netapp_error_counter{job="garage"}[5m])) / sum by (instance) (rate(rpc_request_counter{job="garage"}[5m])) > 0.1',
+            for: "10m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "High RPC error rate on {{ $labels.instance }}",
+              description:
+                "{{ $value | humanizePercentage }} of the RPC requests from {{ $labels.instance }} to other garage nodes are failing, and have been for 10 minutes.",
+            },
+          },
+        ],
+      },
+    ]),
+  );
 
   ns.vpa({ kind: "Deployment", name: "garage-operator" });
 };

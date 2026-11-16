@@ -1,5 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
+import { dashboard, prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   cidrs,
   controlPlane,
@@ -384,6 +384,50 @@ export const app: AppFunction = async (h) => {
     );
     dashboard(e, "cilium-operator-dashboard", (d) => d.dropRows("IPAM"));
   });
+
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "cilium",
+        rules: [
+          {
+            alert: "CiliumNodeUnreachable",
+            expr: "cilium_unreachable_nodes > 0",
+            for: "10m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "{{ $labels.node }} cannot reach other nodes",
+              description:
+                "The cilium agent on {{ $labels.node }} has had {{ $value }} unreachable node(s) for 10 minutes. Pod traffic between nodes may be failing.",
+            },
+          },
+          {
+            alert: "CiliumHealthEndpointsUnreachable",
+            expr: "cilium_unreachable_health_endpoints > 0",
+            for: "10m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary:
+                "{{ $labels.node }} cannot reach other nodes' health endpoints",
+              description:
+                "The cilium agent on {{ $labels.node }} has had {{ $value }} unreachable health endpoint(s) for 10 minutes.",
+            },
+          },
+          {
+            alert: "CiliumControllersFailing",
+            expr: "cilium_controllers_failing > 0",
+            for: "15m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "cilium controllers are failing on {{ $labels.node }}",
+              description:
+                "{{ $value }} cilium controller(s) on {{ $labels.node }} have been failing for 15 minutes.",
+            },
+          },
+        ],
+      },
+    ]),
+  );
 
   ns.vpa({ kind: "DaemonSet", name: "cilium" }, advisory);
   ns.vpa({ kind: "DaemonSet", name: "cilium-envoy" }, advisory);

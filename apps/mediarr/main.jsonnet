@@ -9,6 +9,7 @@ local d = import 'dashboards/lib.libsonnet';
       import 'dashboards/jellyfin.libsonnet',
       import 'dashboards/prowlarr.libsonnet',
       import 'dashboards/sabnzbd.libsonnet',
+      import 'dashboards/storage.libsonnet',
     ]),
   },
 }

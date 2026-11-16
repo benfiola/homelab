@@ -160,6 +160,16 @@ export const app: AppFunction = async (h) => {
   ns.garageBucket(`${h.app}-ruler`, [key]);
 
   h.postRender((e) => {
+    const alerts = e.find({ kind: "PrometheusRule", name: "loki-loki-alerts" });
+    for (const group of alerts.spec.groups) {
+      for (const rule of group.rules) {
+        rule.expr = rule.expr?.replaceAll(
+          "loki_tsdb_shipper_compactor_running",
+          "loki_boltdb_shipper_compactor_running",
+        );
+      }
+    }
+
     const jobs = "(loki|enterprise-logs)";
     dashboard(e, ["loki-dashboards-1", "loki-dashboards-2"], (d) => {
       for (const role of ["read", "write"]) {

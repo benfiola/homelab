@@ -1,5 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { dashboard } from "../../tools/lib/k8s/monitoring.ts";
+import { dashboard, prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   component,
   tcp,
@@ -40,6 +40,30 @@ export const app: AppFunction = async (h) => {
   );
 
   chart.find("Service", "envoy-gateway").serviceMonitor("metrics");
+
+  const proxy = 'job="envoy-gateway/envoy-gateway-proxy"';
+  const requests = (code: string) =>
+    `sum by (envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{${proxy}${code}}[10m]))`;
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "envoy-gateway",
+        rules: [
+          {
+            alert: "EnvoyHighErrorRate",
+            expr: `${requests(', envoy_response_code_class="5"')} / ${requests("")} > 0.1 and ${requests("")} > 0.02`,
+            for: "10m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "{{ $labels.envoy_cluster_name }} is returning errors",
+              description:
+                "{{ $value | humanizePercentage }} of requests to {{ $labels.envoy_cluster_name }} have been answered with a 5xx for 10 minutes: the app behind the route is failing or unreachable.",
+            },
+          },
+        ],
+      },
+    ]),
+  );
 
   ns.podMonitor(
     "envoy-gateway-proxy",

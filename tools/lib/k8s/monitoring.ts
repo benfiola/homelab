@@ -274,3 +274,41 @@ export const prometheusRules = (
     metadata: { name: `${kind}--${group.name.replace(/[._]/g, "-")}` },
     spec: { groups: [group] },
   }));
+
+export const nasShareAlerts = (namespace: string, claim: string): Obj => {
+  const available = `max by (exported_namespace, persistentvolumeclaim) (kubelet_volume_stats_available_bytes{exported_namespace="${namespace}", persistentvolumeclaim="${claim}"})`;
+  const labels = (severity: string) => ({ severity });
+  const annotations = (summary: string) => ({
+    summary: `${namespace}/${claim} ${summary}`,
+    description: `The ${namespace}/${claim} nas share reports {{ $value | humanize1024 }}B available. With no quota set, that is the free space of the whole pool.`,
+  });
+  return {
+    name: `nas-share-${claim}`,
+    rules: [
+      {
+        alert: "NASShareLowSpace",
+        expr: `${available} < 3e12`,
+        for: "30m",
+        labels: labels("warning"),
+        annotations: annotations("has under 3TB available"),
+      },
+      {
+        alert: "NASShareAlmostFull",
+        expr: `${available} < 1e12`,
+        for: "15m",
+        labels: labels("critical"),
+        annotations: annotations("has under 1TB available"),
+      },
+      {
+        alert: "NASShareFillingUp",
+        expr: `predict_linear((${available})[7d:1h], 30 * 24 * 3600) < 0`,
+        for: "6h",
+        labels: labels("warning"),
+        annotations: {
+          summary: `${namespace}/${claim} is on course to fill within a month`,
+          description: `At the last week's rate, the ${namespace}/${claim} nas share (and the pool behind it) will run out of space within 30 days.`,
+        },
+      },
+    ],
+  };
+};

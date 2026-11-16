@@ -1,12 +1,17 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import {
+  dashboardConfigMaps,
+  nasShareAlerts,
+  prometheusRules,
+} from "../../tools/lib/k8s/monitoring.ts";
+import {
   dns,
   pod,
   tcp,
   type NetworkFunction,
 } from "../../tools/lib/k8s/network-policy.ts";
 
-export const app: AppFunction = (h) => {
+export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
   const secrets = ns.secrets("secrets", [
@@ -78,6 +83,42 @@ export const app: AppFunction = (h) => {
 
   workload.service({ "http-insecure": 5000 });
   workload.podMonitor("http-insecure", { path: "/api/metrics" });
+
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "frigate",
+        rules: [
+          {
+            alert: "FrigateCameraNoFrames",
+            expr: "frigate_camera_fps == 0",
+            for: "5m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "Frigate camera {{ $labels.camera_name }} has no frames",
+              description:
+                "Frigate has received no frames from {{ $labels.camera_name }} for 5 minutes. The camera or its stream is down.",
+            },
+          },
+          {
+            alert: "FrigateDetectorSlow",
+            expr: "frigate_detector_inference_speed_seconds > 0.1",
+            for: "15m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "Frigate detector {{ $labels.name }} is slow",
+              description:
+                "Detector {{ $labels.name }} has averaged {{ $value | humanizeDuration }} per inference for 15 minutes (normally ~20ms). Detections may be dropped.",
+            },
+          },
+        ],
+      },
+      nasShareAlerts("frigate", "nvr"),
+    ]),
+  );
+
+  const mixin = await ns.jsonnet("main.jsonnet");
+  ns.add(...dashboardConfigMaps(h.app, mixin.dashboards));
   ns.vpa(workload);
 };
 

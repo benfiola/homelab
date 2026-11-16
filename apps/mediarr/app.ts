@@ -1,5 +1,9 @@
 import type { AppFunction, Env, Workload } from "../../tools/lib/app.ts";
-import { dashboardConfigMaps } from "../../tools/lib/k8s/monitoring.ts";
+import {
+  dashboardConfigMaps,
+  nasShareAlerts,
+  prometheusRules,
+} from "../../tools/lib/k8s/monitoring.ts";
 import {
   cidrs,
   dns,
@@ -287,6 +291,72 @@ export const app: AppFunction = async (h) => {
       ...h.probes({ http: { path: "/api?mode=version", port: 8080 } }),
     });
   addVpnSidecar(sabnzbd, { firewallInputPorts: [8080] });
+
+  // liveness restarts never enter CrashLoopBackOff, so KubePodCrashLooping misses them
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "mediarr",
+        rules: [
+          {
+            alert: "GluetunRestartingRepeatedly",
+            expr: 'increase(kube_pod_container_status_restarts_total{namespace="mediarr", container="gluetun"}[1h]) >= 2',
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "gluetun in {{ $labels.pod }} keeps restarting",
+              description:
+                "gluetun in pod {{ $labels.namespace }}/{{ $labels.pod }} restarted {{ $value | humanize }} times in the last hour, most likely from failing liveness checks (vpn speed check).",
+            },
+          },
+          {
+            alert: "ArrAppUnreachable",
+            expr: "scraparr_services_up == 0",
+            for: "15m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "scraparr cannot reach {{ $labels.alias }}",
+              description:
+                "scraparr has been unable to reach {{ $labels.alias }} for 15 minutes, so its metrics and dashboard are stale. The app may be up but unresponsive.",
+            },
+          },
+          {
+            alert: "ArrQueueErrors",
+            expr: "radarr_queue_error > 0 or sonarr_queue_error > 0",
+            for: "1h",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "{{ $labels.alias }} has queue items in error",
+              description:
+                "{{ $labels.alias }} has had {{ $value }} queue item(s) in an error state for an hour: a download it cannot import, or one that failed.",
+            },
+          },
+          {
+            alert: "SabnzbdStalled",
+            expr: "(sabnzbd_queue_slots > 0) and on (alias) (sabnzbd_queue_speed_bytes == 0) and on (alias) (sabnzbd_queue_paused == 0)",
+            for: "2h",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "sabnzbd has a queue but is not downloading",
+              description:
+                "sabnzbd has had items queued, and is not paused, but has downloaded nothing for two hours. Check the vpn and the usenet provider.",
+            },
+          },
+          {
+            alert: "ProwlarrNoIndexers",
+            expr: "sum(prowlarr_indexer_enabled_total) < 1",
+            for: "30m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "prowlarr has no enabled indexers",
+              description:
+                "Prowlarr has had no enabled indexers for 30 minutes, so sonarr and radarr cannot search.",
+            },
+          },
+        ],
+      },
+      nasShareAlerts("mediarr", "media"),
+    ]),
+  );
   addWaitForDataInitContainer(sabnzbd);
   sabnzbd.service({ web: 8080 });
 

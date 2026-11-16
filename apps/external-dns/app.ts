@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   dns,
   pod,
@@ -103,6 +104,51 @@ export const app: AppFunction = async (h) => {
   });
 
   ns.secrets("secrets", ["cloudflare-api-token", "routeros-password"]);
+
+  const errorCounters = [
+    "external_dns_registry_errors_total",
+    "external_dns_source_errors_total",
+    "external_dns_webhook_provider_adjustendpoints_errors_total",
+    "external_dns_webhook_provider_applychanges_errors_total",
+    "external_dns_webhook_provider_records_errors_total",
+  ];
+
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "external-dns",
+        rules: [
+          {
+            alert: "ExternalDNSErrors",
+            expr: errorCounters
+              .map(
+                (m) =>
+                  `sum by (job) (rate(${m}{job=~"external-dns-.*"}[15m])) > 0`,
+              )
+              .join(" or "),
+            for: "15m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "{{ $labels.job }} is hitting errors",
+              description:
+                "{{ $labels.job }} has been recording errors for 15 minutes, so DNS records may not be updating. Check its logs.",
+            },
+          },
+          {
+            alert: "ExternalDNSSyncStale",
+            expr: 'time() - external_dns_controller_last_sync_timestamp_seconds{job=~"external-dns-.*"} > 1800',
+            for: "5m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "{{ $labels.job }} has not synced recently",
+              description:
+                "{{ $labels.job }} last synced {{ $value | humanizeDuration }} ago. It normally syncs every minute.",
+            },
+          },
+        ],
+      },
+    ]),
+  );
 
   ns.vpa({ kind: "Deployment", name: "external-dns-mikrotik" });
 

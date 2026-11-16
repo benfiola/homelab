@@ -1,4 +1,5 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
+import { prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   dns,
   pod,
@@ -46,7 +47,7 @@ export const app: AppFunction = async (h) => {
         podSecurityContext: security.pod,
         readinessProbe: { enabled: true },
         securityContext: security.container,
-        serviceMonitor: { enabled: true },
+        serviceMonitor: { enabled: true, honorLabels: true },
         webhook: {
           livenessProbe: { enabled: true },
           podSecurityContext: security.pod,
@@ -188,6 +189,40 @@ export const app: AppFunction = async (h) => {
         },
       ],
     },
+  );
+
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "external-secrets",
+        rules: [
+          {
+            alert: "ExternalSecretNotReady",
+            expr: 'externalsecret_status_condition{condition="Ready", status="False"} == 1',
+            for: "15m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary:
+                "ExternalSecret {{ $labels.namespace }}/{{ $labels.name }} is not syncing",
+              description:
+                "ExternalSecret {{ $labels.namespace }}/{{ $labels.name }} has not been Ready for 15 minutes, so the secret it manages is not being updated (or created).",
+            },
+          },
+          {
+            alert: "SecretStoreNotReady",
+            expr: 'secretstore_status_condition{condition="Ready", status="False"} == 1',
+            for: "15m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary:
+                "SecretStore {{ $labels.namespace }}/{{ $labels.name }} is not ready",
+              description:
+                "SecretStore {{ $labels.namespace }}/{{ $labels.name }} has not been Ready for 15 minutes, so the ExternalSecrets that use it cannot sync.",
+            },
+          },
+        ],
+      },
+    ]),
   );
 
   ns.vpa({ kind: "Deployment", name: "external-secrets" });

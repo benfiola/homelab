@@ -184,6 +184,14 @@ export const app: AppFunction = async (h) => {
         bearerTokenSecret: token(),
         interval: "30s",
         port: "https-metrics",
+        metricRelabelings: [
+          {
+            sourceLabels: ["exported_namespace"],
+            regex: "(.+)",
+            targetLabel: "namespace",
+            replacement: "$1",
+          },
+        ],
         ...insecureHttps(),
       },
       {
@@ -274,6 +282,11 @@ export const app: AppFunction = async (h) => {
     { "app.kubernetes.io/name": "prometheus" },
     "web",
   );
+  ns.podMonitor(
+    "prometheus-config-reloader",
+    { "app.kubernetes.io/name": "prometheus" },
+    "reloader-web",
+  );
 
   ns.vpa({
     kind: "Prometheus",
@@ -289,8 +302,8 @@ export const network: NetworkFunction = (n) => {
   // what it scrapes outside the apps' own monitors. each app allows prometheus to reach the
   // metrics of its own subjects (`n.ref("prometheus").to(subject, ...)`)
   prometheus
-    .to(prometheus, tcp(9090))
-    .to(n.ref("alertmanager"), tcp(9093))
+    .to(prometheus, tcp(9090, 8080))
+    .to(n.ref("alertmanager"), tcp(9093, 8080))
     // node exporter, kubelet, the control plane, and cilium's agent, operator and envoy
     .to(n.nodes, tcp(9100, 9962, 9963, 9964, 10250, 10257, 10259))
     .to(n.kubeApiServer, tcp(6443));

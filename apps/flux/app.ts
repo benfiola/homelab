@@ -1,5 +1,6 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
 import { appKustomization } from "../../tools/lib/k8s/flux.ts";
+import { prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
 import {
   component,
   dns,
@@ -35,6 +36,40 @@ export const app: AppFunction = async (h) => {
   }
 
   ns.podMonitor("flux", { "app.kubernetes.io/part-of": "flux" }, "http-prom");
+
+  ns.add(
+    ...prometheusRules("alert", [
+      {
+        name: "flux",
+        rules: [
+          {
+            alert: "FluxResourceNotReady",
+            expr: 'gotk_resource_info{ready=~"False|Unknown"}',
+            for: "20m",
+            labels: { severity: "warning" },
+            annotations: {
+              summary:
+                "Flux {{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready",
+              description:
+                "Flux {{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} has been not ready (ready={{ $labels.ready }}) for 20 minutes.",
+            },
+          },
+          {
+            alert: "FluxResourceSuspended",
+            expr: 'gotk_resource_info{suspended="true"}',
+            for: "24h",
+            labels: { severity: "warning" },
+            annotations: {
+              summary:
+                "Flux {{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is suspended",
+              description:
+                "Flux {{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} has been suspended for 24 hours.",
+            },
+          },
+        ],
+      },
+    ]),
+  );
 
   for (const controller of [
     "helm-controller",

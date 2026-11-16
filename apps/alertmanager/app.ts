@@ -180,6 +180,11 @@ export const app: AppFunction = async (h) => {
     { "app.kubernetes.io/name": "alertmanager" },
     "web",
   );
+  ns.podMonitor(
+    "alertmanager-config-reloader",
+    { "app.kubernetes.io/name": "alertmanager" },
+    "reloader-web",
+  );
 
   ns.vpa({
     kind: "Alertmanager",
