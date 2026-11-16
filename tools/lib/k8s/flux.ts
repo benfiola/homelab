@@ -23,7 +23,8 @@ export const fluxKustomization = (
       dependsOn: opts.dependsOn.map((name) => ({ name })),
     }),
     ...(opts.force && { force: true }),
-    interval: "30s",
+    // low interval values create flux and kube-apiserver pressure
+    interval: "10m",
     path,
     prune: true,
     sourceRef: {

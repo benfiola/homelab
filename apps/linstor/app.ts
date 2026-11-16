@@ -14,7 +14,11 @@ export const app: AppFunction = (h) => {
       metadata: { name: h.app },
       spec: {
         nfsServer: { enabled: false },
-        properties: [{ name: "DrbdOptions/auto-diskful", value: "10" }],
+        properties: [
+          { name: "DrbdOptions/auto-diskful", value: "10" },
+          // linstor >= 1.34.0 marks new thin replicas UpToDate instead of syncing them, breaking auto-diskful (drbd error 150)
+          { name: "DrbdOptions/ForceInitialSync", value: "true" },
+        ],
       },
     },
     {
