@@ -32,6 +32,12 @@ export const app: AppFunction = async (h) => {
       cni: { exclusive: false },
       dashboards: { enabled: true, annotations: { grafana_folder: h.app } },
       hostFirewall: { enabled: true },
+      image: {
+        repository: "ghcr.io/benfiola/homelab-images/cilium",
+        tag: "1.0.0",
+        digest: "",
+        useDigest: false,
+      },
       extraContainers: [
         {
           name: "hubble-flows",
