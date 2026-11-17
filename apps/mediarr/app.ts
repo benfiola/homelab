@@ -183,7 +183,7 @@ export const app: AppFunction = async (h) => {
       volumes: { config: config("1Gi"), data },
     })
     .addContainer("radarr", {
-      image: "ghcr.io/linuxserver/radarr:6.4.4",
+      image: "ghcr.io/linuxserver/radarr:7.0.3",
       containerPorts: { web: 7878 },
       env: { ...linuxserver, ...arr("RADARR") },
       volumeMounts: { data: "/data", config: "/config" },
