@@ -14,7 +14,7 @@ export const app: AppFunction = async (h) => {
 
   const security = h.securityContext();
 
-  await ns.helm("https://grafana.github.io/helm-charts/alloy?version=1.15.0", {
+  await ns.helm("https://grafana.github.io/helm-charts/alloy?version=1.16.0", {
     values: {
       serviceMonitor: { enabled: true },
       alloy: {
