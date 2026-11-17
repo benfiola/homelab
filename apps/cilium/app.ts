@@ -1,5 +1,9 @@
 import type { AppFunction } from "../../tools/lib/app.ts";
-import { dashboard, prometheusRules } from "../../tools/lib/k8s/monitoring.ts";
+import {
+  dashboard,
+  dashboardConfigMaps,
+  prometheusRules,
+} from "../../tools/lib/k8s/monitoring.ts";
 import {
   cidrs,
   controlPlane,
@@ -73,11 +77,9 @@ export const app: AppFunction = async (h) => {
               "source.identity",
               "source.namespace",
               "source.pod_name",
-              "source.labels",
               "destination.identity",
               "destination.namespace",
               "destination.pod_name",
-              "destination.labels",
               "source_names",
               "destination_names",
               "egress_allowed_by",
@@ -95,11 +97,9 @@ export const app: AppFunction = async (h) => {
               "source.identity",
               "source.namespace",
               "source.pod_name",
-              "source.labels",
               "destination.identity",
               "destination.namespace",
               "destination.pod_name",
-              "destination.labels",
               "source_names",
               "destination_names",
               "egress_allowed_by",
@@ -362,10 +362,8 @@ export const app: AppFunction = async (h) => {
     },
   });
 
-  ns.configMap("dashboard--policy-flows", h.files("policy-flows.json"), {
-    labels: { grafana_dashboard: "1" },
-    annotations: { grafana_folder: h.app },
-  });
+  const flows = await ns.jsonnet("main.jsonnet");
+  ns.add(...dashboardConfigMaps(h.app, flows.dashboards));
 
   const advisory = { advisory: true };
   h.postRender((e) => {

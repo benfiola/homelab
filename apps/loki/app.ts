@@ -63,10 +63,8 @@ export const app: AppFunction = async (h) => {
         limits_config: {
           allow_structured_metadata: true,
           retention_period: "168h",
-          // the hubble flows dashboard (apps/cilium) returns a series per distinct flow, about 600 and growing
           max_query_series: 5000,
-          // aggregated hubble policy verdicts (see apps/cilium): small, and stale policies only show
-          // up over weeks
+          split_instant_metric_queries_by_interval: "24h",
           retention_stream: [
             {
               selector: '{namespace="cilium", container="hubble-flows"}',
@@ -78,7 +76,9 @@ export const app: AppFunction = async (h) => {
         },
         pattern_ingester: { enabled: true },
         podSecurityContext: security.pod,
-        querier: { max_concurrent: 1 },
+        // the flows dashboard (apps/cilium) runs an instant query over its whole range, which loki
+        // splits into one sub-query per split interval; with one worker they run strictly in series
+        querier: { max_concurrent: 4 },
         schemaConfig: {
           configs: [
             {
