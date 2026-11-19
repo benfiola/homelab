@@ -12,7 +12,7 @@ export const app: AppFunction = async (h) => {
   const security = h.securityContext();
 
   await ns.helm(
-    "oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.25.0",
+    "oci://ghcr.io/grafana/helm-charts/grafana-operator?version=5.26.0",
     {
       values: {
         dashboard: {
