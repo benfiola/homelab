@@ -198,7 +198,7 @@ export const app: AppFunction = async (h) => {
       volumes: { config: config("1Gi") },
     })
     .addContainer("prowlarr", {
-      image: "ghcr.io/linuxserver/prowlarr:2.7.0",
+      image: "ghcr.io/linuxserver/prowlarr:3.0.2",
       containerPorts: { web: 9696 },
       env: { ...linuxserver, ...arr("PROWLARR") },
       volumeMounts: { config: "/config" },
