@@ -5,7 +5,9 @@
     "Detection: jsonnetfile.json (with its lock file) is handled by the jsonnet-bundler manager. TypeScript has no built-in manager, so what an app.ts declares is found by shape (see tools/checks/renovate.test.ts, which fails if something is written in a way these rules can't see): container images (`image: \"repo/name:tag\"`, or `h.helmImage(\"repo/name:tag\")` in a chart's values), helm charts (`ns.helm(\"<repository url>/<chart>?version=<version>\")`), upstream kustomize overlays (`ns.kustomize(\"github.com/org/repo/path?ref=tag\")`), and versioned github urls."
   ],
   "extends": ["config:recommended"],
-  "dependencyDashboard": true,
+  "dependencyDashboard": {
+    "enabled": true
+  },
   "dependencyDashboardApproval": false,
   "ignoreUnstable": true,
   "minimumReleaseAge": "3 days",
