@@ -31,7 +31,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addInitContainer("setup-auth", {
-      image: "docker.io/eclipse-mosquitto:2.1.2-alpine",
+      image: "docker.io/eclipse-mosquitto:2.1.4-alpine",
       args: ["sh", "/scripts/setup-auth.sh"],
       volumeMounts: {
         scripts: "/scripts",
@@ -43,7 +43,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("mosquitto", {
-      image: "docker.io/eclipse-mosquitto:2.1.2-alpine",
+      image: "docker.io/eclipse-mosquitto:2.1.4-alpine",
       containerPorts: {
         web: [1883, "TCP"],
       },
