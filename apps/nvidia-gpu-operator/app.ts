@@ -11,7 +11,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
   await ns.helm(
-    "https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.2",
+    "https://helm.ngc.nvidia.com/nvidia/gpu-operator?version=v26.7.3",
     {
       release: "nvidia-gpu-operator",
       values: {
