@@ -280,7 +280,7 @@ export const app: AppFunction = async (h) => {
       dnsConfig: { ndots: 1 },
     })
     .addContainer("sabnzbd", {
-      image: "ghcr.io/linuxserver/sabnzbd:5.1.3-ls281",
+      image: "ghcr.io/linuxserver/sabnzbd:5.1.3-ls282",
       containerPorts: { web: 8080 },
       env: linuxserver,
       volumeMounts: { config: "/config", data: "/data" },
