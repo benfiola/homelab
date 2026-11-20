@@ -27,7 +27,7 @@ export const app: AppFunction = async (h) => {
   const security = h.securityContext();
   const flowsPath = "/var/run/cilium/hubble/flows.log";
 
-  await ns.helm("https://helm.cilium.io/cilium?version=1.20.4", {
+  await ns.helm("https://helm.cilium.io/cilium?version=1.20.5", {
     values: {
       bgpControlPlane: { enabled: true },
       bpf: { masquerade: true },
@@ -197,7 +197,7 @@ export const app: AppFunction = async (h) => {
   });
 
   const crds =
-    "https://raw.githubusercontent.com/cilium/cilium/v1.20.4/pkg/k8s/apis/cilium.io/client/crds";
+    "https://raw.githubusercontent.com/cilium/cilium/v1.20.5/pkg/k8s/apis/cilium.io/client/crds";
   for (const file of [
     "v2/ciliumbgpadvertisements",
     "v2/ciliumbgpclusterconfigs",
