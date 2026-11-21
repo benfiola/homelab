@@ -18,6 +18,12 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace({ privileged: true });
 
   const secrets = ns.secrets("secrets", [
+    "jellyfin-api-key",
+    "prowlarr-api-key",
+    "radarr-api-key",
+    "sabnzbd-api-key",
+    "seerr-api-key",
+    "sonarr-api-key",
     "vpn-server-countries",
     "vpn-server-cities",
     "vpn-wireguard-private-key",
@@ -328,6 +334,17 @@ export const app: AppFunction = async (h) => {
               summary: "{{ $labels.alias }} has queue items in error",
               description:
                 "{{ $labels.alias }} has had {{ $value }} queue item(s) in an error state for an hour: a download it cannot import, or one that failed.",
+            },
+          },
+          {
+            alert: "ArrQueueWarnings",
+            expr: "radarr_queue_warning > 0 or sonarr_queue_warning > 0",
+            for: "6h",
+            labels: { severity: "warning" },
+            annotations: {
+              summary: "{{ $labels.alias }} has queue items with warnings",
+              description:
+                "{{ $labels.alias }} has had queue items in a warning state for 6 hours: typically a completed download it won't import (unextracted archives, or files that don't match the release).",
             },
           },
           {
