@@ -37,7 +37,7 @@ export const app: AppFunction = async (h) => {
       dashboards: { enabled: true, annotations: { grafana_folder: h.app } },
       hostFirewall: { enabled: true },
       image: {
-        ...h.helmImage("ghcr.io/benfiola/homelab-images/cilium:1.0.0"),
+        ...h.helmImage("ghcr.io/benfiola/homelab-images/cilium:1.0.1"),
         digest: "",
         useDigest: false,
       },
