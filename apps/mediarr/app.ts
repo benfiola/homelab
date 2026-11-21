@@ -376,6 +376,37 @@ export const app: AppFunction = async (h) => {
   addWaitForDataInitContainer(sabnzbd);
   sabnzbd.service({ web: 8080 });
 
+  // unpackerr watches the usenet downloads of an app, and deletes the whole download (archives
+  // included) once the app has imported it or dropped it from its queue
+  const unpack = (name: "sonarr" | "radarr", port: number): Env => {
+    const prefix = `UN_${name.toUpperCase()}_0`;
+    return {
+      [`${prefix}_URL`]: `http://${name}:${port}`,
+      [`${prefix}_API_KEY`]: secrets.key(`${name}-api-key` as const),
+      [`${prefix}_PATHS_0`]: "/data/usenet/complete",
+      [`${prefix}_PROTOCOLS`]: "usenet,UsenetDownloadProtocol",
+      [`${prefix}_DELETE_ORIG`]: "true",
+    };
+  };
+  const unpackerr = ns
+    .deployment("unpackerr", {
+      securityContext: { uid: 1000, gid: 1000 },
+      volumes: { data, config: { memory: { sizeLimit: "64Mi" } } },
+    })
+    .addContainer("unpackerr", {
+      image: "golift/unpackerr:1.0.1",
+      containerPorts: { web: 5656 },
+      env: {
+        TZ: h.timezone,
+        UN_WEBSERVER_UI_PASSWORD: "noauth",
+        ...unpack("sonarr", 8989),
+        ...unpack("radarr", 7878),
+      },
+      volumeMounts: { data: "/data", config: "/config" },
+      ...h.probes({ tcp: { port: 5656 } }),
+    });
+  addWaitForDataInitContainer(unpackerr);
+
   const scrape = (
     name: "sonarr" | "radarr" | "prowlarr" | "sabnzbd" | "seerr" | "jellyfin",
     port: number,
@@ -412,6 +443,7 @@ export const app: AppFunction = async (h) => {
     seerr,
     jellyfin,
     sabnzbd,
+    unpackerr,
   ]) {
     ns.vpa(workload);
   }
@@ -442,6 +474,7 @@ export const network: NetworkFunction = (n) => {
   const scraparr = n.subject("mediarr-scraparr", pod("scraparr", "mediarr"));
   const seerr = n.subject("mediarr-seerr", pod("seerr", "mediarr"));
   const sonarr = n.subject("mediarr-sonarr", pod("sonarr", "mediarr"));
+  const unpackerr = n.subject("mediarr-unpackerr", pod("unpackerr", "mediarr"));
 
   jellyfin
     .to(dns("*.mirror.jellyfin.org"), tcp(443))
@@ -522,4 +555,7 @@ export const network: NetworkFunction = (n) => {
     // needs access to usenet indexers and metadata endpoints
     .to(cidrs("0.0.0.0/0"), tcp(80, 443));
   n.host.to(sonarr, tcp(8989));
+
+  unpackerr.to(sonarr, tcp(8989)).to(radarr, tcp(7878));
+  n.host.to(unpackerr, tcp(5656));
 };
