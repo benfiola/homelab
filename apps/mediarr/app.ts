@@ -37,7 +37,6 @@ export const app: AppFunction = async (h) => {
       "wait-for-data-init.sh",
       "mss-clamp.sh",
       "run-speed-check.sh",
-      "run-scraparr.sh",
     ),
   );
 
@@ -377,23 +376,26 @@ export const app: AppFunction = async (h) => {
   addWaitForDataInitContainer(sabnzbd);
   sabnzbd.service({ web: 8080 });
 
+  const scrape = (
+    name: "sonarr" | "radarr" | "prowlarr" | "sabnzbd" | "seerr" | "jellyfin",
+    port: number,
+  ): Env => ({
+    [`${name.toUpperCase()}_URL`]: `http://${name}:${port}`,
+    [`${name.toUpperCase()}_API_KEY`]: secrets.key(`${name}-api-key` as const),
+  });
   const scraparr = ns
-    .statefulSet("scraparr", {
-      securityContext: { uid: 1000, gid: 1000 },
-      volumes: {
-        config: config("1Gi"),
-        scripts: { configMap: scripts.metadata.name },
-      },
-    })
+    .deployment("scraparr", { securityContext: { uid: 1000, gid: 1000 } })
     .addContainer("scraparr", {
       image: "ghcr.io/thecfu/scraparr:3.2.0",
       containerPorts: { metrics: 7100 },
-      cmd: ["sh", "/scripts/run-scraparr.sh"],
-      volumeMounts: {
-        config: "/config",
-        scripts: "/scripts",
+      env: {
+        ...scrape("sonarr", 8989),
+        ...scrape("radarr", 7878),
+        ...scrape("prowlarr", 9696),
+        ...scrape("sabnzbd", 8080),
+        ...scrape("seerr", 5055),
+        ...scrape("jellyfin", 8096),
       },
-      // no liveness or startup probe to allow for adjusting configuration when broken
       readiness: { http: { path: "/metrics", port: 7100 }, timeoutSeconds: 5 },
     });
   scraparr.podMonitor("metrics");
