@@ -15,7 +15,7 @@ export const app: AppFunction = async (h) => {
   );
 
   await ns.helm(
-    "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.23.0",
+    "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.24.0",
     {
       release: "external-dns-mikrotik",
       values: {
@@ -68,7 +68,7 @@ export const app: AppFunction = async (h) => {
   );
 
   await ns.helm(
-    "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.23.0",
+    "https://kubernetes-sigs.github.io/external-dns/external-dns?version=1.24.0",
     {
       release: "external-dns-cloudflare",
       values: {
