@@ -9,7 +9,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   await ns.kustomize(
-    "github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.7.0",
+    "github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.7.1",
   );
 
   ns.vpa({ kind: "Deployment", name: "snapshot-controller" });
@@ -21,7 +21,7 @@ export const app: AppFunction = async (h) => {
       name: "snapshot-controller",
     });
     const controller = e.container(deployment, "snapshot-controller");
-    controller.image = "registry.k8s.io/sig-storage/snapshot-controller:v8.7.0";
+    controller.image = "registry.k8s.io/sig-storage/snapshot-controller:v8.7.1";
     deployment.spec.template.spec.securityContext = security.pod;
     controller.securityContext = security.container;
   });
