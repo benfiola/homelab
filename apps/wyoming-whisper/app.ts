@@ -19,7 +19,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("wyoming-whisper", {
-      image: "ghcr.io/benfiola/homelab-images/wyoming-whisper:1.1.4",
+      image: "ghcr.io/benfiola/homelab-images/wyoming-whisper:1.1.5",
       args: [
         "--hass-token=$(HASS_TOKEN)",
         "--hass-api=http://home-assistant.home-assistant.svc:8123/api",
