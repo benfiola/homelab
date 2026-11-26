@@ -53,7 +53,7 @@ export const app: AppFunction = async (h) => {
       },
     })
     .addContainer("frigate", {
-      image: "ghcr.io/benfiola/homelab-images/frigate:1.1.8",
+      image: "ghcr.io/benfiola/homelab-images/frigate:1.1.9",
       containerPorts: {
         "http-insecure": 5000,
       },
