@@ -50,7 +50,7 @@ export const app: AppFunction = (h) => {
       },
     })
     .addContainer("llama-cpp", {
-      image: "ghcr.io/ggml-org/llama.cpp:server-cuda-b12464",
+      image: "ghcr.io/ggml-org/llama.cpp:server-cuda-b12767",
       containerPorts: { web: 8080 },
       args: [
         "--model",
