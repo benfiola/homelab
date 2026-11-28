@@ -22,7 +22,7 @@ export const app: AppFunction = (h) => {
       admin: {
         adminTokenSecretRef: secrets.key("admin-token").secretKeyRef,
       },
-      image: "dxflrs/garage:v2.5.0",
+      image: "dxflrs/garage:v2.6.0",
       monitoring: { enabled: true },
       replication: {
         factor: 2,
