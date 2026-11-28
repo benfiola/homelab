@@ -10,7 +10,7 @@ export const app: AppFunction = async (h) => {
   const ns = h.namespace();
 
   await ns.helm(
-    "oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.9.3",
+    "oci://ghcr.io/rajsinghtech/charts/garage-operator?version=0.9.0",
     {
       values: {
         grafanaDashboard: {
